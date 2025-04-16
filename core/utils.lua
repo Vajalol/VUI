@@ -1,212 +1,27 @@
--- VUI Utility Functions
+local _, VUI = ...
 
--- Print colored message to chat
-function VUI:Print(msg)
-    print("|cff1784d1VUI:|r " .. tostring(msg))
-end
+-- Utility functions for VUI
+VUI.utils = {}
 
--- Create a debug print function that only shows when debugging is enabled
-function VUI:Debug(...)
-    if self.db and self.db.profile.debug then
-        print("|cff1784d1VUI Debug:|r", ...)
-    end
-end
-
--- Round a number to the nearest decimal places
-function VUI:Round(num, decimals)
-    if not decimals then decimals = 0 end
-    local mult = 10^decimals
-    return math.floor(num * mult + 0.5) / mult
-end
-
--- Format time (seconds) into a readable string
-function VUI:FormatTime(seconds)
-    if seconds <= 0 then
-        return "0s"
-    elseif seconds < 60 then
-        return string.format("%.1fs", seconds)
-    elseif seconds < 3600 then
-        local minutes = math.floor(seconds / 60)
-        seconds = seconds % 60
-        return string.format("%dm %ds", minutes, seconds)
-    else
-        local hours = math.floor(seconds / 3600)
-        seconds = seconds % 3600
-        local minutes = math.floor(seconds / 60)
-        seconds = seconds % 60
-        return string.format("%dh %dm %ds", hours, minutes, seconds)
-    end
-end
-
--- Format large numbers with commas
-function VUI:FormatNumber(number)
-    if not number then return 0 end
-    if number >= 1000000 then
-        return string.format("%.1fm", number / 1000000)
-    elseif number >= 1000 then
-        return string.format("%.1fk", number / 1000)
-    else
-        return number
-    end
-end
-
--- Get player class
-function VUI:GetPlayerClass()
-    local _, class = UnitClass("player")
-    return class
-end
-
--- Get player spec
-function VUI:GetPlayerSpec()
-    local specID = GetSpecialization()
-    if specID then
-        local _, name, _, icon = GetSpecializationInfo(specID)
-        return name, icon, specID
-    end
-    return nil, nil, nil
-end
-
--- Check if player is in combat
-function VUI:IsInCombat()
-    return UnitAffectingCombat("player")
-end
-
--- Check if player is in a group
-function VUI:IsInGroup()
-    return IsInGroup() or IsInRaid()
-end
-
--- Get group size
-function VUI:GetGroupSize()
-    if IsInRaid() then
-        return GetNumGroupMembers()
-    elseif IsInGroup() then
-        return GetNumGroupMembers()
-    else
-        return 1
-    end
-end
-
--- Utility function to create a frame with a border
-function VUI:CreateBorderFrame(name, parent, width, height, r, g, b, a)
-    local frame = CreateFrame("Frame", name, parent)
-    frame:SetSize(width, height)
-    
-    -- Background
-    frame.bg = frame:CreateTexture(nil, "BACKGROUND")
-    frame.bg:SetAllPoints()
-    frame.bg:SetColorTexture(0, 0, 0, a or 0.7)
-    
-    -- Border
-    frame.border = CreateFrame("Frame", nil, frame)
-    frame.border:SetPoint("TOPLEFT", -1, 1)
-    frame.border:SetPoint("BOTTOMRIGHT", 1, -1)
-    frame.border:SetBackdrop({
-        edgeFile = "Interface\\Buttons\\WHITE8x8",
-        edgeSize = 1,
-    })
-    frame.border:SetBackdropBorderColor(r or 0.3, g or 0.3, b or 0.3, 1)
-    
-    return frame
-end
-
--- Create a status bar
-function VUI:CreateStatusBar(name, parent, width, height, value, min, max, r, g, b)
-    local bar = CreateFrame("StatusBar", name, parent)
-    bar:SetSize(width, height)
-    bar:SetStatusBarTexture(self:GetTexture("statusbar"))
-    bar:SetMinMaxValues(min or 0, max or 1)
-    bar:SetValue(value or 0)
-    
-    if r and g and b then
-        bar:SetStatusBarColor(r, g, b)
-    else
-        bar:SetStatusBarColor(self:GetColor("primary"))
-    end
-    
-    -- Background
-    bar.bg = bar:CreateTexture(nil, "BACKGROUND")
-    bar.bg:SetAllPoints()
-    bar.bg:SetTexture(self:GetTexture("statusbar"))
-    bar.bg:SetVertexColor(0.2, 0.2, 0.2, 0.8)
-    
-    -- Border
-    bar.border = CreateFrame("Frame", nil, bar)
-    bar.border:SetPoint("TOPLEFT", -1, 1)
-    bar.border:SetPoint("BOTTOMRIGHT", 1, -1)
-    bar.border:SetBackdrop({
-        edgeFile = "Interface\\Buttons\\WHITE8x8",
-        edgeSize = 1,
-    })
-    bar.border:SetBackdropBorderColor(0, 0, 0, 1)
-    
-    return bar
-end
-
--- Create frame backdrop
-function VUI:CreateBackdrop(frame, bgColor, borderColor, inset)
-    if not frame.backdrop then
-        if frame:GetObjectType() == "Button" then
-            frame.backdrop = CreateFrame("Frame", nil, frame)
-        else
-            frame.backdrop = frame:CreateTexture(nil, "BACKGROUND")
-        end
-        
-        inset = inset or -2
-        frame.backdrop:SetPoint("TOPLEFT", frame, "TOPLEFT", -inset, inset)
-        frame.backdrop:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", inset, -inset)
-        
-        if frame.backdrop:GetObjectType() == "Frame" then
-            frame.backdrop:SetBackdrop({
-                bgFile = "Interface\\Buttons\\WHITE8x8",
-                edgeFile = "Interface\\Buttons\\WHITE8x8",
-                edgeSize = 1,
-                insets = { left = 0, right = 0, top = 0, bottom = 0 }
-            })
-            
-            if not borderColor then
-                borderColor = {0, 0, 0, 1}
-            end
-            frame.backdrop:SetBackdropBorderColor(borderColor[1], borderColor[2], borderColor[3], borderColor[4])
-            
-            if not bgColor then
-                bgColor = {0.1, 0.1, 0.1, 0.8}
-            end
-            frame.backdrop:SetBackdropColor(bgColor[1], bgColor[2], bgColor[3], bgColor[4])
-        else
-            frame.backdrop:SetColorTexture(bgColor[1] or 0.1, bgColor[2] or 0.1, bgColor[3] or 0.1, bgColor[4] or 0.8)
-        end
-    end
-end
-
--- Position and size functions
-function VUI:RepositionFrame(frame, point, relativeTo, relativePoint, xOffset, yOffset)
-    frame:ClearAllPoints()
-    frame:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
-end
-
--- Copy table function
-function VUI:CopyTable(src)
-    local copy = {}
-    for k, v in pairs(src) do
-        if type(v) == "table" then
-            copy[k] = self:CopyTable(v)
-        else
-            copy[k] = v
-        end
-    end
-    return copy
-end
-
--- Merge two tables
-function VUI:MergeTable(target, source)
+-- Table utilities
+function VUI.utils.copy(source)
+    if type(source) ~= "table" then return source end
+    local result = {}
     for k, v in pairs(source) do
         if type(v) == "table" then
-            if type(target[k] or false) == "table" then
-                self:MergeTable(target[k], v)
-            else
-                target[k] = self:CopyTable(v)
-            end
+            result[k] = VUI.utils.copy(v)
+        else
+            result[k] = v
+        end
+    end
+    return result
+end
+
+function VUI.utils.merge(target, source)
+    if type(target) ~= "table" or type(source) ~= "table" then return target end
+    for k, v in pairs(source) do
+        if type(v) == "table" and type(target[k]) == "table" then
+            VUI.utils.merge(target[k], v)
         else
             target[k] = v
         end
@@ -214,75 +29,282 @@ function VUI:MergeTable(target, source)
     return target
 end
 
--- Parse item link
-function VUI:ParseItemLink(link)
-    if not link then return nil end
+function VUI.utils.tablefind(tbl, value)
+    for i, v in pairs(tbl) do
+        if v == value then
+            return i
+        end
+    end
+    return nil
+end
+
+function VUI.utils.tablecount(tbl)
+    local count = 0
+    for _ in pairs(tbl) do count = count + 1 end
+    return count
+end
+
+-- String utilities
+function VUI.utils.split(str, delimiter)
+    local result = {}
+    local pattern = string.format("([^%s]+)", delimiter)
+    for match in string.gmatch(str, pattern) do
+        table.insert(result, match)
+    end
+    return result
+end
+
+function VUI.utils.trim(str)
+    return str:match("^%s*(.-)%s*$")
+end
+
+function VUI.utils.startswith(str, start)
+    return str:sub(1, #start) == start
+end
+
+function VUI.utils.endswith(str, ending)
+    return ending == "" or str:sub(-#ending) == ending
+end
+
+function VUI.utils.capitalize(str)
+    return str:gsub("^%l", string.upper)
+end
+
+-- Time utilities
+function VUI.utils.formatTime(seconds)
+    if not seconds or seconds < 0 then
+        return "0:00"
+    elseif seconds < 60 then
+        return string.format("0:%02d", seconds)
+    elseif seconds < 3600 then
+        return string.format("%d:%02d", seconds / 60, seconds % 60)
+    else
+        return string.format("%d:%02d:%02d", seconds / 3600, (seconds % 3600) / 60, seconds % 60)
+    end
+end
+
+function VUI.utils.formatShortTime(seconds)
+    if not seconds or seconds < 0 then
+        return "0s"
+    elseif seconds < 60 then
+        return string.format("%ds", seconds)
+    elseif seconds < 3600 then
+        return string.format("%dm", math.floor(seconds / 60))
+    elseif seconds < 86400 then
+        return string.format("%dh", math.floor(seconds / 3600))
+    else
+        return string.format("%dd", math.floor(seconds / 86400))
+    end
+end
+
+-- Color utilities
+function VUI.utils.createColor(r, g, b, a)
+    return {r = r or 1, g = g or 1, b = b or 1, a = a or 1}
+end
+
+function VUI.utils.colorToHex(color)
+    return string.format("%02x%02x%02x", color.r * 255, color.g * 255, color.b * 255)
+end
+
+function VUI.utils.hexToColor(hex)
+    hex = hex:gsub("#", "")
+    local r = tonumber(hex:sub(1, 2), 16) / 255
+    local g = tonumber(hex:sub(3, 4), 16) / 255
+    local b = tonumber(hex:sub(5, 6), 16) / 255
+    return {r = r, g = g, b = b, a = 1}
+end
+
+function VUI.utils.colorToString(color)
+    if not color then return "|cffffffff" end
+    local a = color.a or 1
+    return string.format("|c%02x%02x%02x%02x", a * 255, color.r * 255, color.g * 255, color.b * 255)
+end
+
+-- UI utilities
+function VUI.utils.createFrame(frameType, name, parent, template)
+    local frame = CreateFrame(frameType, name, parent, template)
+    return frame
+end
+
+function VUI.utils.createBackdrop(frame, bgColor, borderColor, borderSize, inset)
+    bgColor = bgColor or VUI:GetColor("black")
+    borderColor = borderColor or VUI:GetColor("gray")
+    borderSize = borderSize or 1
+    inset = inset or 0
     
-    local itemID = link:match("item:(%d+)")
+    local backdrop = VUI:CreateBackdrop(bgColor, borderColor, borderSize, inset)
+    frame:SetBackdrop(backdrop)
+    frame:SetBackdropColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a or 1)
+    frame:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a or 1)
+end
+
+function VUI.utils.createFontString(frame, font, size, flags, justifyH, justifyV)
+    local fontString = frame:CreateFontString(nil, "OVERLAY")
+    VUI:ApplyFont(fontString, font or VUI.media.fonts.normal, size or 12, flags or "")
+    fontString:SetJustifyH(justifyH or "LEFT")
+    fontString:SetJustifyV(justifyV or "MIDDLE")
+    return fontString
+end
+
+function VUI.utils.createTexture(frame, layer, texture, color)
+    local tex = frame:CreateTexture(nil, layer or "BACKGROUND")
+    if texture then
+        VUI:ApplyTexture(tex, texture)
+    end
+    if color then
+        tex:SetVertexColor(color.r, color.g, color.b, color.a or 1)
+    end
+    return tex
+end
+
+-- Event and timer utilities
+local timerFrame = CreateFrame("Frame")
+local timers = {}
+
+function VUI.utils.after(delay, callback)
+    if type(callback) ~= "function" then
+        error("VUI.utils.after: callback must be a function")
+    end
+    
+    local timer = {
+        callback = callback,
+        expires = GetTime() + delay,
+        canceled = false,
+    }
+    
+    table.insert(timers, timer)
+    
+    if not timerFrame:GetScript("OnUpdate") then
+        timerFrame:SetScript("OnUpdate", function(self, elapsed)
+            local now = GetTime()
+            local i = 1
+            while i <= #timers do
+                local timer = timers[i]
+                if not timer.canceled and now >= timer.expires then
+                    -- Remove the timer before running the callback to avoid issues if the callback errors
+                    table.remove(timers, i)
+                    
+                    -- Call the callback
+                    local success, err = pcall(timer.callback)
+                    if not success then
+                        VUI:Print("Timer callback error: " .. (err or "unknown error"))
+                    end
+                else
+                    i = i + 1
+                end
+            end
+            
+            -- If no timers left, stop the OnUpdate
+            if #timers == 0 then
+                self:SetScript("OnUpdate", nil)
+            end
+        end)
+    end
+    
+    return timer
+end
+
+function VUI.utils.cancelTimer(timer)
+    if not timer then return end
+    timer.canceled = true
+end
+
+-- Throttle a function call to prevent it from being called too frequently
+function VUI.utils.throttle(func, interval)
+    local lastCall = 0
+    return function(...)
+        local now = GetTime()
+        if now - lastCall >= interval then
+            lastCall = now
+            return func(...)
+        end
+    end
+end
+
+-- Debounce a function call to only execute after a period of inactivity
+function VUI.utils.debounce(func, wait)
+    local timer
+    return function(...)
+        local args = {...}
+        if timer then
+            VUI.utils.cancelTimer(timer)
+        end
+        timer = VUI.utils.after(wait, function()
+            func(unpack(args))
+            timer = nil
+        end)
+    end
+end
+
+-- WoW-specific utilities
+function VUI.utils.getSpellTexture(spellID)
+    if not spellID then return nil end
+    local name, _, icon = GetSpellInfo(spellID)
+    return icon, name
+end
+
+function VUI.utils.getItemTexture(itemID)
     if not itemID then return nil end
-    
-    local itemName, _, itemRarity, itemLevel, _, itemType, itemSubType = GetItemInfo(link)
-    
-    return {
-        id = tonumber(itemID),
-        name = itemName,
-        link = link,
-        rarity = itemRarity,
-        level = itemLevel,
-        type = itemType,
-        subType = itemSubType
-    }
+    local name, _, _, _, _, _, _, _, _, icon = GetItemInfo(itemID)
+    return icon, name
 end
 
--- Get player stats
-function VUI:GetPlayerStats()
-    local stats = {}
+function VUI.utils.getClassColor(class)
+    if not class then
+        class = select(2, UnitClass("player"))
+    end
     
-    -- Base stats
-    stats.strength = UnitStat("player", 1)
-    stats.agility = UnitStat("player", 2)
-    stats.stamina = UnitStat("player", 3)
-    stats.intellect = UnitStat("player", 4)
-    
-    -- Derived stats
-    stats.health = UnitHealthMax("player")
-    stats.power = UnitPowerMax("player")
-    stats.powerType = UnitPowerType("player")
-    
-    -- Combat stats
-    stats.attackPower = GetAttackPowerForStat(1, stats.strength)
-    stats.spellPower = GetSpellBonusDamage(2) -- 2 = Holy (arbitrary magic school)
-    stats.crit = GetCritChance()
-    stats.haste = GetHaste()
-    stats.mastery = GetMasteryEffect()
-    stats.versatility = GetCombatRatingBonus(CR_VERSATILITY_DAMAGE_DONE)
-    
-    -- Defense stats
-    stats.armor = UnitArmor("player")
-    stats.dodge = GetDodgeChance()
-    stats.parry = GetParryChance()
-    stats.block = GetBlockChance()
-    
-    return stats
+    local color = RAID_CLASS_COLORS[class]
+    if color then
+        return {r = color.r, g = color.g, b = color.b, a = 1}
+    else
+        return {r = 1, g = 1, b = 1, a = 1}
+    end
 end
 
--- Get current zone info
-function VUI:GetZoneInfo()
-    local zoneText = GetZoneText()
-    local subZoneText = GetSubZoneText()
-    local minimapZoneText = GetMinimapZoneText()
+function VUI.utils.getUnitColor(unit)
+    if not unit or not UnitExists(unit) then return {r = 1, g = 1, b = 1, a = 1} end
     
-    return {
-        zone = zoneText,
-        subZone = subZoneText,
-        minimapZone = minimapZoneText,
-        pvp = {
-            isPvP = IsInPvP(),
-            isArena = IsInArena(),
-            isBattleground = IsInBattleground()
-        },
-        instance = {
-            name = GetInstanceInfo()
-        }
-    }
+    if UnitIsPlayer(unit) then
+        local _, class = UnitClass(unit)
+        return VUI.utils.getClassColor(class)
+    else
+        local reaction = UnitReaction(unit, "player")
+        if reaction then
+            if reaction >= 5 then
+                return {r = 0, g = 1, b = 0, a = 1} -- Friendly
+            elseif reaction == 4 then
+                return {r = 1, g = 1, b = 0, a = 1} -- Neutral
+            else
+                return {r = 1, g = 0, b = 0, a = 1} -- Hostile
+            end
+        else
+            return {r = 1, g = 1, b = 1, a = 1} -- Default
+        end
+    end
+end
+
+-- Function to print debug information (only if debugging is enabled)
+function VUI.utils.debug(...)
+    if VUI.db and VUI.db.profile and VUI.db.profile.general and VUI.db.profile.general.debug then
+        VUI:Print("Debug:", ...)
+    end
+end
+
+-- Function to safely format a string (avoids errors if placeholders don't match)
+function VUI.utils.format(format, ...)
+    local success, result = pcall(string.format, format, ...)
+    if success then
+        return result
+    else
+        local args = {...}
+        local msg = format .. " ["
+        for i, v in ipairs(args) do
+            msg = msg .. tostring(v)
+            if i ~= #args then
+                msg = msg .. ", "
+            end
+        end
+        return msg .. "]"
+    end
 end

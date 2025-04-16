@@ -1,33 +1,59 @@
 ## Interface: 100205
 ## Title: |cff1784d1VUI|r
-## Notes: Unified addon suite for World of Warcraft
+## Notes: A unified addon suite combining multiple popular addons with centralized configuration
 ## Author: VortexQ8
 ## Version: 0.0.1
-## SavedVariables: VUIDB, BuffOverlayDB, TrufiGCDDB, MoveAnyDB, AuctionatorDB, AngryKeystonesDB, OmniCCDB, OmniCDDB
+## SavedVariables: VUIDB, VUICharacterDB
+## OptionalDeps: Ace3, LibSharedMedia-3.0
 
 # Libraries
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+
+# Ace3 Libraries
 libs\AceAddon-3.0\AceAddon-3.0.lua
 libs\AceConfig-3.0\AceConfig-3.0.lua
 libs\AceConsole-3.0\AceConsole-3.0.lua
-libs\AceGUI-3.0\AceGUI-3.0.lua
 libs\AceDB-3.0\AceDB-3.0.lua
+libs\AceDBOptions-3.0\AceDBOptions-3.0.lua
+libs\AceEvent-3.0\AceEvent-3.0.lua
+libs\AceGUI-3.0\AceGUI-3.0.lua
 libs\AceHook-3.0\AceHook-3.0.lua
+libs\AceLocale-3.0\AceLocale-3.0.lua
+libs\AceTimer-3.0\AceTimer-3.0.lua
 
-# Core
-init.lua
-core\core.lua
-core\config.lua
+# Core Files
+core\init.lua
 core\defaults.lua
 core\media.lua
 core\utils.lua
+core\config.lua
 
 # Modules
-modules\buffoverlay\buffoverlay.lua
-modules\trufigcd\trufigcd.lua
-modules\moveany\moveany.lua
-modules\auctionator\auctionator.lua
-modules\angrykeystones\angrykeystones.lua
-modules\omnicc\omnicc.lua
-modules\omnicd\omnicd.lua
+modules\buffoverlay\init.lua
+modules\buffoverlay\core.lua
+modules\buffoverlay\config.lua
+
+modules\trufigcd\init.lua
+modules\trufigcd\core.lua
+modules\trufigcd\config.lua
+
+modules\moveany\init.lua
+modules\moveany\core.lua
+modules\moveany\config.lua
+
+modules\auctionator\init.lua
+modules\auctionator\core.lua
+modules\auctionator\config.lua
+
+modules\angrykeystone\init.lua
+modules\angrykeystone\core.lua
+modules\angrykeystone\config.lua
+
+modules\omnicc\init.lua
+modules\omnicc\core.lua
+modules\omnicc\config.lua
+
+modules\omnicd\init.lua
+modules\omnicd\core.lua
+modules\omnicd\config.lua
