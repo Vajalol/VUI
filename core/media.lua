@@ -12,24 +12,30 @@ function VUI:InitializeMedia()
     }
     
     -- Register default textures
-    self.media.textures.logo = "Interface\\AddOns\\VUI\\media\\textures\\logo"
-    self.media.textures.glow = "Interface\\AddOns\\VUI\\media\\textures\\glow"
-    self.media.textures.highlight = "Interface\\AddOns\\VUI\\media\\textures\\highlight"
+    self.media.textures.logo = "Interface\\AddOns\\VUI\\media\\textures\\logo.tga"
+    self.media.textures.glow = "Interface\\AddOns\\VUI\\media\\textures\\glow.tga"
+    self.media.textures.highlight = "Interface\\AddOns\\VUI\\media\\textures\\highlight.tga"
     
     -- Register default borders
     self.media.borders.thin = "Interface\\DialogFrame\\UI-DialogBox-Border"
     self.media.borders.dialog = "Interface\\DialogFrame\\UI-DialogBox-Border"
-    self.media.borders.simple = "Interface\\AddOns\\VUI\\media\\textures\\border-simple"
+    self.media.borders.simple = "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga"
     
     -- Register default backgrounds
-    self.media.backgrounds.dark = "Interface\\AddOns\\VUI\\media\\textures\\background-dark"
-    self.media.backgrounds.light = "Interface\\AddOns\\VUI\\media\\textures\\background-light"
-    self.media.backgrounds.solid = "Interface\\AddOns\\VUI\\media\\textures\\background-solid"
+    self.media.backgrounds.dark = "Interface\\AddOns\\VUI\\media\\textures\\background-dark.tga"
+    self.media.backgrounds.light = "Interface\\AddOns\\VUI\\media\\textures\\background-light.tga"
+    self.media.backgrounds.solid = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga"
     
     -- Register default statusbars
-    self.media.statusbars.smooth = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-smooth"
-    self.media.statusbars.flat = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-flat"
-    self.media.statusbars.gloss = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-gloss"
+    self.media.statusbars.smooth = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-smooth.blp"
+    self.media.statusbars.flat = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-flat.blp"
+    self.media.statusbars.gloss = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-gloss.tga"
+    
+    -- Register module-specific textures
+    self.media.textures.buffoverlay = {
+        logo = "Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\logo.tga",
+        logo_transparent = "Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\logo_transparent.tga"
+    }
     
     -- Default fonts - using built-in WoW fonts to avoid file size issues
     self.media.fonts.normal = "Fonts\\FRIZQT__.TTF"

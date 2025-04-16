@@ -1,0 +1,117 @@
+name: "Bug Report"
+description: Create a report to help me improve BuffOverlay.
+# title: "[BUG]: "
+labels: ["bug"]
+assignees:
+  - clicketz
+body:
+- type: markdown
+  attributes:
+    value: |
+      Please [search for existing issues](https://github.com/clicketz/buff-overlay/labels/bug) before creating a new one.
+
+- type: textarea
+  attributes:
+    label: Description
+    description: What did you expect to happen and what happened instead?
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: BuffOverlay Version
+    description: |
+      Please copy the version by typing `/bo version` in-game. If the options do not open, check the CurseForge app or the `## Version:` field in the BuffOverlay.toc file.
+    placeholder: "v11.0.0"
+  validations:
+    required: true
+
+- type: dropdown
+  id: flavor
+  attributes:
+    label: World of Warcraft Flavor
+    description: Which version of World of Warcraft are you running?
+    options:
+      - Retail
+      - Vanilla Classic
+      - Vanilla Classic Season of Discovery
+      - The Burning Crusade Classic
+      - Wrath of the Lich King Classic
+      - Cataclysm Classic
+  validations:
+    required: true
+
+- type: dropdown
+  id: testing
+  attributes:
+    label: Sterile Testing
+    description: Did you try having BuffOverlay as the only enabled addon and everything else disabled?
+    options:
+      - "Yes"
+      - "No"
+  validations:
+    required: true
+
+- type: dropdown
+  id: edited
+  attributes:
+    label: Editing Lua Files
+    description: Did you manually edit any file in the BuffOverlay folder?
+    options:
+      - "Yes"
+      - "No"
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: File Edited
+    description: |
+      If you did edit a Lua file, please list the file(s) you edited, and the changes you made.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Frames Used
+    description: |
+      Are you using Blizzard frames or are you using a third party addon such as ElvUI, Shadowed Unit Frames, or something else?
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Lua Error
+    description: |
+      Do you have an error log of what happened? If you don't see any errors, make sure that error reporting is enabled (`/console scriptErrors 1`) or install [BugSack](https://www.curseforge.com/wow/addons/bugsack) & [BugGrabber](https://www.curseforge.com/wow/addons/bug-grabber). Yes, both are needed.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Reproduction Steps
+    description: Please list out the steps to reproduce your bug.
+    placeholder: |
+      1. Go to '...'
+      2. Click on '....'
+      3. Scroll down to '....'
+      4. See error
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Last Working Version
+    description: |
+      Was it working in a previous version? If yes, which was the last good one for you?
+    placeholder: "v10.0.1"
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Screenshots
+    description: If applicable, add screenshots to help explain your problem.
+    placeholder: Click here to attach your screenshots via the editor button in the top right.
+  validations:
+    required: false

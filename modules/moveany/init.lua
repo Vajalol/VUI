@@ -368,7 +368,7 @@ function MoveAny:PLAYER_ENTERING_WORLD()
     for name, frame in pairs(self.registered) do
         self:ApplySavedPosition(frame, name)
     end
-}
+end
 
 function MoveAny:PLAYER_REGEN_DISABLED()
     -- Lock frames in combat to prevent accidental movement
@@ -376,7 +376,7 @@ function MoveAny:PLAYER_REGEN_DISABLED()
         self:LockFrames()
         VUI:Print("MoveAny: Frames locked during combat")
     end
-}
+end
 
 function MoveAny:PLAYER_REGEN_ENABLED()
     -- Restore previous lock state
@@ -384,7 +384,7 @@ function MoveAny:PLAYER_REGEN_ENABLED()
         self:UnlockFrames()
         VUI:Print("MoveAny: Frames unlocked after combat")
     end
-}
+end
 
 function MoveAny:ADDON_LOADED(event, addonName)
     -- Register additional frames as they're created
@@ -396,7 +396,7 @@ function MoveAny:ADDON_LOADED(event, addonName)
         self:RegisterFrame(InspectFrame, "InspectFrame")
     -- And so on for other Blizzard UI addons...
     end
-}
+end
 
 -- Module enable/disable functions
 function MoveAny:Enable()
@@ -419,7 +419,7 @@ function MoveAny:Enable()
     end
     
     VUI:Print("MoveAny module enabled")
-}
+end
 
 function MoveAny:Disable()
     -- Hide all anchors
@@ -437,7 +437,7 @@ function MoveAny:Disable()
     self:UnregisterEvent("ADDON_LOADED")
     
     VUI:Print("MoveAny module disabled")
-}
+end
 
 -- Helper functions
 function MoveAny:RegisterEvent(event, handler)
@@ -454,14 +454,14 @@ function MoveAny:RegisterEvent(event, handler)
     
     self.eventFrame.events[event] = handler or self[event]
     self.eventFrame:RegisterEvent(event)
-}
+end
 
 function MoveAny:UnregisterEvent(event)
     if self.eventFrame and self.eventFrame.events[event] then
         self.eventFrame:UnregisterEvent(event)
         self.eventFrame.events[event] = nil
     end
-}
+end
 
 -- Update settings
 function MoveAny:UpdateSettings()
@@ -495,7 +495,7 @@ function MoveAny:UpdateSettings()
     else
         self:UnlockFrames()
     end
-}
+end
 
 -- Get options for the config panel
 function MoveAny:GetOptions()
@@ -629,4 +629,4 @@ function MoveAny:GetOptions()
             },
         }
     }
-}
+end

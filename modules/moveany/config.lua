@@ -20,7 +20,7 @@ function MoveAny:CreateConfigPanel()
     tabs:SetTabs({
         {text = "General", value = "general"},
         {text = "Frames", value = "frames"},
-        {text = "Advanced", value = "advanced"}
+        {text = "Presets", value = "presets"}
     })
     tabs:SetCallback("OnGroupSelected", function(container, event, group)
         container:ReleaseChildren()
@@ -28,8 +28,8 @@ function MoveAny:CreateConfigPanel()
             self:CreateGeneralTab(container)
         elseif group == "frames" then
             self:CreateFramesTab(container)
-        elseif group == "advanced" then
-            self:CreateAdvancedTab(container)
+        elseif group == "presets" then
+            self:CreatePresetsTab(container)
         end
     end)
     tabs:SelectTab("general")
@@ -55,33 +55,16 @@ function MoveAny:CreateGeneralTab(container)
     end)
     container:AddChild(enableCheckbox)
     
-    -- Lock/unlock toggle
-    local lockCheckbox = AceGUI:Create("CheckBox")
-    lockCheckbox:SetLabel("Lock Frames")
-    lockCheckbox:SetWidth(200)
-    lockCheckbox:SetValue(VUI.db.profile.modules.moveany.lockFrames)
-    lockCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
-        VUI.db.profile.modules.moveany.lockFrames = value
-        if value then
-            MoveAny:LockFrames()
-        else
-            MoveAny:UnlockFrames()
-        end
-    end)
-    container:AddChild(lockCheckbox)
+    -- Spacer
+    container:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
     
-    -- Show grid toggle
+    -- Show grid checkbox
     local gridCheckbox = AceGUI:Create("CheckBox")
-    gridCheckbox:SetLabel("Show Grid")
-    gridCheckbox:SetWidth(200)
+    gridCheckbox:SetLabel("Show Grid When Moving Frames")
+    gridCheckbox:SetWidth(300)
     gridCheckbox:SetValue(VUI.db.profile.modules.moveany.showGrid)
     gridCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
         VUI.db.profile.modules.moveany.showGrid = value
-        if value and not VUI.db.profile.modules.moveany.lockFrames then
-            MoveAny.gridFrame:Show()
-        else
-            MoveAny.gridFrame:Hide()
-        end
     end)
     container:AddChild(gridCheckbox)
     
@@ -89,15 +72,14 @@ function MoveAny:CreateGeneralTab(container)
     local gridSizeSlider = AceGUI:Create("Slider")
     gridSizeSlider:SetLabel("Grid Size")
     gridSizeSlider:SetWidth(300)
-    gridSizeSlider:SetSliderValues(8, 64, 4)
+    gridSizeSlider:SetSliderValues(2, 64, 2)
     gridSizeSlider:SetValue(VUI.db.profile.modules.moveany.gridSize)
     gridSizeSlider:SetCallback("OnValueChanged", function(widget, event, value)
         VUI.db.profile.modules.moveany.gridSize = value
-        MoveAny:UpdateGrid()
     end)
     container:AddChild(gridSizeSlider)
     
-    -- Snap to grid toggle
+    -- Snap to grid checkbox
     local snapCheckbox = AceGUI:Create("CheckBox")
     snapCheckbox:SetLabel("Snap to Grid")
     snapCheckbox:SetWidth(200)
@@ -107,404 +89,445 @@ function MoveAny:CreateGeneralTab(container)
     end)
     container:AddChild(snapCheckbox)
     
-    -- Snap threshold slider
-    local thresholdSlider = AceGUI:Create("Slider")
-    thresholdSlider:SetLabel("Snap Threshold")
-    thresholdSlider:SetWidth(300)
-    thresholdSlider:SetSliderValues(1, 20, 1)
-    thresholdSlider:SetValue(VUI.db.profile.modules.moveany.snapThreshold)
-    thresholdSlider:SetCallback("OnValueChanged", function(widget, event, value)
-        VUI.db.profile.modules.moveany.snapThreshold = value
+    -- Use class colors checkbox
+    local classColorsCheckbox = AceGUI:Create("CheckBox")
+    classColorsCheckbox:SetLabel("Use Class Colors for Frame Borders")
+    classColorsCheckbox:SetWidth(300)
+    classColorsCheckbox:SetValue(VUI.db.profile.modules.moveany.useClassColors)
+    classColorsCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.moveany.useClassColors = value
     end)
-    container:AddChild(thresholdSlider)
+    container:AddChild(classColorsCheckbox)
     
-    -- Show tooltips toggle
-    local tooltipsCheckbox = AceGUI:Create("CheckBox")
-    tooltipsCheckbox:SetLabel("Show Tooltips")
-    tooltipsCheckbox:SetWidth(200)
-    tooltipsCheckbox:SetValue(VUI.db.profile.modules.moveany.showTooltips)
-    tooltipsCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
-        VUI.db.profile.modules.moveany.showTooltips = value
-        MoveAny:UpdateSettings()
+    -- Highlight frame under mouse checkbox
+    local highlightCheckbox = AceGUI:Create("CheckBox")
+    highlightCheckbox:SetLabel("Highlight Frame Under Mouse")
+    highlightCheckbox:SetWidth(300)
+    highlightCheckbox:SetValue(VUI.db.profile.modules.moveany.highlightFrames)
+    highlightCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.moveany.highlightFrames = value
     end)
-    container:AddChild(tooltipsCheckbox)
+    container:AddChild(highlightCheckbox)
     
-    -- Button to lock/unlock frames
-    local toggleButton = AceGUI:Create("Button")
-    toggleButton:SetText(VUI.db.profile.modules.moveany.lockFrames and "Unlock Frames" or "Lock Frames")
-    toggleButton:SetWidth(200)
-    toggleButton:SetCallback("OnClick", function()
-        if VUI.db.profile.modules.moveany.lockFrames then
-            MoveAny:UnlockFrames()
-            toggleButton:SetText("Lock Frames")
-        else
-            MoveAny:LockFrames()
-            toggleButton:SetText("Unlock Frames")
-        end
-        lockCheckbox:SetValue(VUI.db.profile.modules.moveany.lockFrames)
+    -- Create buttons group
+    local buttonsGroup = AceGUI:Create("SimpleGroup")
+    buttonsGroup:SetLayout("Flow")
+    buttonsGroup:SetFullWidth(true)
+    container:AddChild(buttonsGroup)
+    
+    -- Unlock all button
+    local unlockButton = AceGUI:Create("Button")
+    unlockButton:SetText("Unlock All Frames")
+    unlockButton:SetWidth(150)
+    unlockButton:SetCallback("OnClick", function()
+        self:UnlockAllFrames()
     end)
-    container:AddChild(toggleButton)
+    buttonsGroup:AddChild(unlockButton)
     
-    -- Button to reset all frames
+    -- Lock all button
+    local lockButton = AceGUI:Create("Button")
+    lockButton:SetText("Lock All Frames")
+    lockButton:SetWidth(150)
+    lockButton:SetCallback("OnClick", function()
+        self:LockAllFrames()
+    end)
+    buttonsGroup:AddChild(lockButton)
+    
+    -- Reset all button
     local resetButton = AceGUI:Create("Button")
     resetButton:SetText("Reset All Frames")
-    resetButton:SetWidth(200)
+    resetButton:SetWidth(150)
     resetButton:SetCallback("OnClick", function()
-        StaticPopupDialogs["VUI_MOVEANY_RESET_ALL"] = {
-            text = "Are you sure you want to reset all frame positions to default?",
+        StaticPopupDialogs["VUI_MOVEANY_CONFIRM_RESET"] = {
+            text = "Are you sure you want to reset all frame positions?",
             button1 = "Yes",
             button2 = "No",
             OnAccept = function()
-                VUI.db.profile.modules.moveany.savedFrames = {}
-                for name, frame in pairs(MoveAny.registered) do
-                    MoveAny:ResetPosition(name)
-                end
-                VUI:Print("All frame positions have been reset")
+                self:ResetAllFrames()
             end,
             timeout = 0,
             whileDead = true,
             hideOnEscape = true,
             preferredIndex = 3,
         }
-        StaticPopup_Show("VUI_MOVEANY_RESET_ALL")
+        StaticPopup_Show("VUI_MOVEANY_CONFIRM_RESET")
     end)
-    container:AddChild(resetButton)
+    buttonsGroup:AddChild(resetButton)
 end
 
 -- Create the Frames tab
 function MoveAny:CreateFramesTab(container)
-    -- Create a scroll frame to display the list of frames
-    local scroll = AceGUI:Create("ScrollFrame")
-    scroll:SetLayout("Flow")
-    scroll:SetFullWidth(true)
-    scroll:SetFullHeight(true)
-    container:AddChild(scroll)
+    -- Create a scroll frame for the frames list
+    local scrollFrame = AceGUI:Create("ScrollFrame")
+    scrollFrame:SetLayout("Flow")
+    scrollFrame:SetFullWidth(true)
+    scrollFrame:SetHeight(400)
+    container:AddChild(scrollFrame)
     
-    -- Add instructions
-    local instructions = AceGUI:Create("Label")
-    instructions:SetText("List of registered frames that can be moved:")
-    instructions:SetFullWidth(true)
-    scroll:AddChild(instructions)
-    
-    -- Add button to add a custom frame
-    local addButton = AceGUI:Create("Button")
-    addButton:SetText("Add Custom Frame")
-    addButton:SetWidth(200)
-    addButton:SetCallback("OnClick", function()
-        local dialog = MoveAny:CreateAddFrameDialog()
-        dialog:Show()
+    -- Search box
+    local searchBox = AceGUI:Create("EditBox")
+    searchBox:SetLabel("Search Frames")
+    searchBox:SetWidth(250)
+    searchBox:SetCallback("OnTextChanged", function(widget, event, text)
+        self:RefreshFramesList(scrollFrame, text)
     end)
-    scroll:AddChild(addButton)
+    scrollFrame:AddChild(searchBox)
     
-    -- Create a header for the frame list
-    local header = AceGUI:Create("SimpleGroup")
-    header:SetLayout("Flow")
-    header:SetFullWidth(true)
-    header:SetHeight(24)
+    -- Category dropdown
+    local categoryDropdown = AceGUI:Create("Dropdown")
+    categoryDropdown:SetLabel("Category")
+    categoryDropdown:SetWidth(250)
+    categoryDropdown:SetList({
+        ["all"] = "All Frames",
+        ["action"] = "Action Bars",
+        ["bags"] = "Bags",
+        ["unitframes"] = "Unit Frames",
+        ["minimap"] = "Minimap",
+        ["other"] = "Other"
+    })
+    categoryDropdown:SetValue("all")
+    categoryDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+        self:RefreshFramesList(scrollFrame, searchBox:GetText(), value)
+    end)
+    scrollFrame:AddChild(categoryDropdown)
     
-    local nameHeader = AceGUI:Create("Label")
-    nameHeader:SetText("Frame Name")
-    nameHeader:SetWidth(200)
-    header:AddChild(nameHeader)
+    -- Add header
+    scrollFrame:AddChild(AceGUI:Create("Heading"):SetText("Movable Frames"):SetFullWidth(true))
     
-    local statusHeader = AceGUI:Create("Label")
-    statusHeader:SetText("Status")
-    statusHeader:SetWidth(100)
-    header:AddChild(statusHeader)
-    
-    local actionsHeader = AceGUI:Create("Label")
-    actionsHeader:SetText("Actions")
-    actionsHeader:SetWidth(200)
-    header:AddChild(actionsHeader)
-    
-    scroll:AddChild(header)
-    
-    -- Sort frame names
-    local frameNames = {}
-    for name, _ in pairs(self.registered) do
-        table.insert(frameNames, name)
-    end
-    table.sort(frameNames)
-    
-    -- Create a row for each registered frame
-    for _, name in ipairs(frameNames) do
-        local row = AceGUI:Create("SimpleGroup")
-        row:SetLayout("Flow")
-        row:SetFullWidth(true)
-        row:SetHeight(30)
-        
-        local frameName = AceGUI:Create("Label")
-        frameName:SetText(name)
-        frameName:SetWidth(200)
-        row:AddChild(frameName)
-        
-        local frameStatus = AceGUI:Create("Label")
-        frameStatus:SetText(VUI.db.profile.modules.moveany.savedFrames[name] and "Modified" or "Default")
-        frameStatus:SetWidth(100)
-        row:AddChild(frameStatus)
-        
-        local resetButton = AceGUI:Create("Button")
-        resetButton:SetText("Reset")
-        resetButton:SetWidth(80)
-        resetButton:SetCallback("OnClick", function()
-            MoveAny:ResetPosition(name)
-            frameStatus:SetText("Default")
-        end)
-        row:AddChild(resetButton)
-        
-        local configButton = AceGUI:Create("Button")
-        configButton:SetText("Configure")
-        configButton:SetWidth(100)
-        configButton:SetCallback("OnClick", function()
-            local dialog = MoveAny:CreateFrameControlPanel(name)
-            dialog:Show()
-        end)
-        row:AddChild(configButton)
-        
-        scroll:AddChild(row)
-    end
-    
-    -- If no frames registered, show a message
-    if #frameNames == 0 then
-        local noFrames = AceGUI:Create("Label")
-        noFrames:SetText("No frames have been registered yet.")
-        noFrames:SetFullWidth(true)
-        scroll:AddChild(noFrames)
-    end
+    -- Initialize the frames list (empty for now)
+    self:RefreshFramesList(scrollFrame, "", "all")
 end
 
--- Create the Advanced tab
-function MoveAny:CreateAdvancedTab(container)
-    -- Add persistent toggle button settings
-    local toggleButtonCheckbox = AceGUI:Create("CheckBox")
-    toggleButtonCheckbox:SetLabel("Show Toggle Button")
-    toggleButtonCheckbox:SetWidth(200)
-    toggleButtonCheckbox:SetValue(VUI.db.profile.modules.moveany.showToggleButton)
-    toggleButtonCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
-        VUI.db.profile.modules.moveany.showToggleButton = value
-        if value then
-            MoveAny:CreateToggleButton()
-            MoveAny.toggleButton:Show()
-        elseif MoveAny.toggleButton then
-            MoveAny.toggleButton:Hide()
-        end
-    end)
-    container:AddChild(toggleButtonCheckbox)
+-- Create the Presets tab
+function MoveAny:CreatePresetsTab(container)
+    -- Create presets list
+    local presetsList = AceGUI:Create("SimpleGroup")
+    presetsList:SetLayout("Flow")
+    presetsList:SetFullWidth(true)
+    container:AddChild(presetsList)
     
-    -- Toggle position button
-    local positionButton = AceGUI:Create("Button")
-    positionButton:SetText("Position Toggle Button")
-    positionButton:SetWidth(200)
-    positionButton:SetCallback("OnClick", function()
-        if MoveAny.toggleButton then
-            if VUI.db.profile.modules.moveany.lockFrames then
-                MoveAny:UnlockFrames()
-            end
-            -- Highlight the toggle button's anchor
-            if MoveAny.anchors["MoveAnyToggleButton"] then
-                MoveAny.anchors["MoveAnyToggleButton"]:Show()
-            end
+    -- Add header
+    container:AddChild(AceGUI:Create("Heading"):SetText("Layout Presets"):SetFullWidth(true))
+    
+    -- Add preset layouts
+    local presetsData = {
+        ["default"] = "Default UI",
+        ["centered"] = "Centered",
+        ["minimal"] = "Minimal",
+        ["dps"] = "DPS Focused",
+        ["healer"] = "Healer Focused",
+        ["tank"] = "Tank Focused",
+        ["pvp"] = "PvP"
+    }
+    
+    for value, text in pairs(presetsData) do
+        local presetGroup = AceGUI:Create("SimpleGroup")
+        presetGroup:SetLayout("Flow")
+        presetGroup:SetFullWidth(true)
+        
+        local presetName = AceGUI:Create("Label")
+        presetName:SetText(text)
+        presetName:SetWidth(150)
+        presetGroup:AddChild(presetName)
+        
+        local loadButton = AceGUI:Create("Button")
+        loadButton:SetText("Load")
+        loadButton:SetWidth(80)
+        loadButton:SetCallback("OnClick", function()
+            StaticPopupDialogs["VUI_MOVEANY_CONFIRM_PRESET"] = {
+                text = "Load the " .. text .. " preset? Current frame positions will be lost.",
+                button1 = "Yes",
+                button2 = "No",
+                OnAccept = function()
+                    self:LoadPreset(value)
+                end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                preferredIndex = 3,
+            }
+            StaticPopup_Show("VUI_MOVEANY_CONFIRM_PRESET")
+        end)
+        presetGroup:AddChild(loadButton)
+        
+        container:AddChild(presetGroup)
+    end
+    
+    -- Save current layout
+    container:AddChild(AceGUI:Create("Heading"):SetText("Save Current Layout"):SetFullWidth(true))
+    
+    local saveGroup = AceGUI:Create("SimpleGroup")
+    saveGroup:SetLayout("Flow")
+    saveGroup:SetFullWidth(true)
+    
+    local nameInput = AceGUI:Create("EditBox")
+    nameInput:SetLabel("Preset Name")
+    nameInput:SetWidth(200)
+    saveGroup:AddChild(nameInput)
+    
+    local saveButton = AceGUI:Create("Button")
+    saveButton:SetText("Save Current Layout")
+    saveButton:SetWidth(150)
+    saveButton:SetCallback("OnClick", function()
+        local name = nameInput:GetText()
+        if name and name ~= "" then
+            self:SaveCurrentLayout(name)
+            print("Layout saved as: " .. name)
         else
-            VUI:Print("Toggle button is not created. Enable it first.")
+            print("Please enter a name for the layout")
         end
     end)
-    container:AddChild(positionButton)
+    saveGroup:AddChild(saveButton)
     
-    -- Spacer
-    container:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
-    
-    -- Combat behavior heading
-    local combatHeading = AceGUI:Create("Heading")
-    combatHeading:SetText("Combat Behavior")
-    combatHeading:SetFullWidth(true)
-    container:AddChild(combatHeading)
-    
-    -- Auto lock in combat checkbox
-    local combatLockCheckbox = AceGUI:Create("CheckBox")
-    combatLockCheckbox:SetLabel("Auto-Lock Frames in Combat")
-    combatLockCheckbox:SetWidth(300)
-    combatLockCheckbox:SetValue(VUI.db.profile.modules.moveany.autoLockInCombat)
-    combatLockCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
-        VUI.db.profile.modules.moveany.autoLockInCombat = value
-    end)
-    container:AddChild(combatLockCheckbox)
-    
-    -- Auto restore state after combat checkbox
-    local restoreCheckbox = AceGUI:Create("CheckBox")
-    restoreCheckbox:SetLabel("Auto-Restore State After Combat")
-    restoreCheckbox:SetWidth(300)
-    restoreCheckbox:SetValue(VUI.db.profile.modules.moveany.restoreStateAfterCombat)
-    restoreCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
-        VUI.db.profile.modules.moveany.restoreStateAfterCombat = value
-    end)
-    container:AddChild(restoreCheckbox)
-    
-    -- Spacer
-    container:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
-    
-    -- Frame appearance heading
-    local appearanceHeading = AceGUI:Create("Heading")
-    appearanceHeading:SetText("Frame Appearance")
-    appearanceHeading:SetFullWidth(true)
-    container:AddChild(appearanceHeading)
-    
-    -- Anchor opacity slider
-    local opacitySlider = AceGUI:Create("Slider")
-    opacitySlider:SetLabel("Anchor Opacity")
-    opacitySlider:SetWidth(300)
-    opacitySlider:SetSliderValues(0.1, 1.0, 0.05)
-    opacitySlider:SetValue(VUI.db.profile.modules.moveany.anchorOpacity or 0.4)
-    opacitySlider:SetCallback("OnValueChanged", function(widget, event, value)
-        VUI.db.profile.modules.moveany.anchorOpacity = value
-        -- Update all anchors with new opacity
-        for _, anchor in pairs(MoveAny.anchors) do
-            if anchor.border then
-                anchor.border:SetAlpha(value)
-            end
-        end
-    end)
-    container:AddChild(opacitySlider)
-    
-    -- Anchor border color picker
-    local colorPicker = AceGUI:Create("ColorPicker")
-    colorPicker:SetLabel("Anchor Border Color")
-    colorPicker:SetWidth(200)
-    colorPicker:SetColor(
-        VUI.db.profile.modules.moveany.anchorColor.r or 1,
-        VUI.db.profile.modules.moveany.anchorColor.g or 0.5,
-        VUI.db.profile.modules.moveany.anchorColor.b or 0,
-        VUI.db.profile.modules.moveany.anchorColor.a or 0.4
-    )
-    colorPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a)
-        VUI.db.profile.modules.moveany.anchorColor = {r = r, g = g, b = b, a = a}
-        -- Update all anchors with new color
-        for _, anchor in pairs(MoveAny.anchors) do
-            if anchor.border then
-                anchor.border:SetVertexColor(r, g, b, a)
-            end
-        end
-    end)
-    container:AddChild(colorPicker)
-    
-    -- Export/Import section
-    local exportImportHeading = AceGUI:Create("Heading")
-    exportImportHeading:SetText("Export/Import")
-    exportImportHeading:SetFullWidth(true)
-    container:AddChild(exportImportHeading)
-    
-    -- Export button
-    local exportButton = AceGUI:Create("Button")
-    exportButton:SetText("Export Frame Positions")
-    exportButton:SetWidth(200)
-    exportButton:SetCallback("OnClick", function()
-        -- Create a dialog to show the export string
-        local dialog = AceGUI:Create("Frame")
-        dialog:SetTitle("Export Frame Positions")
-        dialog:SetLayout("Flow")
-        dialog:SetWidth(500)
-        dialog:SetHeight(400)
-        
-        local desc = AceGUI:Create("Label")
-        desc:SetText("Copy the text below to export your frame positions:")
-        desc:SetFullWidth(true)
-        dialog:AddChild(desc)
-        
-        local export = AceGUI:Create("MultiLineEditBox")
-        export:SetLabel("")
-        export:SetFullWidth(true)
-        export:SetFullHeight(true)
-        export:SetText(MoveAny:ExportFramePositions())
-        export:SetFocus()
-        export:HighlightText()
-        dialog:AddChild(export)
-        
-        local closeButton = AceGUI:Create("Button")
-        closeButton:SetText("Close")
-        closeButton:SetWidth(100)
-        closeButton:SetCallback("OnClick", function()
-            dialog:Hide()
-        end)
-        dialog:AddChild(closeButton)
-    end)
-    container:AddChild(exportButton)
-    
-    -- Import button
-    local importButton = AceGUI:Create("Button")
-    importButton:SetText("Import Frame Positions")
-    importButton:SetWidth(200)
-    importButton:SetCallback("OnClick", function()
-        -- Create a dialog to enter the import string
-        local dialog = AceGUI:Create("Frame")
-        dialog:SetTitle("Import Frame Positions")
-        dialog:SetLayout("Flow")
-        dialog:SetWidth(500)
-        dialog:SetHeight(400)
-        
-        local desc = AceGUI:Create("Label")
-        desc:SetText("Paste the export string below to import frame positions:")
-        desc:SetFullWidth(true)
-        dialog:AddChild(desc)
-        
-        local import = AceGUI:Create("MultiLineEditBox")
-        import:SetLabel("")
-        import:SetFullWidth(true)
-        import:SetFullHeight(true)
-        dialog:AddChild(import)
-        
-        local importButton = AceGUI:Create("Button")
-        importButton:SetText("Import")
-        importButton:SetWidth(100)
-        importButton:SetCallback("OnClick", function()
-            local success = MoveAny:ImportFramePositions(import:GetText())
-            if success then
-                VUI:Print("Frame positions imported successfully.")
-                dialog:Hide()
-            else
-                VUI:Print("Failed to import frame positions. Invalid format.")
-            end
-        end)
-        dialog:AddChild(importButton)
-        
-        local cancelButton = AceGUI:Create("Button")
-        cancelButton:SetText("Cancel")
-        cancelButton:SetWidth(100)
-        cancelButton:SetCallback("OnClick", function()
-            dialog:Hide()
-        end)
-        dialog:AddChild(cancelButton)
-    end)
-    container:AddChild(importButton)
+    container:AddChild(saveGroup)
 end
 
--- Function to export frame positions as a string
-function MoveAny:ExportFramePositions()
-    local export = {}
-    
-    -- Gather frame positions
-    for name, position in pairs(VUI.db.profile.modules.moveany.savedFrames) do
-        export[name] = position
+-- Refresh the frames list in the Frames tab
+function MoveAny:RefreshFramesList(container, searchText, category)
+    -- Clear existing list (except search box and dropdown)
+    local children = {container:GetChildren()}
+    for i = 3, #children do
+        container:RemoveChild(children[i])
     end
     
-    -- Convert to string
-    return LibStub("AceSerializer-3.0"):Serialize(export)
+    -- Add header
+    container:AddChild(AceGUI:Create("Heading"):SetText("Movable Frames"):SetFullWidth(true))
+    
+    -- Get all registered frames
+    local frames = self:GetRegisteredFrames()
+    searchText = searchText:lower()
+    
+    -- Filter frames by search text and category
+    for _, frameData in ipairs(frames) do
+        local frameName = frameData.name:lower()
+        local frameCategory = frameData.category or "other"
+        
+        if (searchText == "" or frameName:find(searchText)) and 
+           (category == "all" or frameCategory == category) then
+            -- Create frame entry
+            local frameGroup = AceGUI:Create("SimpleGroup")
+            frameGroup:SetLayout("Flow")
+            frameGroup:SetFullWidth(true)
+            
+            -- Frame name
+            local nameWidget = AceGUI:Create("Label")
+            nameWidget:SetText(frameData.name)
+            nameWidget:SetWidth(200)
+            frameGroup:AddChild(nameWidget)
+            
+            -- Status label
+            local statusWidget = AceGUI:Create("Label")
+            statusWidget:SetText(frameData.moved and "Modified" or "Default")
+            statusWidget:SetWidth(80)
+            frameGroup:AddChild(statusWidget)
+            
+            -- Move button
+            local moveButton = AceGUI:Create("Button")
+            moveButton:SetText("Move")
+            moveButton:SetWidth(80)
+            moveButton:SetCallback("OnClick", function()
+                self:ToggleFrameMovable(frameData.frame)
+            end)
+            frameGroup:AddChild(moveButton)
+            
+            -- Reset button
+            local resetButton = AceGUI:Create("Button")
+            resetButton:SetText("Reset")
+            resetButton:SetWidth(80)
+            resetButton:SetCallback("OnClick", function()
+                self:ResetFrame(frameData.frame)
+            end)
+            frameGroup:AddChild(resetButton)
+            
+            container:AddChild(frameGroup)
+        end
+    end
 end
 
--- Function to import frame positions from a string
-function MoveAny:ImportFramePositions(str)
-    if not str or str == "" then return false end
-    
-    local success, data = LibStub("AceSerializer-3.0"):Deserialize(str)
-    if not success or type(data) ~= "table" then return false end
-    
-    -- Apply imported positions
-    for name, position in pairs(data) do
-        VUI.db.profile.modules.moveany.savedFrames[name] = position
+-- Functions to handle frame movement
+function MoveAny:UnlockAllFrames()
+    for _, frameData in ipairs(self:GetRegisteredFrames()) do
+        self:MakeFrameMovable(frameData.frame)
+    end
+    print("All frames unlocked for movement")
+end
+
+function MoveAny:LockAllFrames()
+    for _, frameData in ipairs(self:GetRegisteredFrames()) do
+        self:MakeFrameStatic(frameData.frame)
+    end
+    print("All frames locked")
+end
+
+function MoveAny:ResetAllFrames()
+    for _, frameData in ipairs(self:GetRegisteredFrames()) do
+        self:ResetFrame(frameData.frame)
+    end
+    print("All frames reset to default positions")
+end
+
+function MoveAny:ToggleFrameMovable(frame)
+    if frame.__isMoveAnyMovable then
+        self:MakeFrameStatic(frame)
+    else
+        self:MakeFrameMovable(frame)
+    end
+end
+
+function MoveAny:GetRegisteredFrames()
+    -- This would return the actual list of frames from the MoveAny module
+    -- For now we'll just return a placeholder list
+    return self.registeredFrames or {}
+end
+
+function MoveAny:LoadPreset(presetName)
+    if presetName == "default" then
+        self:ResetAllFrames()
+    else
+        -- Load the preset from saved configurations
+        local preset = VUI.db.profile.modules.moveany.presets[presetName]
         
-        -- Apply position to frame if it exists
-        if self.registered[name] then
-            self:ApplySavedPosition(self.registered[name], name)
+        if preset then
+            for frameName, position in pairs(preset) do
+                self:ApplyFramePosition(frameName, position)
+            end
+            print("Loaded " .. presetName .. " preset")
+        else
+            print("Preset not found: " .. presetName)
+        end
+    end
+end
+
+function MoveAny:SaveCurrentLayout(name)
+    if not VUI.db.profile.modules.moveany.presets then
+        VUI.db.profile.modules.moveany.presets = {}
+    end
+    
+    local preset = {}
+    
+    -- Save the current position of all registered frames
+    for _, frameData in ipairs(self:GetRegisteredFrames()) do
+        if frameData.moved then
+            preset[frameData.name] = self:GetFramePosition(frameData.frame)
         end
     end
     
-    return true
+    VUI.db.profile.modules.moveany.presets[name] = preset
+end
+
+-- Dummy functions for API compatibility
+function MoveAny:MakeFrameMovable(frame) end
+function MoveAny:MakeFrameStatic(frame) end
+function MoveAny:ResetFrame(frame) end
+function MoveAny:ApplyFramePosition(frameName, position) end
+function MoveAny:GetFramePosition(frame) return {} end
+
+-- Get options for the config panel
+function MoveAny:GetOptions()
+    return {
+        type = "group",
+        name = "MoveAny",
+        args = {
+            enable = {
+                type = "toggle",
+                name = "Enable",
+                desc = "Enable or disable the MoveAny module",
+                order = 1,
+                get = function() return VUI:IsModuleEnabled("moveany") end,
+                set = function(_, value)
+                    if value then
+                        VUI:EnableModule("moveany")
+                    else
+                        VUI:DisableModule("moveany")
+                    end
+                end,
+            },
+            general = {
+                type = "group",
+                name = "General Settings",
+                order = 2,
+                inline = true,
+                disabled = function() return not VUI:IsModuleEnabled("moveany") end,
+                args = {
+                    showGrid = {
+                        type = "toggle",
+                        name = "Show Grid",
+                        desc = "Show alignment grid when moving frames",
+                        order = 1,
+                        get = function() return VUI.db.profile.modules.moveany.showGrid end,
+                        set = function(_, value)
+                            VUI.db.profile.modules.moveany.showGrid = value
+                        end,
+                    },
+                    gridSize = {
+                        type = "range",
+                        name = "Grid Size",
+                        desc = "Size of grid cells",
+                        min = 2,
+                        max = 64,
+                        step = 2,
+                        order = 2,
+                        get = function() return VUI.db.profile.modules.moveany.gridSize end,
+                        set = function(_, value)
+                            VUI.db.profile.modules.moveany.gridSize = value
+                        end,
+                    },
+                    snapToGrid = {
+                        type = "toggle",
+                        name = "Snap to Grid",
+                        desc = "Snap frames to grid when moving",
+                        order = 3,
+                        get = function() return VUI.db.profile.modules.moveany.snapToGrid end,
+                        set = function(_, value)
+                            VUI.db.profile.modules.moveany.snapToGrid = value
+                        end,
+                    }
+                }
+            },
+            actions = {
+                type = "group",
+                name = "Actions",
+                order = 3,
+                inline = true,
+                disabled = function() return not VUI:IsModuleEnabled("moveany") end,
+                args = {
+                    unlockAll = {
+                        type = "execute",
+                        name = "Unlock All Frames",
+                        desc = "Make all frames movable",
+                        func = function() MoveAny:UnlockAllFrames() end,
+                        order = 1,
+                    },
+                    lockAll = {
+                        type = "execute",
+                        name = "Lock All Frames",
+                        desc = "Lock all frames in their current positions",
+                        func = function() MoveAny:LockAllFrames() end,
+                        order = 2,
+                    },
+                    resetAll = {
+                        type = "execute",
+                        name = "Reset All Frames",
+                        desc = "Reset all frames to their default positions",
+                        func = function() 
+                            StaticPopupDialogs["VUI_MOVEANY_CONFIRM_RESET"] = {
+                                text = "Are you sure you want to reset all frame positions?",
+                                button1 = "Yes",
+                                button2 = "No",
+                                OnAccept = function()
+                                    MoveAny:ResetAllFrames()
+                                end,
+                                timeout = 0,
+                                whileDead = true,
+                                hideOnEscape = true,
+                                preferredIndex = 3,
+                            }
+                            StaticPopup_Show("VUI_MOVEANY_CONFIRM_RESET")
+                        end,
+                        order = 3,
+                    }
+                }
+            }
+        }
+    }
 end

@@ -22,6 +22,9 @@ libs\AceHook-3.0\AceHook-3.0.lua
 libs\AceLocale-3.0\AceLocale-3.0.lua
 libs\AceTimer-3.0\AceTimer-3.0.lua
 
+# Media Files
+media\load.xml
+
 # Core Files
 core\init.lua
 core\defaults.lua
@@ -30,30 +33,23 @@ core\utils.lua
 core\config.lua
 
 # Modules
+# BuffOverlay
 modules\buffoverlay\init.lua
 modules\buffoverlay\core.lua
 modules\buffoverlay\config.lua
+modules\buffoverlay\buffoverlay.lua
 
+# TrufiGCD
 modules\trufigcd\init.lua
 modules\trufigcd\core.lua
 modules\trufigcd\config.lua
+modules\trufigcd\trufigcd.lua
 
+# MoveAny
 modules\moveany\init.lua
 modules\moveany\core.lua
 modules\moveany\config.lua
 
+# Auctionator
 modules\auctionator\init.lua
 modules\auctionator\core.lua
-modules\auctionator\config.lua
-
-modules\angrykeystone\init.lua
-modules\angrykeystone\core.lua
-modules\angrykeystone\config.lua
-
-modules\omnicc\init.lua
-modules\omnicc\core.lua
-modules\omnicc\config.lua
-
-modules\omnicd\init.lua
-modules\omnicd\core.lua
-modules\omnicd\config.lua
