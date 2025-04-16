@@ -107,7 +107,7 @@ function MoveAny:RegisterDelayedFrame(frameName)
     
     self.delayedFrames[frameName] = true
     self.delayedCheckFrame:SetScript("OnUpdate", self.delayedCheckFrame:GetScript("OnUpdate"))
-}
+end
 
 -- Function to scale a frame to a specific size
 function MoveAny:ScaleFrame(frame, name, scale)
@@ -124,7 +124,7 @@ function MoveAny:ScaleFrame(frame, name, scale)
         self.anchors[name]:ClearAllPoints()
         self.anchors[name]:SetPoint("CENTER", frame, "CENTER")
     end
-}
+end
 
 -- Function to create a control panel for a frame
 function MoveAny:CreateFrameControlPanel(name)
@@ -206,7 +206,7 @@ function MoveAny:CreateFrameControlPanel(name)
     dialog:AddChild(hideButton)
     
     return dialog
-}
+end
 
 -- Function to check if a frame can be moved safely
 function MoveAny:CanMove(frame)
@@ -216,7 +216,7 @@ function MoveAny:CanMove(frame)
     end
     
     return true
-}
+end
 
 -- Function to list all known frames
 function MoveAny:ListKnownFrames()
@@ -261,7 +261,7 @@ function MoveAny:ListKnownFrames()
     table.sort(result)
     
     return result
-}
+end
 
 -- Function to apply scale adjustments to a frame
 function MoveAny:ApplyScaling(frame, name)
@@ -284,7 +284,7 @@ function MoveAny:ApplyScaling(frame, name)
     if scaling.strata and scaling.strata ~= frame:GetFrameStrata() then
         frame:SetFrameStrata(scaling.strata)
     end
-}
+end
 
 -- Function to integrate with other VUI modules
 function MoveAny:IntegrateWithModules()
@@ -299,7 +299,7 @@ function MoveAny:IntegrateWithModules()
             self:RegisterFrame(module.container, moduleName .. "Container")
         end
     end
-}
+end
 
 -- Function to create a button to toggle move mode
 function MoveAny:CreateToggleButton()
@@ -323,7 +323,7 @@ function MoveAny:CreateToggleButton()
     
     -- Register the button with itself
     self:RegisterFrame(self.toggleButton, "MoveAnyToggleButton")
-}
+end
 
 -- Function to create a dialog to add custom frames
 function MoveAny:CreateAddFrameDialog()
@@ -389,4 +389,4 @@ function MoveAny:CreateAddFrameDialog()
     dialog:AddChild(frameList)
     
     return dialog
-}
+end

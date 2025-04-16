@@ -517,7 +517,7 @@ function Auctionator:CreateSellTab()
     
     -- Hide the tab by default
     self.sellTabFrame:Hide()
-}
+end
 
 -- Create the Cancel tab UI
 function Auctionator:CreateCancelTab()
@@ -582,7 +582,7 @@ function Auctionator:CreateCancelTab()
     
     -- Hide the tab by default
     self.cancelTabFrame:Hide()
-}
+end
 
 -- Create the More tab UI
 function Auctionator:CreateMoreTab()
@@ -621,7 +621,7 @@ function Auctionator:CreateMoreTab()
     
     -- Hide the tab by default
     self.moreTabFrame:Hide()
-}
+end
 
 -- Event handlers
 function Auctionator:AUCTION_HOUSE_SHOW()
@@ -629,12 +629,12 @@ function Auctionator:AUCTION_HOUSE_SHOW()
     if VUI.db.profile.modules.auctionator.autoscan then
         self:PerformFullScan()
     end
-}
+end
 
 function Auctionator:AUCTION_HOUSE_CLOSED()
     -- Auction house closed, save any data if needed
     self:SaveAuctionData()
-}
+end
 
 function Auctionator:PLAYER_ENTERING_WORLD()
     -- Load saved data
@@ -643,7 +643,7 @@ function Auctionator:PLAYER_ENTERING_WORLD()
         self.recentSearches = VUI.charDB.profile.modules.auctionator.recentSearches or {}
         self.lastScan = VUI.charDB.profile.modules.auctionator.lastScan or 0
     end
-}
+end
 
 function Auctionator:PLAYER_LOGOUT()
     -- Save data before logout
@@ -652,7 +652,7 @@ function Auctionator:PLAYER_LOGOUT()
         VUI.charDB.profile.modules.auctionator.recentSearches = self.recentSearches
         VUI.charDB.profile.modules.auctionator.lastScan = self.lastScan
     end
-}
+end
 
 -- Module enable/disable functions
 function Auctionator:Enable()
@@ -663,7 +663,7 @@ function Auctionator:Enable()
     self:RegisterEvent("PLAYER_LOGOUT", self.PLAYER_LOGOUT)
     
     VUI:Print("Auctionator module enabled")
-}
+end
 
 function Auctionator:Disable()
     -- Unregister events
@@ -673,7 +673,7 @@ function Auctionator:Disable()
     self:UnregisterEvent("PLAYER_LOGOUT")
     
     VUI:Print("Auctionator module disabled")
-}
+end
 
 -- Helper functions
 function Auctionator:RegisterEvent(event, handler)
@@ -690,14 +690,14 @@ function Auctionator:RegisterEvent(event, handler)
     
     self.eventFrame.events[event] = handler or self[event]
     self.eventFrame:RegisterEvent(event)
-}
+end
 
 function Auctionator:UnregisterEvent(event)
     if self.eventFrame and self.eventFrame.events[event] then
         self.eventFrame:UnregisterEvent(event)
         self.eventFrame.events[event] = nil
     end
-}
+end
 
 -- Update settings
 function Auctionator:UpdateSettings()
@@ -705,7 +705,7 @@ function Auctionator:UpdateSettings()
     if self.currentTab and self.tabButtons then
         self:SwitchTab(VUI.db.profile.modules.auctionator.defaultTab or "search")
     end
-}
+end
 
 -- Get options for the config panel
 function Auctionator:GetOptions()
@@ -922,4 +922,4 @@ function Auctionator:GetOptions()
             },
         }
     }
-}
+end

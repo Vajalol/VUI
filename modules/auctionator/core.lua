@@ -1034,26 +1034,26 @@ function Auctionator:PerformFullScan()
             scanTimer:Cancel()
         end
     end)
-}
+end
 
 -- Handle the price history tool
 function Auctionator:HandlePriceHistoryTool()
     -- Placeholder function
     VUI:Print("Price History tool not implemented in this version")
-}
+end
 
 -- Handle the shopping lists tool
 function Auctionator:HandleShoppingTool()
     -- Placeholder function
     VUI:Print("Shopping Lists tool not implemented in this version")
-}
+end
 
 -- Handle the settings tool
 function Auctionator:HandleSettingsTool()
     -- Open the VUI configuration panel to the Auctionator section
     InterfaceOptionsFrame_OpenToCategory(VUI.NAME)
     InterfaceOptionsFrame_OpenToCategory(VUI.modulesFrame)
-}
+end
 
 -- Save auction data before logout
 function Auctionator:SaveAuctionData()
@@ -1067,7 +1067,7 @@ function Auctionator:SaveAuctionData()
     
     -- Save last scan time
     VUI.charDB.profile.modules.auctionator.lastScan = self.lastScan
-}
+end
 
 -- Hook into game tooltips to add auction info
 function Auctionator:SetupTooltipHooks()
@@ -1092,7 +1092,7 @@ function Auctionator:SetupTooltipHooks()
         -- Add auction information to the tooltip
         self:AddAuctionInfoToTooltip(tooltip, link)
     end)
-}
+end
 
 -- Add auction information to an item tooltip
 function Auctionator:AddAuctionInfoToTooltip(tooltip, itemLink)
@@ -1130,4 +1130,4 @@ function Auctionator:AddAuctionInfoToTooltip(tooltip, itemLink)
         -- In a real addon, we would compute the disenchant value
         tooltip:AddLine("Disenchant Value: " .. self:FormatMoney(0), 1, 1, 1)
     end
-}
+end

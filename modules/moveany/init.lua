@@ -334,7 +334,7 @@ function MoveAny:LockFrames()
     
     -- Set locked state
     VUI.db.profile.modules.moveany.lockFrames = true
-}
+end
 
 -- Unlock all frames for movement
 function MoveAny:UnlockFrames()
@@ -360,7 +360,7 @@ function MoveAny:UnlockFrames()
     
     -- Set locked state
     VUI.db.profile.modules.moveany.lockFrames = false
-}
+end
 
 -- Event handlers
 function MoveAny:PLAYER_ENTERING_WORLD()
