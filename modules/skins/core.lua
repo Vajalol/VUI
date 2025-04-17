@@ -46,6 +46,45 @@ function Skins:GetBorderSize()
     return size
 end
 
+-- Get a color from our theme with optional alpha adjustment
+function Skins:GetBackdropColor(alphaAdjust)
+    local color = self.settings.style.backdropColor
+    local alpha = color.a
+    
+    if alphaAdjust then
+        alpha = alphaAdjust
+    end
+    
+    return color.r, color.g, color.b, alpha
+end
+
+-- Get border color from our theme with optional alpha adjustment
+function Skins:GetBorderColor(alphaAdjust)
+    local color = self.settings.style.borderColor
+    local alpha = color.a
+    
+    if alphaAdjust then
+        alpha = alphaAdjust
+    end
+    
+    return color.r, color.g, color.b, alpha
+end
+
+-- Get text color (slightly lighter than backdrop)
+function Skins:GetTextColor(alphaAdjust)
+    local color = self.settings.style.backdropColor
+    local r = math.min(color.r + 0.3, 1.0)
+    local g = math.min(color.g + 0.3, 1.0)
+    local b = math.min(color.b + 0.3, 1.0)
+    local alpha = color.a
+    
+    if alphaAdjust then
+        alpha = alphaAdjust
+    end
+    
+    return r, g, b, alpha
+end
+
 -- Get shadow size, adjusted for pixel-perfect if enabled
 function Skins:GetShadowSize()
     local size = self.settings.style.shadowSize
@@ -562,4 +601,113 @@ function Skins:GetRegisteredAddonSkins()
     end
     
     return skins
+end
+
+-- Register a skin module
+function Skins:RegisterSkin(name)
+    local skinModule = {}
+    skinModule.name = name
+    
+    -- Register this skin with our system
+    self:RegisterBlizzardSkin(name, function()
+        if skinModule.OnEnable then
+            skinModule:OnEnable()
+        end
+    end)
+    
+    return skinModule
+end
+
+-- Register an addon skin module
+function Skins:RegisterAddonSkin(name)
+    local skinModule = {}
+    skinModule.name = name
+    
+    -- Register this skin with our system
+    self:RegisterAddonSkin(name, function()
+        if skinModule.OnEnable then
+            skinModule:OnEnable()
+        end
+    end)
+    
+    return skinModule
+end
+
+-- Load all Blizzard UI skins
+function Skins:LoadBlizzardSkins()
+    for name, func in pairs(self.blizzardSkinFuncs) do
+        if self.settings.skins.blizzard.enabled and func then
+            func()
+        end
+    end
+end
+
+-- Load all addon skins
+function Skins:LoadAddonSkins()
+    for name, func in pairs(self.addonSkinFuncs) do
+        if self.settings.skins.addons.enabled and func then
+            func()
+        end
+    end
+end
+
+-- Initialize the skins module
+function Skins:Initialize()
+    -- Initialize tables
+    self.skinnedFrames = {}
+    self.blizzardSkinFuncs = {}
+    self.addonSkinFuncs = {}
+    self.hooked = {}
+    
+    -- Load default settings if needed
+    if not self.settings then
+        self.settings = {
+            enabled = true,
+            skins = {
+                blizzard = {
+                    enabled = true,
+                    actionbar = true,
+                    bags = true,
+                    unitframes = true,
+                    portraitStyles = true,
+                    portraitStyle = "DEFAULT" -- Options: DEFAULT, FLAT, TRANSPARENT
+                },
+                addons = {
+                    enabled = true,
+                    bartender = true,
+                    classicui = true
+                }
+            },
+            style = {
+                backdropColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+                borderColor = {r = 0.4, g = 0.4, b = 0.4, a = 1.0},
+                borderSize = 1,
+                shadowSize = 3,
+                colorInteractive = true,
+                statusbarTexture = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-smooth.blp",
+                buttons = {
+                    normalColor = {r = 0.3, g = 0.3, b = 0.3, a = 1.0},
+                    hoverColor = {r = 0.4, g = 0.4, b = 0.4, a = 1.0},
+                    pressedColor = {r = 0.2, g = 0.2, b = 0.2, a = 1.0}
+                }
+            },
+            advancedUI = {
+                usePixelPerfect = true,
+                customFonts = true
+            }
+        }
+    end
+    
+    -- Delay loading skins until player enters world
+    local frame = CreateFrame("Frame")
+    frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    frame:SetScript("OnEvent", function(self, event)
+        if event == "PLAYER_ENTERING_WORLD" then
+            Skins:LoadBlizzardSkins()
+            Skins:LoadAddonSkins()
+            self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        end
+    end)
+    
+    self.enabled = true
 end

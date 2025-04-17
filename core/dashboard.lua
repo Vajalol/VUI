@@ -14,7 +14,14 @@ VUI.Dashboard.defaults = {
     autoHide = false,
     showModuleCards = true,
     showStatusDisplay = true,
+    showCategoryFilters = true,
+    showSearchBar = true,
+    showPerformanceMonitor = true,
+    showQuickButtons = true,
     theme = "dark", -- dark or light
+    compactView = false,
+    cardSize = "medium", -- small, medium, large
+    activeCategory = "all" -- all, core, ui, tools, addon
 }
 
 -- Dashboard panel reference
@@ -30,11 +37,41 @@ local CARD_HEIGHT = 90
 local CARD_MARGIN = 10
 local PANEL_PADDING = 20
 local STATUS_HEIGHT = 30
+local FILTER_BAR_HEIGHT = 36
+local SEARCH_BAR_WIDTH = 200
+local PERFORMANCE_WIDGET_WIDTH = 200
+
+-- Module categories
+local MODULE_CATEGORIES = {
+    ["Core"] = {"Core", "ModuleAPI", "Integration"},
+    ["UI"] = {"UnitFrames", "ActionBars", "Skins", "VisualConfig"},
+    ["Tools"] = {"Profiles", "Automation", "Performance"},
+    ["Addons"] = {"AngryKeystone", "Auctionator", "BuffOverlay", "idTip", "MoveAny", "OmniCC", "OmniCD", "TrufiGCD", "PremadeGroupFinder"}
+}
 
 -- Initialize module
 function Dashboard:Initialize()
     -- Initialize dashboard components
     self:SetupFrame()
+    
+    -- Create filter and search components if enabled
+    if VUI.db.profile.dashboard.showCategoryFilters then
+        self:CreateFilterBar()
+    end
+    
+    if VUI.db.profile.dashboard.showSearchBar then
+        self:CreateSearchBar()
+    end
+    
+    if VUI.db.profile.dashboard.showPerformanceMonitor then
+        self:CreatePerformanceMonitor()
+    end
+    
+    if VUI.db.profile.dashboard.showQuickButtons then
+        self:CreateQuickButtons()
+    end
+    
+    -- Create module cards and status display
     self:CreateModuleCards()
     self:CreateStatusDisplay()
     
@@ -328,14 +365,453 @@ function Dashboard:RegisterSlashCommands()
     end
 end
 
+-- Create filter bar for module categories
+function Dashboard:CreateFilterBar()
+    -- Create filter bar frame
+    local filterBar = CreateFrame("Frame", nil, self.panel, "BackdropTemplate")
+    filterBar:SetSize(self.panel:GetWidth(), FILTER_BAR_HEIGHT)
+    filterBar:SetPoint("TOPLEFT", self.header, "BOTTOMLEFT", 0, 0)
+    filterBar:SetBackdrop({
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga",
+        edgeFile = nil,
+        tile = false,
+        tileSize = 0,
+        edgeSize = 0,
+        insets = { left = 0, right = 0, top = 0, bottom = 0 }
+    })
+    filterBar:SetBackdropColor(0.15, 0.15, 0.15, 0.7)
+    
+    -- Create category buttons
+    local buttonWidth = 80
+    local padding = 10
+    local xOffset = padding
+    
+    -- All modules button
+    local allButton = CreateFrame("Button", nil, filterBar, "UIPanelButtonTemplate")
+    allButton:SetSize(buttonWidth, FILTER_BAR_HEIGHT - 10)
+    allButton:SetPoint("LEFT", filterBar, "LEFT", xOffset, 0)
+    allButton:SetText("All")
+    if VUI.db.profile.dashboard.activeCategory == "all" then
+        allButton:SetButtonState("PUSHED", true)
+    end
+    allButton:SetScript("OnClick", function()
+        VUI.db.profile.dashboard.activeCategory = "all"
+        self:FilterModules("all")
+        self:UpdateCategoryButtons()
+    end)
+    
+    xOffset = xOffset + buttonWidth + padding
+    
+    -- Core modules button
+    local coreButton = CreateFrame("Button", nil, filterBar, "UIPanelButtonTemplate")
+    coreButton:SetSize(buttonWidth, FILTER_BAR_HEIGHT - 10)
+    coreButton:SetPoint("LEFT", filterBar, "LEFT", xOffset, 0)
+    coreButton:SetText("Core")
+    if VUI.db.profile.dashboard.activeCategory == "core" then
+        coreButton:SetButtonState("PUSHED", true)
+    end
+    coreButton:SetScript("OnClick", function()
+        VUI.db.profile.dashboard.activeCategory = "core"
+        self:FilterModules("Core")
+        self:UpdateCategoryButtons()
+    end)
+    
+    xOffset = xOffset + buttonWidth + padding
+    
+    -- UI modules button
+    local uiButton = CreateFrame("Button", nil, filterBar, "UIPanelButtonTemplate")
+    uiButton:SetSize(buttonWidth, FILTER_BAR_HEIGHT - 10)
+    uiButton:SetPoint("LEFT", filterBar, "LEFT", xOffset, 0)
+    uiButton:SetText("UI")
+    if VUI.db.profile.dashboard.activeCategory == "ui" then
+        uiButton:SetButtonState("PUSHED", true)
+    end
+    uiButton:SetScript("OnClick", function()
+        VUI.db.profile.dashboard.activeCategory = "ui"
+        self:FilterModules("UI")
+        self:UpdateCategoryButtons()
+    end)
+    
+    xOffset = xOffset + buttonWidth + padding
+    
+    -- Tools modules button
+    local toolsButton = CreateFrame("Button", nil, filterBar, "UIPanelButtonTemplate")
+    toolsButton:SetSize(buttonWidth, FILTER_BAR_HEIGHT - 10)
+    toolsButton:SetPoint("LEFT", filterBar, "LEFT", xOffset, 0)
+    toolsButton:SetText("Tools")
+    if VUI.db.profile.dashboard.activeCategory == "tools" then
+        toolsButton:SetButtonState("PUSHED", true)
+    end
+    toolsButton:SetScript("OnClick", function()
+        VUI.db.profile.dashboard.activeCategory = "tools"
+        self:FilterModules("Tools")
+        self:UpdateCategoryButtons()
+    end)
+    
+    xOffset = xOffset + buttonWidth + padding
+    
+    -- Addon modules button
+    local addonButton = CreateFrame("Button", nil, filterBar, "UIPanelButtonTemplate")
+    addonButton:SetSize(buttonWidth, FILTER_BAR_HEIGHT - 10)
+    addonButton:SetPoint("LEFT", filterBar, "LEFT", xOffset, 0)
+    addonButton:SetText("Addons")
+    if VUI.db.profile.dashboard.activeCategory == "addon" then
+        addonButton:SetButtonState("PUSHED", true)
+    end
+    addonButton:SetScript("OnClick", function()
+        VUI.db.profile.dashboard.activeCategory = "addon"
+        self:FilterModules("Addons")
+        self:UpdateCategoryButtons()
+    end)
+    
+    -- Store references
+    self.filterBar = filterBar
+    self.categoryButtons = {
+        all = allButton,
+        core = coreButton,
+        ui = uiButton,
+        tools = toolsButton,
+        addon = addonButton
+    }
+end
+
+-- Create search bar
+function Dashboard:CreateSearchBar()
+    -- Create search bar frame
+    local searchBar = CreateFrame("EditBox", nil, self.panel, "InputBoxTemplate")
+    searchBar:SetSize(SEARCH_BAR_WIDTH, 20)
+    searchBar:SetPoint("TOPRIGHT", self.panel, "TOPRIGHT", -PANEL_PADDING - 20, -(HEADER_HEIGHT + 8))
+    searchBar:SetAutoFocus(false)
+    searchBar:SetText("Search modules...")
+    searchBar:SetTextColor(0.7, 0.7, 0.7)
+    
+    -- Focus behavior
+    searchBar:SetScript("OnEditFocusGained", function(self)
+        if self:GetText() == "Search modules..." then
+            self:SetText("")
+            self:SetTextColor(1, 1, 1)
+        end
+    end)
+    
+    searchBar:SetScript("OnEditFocusLost", function(self)
+        if self:GetText() == "" then
+            self:SetText("Search modules...")
+            self:SetTextColor(0.7, 0.7, 0.7)
+        end
+    end)
+    
+    -- Search functionality
+    searchBar:SetScript("OnTextChanged", function(self)
+        local searchText = self:GetText()
+        if searchText == "Search modules..." then return end
+        
+        -- Perform search
+        Dashboard:SearchModules(searchText)
+    end)
+    
+    -- Store reference
+    self.searchBar = searchBar
+end
+
+-- Create performance monitor widget
+function Dashboard:CreatePerformanceMonitor()
+    -- Create frame for performance info
+    local perfFrame = CreateFrame("Frame", nil, self.panel, "BackdropTemplate")
+    perfFrame:SetSize(PERFORMANCE_WIDGET_WIDTH, FILTER_BAR_HEIGHT - 10)
+    perfFrame:SetPoint("RIGHT", self.panel, "TOPRIGHT", -PANEL_PADDING, -(HEADER_HEIGHT + 13))
+    perfFrame:SetBackdrop({
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga",
+        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga",
+        tile = false,
+        tileSize = 0,
+        edgeSize = 8,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 }
+    })
+    perfFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.6)
+    perfFrame:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.8)
+    
+    -- Create fps text
+    local fpsText = perfFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    fpsText:SetPoint("LEFT", perfFrame, "LEFT", 10, 0)
+    fpsText:SetText("FPS: --")
+    
+    -- Create memory text
+    local memoryText = perfFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    memoryText:SetPoint("RIGHT", perfFrame, "RIGHT", -10, 0)
+    memoryText:SetText("Memory: --")
+    
+    -- Update performance info every second
+    local updateTimer = 0
+    perfFrame:SetScript("OnUpdate", function(self, elapsed)
+        updateTimer = updateTimer + elapsed
+        if updateTimer >= 1.0 then
+            -- Update FPS display
+            local fps = GetFramerate()
+            fpsText:SetText(string.format("FPS: %.1f", fps))
+            fpsText:SetTextColor(
+                fps < 20 and 1.0 or 0.1,
+                fps > 30 and 1.0 or (fps > 20 and 0.7 or 0.1),
+                0.1
+            )
+            
+            -- Update memory usage
+            local addonMemory = 0
+            UpdateAddOnMemoryUsage()
+            for i = 1, GetNumAddOns() do
+                addonMemory = addonMemory + GetAddOnMemoryUsage(i)
+            end
+            
+            local totalMB = addonMemory / 1024
+            if totalMB > 50 then
+                memoryText:SetTextColor(1.0, 0.1, 0.1)
+            elseif totalMB > 25 then
+                memoryText:SetTextColor(1.0, 0.7, 0.1)
+            else
+                memoryText:SetTextColor(0.1, 1.0, 0.1)
+            end
+            
+            memoryText:SetText(string.format("Memory: %.1f MB", totalMB))
+            
+            updateTimer = 0
+        end
+    end)
+    
+    -- Store reference
+    self.performanceFrame = perfFrame
+end
+
+-- Create quick access buttons
+function Dashboard:CreateQuickButtons()
+    -- Create quick buttons container
+    local quickButtons = CreateFrame("Frame", nil, self.panel, "BackdropTemplate")
+    quickButtons:SetSize(self.panel:GetWidth() - 40, 30)
+    quickButtons:SetPoint("BOTTOMLEFT", self.panel, "BOTTOMLEFT", PANEL_PADDING, STATUS_HEIGHT + 5)
+    
+    -- Create some useful quick action buttons
+    local buttonWidth = 100
+    local buttonHeight = 24
+    local spacing = 10
+    local xOffset = 0
+    
+    -- Reload UI button
+    local reloadButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    reloadButton:SetSize(buttonWidth, buttonHeight)
+    reloadButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    reloadButton:SetText("Reload UI")
+    reloadButton:SetScript("OnClick", function()
+        ReloadUI()
+    end)
+    
+    xOffset = xOffset + buttonWidth + spacing
+    
+    -- Toggle All button
+    local toggleAllButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    toggleAllButton:SetSize(buttonWidth, buttonHeight)
+    toggleAllButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    toggleAllButton:SetText("Toggle All")
+    toggleAllButton:SetScript("OnClick", function()
+        -- Count enabled modules
+        local enabledCount = 0
+        local totalCount = 0
+        
+        for name, module in pairs(VUI) do
+            if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
+                totalCount = totalCount + 1
+                local moduleName = name:lower()
+                if VUI.db.profile.modules[moduleName] and VUI.db.profile.modules[moduleName].enabled then
+                    enabledCount = enabledCount + 1
+                end
+            end
+        end
+        
+        -- If more than half are enabled, disable all. Otherwise, enable all.
+        local enableAll = (enabledCount <= totalCount / 2)
+        
+        for name, module in pairs(VUI) do
+            if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
+                local moduleName = name:lower()
+                
+                if enableAll then
+                    -- Enable module
+                    if not VUI.db.profile.modules[moduleName] then
+                        VUI.db.profile.modules[moduleName] = {}
+                    end
+                    VUI.db.profile.modules[moduleName].enabled = true
+                    if module.Enable then module:Enable() end
+                else
+                    -- Disable module
+                    if VUI.db.profile.modules[moduleName] then
+                        VUI.db.profile.modules[moduleName].enabled = false
+                        if module.Disable then module:Disable() end
+                    end
+                end
+            end
+        end
+        
+        -- Update UI
+        Dashboard:UpdateModuleStatus()
+    end)
+    
+    xOffset = xOffset + buttonWidth + spacing
+    
+    -- Memory cleanup button
+    local cleanupButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    cleanupButton:SetSize(buttonWidth, buttonHeight)
+    cleanupButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    cleanupButton:SetText("Clear Memory")
+    cleanupButton:SetScript("OnClick", function()
+        collectgarbage("collect")
+        VUI:Print("Memory cleanup performed")
+    end)
+    
+    xOffset = xOffset + buttonWidth + spacing
+    
+    -- Toggle theme button
+    local themeButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    themeButton:SetSize(buttonWidth, buttonHeight)
+    themeButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    themeButton:SetText("Toggle Theme")
+    themeButton:SetScript("OnClick", function()
+        if VUI.db.profile.dashboard.theme == "dark" then
+            VUI.db.profile.dashboard.theme = "light"
+        else
+            VUI.db.profile.dashboard.theme = "dark"
+        end
+        Dashboard:Refresh()
+    end)
+    
+    -- Store reference
+    self.quickButtons = quickButtons
+end
+
+-- Filter modules by category
+function Dashboard:FilterModules(category)
+    if not self.contentFrame then return end
+    
+    -- Get the list of modules in this category
+    local categoryModules = {}
+    
+    if category == "all" then
+        -- Show all modules
+        for name, card in pairs(moduleCards) do
+            card.frame:Show()
+        end
+    else
+        -- Get the list of modules in this category
+        if MODULE_CATEGORIES[category] then
+            categoryModules = MODULE_CATEGORIES[category]
+            
+            -- Hide all cards first
+            for name, card in pairs(moduleCards) do
+                card.frame:Hide()
+            end
+            
+            -- Show only cards in the selected category
+            for _, moduleName in ipairs(categoryModules) do
+                if moduleCards[moduleName] then
+                    moduleCards[moduleName].frame:Show()
+                end
+            end
+        end
+    end
+    
+    -- Update scrollframe size
+    self:UpdateScrollFrameSize()
+end
+
+-- Search modules by text
+function Dashboard:SearchModules(searchText)
+    if not self.contentFrame or not searchText then return end
+    
+    searchText = searchText:lower()
+    
+    -- If search is empty, show all cards (or filtered by category)
+    if searchText == "" then
+        self:FilterModules(VUI.db.profile.dashboard.activeCategory)
+        return
+    end
+    
+    -- Hide all cards first
+    for name, card in pairs(moduleCards) do
+        card.frame:Hide()
+    end
+    
+    -- Show matching cards
+    for name, card in pairs(moduleCards) do
+        if name:lower():find(searchText) then
+            card.frame:Show()
+        end
+    end
+    
+    -- Update scrollframe size
+    self:UpdateScrollFrameSize()
+end
+
+-- Update category filter buttons
+function Dashboard:UpdateCategoryButtons()
+    if not self.categoryButtons then return end
+    
+    local activeCategory = VUI.db.profile.dashboard.activeCategory
+    
+    for category, button in pairs(self.categoryButtons) do
+        if category == activeCategory then
+            button:SetButtonState("PUSHED", true)
+        else
+            button:SetButtonState("NORMAL", false)
+        end
+    end
+end
+
+-- Update scroll frame size based on visible cards
+function Dashboard:UpdateScrollFrameSize()
+    if not self.contentFrame then return end
+    
+    -- Count visible cards
+    local visibleCards = 0
+    for name, card in pairs(moduleCards) do
+        if card.frame:IsShown() then
+            visibleCards = visibleCards + 1
+        end
+    end
+    
+    -- Calculate layout
+    local contentWidth = self.panel:GetWidth() - (2 * PANEL_PADDING)
+    local cardsPerRow = math.floor(contentWidth / (CARD_WIDTH + CARD_MARGIN))
+    local totalRows = math.ceil(visibleCards / cardsPerRow)
+    
+    -- Update content frame height
+    self.contentFrame:SetHeight(math.max(totalRows * (CARD_HEIGHT + CARD_MARGIN), 100))
+end
+
 -- Show dashboard
 function Dashboard:Show()
     if not self.enabled then return end
     if not self.panel then
         self:SetupFrame()
+        
+        -- Create filter and search components if enabled
+        if VUI.db.profile.dashboard.showCategoryFilters then
+            self:CreateFilterBar()
+        end
+        
+        if VUI.db.profile.dashboard.showSearchBar then
+            self:CreateSearchBar()
+        end
+        
+        if VUI.db.profile.dashboard.showPerformanceMonitor then
+            self:CreatePerformanceMonitor()
+        end
+        
+        if VUI.db.profile.dashboard.showQuickButtons then
+            self:CreateQuickButtons()
+        end
+        
         self:CreateModuleCards()
         self:CreateStatusDisplay()
     end
+    
+    -- Apply filter based on active category
+    self:FilterModules(VUI.db.profile.dashboard.activeCategory)
     
     self.panel:Show()
 end

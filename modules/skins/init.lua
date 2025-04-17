@@ -610,10 +610,59 @@ end
 
 -- Apply Blizzard UI skins
 function Skins:ApplyBlizzardSkins()
-    -- We'll implement specific Blizzard UI skinning in the next files
-    
-    -- For now, just print a message
     VUI:Print("Applying Blizzard UI skins")
+    
+    -- First initialize in core.lua
+    if self.core and self.core.Initialize then
+        self.core:Initialize()
+    end
+    
+    -- Load all Blizzard UI skin files
+    -- Load frames
+    self:ApplyBlizzardSkin("actionbar", self.settings.blizzard.actionbars)
+    self:ApplyBlizzardSkin("bags", self.settings.blizzard.bags)
+    self:ApplyBlizzardSkin("character", self.settings.blizzard.character)
+    self:ApplyBlizzardSkin("chat", self.settings.blizzard.chat)
+    self:ApplyBlizzardSkin("collections", self.settings.blizzard.collections)
+    self:ApplyBlizzardSkin("communities", self.settings.blizzard.communities)
+    self:ApplyBlizzardSkin("dressingroom", self.settings.blizzard.dressingroom)
+    self:ApplyBlizzardSkin("friends", self.settings.blizzard.friends)
+    self:ApplyBlizzardSkin("gossip", self.settings.blizzard.gossip)
+    self:ApplyBlizzardSkin("guild", self.settings.blizzard.guild)
+    self:ApplyBlizzardSkin("help", self.settings.blizzard.help)
+    self:ApplyBlizzardSkin("lfg", self.settings.blizzard.lfg)
+    self:ApplyBlizzardSkin("loot", self.settings.blizzard.loot)
+    self:ApplyBlizzardSkin("mail", self.settings.blizzard.mail)
+    self:ApplyBlizzardSkin("merchant", self.settings.blizzard.merchant)
+    self:ApplyBlizzardSkin("options", self.settings.blizzard.options)
+    self:ApplyBlizzardSkin("pvp", self.settings.blizzard.pvp)
+    self:ApplyBlizzardSkin("quest", self.settings.blizzard.quest)
+    self:ApplyBlizzardSkin("spellbook", self.settings.blizzard.spellbook)
+    self:ApplyBlizzardSkin("talent", self.settings.blizzard.talent)
+    self:ApplyBlizzardSkin("taxi", self.settings.blizzard.taxi)
+    self:ApplyBlizzardSkin("timemanager", self.settings.blizzard.timemanager)
+    self:ApplyBlizzardSkin("tooltip", self.settings.blizzard.tooltip)
+    self:ApplyBlizzardSkin("worldmap", self.settings.blizzard.worldmap)
+    self:ApplyBlizzardSkin("frames", self.settings.blizzard.frames)
+    self:ApplyBlizzardSkin("achievement", self.settings.blizzard.achievement)
+    self:ApplyBlizzardSkin("encounterjournal", self.settings.blizzard.encounterjournal)
+    self:ApplyBlizzardSkin("garrison", self.settings.blizzard.garrison)
+    self:ApplyBlizzardSkin("calendar", self.settings.blizzard.calendar)
+    self:ApplyBlizzardSkin("orderhall", self.settings.blizzard.orderhall)
+    self:ApplyBlizzardSkin("archaeology", self.settings.blizzard.archaeology)
+    self:ApplyBlizzardSkin("macro", self.settings.blizzard.macro)
+    self:ApplyBlizzardSkin("binding", self.settings.blizzard.binding)
+    self:ApplyBlizzardSkin("unitframes", true) -- Always enable unitframes
+end
+
+-- Apply a specific Blizzard skin
+function Skins:ApplyBlizzardSkin(name, enabled)
+    if not enabled then return end
+    
+    local func = self.blizzardSkinFuncs[name]
+    if func then
+        func()
+    end
 end
 
 -- Apply addon skins
@@ -628,10 +677,40 @@ end
 
 -- Apply skin to specific addon
 function Skins:ApplyAddonSkin(addon)
-    -- We'll implement specific addon skinning in the next files
+    -- Check if addon is loaded
+    local isLoaded = C_AddOns.IsAddOnLoaded(addon)
+    if not isLoaded then
+        -- Some addons have different names than their skin
+        if addon == "bartender" and C_AddOns.IsAddOnLoaded("Bartender4") then
+            isLoaded = true
+        elseif addon == "omnicc" and C_AddOns.IsAddOnLoaded("OmniCC") then
+            isLoaded = true
+        elseif addon == "omnicd" and C_AddOns.IsAddOnLoaded("OmniCD") then
+            isLoaded = true
+        elseif addon == "angrykeystones" and C_AddOns.IsAddOnLoaded("AngryKeystones") then
+            isLoaded = true
+        elseif addon == "idtip" and C_AddOns.IsAddOnLoaded("idTip") then
+            isLoaded = true
+        elseif addon == "buffoverlay" and C_AddOns.IsAddOnLoaded("BuffOverlay") then
+            isLoaded = true
+        elseif addon == "moveany" and C_AddOns.IsAddOnLoaded("MoveAny") then
+            isLoaded = true
+        elseif addon == "trufigcd" and C_AddOns.IsAddOnLoaded("TrufiGCD") then
+            isLoaded = true
+        end
+    end
     
-    -- For now, just print a message
-    VUI:Print("Applying skin to addon: " .. addon)
+    if not isLoaded then
+        -- VUI:Print("Skipping skin for " .. addon .. " (not loaded)")
+        return
+    end
+    
+    -- Apply the skin
+    local func = self.addonSkinFuncs[addon]
+    if func then
+        VUI:Print("Applying skin to addon: " .. addon)
+        func()
+    end
 end
 
 -- Reset all skins
