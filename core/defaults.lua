@@ -51,6 +51,8 @@ VUI.defaults = {
                 filterDebuffs = true,
                 whitelist = {},
                 blacklist = {},
+                trackHealerSpells = true,    -- Track important healer spells in M+
+                showHealerSpellNotifications = true, -- Show notifications for healer spells
             },
             
             -- TrufiGCD Module

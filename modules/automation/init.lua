@@ -45,6 +45,28 @@ local defaults = {
         autoThankPortals = true,     -- Auto-thank mages for portals
         autoThankBuffs = true,       -- Auto-thank players for buffs
         autoInviteKeywords = {},     -- Keywords that trigger auto-invite when whispered
+        
+        -- Enhanced chat features
+        useCustomMessages = true,    -- Use custom messages for automated responses
+        customMessages = {
+            welcome = "Welcome to the group, %s!",
+            farewell = "Thanks for the group, everyone!",
+            resurrect = "Thanks for the resurrection, %s!",
+            summon = "Thanks for the summon, %s!",
+            portal = "Thanks for the portal, %s!",
+            buff = "Thanks for the %s, %s!"
+        },
+        colorizeNames = true,        -- Colorize player names by class in messages
+        linkAchievements = true,     -- Link achievements in chat when congratulating
+        highlightMythicPlus = true,  -- Highlight Mythic+ related messages
+        highlightRaids = true,       -- Highlight Raid related messages
+        mythicPlusKeyAnnouncement = true, -- Announce your keystone to the group
+        hideChatDuringCombat = false, -- Hide chat frames during combat
+        restoreChatAfterCombat = true, -- Restore chat frames after combat ends
+        chatTimestamps = true,       -- Show timestamps in chat
+        timestampFormat = "[%H:%M:%S] ", -- Format for chat timestamps
+        filterRaidSpam = true,       -- Filter out common raid spam messages
+        chatURLCopy = true,          -- Make URLs in chat clickable for easy copying
     },
     
     -- Combat Automation
@@ -319,6 +341,105 @@ local config = {
             order = 21,
             get = function() return Automation.settings.chat.autoThankSummon end,
             set = function(_, value) Automation.settings.chat.autoThankSummon = value end,
+            disabled = function() return not Automation.settings.chat.enabled end,
+        },
+        chatEnhancedHeader = {
+            type = "header",
+            name = "Enhanced Chat Features",
+            order = 22,
+        },
+        useCustomMessages = {
+            type = "toggle",
+            name = "Use Custom Messages",
+            desc = "Use custom messages for automated responses",
+            order = 23,
+            get = function() return Automation.settings.chat.useCustomMessages end,
+            set = function(_, value) Automation.settings.chat.useCustomMessages = value end,
+            disabled = function() return not Automation.settings.chat.enabled end,
+        },
+        colorizeNames = {
+            type = "toggle",
+            name = "Colorize Player Names by Class",
+            desc = "Colorize player names by their class in automated messages",
+            order = 24,
+            get = function() return Automation.settings.chat.colorizeNames end,
+            set = function(_, value) Automation.settings.chat.colorizeNames = value end,
+            disabled = function() return not Automation.settings.chat.enabled end,
+        },
+        chatTimestamps = {
+            type = "toggle",
+            name = "Show Timestamps in Chat",
+            desc = "Add timestamps to all chat messages",
+            order = 25,
+            get = function() return Automation.settings.chat.chatTimestamps end,
+            set = function(_, value) 
+                Automation.settings.chat.chatTimestamps = value 
+                Automation:UpdateChatTimestamps()
+            end,
+            disabled = function() return not Automation.settings.chat.enabled end,
+        },
+        filterRaidSpam = {
+            type = "toggle",
+            name = "Filter Trade/General Spam",
+            desc = "Filter common spam messages from trade and general channels",
+            order = 26,
+            get = function() return Automation.settings.chat.filterRaidSpam end,
+            set = function(_, value) 
+                Automation.settings.chat.filterRaidSpam = value
+                -- Needs UI reload to take effect if toggling off
+                if not value and Automation.filterRaidSpamHooked then
+                    VUI:Print("You'll need to reload your UI for this change to take effect.")
+                end
+            end,
+            disabled = function() return not Automation.settings.chat.enabled end,
+        },
+        chatURLCopy = {
+            type = "toggle",
+            name = "Clickable URLs in Chat",
+            desc = "Make URLs in chat clickable for easy copying",
+            order = 27,
+            get = function() return Automation.settings.chat.chatURLCopy end,
+            set = function(_, value) 
+                Automation.settings.chat.chatURLCopy = value 
+                if value then
+                    Automation:SetupChatURLCopy()
+                else
+                    VUI:Print("You'll need to reload your UI for this change to take effect.")
+                end
+            end,
+            disabled = function() return not Automation.settings.chat.enabled end,
+        },
+        chatSettingsButton = {
+            type = "execute",
+            name = "Open Chat Settings",
+            desc = "Open the enhanced chat settings panel",
+            order = 28,
+            func = function()
+                -- Create a standalone config window
+                if not VUI.chatConfigFrame then
+                    local AceGUI = LibStub("AceGUI-3.0")
+                    local frame = AceGUI:Create("Frame")
+                    frame:SetTitle("VUI Enhanced Chat Settings")
+                    frame:SetLayout("Flow")
+                    frame:SetWidth(550)
+                    frame:SetHeight(600)
+                    frame:EnableResize(false)
+                    
+                    -- Pass the frame to our config function
+                    Automation:CreateEnhancedChatConfigTab(frame)
+                    
+                    VUI.chatConfigFrame = frame
+                else
+                    if VUI.chatConfigFrame:IsShown() then
+                        VUI.chatConfigFrame:Hide()
+                    else
+                        -- Refresh content
+                        VUI.chatConfigFrame:ReleaseChildren()
+                        Automation:CreateEnhancedChatConfigTab(VUI.chatConfigFrame)
+                        VUI.chatConfigFrame:Show()
+                    end
+                end
+            end,
             disabled = function() return not Automation.settings.chat.enabled end,
         },
         combatHeader = {

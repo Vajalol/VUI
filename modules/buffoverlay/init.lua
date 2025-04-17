@@ -4,6 +4,87 @@ local _, VUI = ...
 local BuffOverlay = {}
 VUI:RegisterModule("buffoverlay", BuffOverlay)
 
+-- Healer spell tracking for current mythic season based on Wowhead data
+-- These spell IDs represent important buffs, HoTs, and cooldowns for healers
+BuffOverlay.HealerSpells = {
+    -- Restoration Druid
+    [774] = true,      -- Rejuvenation
+    [8936] = true,     -- Regrowth
+    [33763] = true,    -- Lifebloom
+    [48438] = true,    -- Wild Growth
+    [197721] = true,   -- Flourish
+    [102342] = true,   -- Ironbark
+    [391891] = true,   -- Adaptive Swarm (Healer)
+    [203651] = true,   -- Overgrowth
+    
+    -- Holy Paladin
+    [53563] = true,    -- Beacon of Light
+    [156910] = true,   -- Beacon of Faith
+    [200025] = true,   -- Beacon of Virtue
+    [223306] = true,   -- Bestow Faith
+    [1022] = true,     -- Blessing of Protection
+    [1044] = true,     -- Blessing of Freedom
+    [204018] = true,   -- Blessing of Spellwarding
+    [31821] = true,    -- Aura Mastery
+    [216331] = true,   -- Avenging Crusader
+    [388007] = true,   -- Blessing of Summer
+    
+    -- Restoration Shaman
+    [61295] = true,    -- Riptide
+    [974] = true,      -- Earth Shield
+    [207400] = true,   -- Ancestral Vigor
+    [325174] = true,   -- Spirit Link Totem
+    [98008] = true,    -- Spirit Link Totem (effect)
+    [108280] = true,   -- Healing Tide Totem
+    [114052] = true,   -- Ascendance
+    [383648] = true,   -- Earth Shield (Elemental Orbit)
+    [382029] = true,   -- Ever-Rising Tide
+    [201633] = true,   -- Earthen Wall Totem
+    
+    -- Holy Priest
+    [139] = true,      -- Renew
+    [41635] = true,    -- Prayer of Mending
+    [47788] = true,    -- Guardian Spirit
+    [64844] = true,    -- Divine Hymn
+    [64901] = true,    -- Symbol of Hope
+    [33206] = true,    -- Pain Suppression
+    [373481] = true,   -- Power Word: Shield
+    [265202] = true,   -- Holy Word: Salvation
+    
+    -- Discipline Priest
+    [17] = true,       -- Power Word: Shield
+    [194384] = true,   -- Atonement
+    [47536] = true,    -- Rapture
+    [81782] = true,    -- Power Word: Barrier
+    [33206] = true,    -- Pain Suppression
+    [62618] = true,    -- Power Word: Barrier (effect)
+    [271466] = true,   -- Luminous Barrier
+    [373481] = true,   -- Power Word: Shield (Modified)
+    
+    -- Mistweaver Monk
+    [115175] = true,   -- Soothing Mist
+    [116849] = true,   -- Life Cocoon
+    [119611] = true,   -- Renewing Mist
+    [124682] = true,   -- Enveloping Mist
+    [191840] = true,   -- Essence Font
+    [198533] = true,   -- Soothing Mist (statue)
+    [197908] = true,   -- Mana Tea
+    [325209] = true,   -- Enveloping Breath
+    [388026] = true,   -- Ancient Teachings
+    
+    -- Preservation Evoker
+    [355941] = true,   -- Dream Breath
+    [364343] = true,   -- Echo
+    [366155] = true,   -- Reversion
+    [373862] = true,   -- Blistering Scales
+    [375226] = true,   -- Zephyr
+    [357170] = true,   -- Time Dilation
+    [369459] = true,   -- Dream Flight
+    [363502] = true,   -- Dream Projection
+    [376788] = true,   -- Emerald Communion
+    [370960] = true,   -- Emerald Communion (effect)
+}
+
 -- Initialize the module
 function BuffOverlay:Initialize()
     -- Create frames table to store buff/debuff frames

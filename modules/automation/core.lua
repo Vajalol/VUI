@@ -2,6 +2,35 @@
 local _, VUI = ...
 local Automation = VUI.automation
 
+-- Create event frame if it doesn't exist
+Automation.eventFrame = Automation.eventFrame or CreateFrame("Frame")
+
+-- Register an event and its handler
+function Automation:RegisterEvent(event, handler)
+    if not self.eventMap then
+        self.eventMap = {}
+        
+        -- Set up OnEvent handler for the event frame
+        self.eventFrame:SetScript("OnEvent", function(_, event, ...)
+            local handlers = Automation.eventMap[event]
+            if handlers then
+                for _, func in ipairs(handlers) do
+                    func(...)
+                end
+            end
+        end)
+    end
+    
+    -- Register the event if not already registered
+    if not self.eventMap[event] then
+        self.eventMap[event] = {}
+        self.eventFrame:RegisterEvent(event)
+    end
+    
+    -- Add the handler to the event map
+    table.insert(self.eventMap[event], handler)
+end
+
 -- Constants for better code readability
 local QUALITY_POOR = 0     -- Gray
 local QUALITY_COMMON = 1   -- White
@@ -78,6 +107,136 @@ function Automation:UpdateChatHooks()
     
     -- Already hooked
     if self.chatHooksCreated then return end
+    
+    -- Hook achievements if screenshot enabled
+    if self.settings.chat.autoScreenshot and not self.achievementHooked then
+        self:RegisterEvent("ACHIEVEMENT_EARNED", self.OnAchievementEarned)
+        self.achievementHooked = true
+    end
+    
+    -- Set up chat timestamps if enabled
+    if self.settings.chat.chatTimestamps then
+        self:UpdateChatTimestamps()
+    end
+    
+    -- Set up URL copying if enabled
+    if self.settings.chat.chatURLCopy then
+        self:SetupChatURLCopy()
+    end
+    
+    -- Handle hiding chat during combat
+    if self.settings.chat.hideChatDuringCombat and not self.combatHooked then
+        self:RegisterEvent("PLAYER_REGEN_DISABLED", function()
+            self:UpdateChatVisibilityForCombat(true)
+        end)
+        
+        self:RegisterEvent("PLAYER_REGEN_ENABLED", function()
+            self:UpdateChatVisibilityForCombat(false)
+        end)
+        
+        self.combatHooked = true
+    end
+    
+    -- Handle highlighting Mythic+ and Raid messages
+    if (self.settings.chat.highlightMythicPlus or self.settings.chat.highlightRaids) and not self.chatHighlightHooked then
+        -- Hook chat messages to highlight keywords
+        for i = 1, NUM_CHAT_WINDOWS do
+            local chatFrame = _G["ChatFrame" .. i]
+            if chatFrame and chatFrame.AddMessage then
+                local originalAddMessage = chatFrame.AddMessage
+                chatFrame.AddMessage = function(self, text, ...)
+                    if type(text) == "string" then
+                        -- Highlight Mythic+ related messages
+                        if Automation.settings.chat.highlightMythicPlus then
+                            text = text:gsub("([Mm]ythic%+)", "|cff00FFFF%1|r")
+                            text = text:gsub("([Mm]%+)", "|cff00FFFF%1|r")
+                            text = text:gsub("([Kk]ey%s?[Ss]tone)", "|cff00FFFF%1|r")
+                            text = text:gsub("([Kk]ey%s?[Ll]evel)", "|cff00FFFF%1|r")
+                        end
+                        
+                        -- Highlight Raid related messages
+                        if Automation.settings.chat.highlightRaids then
+                            text = text:gsub("([Rr]aid)", "|cffFF8000%1|r")
+                            text = text:gsub("([Bb]oss)", "|cffFF8000%1|r")
+                            text = text:gsub("([Pp]rogress)", "|cffFF8000%1|r")
+                            text = text:gsub("([Ll]oot)", "|cffFF8000%1|r")
+                        end
+                    end
+                    return originalAddMessage(self, text, ...)
+                end
+            end
+        end
+        
+        self.chatHighlightHooked = true
+    end
+    
+    -- Handle mythic keystone announcement
+    if self.settings.chat.mythicPlusKeyAnnouncement and not self.keystoneHooked then
+        self:RegisterEvent("GROUP_JOINED", function()
+            -- Delay to ensure we're fully in the group
+            C_Timer.After(2, function()
+                if not IsInGroup() then return end
+                
+                -- Check if we have a keystone in bags
+                local keystoneLink = nil
+                for bag = 0, NUM_BAG_SLOTS do
+                    for slot = 1, GetContainerNumSlots(bag) do
+                        local itemID = GetContainerItemID(bag, slot)
+                        if itemID and itemID == 180653 then -- Mythic Keystone ID
+                            local itemLink = GetContainerItemLink(bag, slot)
+                            local dungeonName, keystoneLevel = itemLink:match("|h%[Keystone: (.+) %((%d+)%)%]|h")
+                            if dungeonName and keystoneLevel then
+                                keystoneLink = itemLink
+                                
+                                -- Announce keystone to group
+                                SendChatMessage("My keystone: " .. dungeonName .. " +" .. keystoneLevel, "PARTY")
+                                return
+                            end
+                        end
+                    end
+                end
+            end)
+        end)
+        
+        self.keystoneHooked = true
+    end
+    
+    -- Handle chat message filtering if enabled
+    if self.settings.chat.filterRaidSpam and not self.filterRaidSpamHooked then
+        -- Simple chat filter
+        local spamPatterns = {
+            "wts",
+            "wtb",
+            "guild.*recruit",
+            "buy.*gold",
+            "sell.*gold",
+            "boost.*run",
+            "carry.*raid",
+            "carry.*dungeon",
+            "www%.",
+            "%.com",
+            "discord",
+        }
+        
+        ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL", function(_, _, message, _, _, _, _, _, channelName, _, _, _, lineID)
+            -- Skip if it's not a trade/general/LFG channel
+            if not channelName:match("Trade") and not channelName:match("General") and not channelName:match("LookingForGroup") then
+                return false
+            end
+            
+            -- Check against spam patterns
+            message = message:lower()
+            for _, pattern in ipairs(spamPatterns) do
+                if message:match(pattern) then
+                    return true -- Filter this message
+                end
+            end
+            
+            return false -- Allow the message
+        end)
+        
+        self.filterRaidSpamHooked = true
+    end
     
     -- Mark hooks as created
     self.chatHooksCreated = true
@@ -546,7 +705,33 @@ function Automation:OnResurrectRequest()
         
         -- Thank the player if needed
         if self.settings.chat.enabled and self.settings.chat.autoThankRes and resser then
-            SendChatMessage("Thanks for the resurrection, " .. resser .. "!", "WHISPER", nil, resser)
+            local message = "Thanks for the resurrection, %s!"
+            
+            -- Use custom message if enabled
+            if self.settings.chat.useCustomMessages and self.settings.chat.customMessages.resurrect then
+                message = self.settings.chat.customMessages.resurrect
+            end
+            
+            -- Format the message
+            message = string.format(message, resser)
+            
+            -- Add class color to player name if enabled
+            if self.settings.chat.colorizeNames then
+                local _, class = UnitClass(resser)
+                if class then
+                    local classColor = RAID_CLASS_COLORS[class]
+                    if classColor then
+                        local coloredName = string.format("|cff%02x%02x%02x%s|r", 
+                            classColor.r * 255, 
+                            classColor.g * 255, 
+                            classColor.b * 255, 
+                            resser)
+                        message = string.gsub(message, resser, coloredName)
+                    end
+                end
+            end
+            
+            SendChatMessage(message, "WHISPER", nil, resser)
         end
     end
 end
@@ -567,9 +752,43 @@ function Automation:OnConfirmSummon()
                 local summoner = UnitName("npc")
                 
                 if summoner then
-                    SendChatMessage("Thanks for the summon, " .. summoner .. "!", "WHISPER", nil, summoner)
+                    local message = "Thanks for the summon, %s!"
+                    
+                    -- Use custom message if enabled
+                    if self.settings.chat.useCustomMessages and self.settings.chat.customMessages.summon then
+                        message = self.settings.chat.customMessages.summon
+                    end
+                    
+                    -- Format the message
+                    message = string.format(message, summoner)
+                    
+                    -- Add class color to player name if enabled
+                    if self.settings.chat.colorizeNames then
+                        local _, class = UnitClass(summoner)
+                        if class then
+                            local classColor = RAID_CLASS_COLORS[class]
+                            if classColor then
+                                local coloredName = string.format("|cff%02x%02x%02x%s|r", 
+                                    classColor.r * 255, 
+                                    classColor.g * 255, 
+                                    classColor.b * 255, 
+                                    summoner)
+                                message = string.gsub(message, summoner, coloredName)
+                            end
+                        end
+                    end
+                    
+                    SendChatMessage(message, "WHISPER", nil, summoner)
                 else
-                    SendChatMessage("Thanks for the summon!", "PARTY")
+                    -- Generic group thank you
+                    local message = "Thanks for the summon!"
+                    
+                    -- Use custom message if enabled (but remove the %s if present)
+                    if self.settings.chat.useCustomMessages and self.settings.chat.customMessages.summon then
+                        message = self.settings.chat.customMessages.summon:gsub("%%s", ""):gsub("  ", " ")
+                    end
+                    
+                    SendChatMessage(message, "PARTY")
                 end
             end
         end
@@ -654,7 +873,28 @@ function Automation:OnGroupRosterUpdate()
                 if UnitIsPlayer("player") and name ~= UnitName("player") then
                     -- Don't say farewell to ourselves, and make sure we're not the one who left
                     if IsInRaid() or IsInGroup() then
-                        SendChatMessage("Farewell, " .. name .. "!", "PARTY")
+                        local message = "Farewell, %s!"
+                        
+                        -- Use custom message if enabled
+                        if self.settings.chat.useCustomMessages and self.settings.chat.customMessages.farewell then
+                            message = self.settings.chat.customMessages.farewell
+                            
+                            -- If there's no %s in the custom message, append the player name
+                            if not message:find("%%s") then
+                                message = message .. " Farewell, %s!"
+                            end
+                        end
+                        
+                        -- Format the message
+                        message = string.format(message, name)
+                        
+                        -- Add class color to player name if enabled
+                        if self.settings.chat.colorizeNames then
+                            -- We can only get class color for group members, but this player already left
+                            -- We could store class info when they were in the group, but that's beyond the current scope
+                        end
+                        
+                        SendChatMessage(message, "PARTY")
                     end
                 end
             end
@@ -668,7 +908,54 @@ function Automation:OnGroupRosterUpdate()
                 -- New player joined
                 if name ~= UnitName("player") then
                     -- Don't welcome ourselves
-                    SendChatMessage("Welcome, " .. name .. "!", "PARTY")
+                    local message = "Welcome, %s!"
+                    
+                    -- Use custom message if enabled
+                    if self.settings.chat.useCustomMessages and self.settings.chat.customMessages.welcome then
+                        message = self.settings.chat.customMessages.welcome
+                    end
+                    
+                    -- Format the message
+                    message = string.format(message, name)
+                    
+                    -- Add class color to player name if enabled
+                    if self.settings.chat.colorizeNames then
+                        local unit = nil
+                        
+                        -- Find the unit ID for this player
+                        if IsInRaid() then
+                            for i = 1, GetNumGroupMembers() do
+                                if UnitName("raid" .. i) == name then
+                                    unit = "raid" .. i
+                                    break
+                                end
+                            end
+                        else
+                            for i = 1, GetNumGroupMembers() do
+                                if UnitName("party" .. i) == name then
+                                    unit = "party" .. i
+                                    break
+                                end
+                            end
+                        end
+                        
+                        if unit then
+                            local _, class = UnitClass(unit)
+                            if class then
+                                local classColor = RAID_CLASS_COLORS[class]
+                                if classColor then
+                                    local coloredName = string.format("|cff%02x%02x%02x%s|r", 
+                                        classColor.r * 255, 
+                                        classColor.g * 255, 
+                                        classColor.b * 255, 
+                                        name)
+                                    message = string.gsub(message, name, coloredName)
+                                end
+                            end
+                        end
+                    end
+                    
+                    SendChatMessage(message, "PARTY")
                 end
             end
         end
@@ -699,6 +986,195 @@ function Automation:OnStartLootRoll(id)
     end
 end
 
+-- Helper function to create the enhanced chat config tab
+function Automation:CreateEnhancedChatConfigTab(container)
+    local settings = self.settings.chat
+    
+    -- Use custom messages for automated responses
+    local useCustomMessages = AceGUI:Create("CheckBox")
+    useCustomMessages:SetLabel("Use Custom Messages")
+    useCustomMessages:SetValue(settings.useCustomMessages)
+    useCustomMessages:SetCallback("OnValueChanged", function(_, _, value)
+        settings.useCustomMessages = value
+    end)
+    container:AddChild(useCustomMessages)
+    
+    -- Colorize player names by class
+    local colorizeNames = AceGUI:Create("CheckBox")
+    colorizeNames:SetLabel("Colorize Player Names by Class")
+    colorizeNames:SetValue(settings.colorizeNames)
+    colorizeNames:SetCallback("OnValueChanged", function(_, _, value)
+        settings.colorizeNames = value
+    end)
+    container:AddChild(colorizeNames)
+    
+    -- Link achievements in chat
+    local linkAchievements = AceGUI:Create("CheckBox")
+    linkAchievements:SetLabel("Link Achievements in Chat")
+    linkAchievements:SetValue(settings.linkAchievements)
+    linkAchievements:SetCallback("OnValueChanged", function(_, _, value)
+        settings.linkAchievements = value
+    end)
+    container:AddChild(linkAchievements)
+    
+    -- Highlight Mythic+ related messages
+    local highlightMythicPlus = AceGUI:Create("CheckBox")
+    highlightMythicPlus:SetLabel("Highlight Mythic+ Related Messages")
+    highlightMythicPlus:SetValue(settings.highlightMythicPlus)
+    highlightMythicPlus:SetCallback("OnValueChanged", function(_, _, value)
+        settings.highlightMythicPlus = value
+    end)
+    container:AddChild(highlightMythicPlus)
+    
+    -- Highlight Raid related messages
+    local highlightRaids = AceGUI:Create("CheckBox")
+    highlightRaids:SetLabel("Highlight Raid Related Messages")
+    highlightRaids:SetValue(settings.highlightRaids)
+    highlightRaids:SetCallback("OnValueChanged", function(_, _, value)
+        settings.highlightRaids = value
+    end)
+    container:AddChild(highlightRaids)
+    
+    -- Announce your keystone to the group
+    local mythicPlusKeyAnnouncement = AceGUI:Create("CheckBox")
+    mythicPlusKeyAnnouncement:SetLabel("Announce Your Keystone to the Group")
+    mythicPlusKeyAnnouncement:SetValue(settings.mythicPlusKeyAnnouncement)
+    mythicPlusKeyAnnouncement:SetCallback("OnValueChanged", function(_, _, value)
+        settings.mythicPlusKeyAnnouncement = value
+    end)
+    container:AddChild(mythicPlusKeyAnnouncement)
+    
+    -- Hide chat frames during combat
+    local hideChatDuringCombat = AceGUI:Create("CheckBox")
+    hideChatDuringCombat:SetLabel("Hide Chat Frames During Combat")
+    hideChatDuringCombat:SetValue(settings.hideChatDuringCombat)
+    hideChatDuringCombat:SetCallback("OnValueChanged", function(_, _, value)
+        settings.hideChatDuringCombat = value
+    end)
+    container:AddChild(hideChatDuringCombat)
+    
+    -- Restore chat frames after combat
+    local restoreChatAfterCombat = AceGUI:Create("CheckBox")
+    restoreChatAfterCombat:SetLabel("Restore Chat Frames After Combat")
+    restoreChatAfterCombat:SetValue(settings.restoreChatAfterCombat)
+    restoreChatAfterCombat:SetCallback("OnValueChanged", function(_, _, value)
+        settings.restoreChatAfterCombat = value
+    end)
+    container:AddChild(restoreChatAfterCombat)
+    
+    -- Show timestamps in chat
+    local chatTimestamps = AceGUI:Create("CheckBox")
+    chatTimestamps:SetLabel("Show Timestamps in Chat")
+    chatTimestamps:SetValue(settings.chatTimestamps)
+    chatTimestamps:SetCallback("OnValueChanged", function(_, _, value)
+        settings.chatTimestamps = value
+        -- Apply chat timestamp setting immediately
+        self:UpdateChatTimestamps()
+    end)
+    container:AddChild(chatTimestamps)
+    
+    -- Timestamp format
+    local timestampFormat = AceGUI:Create("EditBox")
+    timestampFormat:SetLabel("Timestamp Format")
+    timestampFormat:SetText(settings.timestampFormat)
+    timestampFormat:SetCallback("OnEnterPressed", function(_, _, value)
+        settings.timestampFormat = value
+        -- Apply chat timestamp format immediately
+        self:UpdateChatTimestamps()
+    end)
+    container:AddChild(timestampFormat)
+    
+    -- Filter raid spam
+    local filterRaidSpam = AceGUI:Create("CheckBox")
+    filterRaidSpam:SetLabel("Filter Common Raid Spam Messages")
+    filterRaidSpam:SetValue(settings.filterRaidSpam)
+    filterRaidSpam:SetCallback("OnValueChanged", function(_, _, value)
+        settings.filterRaidSpam = value
+    end)
+    container:AddChild(filterRaidSpam)
+    
+    -- Make URLs in chat clickable
+    local chatURLCopy = AceGUI:Create("CheckBox")
+    chatURLCopy:SetLabel("Make URLs in Chat Clickable")
+    chatURLCopy:SetValue(settings.chatURLCopy)
+    chatURLCopy:SetCallback("OnValueChanged", function(_, _, value)
+        settings.chatURLCopy = value
+    end)
+    container:AddChild(chatURLCopy)
+    
+    -- Create a header for custom messages
+    local customMessagesHeader = AceGUI:Create("Heading")
+    customMessagesHeader:SetText("Custom Messages")
+    customMessagesHeader:SetFullWidth(true)
+    container:AddChild(customMessagesHeader)
+    
+    -- Description
+    local description = AceGUI:Create("Label")
+    description:SetText("Customize the automatic messages sent in chat. Use %s as a placeholder for player names.")
+    description:SetFullWidth(true)
+    container:AddChild(description)
+    
+    -- Custom welcome message
+    local welcomeMessage = AceGUI:Create("EditBox")
+    welcomeMessage:SetLabel("Welcome Message")
+    welcomeMessage:SetText(settings.customMessages.welcome or "Welcome to the group, %s!")
+    welcomeMessage:SetFullWidth(true)
+    welcomeMessage:SetCallback("OnEnterPressed", function(_, _, value)
+        settings.customMessages.welcome = value
+    end)
+    container:AddChild(welcomeMessage)
+    
+    -- Custom farewell message
+    local farewellMessage = AceGUI:Create("EditBox")
+    farewellMessage:SetLabel("Farewell Message")
+    farewellMessage:SetText(settings.customMessages.farewell or "Thanks for the group, everyone!")
+    farewellMessage:SetFullWidth(true)
+    farewellMessage:SetCallback("OnEnterPressed", function(_, _, value)
+        settings.customMessages.farewell = value
+    end)
+    container:AddChild(farewellMessage)
+    
+    -- Custom resurrection thank you message
+    local resurrectMessage = AceGUI:Create("EditBox")
+    resurrectMessage:SetLabel("Resurrection Thank You Message")
+    resurrectMessage:SetText(settings.customMessages.resurrect or "Thanks for the resurrection, %s!")
+    resurrectMessage:SetFullWidth(true)
+    resurrectMessage:SetCallback("OnEnterPressed", function(_, _, value)
+        settings.customMessages.resurrect = value
+    end)
+    container:AddChild(resurrectMessage)
+    
+    -- Custom summon thank you message
+    local summonMessage = AceGUI:Create("EditBox")
+    summonMessage:SetLabel("Summon Thank You Message")
+    summonMessage:SetText(settings.customMessages.summon or "Thanks for the summon, %s!")
+    summonMessage:SetFullWidth(true)
+    summonMessage:SetCallback("OnEnterPressed", function(_, _, value)
+        settings.customMessages.summon = value
+    end)
+    container:AddChild(summonMessage)
+    
+    -- Custom portal thank you message
+    local portalMessage = AceGUI:Create("EditBox")
+    portalMessage:SetLabel("Portal Thank You Message")
+    portalMessage:SetText(settings.customMessages.portal or "Thanks for the portal, %s!")
+    portalMessage:SetFullWidth(true)
+    portalMessage:SetCallback("OnEnterPressed", function(_, _, value)
+        settings.customMessages.portal = value
+    end)
+    container:AddChild(portalMessage)
+    
+    -- Custom buff thank you message
+    local buffMessage = AceGUI:Create("EditBox")
+    buffMessage:SetLabel("Buff Thank You Message")
+    buffMessage:SetText(settings.customMessages.buff or "Thanks for the %s, %s!")
+    buffMessage:SetFullWidth(true)
+    buffMessage:SetCallback("OnEnterPressed", function(_, _, value)
+        settings.customMessages.buff = value
+    end)
+    container:AddChild(buffMessage)
+end
+
 -- Event handler for when player enters the world
 function Automation:OnPlayerEnteringWorld()
     if not self.enabled then return end
@@ -711,6 +1187,11 @@ function Automation:OnPlayerEnteringWorld()
     -- Set up UI elements
     if self.settings.ui.enabled then
         self:UpdateUIElements()
+    end
+    
+    -- Set up chat timestamps if enabled
+    if self.settings.chat.enabled and self.settings.chat.chatTimestamps then
+        self:UpdateChatTimestamps()
     end
     
     -- Initialize group members
@@ -865,10 +1346,184 @@ function Automation:OnUnitSpellcastSucceeded(unit, _, spellID)
             -- Thank the player who cast the portal/teleport
             local casterName = UnitName(unit)
             if casterName then
-                SendChatMessage("Thanks for the portal, " .. casterName .. "!", "WHISPER", nil, casterName)
+                local message = "Thanks for the portal, %s!"
+                
+                -- Use custom message if enabled
+                if self.settings.chat.useCustomMessages and self.settings.chat.customMessages.portal then
+                    message = self.settings.chat.customMessages.portal
+                end
+                
+                -- Format the message
+                message = string.format(message, casterName)
+                
+                -- Add class color to player name if enabled
+                if self.settings.chat.colorizeNames then
+                    local _, class = UnitClass(casterName)
+                    if class then
+                        local classColor = RAID_CLASS_COLORS[class]
+                        if classColor then
+                            local coloredName = string.format("|cff%02x%02x%02x%s|r", 
+                                classColor.r * 255, 
+                                classColor.g * 255, 
+                                classColor.b * 255, 
+                                casterName)
+                            message = string.gsub(message, casterName, coloredName)
+                        end
+                    end
+                end
+                
+                SendChatMessage(message, "WHISPER", nil, casterName)
             end
         end
     end
+end
+
+-- Function to update chat timestamps
+function Automation:UpdateChatTimestamps()
+    if not self.enabled or not self.settings.chat.enabled then return end
+    
+    local settings = self.settings.chat
+    
+    -- Apply timestamp settings to all chat frames
+    for i = 1, NUM_CHAT_WINDOWS do
+        local chatFrame = _G["ChatFrame" .. i]
+        if chatFrame then
+            if settings.chatTimestamps then
+                -- Enable timestamps with custom format
+                chatFrame.timeVisibleFunc = function()
+                    return true
+                end
+                
+                -- Set timestamp format if supported by client
+                if chatFrame.SetTimeVisible then
+                    chatFrame:SetTimeVisible(true)
+                end
+                
+                -- Apply custom timestamp format if the function exists
+                if chatFrame.SetTimestampFormat then
+                    chatFrame:SetTimestampFormat(settings.timestampFormat or "[%H:%M:%S] ")
+                end
+            else
+                -- Disable timestamps
+                chatFrame.timeVisibleFunc = nil
+                
+                -- Hide timestamps if supported by client
+                if chatFrame.SetTimeVisible then
+                    chatFrame:SetTimeVisible(false)
+                end
+            end
+        end
+    end
+    
+    -- Update chat with the new timestamp setting
+    FCF_ReloadAllWindows()
+end
+
+-- Function to handle chat frame visibility during combat
+function Automation:UpdateChatVisibilityForCombat(inCombat)
+    if not self.enabled or not self.settings.chat.enabled then return end
+    
+    local settings = self.settings.chat
+    
+    -- Skip if feature is not enabled
+    if not settings.hideChatDuringCombat then return end
+    
+    -- Store original visibility state if entering combat
+    if inCombat and not self.originalChatVisibility then
+        self.originalChatVisibility = {}
+        
+        for i = 1, NUM_CHAT_WINDOWS do
+            local chatFrame = _G["ChatFrame" .. i]
+            if chatFrame then
+                self.originalChatVisibility[i] = chatFrame:IsVisible()
+                
+                -- Hide the chat frame
+                chatFrame:Hide()
+            end
+        end
+    elseif not inCombat and settings.restoreChatAfterCombat and self.originalChatVisibility then
+        -- Restore original visibility
+        for i = 1, NUM_CHAT_WINDOWS do
+            local chatFrame = _G["ChatFrame" .. i]
+            if chatFrame and self.originalChatVisibility[i] then
+                chatFrame:Show()
+            end
+        end
+        
+        self.originalChatVisibility = nil
+    end
+end
+
+-- Function to implement URL highlighting in chat
+function Automation:SetupChatURLCopy()
+    if not self.enabled or not self.settings.chat.enabled or not self.settings.chat.chatURLCopy then return end
+    
+    -- Skip if already set up
+    if self.chatURLCopyHooked then return end
+    
+    -- Pattern to detect URLs in chat
+    local urlPatterns = {
+        "https?://[%w-_%.%?%:%/%=%&]+",
+        "www%.[%w-_%.%?%:%/%=%&]+",
+        "[%w-_%.%?%:%/%=%&]+%.com",
+        "[%w-_%.%?%:%/%=%&]+%.net",
+        "[%w-_%.%?%:%/%=%&]+%.org",
+        "[%w-_%.%?%:%/%=%&]+%.eu"
+    }
+    
+    -- Function to create a clickable link
+    local function CreateChatLink(url)
+        return "|cff00CCFF|Hurl:" .. url .. "|h[" .. url .. "]|h|r"
+    end
+    
+    -- Hook SetItemRef to handle our URL links
+    local originalSetItemRef = SetItemRef
+    SetItemRef = function(link, text, button, chatFrame)
+        local linkType, urlLink = link:match("(%a+):(.+)")
+        if linkType == "url" then
+            -- Open URL dialog
+            StaticPopupDialogs["VUI_URL_COPY"] = StaticPopupDialogs["VUI_URL_COPY"] or {
+                text = "Copy this URL",
+                button1 = "Close",
+                hasEditBox = true,
+                editBoxWidth = 350,
+                OnShow = function(self, data)
+                    self.editBox:SetText(data)
+                    self.editBox:SetFocus()
+                    self.editBox:HighlightText()
+                end,
+                OnHide = function(self)
+                    self.editBox:SetText("")
+                end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+            }
+            
+            StaticPopup_Show("VUI_URL_COPY", nil, nil, urlLink)
+        else
+            originalSetItemRef(link, text, button, chatFrame)
+        end
+    end
+    
+    -- Hook AddMessage to convert URLs to clickable links
+    for i = 1, NUM_CHAT_WINDOWS do
+        local chatFrame = _G["ChatFrame" .. i]
+        if chatFrame and chatFrame.AddMessage then
+            local originalAddMessage = chatFrame.AddMessage
+            chatFrame.AddMessage = function(self, text, ...)
+                if type(text) == "string" then
+                    -- Replace URLs with clickable links
+                    for _, pattern in ipairs(urlPatterns) do
+                        text = text:gsub("(" .. pattern .. ")", CreateChatLink)
+                    end
+                end
+                return originalAddMessage(self, text, ...)
+            end
+        end
+    end
+    
+    self.chatURLCopyHooked = true
 end
 
 -- Register the automation module with VUI

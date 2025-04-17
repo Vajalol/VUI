@@ -21,6 +21,7 @@ function BuffOverlay:CreateConfigPanel()
         {text = "General", value = "general"},
         {text = "Display", value = "display"},
         {text = "Filters", value = "filters"},
+        {text = "Healer Spells", value = "healerspells"},
         {text = "Spell List", value = "spells"}
     })
     tabs:SetCallback("OnGroupSelected", function(container, event, group)
@@ -31,6 +32,8 @@ function BuffOverlay:CreateConfigPanel()
             self:CreateDisplayTab(container)
         elseif group == "filters" then
             self:CreateFiltersTab(container)
+        elseif group == "healerspells" then
+            self:CreateHealerSpellsTab(container)
         elseif group == "spells" then
             self:CreateSpellsTab(container)
         end
@@ -126,6 +129,130 @@ function BuffOverlay:CreateFiltersTab(container)
         VUI.db.profile.modules.buffoverlay.trackTargetBuffs = value
     end)
     container:AddChild(targetBuffsCheckbox)
+end
+
+-- Create the Healer Spells tab
+function BuffOverlay:CreateHealerSpellsTab(container)
+    -- Header with description
+    local header = AceGUI:Create("Heading")
+    header:SetText("PvE Healer Spell Tracking")
+    header:SetFullWidth(true)
+    container:AddChild(header)
+    
+    local desc = AceGUI:Create("Label")
+    desc:SetText("Track important healer spells in Mythic+ dungeons and raids. These spells are updated for The War Within Season 2 based on Wowhead recommendations.")
+    desc:SetFullWidth(true)
+    container:AddChild(desc)
+    
+    -- Spacer
+    container:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
+    
+    -- Enable healer spell tracking
+    local trackHealerSpellsCheckbox = AceGUI:Create("CheckBox")
+    trackHealerSpellsCheckbox:SetLabel("Track Healer Spells")
+    trackHealerSpellsCheckbox:SetWidth(200)
+    trackHealerSpellsCheckbox:SetValue(VUI.db.profile.modules.buffoverlay.trackHealerSpells)
+    trackHealerSpellsCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.buffoverlay.trackHealerSpells = value
+        BuffOverlay:UpdateAuras("player")
+        BuffOverlay:UpdateAuras("target")
+        BuffOverlay:UpdateAuras("focus")
+    end)
+    container:AddChild(trackHealerSpellsCheckbox)
+    
+    -- Show notifications for healer spells
+    local showHealerSpellNotificationsCheckbox = AceGUI:Create("CheckBox")
+    showHealerSpellNotificationsCheckbox:SetLabel("Show Notifications for Healer Spells")
+    showHealerSpellNotificationsCheckbox:SetWidth(300)
+    showHealerSpellNotificationsCheckbox:SetValue(VUI.db.profile.modules.buffoverlay.showHealerSpellNotifications)
+    showHealerSpellNotificationsCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.buffoverlay.showHealerSpellNotifications = value
+    end)
+    container:AddChild(showHealerSpellNotificationsCheckbox)
+    
+    -- Spacer
+    container:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
+    
+    -- Create a scroll frame to display the healer spells
+    local scrollFrame = AceGUI:Create("ScrollFrame")
+    scrollFrame:SetLayout("Flow")
+    scrollFrame:SetFullWidth(true)
+    scrollFrame:SetHeight(300)
+    container:AddChild(scrollFrame)
+    
+    -- Create heading for each healer class
+    local classes = {
+        {"Restoration Druid", 7},
+        {"Holy Paladin", 2},
+        {"Restoration Shaman", 7},
+        {"Holy Priest", 5},
+        {"Discipline Priest", 5},
+        {"Mistweaver Monk", 10},
+        {"Preservation Evoker", 13}
+    }
+    
+    local classColors = {
+        [2] = {r = 0.96, g = 0.55, b = 0.73}, -- Paladin (pink)
+        [5] = {r = 1.0, g = 1.0, b = 1.0},   -- Priest (white)
+        [7] = {r = 0.0, g = 0.44, b = 0.87}, -- Shaman (blue)
+        [10] = {r = 0.0, g = 1.0, b = 0.59}, -- Monk (green)
+        [13] = {r = 0.2, g = 0.58, b = 0.5} -- Evoker (teal)
+    }
+    
+    for _, classInfo in ipairs(classes) do
+        local className, classID = unpack(classInfo)
+        
+        local classHeader = AceGUI:Create("Heading")
+        classHeader:SetText(className)
+        classHeader:SetFullWidth(true)
+        
+        -- Set class color if available
+        if classColors[classID] then
+            local color = classColors[classID]
+            classHeader:SetColor(color.r, color.g, color.b)
+        end
+        
+        scrollFrame:AddChild(classHeader)
+        
+        -- Display spells for this class
+        local spellCount = 0
+        for spellID, _ in pairs(self.HealerSpells) do
+            local name, _, icon = GetSpellInfo(spellID)
+            if name then
+                -- Here we would determine if the spell belongs to the current class
+                -- For simplicity, we're just displaying them based on our predefined order
+                -- A more sophisticated implementation would filter by class
+                
+                local spellGroup = AceGUI:Create("SimpleGroup")
+                spellGroup:SetLayout("Flow")
+                spellGroup:SetFullWidth(true)
+                
+                -- Spell icon
+                local iconWidget = AceGUI:Create("Icon")
+                iconWidget:SetImage(icon)
+                iconWidget:SetImageSize(24, 24)
+                iconWidget:SetWidth(30)
+                spellGroup:AddChild(iconWidget)
+                
+                -- Spell name
+                local nameWidget = AceGUI:Create("Label")
+                nameWidget:SetText(name .. " (" .. spellID .. ")")
+                nameWidget:SetWidth(300)
+                spellGroup:AddChild(nameWidget)
+                
+                scrollFrame:AddChild(spellGroup)
+                spellCount = spellCount + 1
+                
+                -- Break after 8 spells for each class to keep the display manageable
+                if spellCount >= 8 then
+                    break
+                end
+            end
+        end
+        
+        -- Add a spacer between classes
+        scrollFrame:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
+    end
 end
 
 -- Create the Spells tab

@@ -278,7 +278,233 @@ end
 -- Define implementation for these Blizzard UI elements
 -- Using the "TODO" approach as placeholder for complete implementation
 blizzardSkins.Character = function(self) if not self.settings.blizzard.character then return end end
-blizzardSkins.Chat = function(self) if not self.settings.blizzard.chat then return end end
+blizzardSkins.Chat = function(self)
+    if not self.settings.blizzard.chat then return end
+    
+    -- Apply VUI styling to chat frames
+    for i = 1, NUM_CHAT_WINDOWS do
+        local chatFrame = _G["ChatFrame" .. i]
+        local editBox = _G["ChatFrame" .. i .. "EditBox"]
+        
+        if chatFrame and not chatFrame.VUISkinned then
+            -- Style main chat frame
+            chatFrame:SetClampRectInsets(0, 0, 0, 0)
+            chatFrame:SetFont(VUI:GetFont(), VUI.db.profile.appearance.fontSize)
+            chatFrame:SetShadowColor(0, 0, 0, 0.5)
+            chatFrame:SetShadowOffset(1, -1)
+            
+            -- Remove chat frame background and border textures
+            local frameName = chatFrame:GetName()
+            _G[frameName .. "Background"]:SetTexture(nil)
+            _G[frameName .. "Tab"]:SetAlpha(1.0)
+            _G[frameName .. "TabText"]:SetFont(VUI:GetFont(), VUI.db.profile.appearance.fontSize)
+            _G[frameName .. "TabText"]:SetShadowColor(0, 0, 0, 0.5)
+            _G[frameName .. "TabText"]:SetShadowOffset(1, -1)
+            
+            -- Enhance tab appearance
+            local tab = _G[frameName .. "Tab"]
+            if tab then
+                tab.leftTexture:SetTexture(nil)
+                tab.middleTexture:SetTexture(nil)
+                tab.rightTexture:SetTexture(nil)
+                tab.leftSelectedTexture:SetTexture(nil)
+                tab.middleSelectedTexture:SetTexture(nil)
+                tab.rightSelectedTexture:SetTexture(nil)
+                tab.leftHighlightTexture:SetTexture(nil)
+                tab.middleHighlightTexture:SetTexture(nil)
+                tab.rightHighlightTexture:SetTexture(nil)
+                
+                -- Create custom tab background
+                if not tab.vui_bg then
+                    tab.vui_bg = tab:CreateTexture(nil, "BACKGROUND")
+                    tab.vui_bg:SetAllPoints()
+                    tab.vui_bg:SetColorTexture(0.1, 0.1, 0.1, 0.7)
+                    
+                    -- Tab selected state highlight
+                    tab.vui_selected = tab:CreateTexture(nil, "BORDER")
+                    tab.vui_selected:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT", 0, 0)
+                    tab.vui_selected:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", 0, 0)
+                    tab.vui_selected:SetHeight(2)
+                    tab.vui_selected:SetColorTexture(0.4, 0.4, 0.9, 0.8)
+                    tab.vui_selected:SetShown(tab.selected)
+                    
+                    -- Hook tab selection to update highlight
+                    hooksecurefunc(tab, "SetAlpha", function(self, alpha)
+                        if self.vui_selected then
+                            self.vui_selected:SetShown(alpha == 1)
+                        end
+                    end)
+                end
+            end
+            
+            -- Style edit box
+            if editBox then
+                editBox:ClearAllPoints()
+                editBox:SetPoint("BOTTOMLEFT", chatFrame, "TOPLEFT", -5, 8)
+                editBox:SetPoint("BOTTOMRIGHT", chatFrame, "TOPRIGHT", 5, 8)
+                editBox:SetHeight(25)
+                
+                -- Remove textures
+                _G[editBox:GetName() .. "Left"]:SetTexture(nil)
+                _G[editBox:GetName() .. "Mid"]:SetTexture(nil)
+                _G[editBox:GetName() .. "Right"]:SetTexture(nil)
+                _G[editBox:GetName() .. "FocusLeft"]:SetTexture(nil)
+                _G[editBox:GetName() .. "FocusMid"]:SetTexture(nil)
+                _G[editBox:GetName() .. "FocusRight"]:SetTexture(nil)
+                
+                -- Create VUI backdrop for the edit box
+                if not editBox.vui_bg then
+                    editBox.vui_bg = editBox:CreateTexture(nil, "BACKGROUND")
+                    editBox.vui_bg:SetAllPoints()
+                    editBox.vui_bg:SetColorTexture(0.1, 0.1, 0.1, 0.8)
+                    
+                    -- Add border
+                    editBox.vui_border = CreateFrame("Frame", nil, editBox, "BackdropTemplate")
+                    editBox.vui_border:SetPoint("TOPLEFT", editBox, "TOPLEFT", -1, 1)
+                    editBox.vui_border:SetPoint("BOTTOMRIGHT", editBox, "BOTTOMRIGHT", 1, -1)
+                    editBox.vui_border:SetBackdrop({
+                        edgeFile = "Interface\\Buttons\\WHITE8x8",
+                        edgeSize = 1
+                    })
+                    editBox.vui_border:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+                    
+                    -- Change border color when focused
+                    editBox:HookScript("OnEditFocusGained", function(self)
+                        self.vui_border:SetBackdropBorderColor(0.5, 0.5, 1.0, 1)
+                    end)
+                    
+                    editBox:HookScript("OnEditFocusLost", function(self)
+                        self.vui_border:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+                    end)
+                end
+                
+                -- Style font
+                editBox:SetFont(VUI:GetFont(), VUI.db.profile.appearance.fontSize)
+                editBox:SetShadowColor(0, 0, 0, 0.5)
+                editBox:SetShadowOffset(1, -1)
+            end
+            
+            -- Add copy button if not exists
+            if not chatFrame.vui_copyButton then
+                local copyButton = CreateFrame("Button", nil, chatFrame)
+                copyButton:SetSize(16, 16)
+                copyButton:SetPoint("TOPRIGHT", chatFrame, "TOPRIGHT", -5, -5)
+                copyButton:SetNormalTexture("Interface\\AddOns\\VUI\\media\\Textures\\Chat\\copynormal.tga")
+                copyButton:SetHighlightTexture("Interface\\AddOns\\VUI\\media\\Textures\\Chat\\copyhighlight.tga")
+                copyButton:SetAlpha(0)
+                
+                -- Show/hide on mouseover
+                chatFrame:HookScript("OnEnter", function() copyButton:SetAlpha(1) end)
+                chatFrame:HookScript("OnLeave", function() copyButton:SetAlpha(0) end)
+                copyButton:HookScript("OnEnter", function() copyButton:SetAlpha(1) end)
+                copyButton:HookScript("OnLeave", function() 
+                    if not chatFrame:IsMouseOver() then
+                        copyButton:SetAlpha(0)
+                    end
+                end)
+                
+                -- Copy function
+                copyButton:SetScript("OnClick", function()
+                    if not _G.VUIChatCopyFrame then
+                        local copyFrame = CreateFrame("Frame", "VUIChatCopyFrame", UIParent, "BackdropTemplate")
+                        copyFrame:SetBackdrop({
+                            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+                            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+                            tile = true, tileSize = 32, edgeSize = 32,
+                            insets = { left = 11, right = 12, top = 12, bottom = 11 }
+                        })
+                        copyFrame:SetSize(500, 400)
+                        copyFrame:SetPoint("CENTER", UIParent, "CENTER")
+                        copyFrame:SetFrameStrata("DIALOG")
+                        copyFrame:EnableMouse(true)
+                        copyFrame:SetMovable(true)
+                        copyFrame:RegisterForDrag("LeftButton")
+                        copyFrame:SetScript("OnDragStart", copyFrame.StartMoving)
+                        copyFrame:SetScript("OnDragStop", copyFrame.StopMovingOrSizing)
+                        copyFrame:Hide()
+                        
+                        -- Add title
+                        local title = copyFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+                        title:SetPoint("TOPLEFT", 15, -15)
+                        title:SetText("VUI Chat Copy")
+                        
+                        -- Add close button
+                        local closeButton = CreateFrame("Button", nil, copyFrame, "UIPanelCloseButton")
+                        closeButton:SetPoint("TOPRIGHT", -5, -5)
+                        
+                        -- Add ScrollFrame
+                        local scrollFrame = CreateFrame("ScrollFrame", "VUIChatCopyScrollFrame", copyFrame, "UIPanelScrollFrameTemplate")
+                        scrollFrame:SetPoint("TOPLEFT", 15, -40)
+                        scrollFrame:SetPoint("BOTTOMRIGHT", -35, 15)
+                        
+                        -- Add EditBox for text display
+                        local editBox = CreateFrame("EditBox", "VUIChatCopyEditBox", scrollFrame)
+                        editBox:SetMultiLine(true)
+                        editBox:SetAutoFocus(true)
+                        editBox:SetFontObject("ChatFontNormal")
+                        editBox:SetWidth(scrollFrame:GetWidth())
+                        editBox:SetScript("OnEscapePressed", function() copyFrame:Hide() end)
+                        scrollFrame:SetScrollChild(editBox)
+                    end
+                    
+                    -- Fill the edit box with chat text
+                    local chatText = ""
+                    local editBox = _G.VUIChatCopyEditBox
+                    local copyFrame = _G.VUIChatCopyFrame
+                    
+                    for i = 1, chatFrame:GetNumMessages() do
+                        local message, r, g, b = chatFrame:GetMessageInfo(i)
+                        if message then
+                            -- Remove formatting codes for cleaner copied text
+                            message = message:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1"):gsub("|T.-|t", "")
+                            chatText = chatText .. message .. "\n"
+                        end
+                    end
+                    
+                    editBox:SetText(chatText)
+                    editBox:HighlightText()
+                    copyFrame:Show()
+                end)
+                
+                chatFrame.vui_copyButton = copyButton
+            end
+            
+            chatFrame.VUISkinned = true
+        end
+    end
+    
+    -- Apply styling to buttons in ButtonFrame
+    local buttonFrame = _G.ChatButtonFrame
+    if buttonFrame and not buttonFrame.VUISkinned then
+        for _, buttonName in pairs({"ChatFrameMenuButton", "ChatFrameChannelButton", "ChatFrameToggleVoiceDeafenButton", "ChatFrameToggleVoiceMuteButton"}) do
+            local button = _G[buttonName]
+            if button then
+                -- Add custom styling to buttons
+                button:SetNormalTexture(nil)
+                button:SetPushedTexture(nil)
+                button:SetHighlightTexture(nil)
+                
+                if not button.vui_bg then
+                    button.vui_bg = button:CreateTexture(nil, "BACKGROUND")
+                    button.vui_bg:SetAllPoints()
+                    button.vui_bg:SetColorTexture(0.2, 0.2, 0.2, 0.8)
+                    
+                    button.vui_border = button:CreateTexture(nil, "BORDER")
+                    button.vui_border:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0)
+                    button.vui_border:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 0)
+                    button.vui_border:SetColorTexture(0.3, 0.3, 0.3, 1)
+                    
+                    button.vui_highlight = button:CreateTexture(nil, "HIGHLIGHT")
+                    button.vui_highlight:SetAllPoints()
+                    button.vui_highlight:SetColorTexture(0.5, 0.5, 1.0, 0.2)
+                    button:SetHighlightTexture(button.vui_highlight)
+                end
+            end
+        end
+        
+        buttonFrame.VUISkinned = true
+    end
+end
 blizzardSkins.Collections = function(self) if not self.settings.blizzard.collections then return end end
 blizzardSkins.Communities = function(self) if not self.settings.blizzard.communities then return end end
 blizzardSkins.DressingRoom = function(self) if not self.settings.blizzard.dressingroom then return end end

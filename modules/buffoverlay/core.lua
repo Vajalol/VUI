@@ -11,6 +11,11 @@ function BuffOverlay:ShouldTrackSpell(spellID, isDebuff)
     
     local config = VUI.db.profile.modules.buffoverlay
     
+    -- Check if it's a healer spell we want to track in mythic+ regardless of other settings
+    if config.trackHealerSpells and self.HealerSpells and self.HealerSpells[spellID] then
+        return true
+    end
+    
     -- Check whitelist (if empty, all spells pass this check)
     local passedWhitelist = not next(config.whitelist) or config.whitelist[spellID]
     
@@ -114,8 +119,16 @@ end
 
 -- Create a notification when important buffs/debuffs appear or expire
 function BuffOverlay:CreateNotification(aura, action)
+    local config = VUI.db.profile.modules.buffoverlay
+    
     -- Only create notifications if enabled
-    if not VUI.db.profile.modules.buffoverlay.showNotifications then
+    if not config.showNotifications then
+        return
+    end
+    
+    -- Check if it's a healer spell notification
+    local isHealerSpell = self.HealerSpells and self.HealerSpells[aura.spellID]
+    if isHealerSpell and not config.showHealerSpellNotifications then
         return
     end
     
@@ -126,11 +139,26 @@ function BuffOverlay:CreateNotification(aura, action)
         color = {r = 0.1, g = 0.7, b = 0.1}
     end
     
+    -- Special color for healer spells
+    if isHealerSpell then
+        color = {r = 0.0, g = 0.6, b = 1.0} -- Blue color for healer spells
+    end
+    
     local message
     if action == "gained" then
         message = "Gained " .. aura.name
+        
+        -- Add extra indicator for healer spells
+        if isHealerSpell then
+            message = "✓ " .. message .. " (Healer)"
+        end
     elseif action == "faded" then
         message = aura.name .. " faded"
+        
+        -- Add extra indicator for healer spells
+        if isHealerSpell then
+            message = "⚠ " .. message .. " (Healer)"
+        end
     end
     
     -- Create and show notification (using a custom function in VUI that would need to be implemented)

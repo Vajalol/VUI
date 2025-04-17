@@ -90,6 +90,17 @@ local defaults = {
         fontFlags = "",
         usePixelPerfect = true
     },
+    minimap = {
+        enabled = true,
+        showCoordinates = true,
+        showClock = true,
+        use12HourFormat = true,
+        enhancedZoneText = true,
+        squareMinimap = false,
+        useClassColoredBorder = true,
+        cleanupButtons = true,
+        buttonContainerToggle = true,
+    },
 }
 
 -- Initialize module settings
@@ -390,6 +401,127 @@ local config = {
             end,
             disabled = function() return not Skins.settings.advancedUI.enabled end,
         },
+        minimapHeader = {
+            type = "header",
+            name = "Minimap",
+            order = 17,
+        },
+        minimapEnabled = {
+            type = "toggle",
+            name = "Enable Minimap Enhancements",
+            desc = "Enable enhanced minimap features",
+            order = 18,
+            get = function() return Skins.settings.minimap.enabled end,
+            set = function(_, value)
+                Skins.settings.minimap.enabled = value
+                Skins:ApplySkins()
+            end,
+        },
+        minimapGroup = {
+            type = "group",
+            name = "Minimap Settings",
+            desc = "Configure minimap enhancements",
+            order = 19,
+            inline = true,
+            args = {
+                showCoordinates = {
+                    type = "toggle",
+                    name = "Show Coordinates",
+                    desc = "Display player coordinates on the minimap",
+                    order = 1,
+                    get = function() return Skins.settings.minimap.showCoordinates end,
+                    set = function(_, value)
+                        Skins.settings.minimap.showCoordinates = value
+                        Skins:ApplySkins()
+                    end,
+                    disabled = function() return not Skins.settings.minimap.enabled end,
+                },
+                showClock = {
+                    type = "toggle",
+                    name = "Show Clock",
+                    desc = "Display game time on the minimap",
+                    order = 2,
+                    get = function() return Skins.settings.minimap.showClock end,
+                    set = function(_, value)
+                        Skins.settings.minimap.showClock = value
+                        Skins:ApplySkins()
+                    end,
+                    disabled = function() return not Skins.settings.minimap.enabled end,
+                },
+                use12HourFormat = {
+                    type = "toggle",
+                    name = "Use 12-Hour Format",
+                    desc = "Use 12-hour format for the clock (AM/PM)",
+                    order = 3,
+                    get = function() return Skins.settings.minimap.use12HourFormat end,
+                    set = function(_, value)
+                        Skins.settings.minimap.use12HourFormat = value
+                        Skins:ApplySkins()
+                    end,
+                    disabled = function() return not (Skins.settings.minimap.enabled and Skins.settings.minimap.showClock) end,
+                },
+                enhancedZoneText = {
+                    type = "toggle",
+                    name = "Enhanced Zone Text",
+                    desc = "Show enhanced zone text with zone type coloring",
+                    order = 4,
+                    get = function() return Skins.settings.minimap.enhancedZoneText end,
+                    set = function(_, value)
+                        Skins.settings.minimap.enhancedZoneText = value
+                        Skins:ApplySkins()
+                    end,
+                    disabled = function() return not Skins.settings.minimap.enabled end,
+                },
+                squareMinimap = {
+                    type = "toggle",
+                    name = "Square Minimap",
+                    desc = "Make the minimap square instead of round",
+                    order = 5,
+                    get = function() return Skins.settings.minimap.squareMinimap end,
+                    set = function(_, value)
+                        Skins.settings.minimap.squareMinimap = value
+                        Skins:ApplySkins()
+                    end,
+                    disabled = function() return not Skins.settings.minimap.enabled end,
+                },
+                useClassColoredBorder = {
+                    type = "toggle",
+                    name = "Class-Colored Border",
+                    desc = "Use player class color for the minimap border",
+                    order = 6,
+                    get = function() return Skins.settings.minimap.useClassColoredBorder end,
+                    set = function(_, value)
+                        Skins.settings.minimap.useClassColoredBorder = value
+                        Skins:ApplySkins()
+                    end,
+                    disabled = function() return not Skins.settings.minimap.enabled end,
+                },
+                cleanupButtons = {
+                    type = "toggle",
+                    name = "Clean Up Buttons",
+                    desc = "Organize addon buttons around the minimap",
+                    order = 7,
+                    get = function() return Skins.settings.minimap.cleanupButtons end,
+                    set = function(_, value)
+                        Skins.settings.minimap.cleanupButtons = value
+                        Skins:ApplySkins()
+                    end,
+                    disabled = function() return not Skins.settings.minimap.enabled end,
+                },
+                buttonContainerToggle = {
+                    type = "toggle",
+                    name = "Button Container Toggle",
+                    desc = "Add a button to show/hide the minimap button container",
+                    order = 8,
+                    get = function() return Skins.settings.minimap.buttonContainerToggle end,
+                    set = function(_, value)
+                        Skins.settings.minimap.buttonContainerToggle = value
+                        Skins:ApplySkins()
+                    end,
+                    disabled = function() return not (Skins.settings.minimap.enabled and Skins.settings.minimap.cleanupButtons) end,
+                },
+            },
+        },
     }
 }
 
@@ -431,6 +563,25 @@ function Skins:Initialize()
     self.registeredSkins = {}
     self.activeSkins = {}
     self.hooked = {}
+    
+    -- Initialize skin function tables
+    self.blizzardSkinFuncs = {
+        ["minimap"] = function()
+            -- Initialize the minimap skin
+            local MinimapSkin = _G["VUIMinimapSkin"]
+            if MinimapSkin then
+                MinimapSkin:OnEnable()
+            else
+                -- Fallback - load the minimap skin manually
+                local minimap = self:FindChild("blizzard", "minimap")
+                if minimap and minimap.OnEnable then
+                    minimap:OnEnable()
+                end
+            end
+        end
+    }
+    
+    self.addonSkinFuncs = {}
     
     -- Add skin categories
     self.categories = {
@@ -711,6 +862,7 @@ function Skins:ApplyBlizzardSkins()
     self:ApplyBlizzardSkin("macro", self.settings.blizzard.macro)
     self:ApplyBlizzardSkin("binding", self.settings.blizzard.binding)
     self:ApplyBlizzardSkin("unitframes", true) -- Always enable unitframes
+    self:ApplyBlizzardSkin("minimap", true) -- Always enable minimap
 end
 
 -- Apply a specific Blizzard skin
@@ -862,6 +1014,20 @@ function Skins:GetSkinsByCategory(category)
     end
     
     return result
+end
+
+-- Helper function to find a skin by category and name
+function Skins:FindChild(category, name)
+    category = category:lower()
+    name = name:lower()
+    
+    for skinName, skin in pairs(self.registeredSkins) do
+        if skin.category:lower() == category and skinName:lower() == name then
+            return skin
+        end
+    end
+    
+    return nil
 end
 
 -- Load skin modules from directories
