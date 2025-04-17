@@ -9,20 +9,34 @@ _G["VUI"] = VUI
 VUI = LibStub("AceAddon-3.0"):NewAddon(VUI, addonName, "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceTimer-3.0")
 
 -- Global constants
-VUI.NAME = "VUI"
-VUI.VERSION = "0.0.1"
-VUI.AUTHOR = "VortexQ8"
+VUI.name = "VUI"
+VUI.version = "0.0.1"
+VUI.author = "VortexQ8"
 VUI.CLASSCOLOR = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 
 -- Initialize modules table to store all the sub-addons
 VUI.modules = {}
 
+-- Initialize frames table to track UI elements
+VUI.frames = {}
+
 -- Module registration function
 function VUI:RegisterModule(name, module)
     if not name or not module then return end
     
+    -- Apply the module template to ensure framework compatibility
+    if self.ModuleTemplate then
+        module = self.ModuleTemplate:Extend(module)
+    end
+    
+    -- Set module metadata
     self.modules[name] = module
     module.moduleName = name
+    
+    -- Set up frames array for UI tracking
+    if not module.frames then
+        module.frames = {}
+    end
     
     -- Initialize module options
     if not VUI.options.args.modules then
@@ -37,6 +51,12 @@ function VUI:RegisterModule(name, module)
     -- Add module to options panel if it has a config
     if module.GetOptions then
         VUI.options.args.modules.args[name] = module:GetOptions()
+    end
+    
+    -- Connect to integration system for framework access
+    if self.Integration and self.Integration:EnsureComponent("Integration") then
+        -- This will be handled by the integration system on ADDON_LOADED
+        module.pendingIntegration = true
     end
     
     return module
@@ -80,15 +100,24 @@ function VUI:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("VUIDB", VUI.defaults, true)
     self.charDB = LibStub("AceDB-3.0"):New("VUICharacterDB", VUI.charDefaults, true)
     
+    -- Initialize the UI framework
+    self:InitializeUI()
+    
     -- Register options table
     LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, self.options)
-    self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(addonName, VUI.NAME)
+    self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(addonName, self.name)
     
     -- Set up slash commands
     self:RegisterChatCommand("vui", "SlashCommand")
     
     -- Load media files
     self:InitializeMedia()
+    
+    -- Initialize integration system
+    if self.Integration then
+        self.Integration:Initialize()
+        self.Integration:RegisterThemeChangeHandler()
+    end
     
     -- Initialize modules
     for name, module in pairs(self.modules) do
@@ -102,7 +131,54 @@ function VUI:OnInitialize()
         end
     end
     
-    self:Print("VUI v" .. self.VERSION .. " initialized. Type /vui for options.")
+    self:Print("VUI v" .. self.version .. " initialized. Type /vui for options.")
+end
+
+-- Initialize UI Framework
+function VUI:InitializeUI()
+    -- Ensure appearance settings exist
+    if not self.db.profile.appearance then
+        self.db.profile.appearance = {
+            theme = "dark",
+            font = "Friz Quadrata TT",
+            fontSize = 12,
+            border = "thin",
+            classColoredBorders = true,
+            useClassColors = true,
+            backdropColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+            borderColor = {r = 0.4, g = 0.4, b = 0.4, a = 1},
+            statusbarTexture = "smooth"
+        }
+    end
+    
+    -- Register callbacks for UI updates
+    self.db.RegisterCallback(self, "OnProfileChanged", "UpdateUI")
+    self.db.RegisterCallback(self, "OnProfileCopied", "UpdateUI")
+    self.db.RegisterCallback(self, "OnProfileReset", "UpdateUI")
+    
+    -- Register UI-related events
+    self:RegisterEvent("DISPLAY_SIZE_CHANGED", "UpdateUI")
+    self:RegisterEvent("UI_SCALE_CHANGED", "UpdateUI")
+end
+
+-- Update UI when settings change
+function VUI:UpdateUI()
+    -- Update framework UI elements
+    if self.UI and self.UI.UpdateAppearance then
+        self.UI:UpdateAppearance()
+    end
+    
+    -- Update widgets
+    if self.Widgets and self.Widgets.UpdateAppearance then
+        self.Widgets:UpdateAppearance()
+    end
+    
+    -- Update all module UI elements
+    for name, module in pairs(self.modules) do
+        if self:IsModuleEnabled(name) and module.UpdateUI then
+            module:UpdateUI()
+        end
+    end
 end
 
 -- Event handling when addon is fully loaded
@@ -155,7 +231,7 @@ function VUI:SlashCommand(input)
                 self:EnableModule(arg)
             end
         elseif command == "version" then
-            self:Print("Version: " .. self.VERSION)
+            self:Print("Version: " .. self.version)
         elseif command == "list" then
             self:Print("Available modules:")
             for name, _ in pairs(self.modules) do
@@ -178,7 +254,7 @@ end
 function VUI:GameMenuFrame_OnShow()
     if not GameMenuButtonVUI then
         local button = CreateFrame("Button", "GameMenuButtonVUI", GameMenuFrame, "GameMenuButtonTemplate")
-        button:SetText(VUI.NAME .. " Options")
+        button:SetText(VUI.name .. " Options")
         
         -- Position the button
         local lastButton = GameMenuButtonAddons
@@ -200,5 +276,5 @@ end
 
 -- Print a message with addon prefix
 function VUI:Print(msg)
-    print("|cff1784d1" .. VUI.NAME .. "|r: " .. tostring(msg))
+    print("|cff1784d1" .. VUI.name .. "|r: " .. tostring(msg))
 end

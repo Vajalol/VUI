@@ -30,7 +30,14 @@ core\init.lua
 core\defaults.lua
 core\media.lua
 core\utils.lua
+core\UI.lua
+core\widgets.lua
 core\config.lua
+core\module_template.lua
+core\module_api.lua
+core\integration.lua
+core\demo.lua
+core\test.lua
 
 # Modules
 # BuffOverlay
@@ -53,3 +60,13 @@ modules\moveany\config.lua
 # Auctionator
 modules\auctionator\init.lua
 modules\auctionator\core.lua
+
+# Example (Integration Demo)
+modules\example\init.lua
+modules\example\core.lua
+modules\example\config.lua
+
+# Premade Group Finder
+modules\premadegroupfinder\init.lua
+modules\premadegroupfinder\core.lua
+modules\premadegroupfinder\config.lua

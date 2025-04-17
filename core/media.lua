@@ -9,6 +9,8 @@ function VUI:InitializeMedia()
         borders = {},
         backgrounds = {},
         statusbars = {},
+        sounds = {},
+        icons = {},
     }
     
     -- Register default textures
@@ -31,16 +33,92 @@ function VUI:InitializeMedia()
     self.media.statusbars.flat = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-flat.blp"
     self.media.statusbars.gloss = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-gloss.tga"
     
+    -- Register sounds
+    self.media.sounds.select = "Sound\\Interface\\iAbilitiesOpen.ogg"
+    self.media.sounds.close = "Sound\\Interface\\igMainMenuClose.ogg"
+    self.media.sounds.warning = "Sound\\Interface\\AlarmClockWarning3.ogg"
+    self.media.sounds.button = "Sound\\Interface\\igMainMenuOptionCheckBoxOn.ogg"
+    
     -- Register module-specific textures
     self.media.textures.buffoverlay = {
         logo = "Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\logo.tga",
         logo_transparent = "Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\logo_transparent.tga"
     }
     
+    self.media.textures.angrykeystone = {
+        bar = "Interface\\AddOns\\VUI\\media\\textures\\angrykeystone\\bar.blp",
+    }
+    
+    self.media.textures.omnicd = {
+        border = "Interface\\AddOns\\VUI\\media\\textures\\omnicd\\border.tga",
+    }
+    
+    self.media.textures.trufigcd = {
+        border = "Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\border.tga",
+    }
+    
+    -- Theme-specific textures
+    self.media.themes = {
+        dark = {
+            background = self.media.backgrounds.dark,
+            border = self.media.borders.simple,
+            statusbar = self.media.statusbars.smooth,
+            colors = {
+                backdrop = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+                border = {r = 0.4, g = 0.4, b = 0.4, a = 1},
+                highlight = {r = 0.3, g = 0.3, b = 0.3, a = 0.5},
+                text = {r = 1, g = 1, b = 1, a = 1},
+                header = {r = 1, g = 0.9, b = 0.8, a = 1},
+            }
+        },
+        light = {
+            background = self.media.backgrounds.light,
+            border = self.media.borders.simple,
+            statusbar = self.media.statusbars.smooth,
+            colors = {
+                backdrop = {r = 0.8, g = 0.8, b = 0.8, a = 0.8},
+                border = {r = 0.6, g = 0.6, b = 0.6, a = 1},
+                highlight = {r = 0.7, g = 0.7, b = 0.7, a = 0.5},
+                text = {r = 0.1, g = 0.1, b = 0.1, a = 1},
+                header = {r = 0.1, g = 0.1, b = 0.3, a = 1},
+            }
+        },
+        classic = {
+            background = self.media.backgrounds.dark,
+            border = self.media.borders.dialog,
+            statusbar = self.media.statusbars.gloss,
+            colors = {
+                backdrop = {r = 0.15, g = 0.15, b = 0.2, a = 0.8},
+                border = {r = 0.6, g = 0.5, b = 0.3, a = 1},
+                highlight = {r = 0.4, g = 0.3, b = 0.2, a = 0.5},
+                text = {r = 0.9, g = 0.8, b = 0.7, a = 1},
+                header = {r = 1, g = 0.9, b = 0.7, a = 1},
+            }
+        },
+        minimal = {
+            background = self.media.backgrounds.solid,
+            border = "",
+            statusbar = self.media.statusbars.flat,
+            colors = {
+                backdrop = {r = 0.05, g = 0.05, b = 0.05, a = 0.5},
+                border = {r = 0.3, g = 0.3, b = 0.3, a = 0.7},
+                highlight = {r = 0.2, g = 0.2, b = 0.2, a = 0.3},
+                text = {r = 1, g = 1, b = 1, a = 1},
+                header = {r = 0.9, g = 0.9, b = 0.9, a = 1},
+            }
+        }
+    }
+    
     -- Default fonts - using built-in WoW fonts to avoid file size issues
     self.media.fonts.normal = "Fonts\\FRIZQT__.TTF"
     self.media.fonts.bold = "Fonts\\ARIALN.TTF"
     self.media.fonts.header = "Fonts\\MORPHEUS.TTF"
+    
+    -- External fonts included with the addon
+    self.media.fonts.avant = "Interface\\AddOns\\VUI\\media\\Fonts\\AvantGarde.TTF"
+    self.media.fonts.expressway = "Interface\\AddOns\\VUI\\media\\Fonts\\Expressway.ttf"
+    self.media.fonts.inter = "Interface\\AddOns\\VUI\\media\\Fonts\\InterBold.ttf"
+    self.media.fonts.prototype = "Interface\\AddOns\\VUI\\media\\Fonts\\Prototype.ttf"
     
     -- Load LibSharedMedia if available for more options
     if LibStub and LibStub:GetLibrary("LibSharedMedia-3.0", true) then
@@ -50,6 +128,10 @@ function VUI:InitializeMedia()
         LSM:Register("font", "VUI Normal", self.media.fonts.normal)
         LSM:Register("font", "VUI Bold", self.media.fonts.bold)
         LSM:Register("font", "VUI Header", self.media.fonts.header)
+        LSM:Register("font", "VUI Avant Garde", self.media.fonts.avant)
+        LSM:Register("font", "VUI Expressway", self.media.fonts.expressway)
+        LSM:Register("font", "VUI Inter", self.media.fonts.inter)
+        LSM:Register("font", "VUI Prototype", self.media.fonts.prototype)
         
         LSM:Register("statusbar", "VUI Smooth", self.media.statusbars.smooth)
         LSM:Register("statusbar", "VUI Flat", self.media.statusbars.flat)
@@ -61,6 +143,11 @@ function VUI:InitializeMedia()
         LSM:Register("background", "VUI Dark", self.media.backgrounds.dark)
         LSM:Register("background", "VUI Light", self.media.backgrounds.light)
         LSM:Register("background", "VUI Solid", self.media.backgrounds.solid)
+        
+        LSM:Register("sound", "VUI Select", self.media.sounds.select)
+        LSM:Register("sound", "VUI Close", self.media.sounds.close)
+        LSM:Register("sound", "VUI Warning", self.media.sounds.warning)
+        LSM:Register("sound", "VUI Button", self.media.sounds.button)
     end
     
     -- Create color table
@@ -74,6 +161,11 @@ function VUI:InitializeMedia()
         yellow = {r = 1, g = 1, b = 0},
         orange = {r = 1, g = 0.5, b = 0},
         purple = {r = 0.7, g = 0, b = 1},
+        
+        -- UI specific colors
+        header = {r = 1, g = 0.9, b = 0.8},
+        title = {r = 0.9, g = 0.8, b = 0.6},
+        highlight = {r = 0.25, g = 0.25, b = 0.25},
         
         -- Class colors
         class = {},
@@ -112,6 +204,41 @@ function VUI:InitializeMedia()
     for class, color in pairs(RAID_CLASS_COLORS) do
         self.colors.class[class] = {r = color.r, g = color.g, b = color.b}
     end
+    
+    -- Connect media to UI framework
+    self:RegisterMediaWithUI()
+end
+
+-- Connect our media with the UI framework
+function VUI:RegisterMediaWithUI()
+    -- Wait until UI is loaded
+    if not self.UI then return end
+    
+    -- Register theme media with UI
+    self.UI.themes = self.media.themes
+    
+    -- Connect font functions
+    self.UI.GetFont = function(_, fontName)
+        return self:GetFont(fontName)
+    end
+    
+    -- Connect texture functions
+    self.UI.GetTexture = function(_, category, name)
+        return self:GetTexture(category, name)
+    end
+    
+    -- Connect color functions
+    self.UI.GetColor = function(_, name, subtype, key)
+        return self:GetColor(name, subtype, key)
+    end
+    
+    -- Connect sound functions
+    self.UI.PlaySound = function(_, sound)
+        self:PlaySound(sound)
+    end
+    
+    -- Notify about connection
+    self:Print("Media connected to UI framework")
 end
 
 -- Helper function to create a color object from RGB values
@@ -199,4 +326,60 @@ function VUI:CreateBackdrop(bgColor, borderColor, borderSize, inset)
     
     return backdrop, {r = bgColor.r, g = bgColor.g, b = bgColor.b, a = bgColor.a or 1}, 
                      {r = borderColor.r, g = borderColor.g, b = borderColor.b, a = borderColor.a or 1}
+end
+
+-- Helper function to get a font by name or return a path
+function VUI:GetFont(fontName)
+    if not fontName then
+        return self.media.fonts.normal
+    end
+    
+    -- If it's a known font name in our media
+    if self.media.fonts[fontName] then
+        return self.media.fonts[fontName]
+    end
+    
+    -- If it already looks like a path, return it
+    if fontName:find("\\") then
+        return fontName
+    end
+    
+    -- Check LibSharedMedia if available
+    if LibStub and LibStub:GetLibrary("LibSharedMedia-3.0", true) then
+        local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
+        local path = LSM:Fetch("font", fontName)
+        if path then
+            return path
+        end
+    end
+    
+    -- Default fallback
+    return self.media.fonts.normal
+end
+
+-- Play a UI sound
+function VUI:PlaySound(sound)
+    if not sound then return end
+    
+    -- If it's already a path, play it directly
+    if type(sound) == "string" and sound:find("\\") then
+        PlaySoundFile(sound, "Master")
+        return
+    end
+    
+    -- If it's a named sound in our media
+    if type(sound) == "string" and self.media.sounds[sound] then
+        PlaySoundFile(self.media.sounds[sound], "Master")
+        return
+    end
+    
+    -- Check if it's a kit from the game
+    if type(sound) == "string" then
+        -- Try to play as a sound kit
+        local success = pcall(function() PlaySound(sound) end)
+        if success then return end
+    end
+    
+    -- If we're here, we couldn't play the sound
+    self:Print("Could not play sound: " .. tostring(sound))
 end
