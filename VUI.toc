@@ -85,3 +85,7 @@ modules\skins\addons\core.lua
 # Profiles
 modules\profiles\init.lua
 modules\profiles\core.lua
+
+# Automation
+modules\automation\init.lua
+modules\automation\core.lua
