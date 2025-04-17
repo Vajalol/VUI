@@ -18,9 +18,107 @@ Skins.addonSkinFuncs = {}
 
 -- Tables for tracking skinned objects
 Skins.pendingSkins = {}
+Skins.skinnedFrames = {}
+Skins.registeredSkins = {}
+Skins.activeSkins = {}
 
 -- Tables for hooked objects
 Skins.hooked = {}
+
+-- Forbidden frames (frames that should never be skinned)
+Skins.forbiddenFrames = {
+    ["CalendarCreateEventIcon"] = true,
+    ["FriendsFrameIcon"] = true,
+    ["MacroFramePortrait"] = true,
+    ["QuestFrameDetailPanelBg"] = true,
+    ["StaticPopup1AlertIcon"] = true,
+    ["StaticPopup2AlertIcon"] = true,
+    ["StaticPopup3AlertIcon"] = true,
+    ["PVPReadyDialogBackground"] = true,
+    ["LFGDungeonReadyDialogBackground"] = true,
+}
+
+-- Register a skin module
+function Skins:RegisterSkin(name, category)
+    local category = category or "Blizzard"
+    local skin = {
+        name = name,
+        category = category,
+        enabled = false,
+        OnEnable = function() end,
+        OnDisable = function() end,
+        OnInitialize = function() end
+    }
+    
+    self.registeredSkins[name] = skin
+    
+    -- Return the skin object for method chaining
+    return skin
+end
+
+-- Initialize all registered skins
+function Skins:InitializeSkins()
+    VUI:Print("Initializing skins...")
+    
+    for name, skin in pairs(self.registeredSkins) do
+        if type(skin.OnInitialize) == "function" then
+            skin:OnInitialize()
+        end
+        
+        -- Check if this skin should be enabled by default
+        local category = skin.category:lower()
+        local skinName = name:lower()
+        
+        if self.settings.skins[category] and self.settings.skins[category][skinName] then
+            self:EnableSkin(name)
+        end
+    end
+end
+
+-- Enable a specific skin
+function Skins:EnableSkin(name)
+    local skin = self.registeredSkins[name]
+    if not skin or skin.enabled then return end
+    
+    VUI:Print("Enabling skin: " .. name)
+    
+    -- Run the OnEnable function
+    if type(skin.OnEnable) == "function" then
+        skin:OnEnable()
+    end
+    
+    skin.enabled = true
+    self.activeSkins[name] = skin
+end
+
+-- Disable a specific skin
+function Skins:DisableSkin(name)
+    local skin = self.registeredSkins[name]
+    if not skin or not skin.enabled then return end
+    
+    VUI:Print("Disabling skin: " .. name)
+    
+    -- Run the OnDisable function
+    if type(skin.OnDisable) == "function" then
+        skin:OnDisable()
+    end
+    
+    skin.enabled = false
+    self.activeSkins[name] = nil
+end
+
+-- Get a list of registered skins by category
+function Skins:GetSkinsByCategory(category)
+    local result = {}
+    
+    for name, skin in pairs(self.registeredSkins) do
+        if skin.category == category then
+            table.insert(result, skin)
+        end
+    end
+    
+    return result
+end
 
 -- Return pixel-perfect values
 function Skins:GetPerfectPixelSize()

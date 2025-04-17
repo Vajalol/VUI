@@ -10,14 +10,14 @@ VUI.author = "VortexQ8"
 
 -- Add module tables
 -- Original modules
-VUI.BuffOverlay = {}
-VUI.TrufiGCD = {}
-VUI.MoveAny = {}
-VUI.Auctionator = {}
-VUI.AngryKeystones = {}
-VUI.OmniCC = {}
-VUI.OmniCD = {}
-VUI.idTip = {}
+VUI.buffoverlay = {}
+VUI.trufigcd = {}
+VUI.moveany = {}
+VUI.auctionator = {}
+VUI.angrykeystone = {}
+VUI.omnicc = {}
+VUI.omnicd = {}
+VUI.idtip = {}
 VUI.premadegroupfinder = {}
 
 -- Core UI & Functionality modules
@@ -30,14 +30,14 @@ VUI.visualconfig = {}
 -- Internal module tracking
 VUI.modules = {
     -- Original modules
-    "BuffOverlay",
-    "TrufiGCD",
-    "MoveAny",
-    "Auctionator",
-    "AngryKeystones",
-    "OmniCC",
-    "OmniCD",
-    "idTip",
+    "buffoverlay",
+    "trufigcd",
+    "moveany",
+    "auctionator",
+    "angrykeystone",
+    "omnicc",
+    "omnicd",
+    "idtip",
     "premadegroupfinder",
     
     -- Core UI & Functionality modules
@@ -108,8 +108,15 @@ end
 -- Initialize all modules
 function VUI:InitializeModules()
     for _, moduleName in ipairs(self.modules) do
-        if self.enabledModules[moduleName] and self[moduleName] and self[moduleName].Initialize then
-            self[moduleName]:Initialize()
+        local module = self[moduleName]
+        if self.enabledModules[moduleName] and module and module.Initialize then
+            -- Register the module with core system if it's not already registered
+            if VUI.RegisterModule and not VUI.modules[moduleName] then
+                VUI:RegisterModule(moduleName, module)
+            end
+            
+            -- Initialize the module
+            module:Initialize()
         end
     end
 end

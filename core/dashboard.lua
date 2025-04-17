@@ -44,10 +44,13 @@ local PERFORMANCE_WIDGET_WIDTH = 200
 -- Module categories
 local MODULE_CATEGORIES = {
     ["Core"] = {"Core", "ModuleAPI", "Integration"},
-    ["UI"] = {"UnitFrames", "ActionBars", "Skins", "VisualConfig"},
-    ["Tools"] = {"Profiles", "Automation", "Performance"},
-    ["Addons"] = {"AngryKeystone", "Auctionator", "BuffOverlay", "idTip", "MoveAny", "OmniCC", "OmniCD", "TrufiGCD", "PremadeGroupFinder"}
+    ["UI"] = {"unitframes", "ActionBars", "skins", "visualconfig"},
+    ["Tools"] = {"profiles", "automation", "Performance"},
+    ["Addons"] = {"angrykeystone", "auctionator", "buffoverlay", "idtip", "moveany", "omnicc", "omnicd", "trufigcd", "premadegroupfinder"}
 }
+
+-- Registered modules
+local registeredModules = {}
 
 -- Initialize module
 function Dashboard:Initialize()
@@ -193,12 +196,33 @@ end
 
 -- Create module cards
 function Dashboard:CreateModuleCards()
-    -- Get module list from VUI
-    local modules = {}
+    -- Combine traditional modules with registered modules
+    local allModules = {}
+    
+    -- Add traditional modules from VUI table
     for name, module in pairs(VUI) do
         if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
-            table.insert(modules, {name = name, module = module})
+            allModules[name] = {
+                name = name,
+                module = module,
+                registered = false
+            }
         end
+    end
+    
+    -- Add registered modules
+    for name, options in pairs(registeredModules) do
+        allModules[name] = {
+            name = name,
+            options = options,
+            registered = true
+        }
+    end
+    
+    -- Convert to list for sorting
+    local modules = {}
+    for _, moduleInfo in pairs(allModules) do
+        table.insert(modules, moduleInfo)
     end
     
     -- Sort modules alphabetically
@@ -241,6 +265,12 @@ function Dashboard:CreateModuleCards()
         card:SetBackdropColor(0.15, 0.15, 0.15, 0.8)
         card:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.8)
         
+        -- Module icon
+        local icon = card:CreateTexture(nil, "OVERLAY")
+        icon:SetSize(24, 24)
+        icon:SetPoint("TOPLEFT", card, "TOPLEFT", 10, -10)
+        icon:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\logo.tga") -- Default icon
+        
         -- Module name
         local name = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         name:SetPoint("TOP", card, "TOP", 0, -10)
@@ -252,60 +282,121 @@ function Dashboard:CreateModuleCards()
         statusTexture:SetPoint("TOPRIGHT", card, "TOPRIGHT", -10, -10)
         statusTexture:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\glow.tga")
         
-        -- Update status color based on module enabled state
-        local isModuleEnabled = VUI.db.profile.modules[moduleInfo.name:lower()] 
-            and VUI.db.profile.modules[moduleInfo.name:lower()].enabled
-        statusTexture:SetVertexColor(isModuleEnabled and 0.2 or 0.7, isModuleEnabled and 0.8 or 0.2, 0.2, 1)
+        -- Description text
+        local description = card:CreateFontString(nil, "OVERLAY", "GameFontSmall")
+        description:SetPoint("TOPLEFT", icon, "TOPRIGHT", 5, -2)
+        description:SetPoint("TOPRIGHT", statusTexture, "TOPLEFT", -5, 0)
+        description:SetJustifyH("LEFT")
+        description:SetWordWrap(true)
         
         -- Toggle button
         local toggleButton = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
         toggleButton:SetSize(80, 22)
         toggleButton:SetPoint("BOTTOM", card, "BOTTOM", 0, 10)
-        toggleButton:SetText(isModuleEnabled and "Disable" or "Enable")
-        toggleButton:SetScript("OnClick", function(self)
-            local module = moduleInfo.module
-            local moduleNameLower = moduleInfo.name:lower()
-            
-            if VUI.db.profile.modules[moduleNameLower] and VUI.db.profile.modules[moduleNameLower].enabled then
-                -- Disable module
-                VUI.db.profile.modules[moduleNameLower].enabled = false
-                if module.Disable then module:Disable() end
-                self:SetText("Enable")
-                statusTexture:SetVertexColor(0.7, 0.2, 0.2, 1)
-            else
-                -- Enable module
-                if not VUI.db.profile.modules[moduleNameLower] then
-                    VUI.db.profile.modules[moduleNameLower] = {}
-                end
-                VUI.db.profile.modules[moduleNameLower].enabled = true
-                if module.Enable then module:Enable() end
-                self:SetText("Disable")
-                statusTexture:SetVertexColor(0.2, 0.8, 0.2, 1)
-            end
-        end)
         
         -- Config button
         local configButton = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
         configButton:SetSize(22, 22)
         configButton:SetPoint("BOTTOMRIGHT", card, "BOTTOMRIGHT", -10, 10)
         configButton:SetText("⚙")
-        configButton:SetScript("OnClick", function()
-            InterfaceOptionsFrame_OpenToCategory("VUI")
-            InterfaceOptionsFrame_OpenToCategory("VUI") -- Call twice to ensure it opens (WoW bug)
-            -- TODO: Open specific module config page
-        end)
+        
+        if moduleInfo.registered then
+            -- Handle registered module
+            local options = moduleInfo.options
+            
+            -- Set icon if provided
+            if options.icon then
+                icon:SetTexture(options.icon)
+            end
+            
+            -- Set description
+            description:SetText(options.description or "")
+            
+            -- Get module status
+            local status = options.getStatus()
+            
+            -- Update status indicator
+            statusTexture:SetVertexColor(status.enabled and 0.2 or 0.7, status.enabled and 0.8 or 0.2, 0.2, 1)
+            
+            -- Update toggle button
+            toggleButton:SetText(status.enabled and "Disable" or "Enable")
+            
+            -- Set up config button
+            configButton:SetScript("OnClick", options.config)
+            
+            -- Add status information if available
+            if status.active and status.total then
+                local statusText = card:CreateFontString(nil, "OVERLAY", "GameFontSmall")
+                statusText:SetPoint("BOTTOM", toggleButton, "TOP", 0, 5)
+                statusText:SetText(status.active .. " / " .. status.total .. " active")
+                statusText:SetTextColor(0.7, 0.7, 0.7)
+            end
+        else
+            -- Handle traditional module
+            local module = moduleInfo.module
+            local moduleNameLower = moduleInfo.name:lower()
+            
+            -- Set description (placeholder)
+            description:SetText("Core VUI module")
+            
+            -- Update status based on module enabled state
+            local isModuleEnabled = VUI.db.profile.modules[moduleNameLower] and VUI.db.profile.modules[moduleNameLower].enabled
+            statusTexture:SetVertexColor(isModuleEnabled and 0.2 or 0.7, isModuleEnabled and 0.8 or 0.2, 0.2, 1)
+            
+            -- Configure toggle button
+            toggleButton:SetText(isModuleEnabled and "Disable" or "Enable")
+            toggleButton:SetScript("OnClick", function(self)
+                if VUI.db.profile.modules[moduleNameLower] and VUI.db.profile.modules[moduleNameLower].enabled then
+                    -- Disable module
+                    VUI.db.profile.modules[moduleNameLower].enabled = false
+                    if module.Disable then module:Disable() end
+                    self:SetText("Enable")
+                    statusTexture:SetVertexColor(0.7, 0.2, 0.2, 1)
+                else
+                    -- Enable module
+                    if not VUI.db.profile.modules[moduleNameLower] then
+                        VUI.db.profile.modules[moduleNameLower] = {}
+                    end
+                    VUI.db.profile.modules[moduleNameLower].enabled = true
+                    if module.Enable then module:Enable() end
+                    self:SetText("Disable")
+                    statusTexture:SetVertexColor(0.2, 0.8, 0.2, 1)
+                end
+                
+                -- Update status display
+                Dashboard:UpdateModuleStatus()
+            end)
+            
+            -- Configure settings button
+            configButton:SetScript("OnClick", function()
+                -- Try to open module-specific config, or fallback to main config
+                InterfaceOptionsFrame_OpenToCategory("VUI " .. moduleInfo.name)
+                if not InterfaceOptionsFrame:IsShown() then
+                    InterfaceOptionsFrame_OpenToCategory("VUI")
+                end
+            end)
+        end
         
         -- Store card reference
         moduleCards[moduleInfo.name] = {
             frame = card,
             status = statusTexture,
-            toggleButton = toggleButton
+            toggleButton = toggleButton,
+            icon = icon,
+            description = description
         }
     end
     
     -- Save references
     self.scrollFrame = scrollFrame
     self.contentFrame = contentFrame
+    
+    -- Apply initial category filter
+    if VUI.db.profile.dashboard.activeCategory then
+        self:FilterModules(VUI.db.profile.dashboard.activeCategory)
+    else
+        self:FilterModules("all")
+    end
 end
 
 -- Create status display
@@ -348,6 +439,50 @@ function Dashboard:CreateStatusDisplay()
     self.statusBar = statusBar
     statusWidgets.version = versionText
     statusWidgets.active = activeText
+end
+
+-- Update module cards display (recreate the cards)
+function Dashboard:UpdateModuleCards()
+    -- Remove existing cards if any
+    if self.contentFrame then
+        self.contentFrame:SetParent(nil)
+        self.contentFrame = nil
+    end
+    
+    if self.scrollFrame then
+        self.scrollFrame:SetParent(nil)
+        self.scrollFrame = nil
+    end
+    
+    moduleCards = {}
+    
+    -- Recreate all cards
+    self:CreateModuleCards()
+    
+    -- Update status display
+    self:UpdateModuleStatus()
+end
+
+-- Register a module with the dashboard
+function Dashboard:RegisterModule(name, options)
+    if not name or not options then return end
+    
+    -- Default options
+    options.icon = options.icon or "Interface\\AddOns\\VUI\\media\\textures\\logo.tga"
+    options.description = options.description or "No description provided"
+    options.category = options.category or "Core"
+    options.config = options.config or function() end
+    options.getStatus = options.getStatus or function() return {enabled = false} end
+    
+    -- Register the module
+    registeredModules[name] = options
+    
+    -- Refresh the dashboard if it's open
+    if self.panel and self.panel:IsShown() then
+        self:UpdateModuleCards()
+    end
+    
+    return true
 end
 
 -- Register slash commands

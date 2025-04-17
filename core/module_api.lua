@@ -9,14 +9,33 @@ VUI.ModuleAPI = {}
 
 -- Create and register a new VUI module
 function VUI.ModuleAPI:CreateModule(name)
+    -- Convert name to lowercase for consistency
+    local lowerName = name:lower()
+    
     -- Create a new module using the template
-    local module = VUI.ModuleTemplate:Create(name:lower())
+    local module = VUI.ModuleTemplate:Create(lowerName)
     
     -- Register it with VUI
-    VUI:RegisterModule(name:lower(), module)
+    VUI:RegisterModule(lowerName, module)
     
     -- Update namespace
-    VUI[name:lower()] = module
+    VUI[lowerName] = module
+    
+    -- Register with Dashboard if available
+    if VUI.Dashboard and VUI.Dashboard.RegisterModule then
+        VUI.Dashboard:RegisterModule(lowerName, {
+            description = "VUI " .. name .. " Module",
+            getStatus = function()
+                return {
+                    enabled = VUI.db.profile.modules[lowerName] and VUI.db.profile.modules[lowerName].enabled or false
+                }
+            end,
+            config = function()
+                InterfaceOptionsFrame_OpenToCategory("VUI")
+                InterfaceOptionsFrame_OpenToCategory("VUI " .. name)
+            end
+        })
+    end
     
     return module
 end

@@ -426,8 +426,30 @@ function Skins:Initialize()
     self:InitializeBlizzardConfig()
     self:InitializeAddonConfig()
     
-    -- Cache for skinned elements
+    -- Initialize skin tracking tables
     self.skinnedFrames = {}
+    self.registeredSkins = {}
+    self.activeSkins = {}
+    self.hooked = {}
+    
+    -- Add skin categories
+    self.categories = {
+        ["Blizzard"] = {
+            name = "Blizzard UI",
+            description = "Skins for the default Blizzard user interface elements",
+            priority = 10,
+        },
+        ["Addons"] = {
+            name = "Addon Skins",
+            description = "Skins for supported third-party addons",
+            priority = 20,
+        },
+        ["Custom"] = {
+            name = "Custom Skins",
+            description = "User-created and custom skins",
+            priority = 30,
+        }
+    }
     
     -- Register for UI integration
     VUI.ModuleAPI:EnableModuleUI("skins", function(module)
@@ -437,6 +459,42 @@ function Skins:Initialize()
     -- Register events
     self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnPlayerEnteringWorld")
     self:RegisterEvent("ADDON_LOADED", "OnAddonLoaded")
+    
+    -- Register with dashboard if available
+    if VUI.Dashboard then
+        VUI.Dashboard:RegisterModule("Skins", {
+            icon = "Interface\\AddOns\\VUI\\media\\textures\\SUI",
+            description = "Customize the appearance of frames and elements",
+            category = "UI",
+            config = function() 
+                if InterfaceOptionsFrame_OpenToCategory then
+                    InterfaceOptionsFrame_OpenToCategory("VUI")
+                    InterfaceOptionsFrame_OpenToCategory("VUI Skins")
+                end
+            end,
+            getStatus = function() 
+                local activeCount = 0
+                local totalCount = 0
+                
+                for _, _ in pairs(self.registeredSkins) do
+                    totalCount = totalCount + 1
+                end
+                
+                for _, _ in pairs(self.activeSkins) do
+                    activeCount = activeCount + 1
+                end
+                
+                return {
+                    active = activeCount,
+                    total = totalCount,
+                    enabled = self.enabled
+                }
+            end
+        })
+    end
+    
+    -- Load skin modules
+    self:LoadSkinModules()
 end
 
 -- Enable module
@@ -722,6 +780,208 @@ function Skins:ResetSkins()
     self:ApplySkins()
     
     VUI:Print("Skin settings have been reset to defaults")
+end
+
+-- Function to register a skin module
+function Skins:RegisterSkin(name, category)
+    category = category or "Blizzard"
+    local skin = {
+        name = name,
+        category = category,
+        enabled = false,
+        OnEnable = function() end,
+        OnDisable = function() end,
+        OnInitialize = function() end
+    }
+    
+    self.registeredSkins[name] = skin
+    
+    -- Return the skin object for method chaining
+    return skin
+end
+
+-- Initialize all registered skins
+function Skins:InitializeSkins()
+    VUI:Print("Initializing skins...")
+    
+    for name, skin in pairs(self.registeredSkins) do
+        if type(skin.OnInitialize) == "function" then
+            skin:OnInitialize()
+        end
+        
+        -- Check if this skin should be enabled by default
+        local category = skin.category:lower()
+        local skinName = name:lower()
+        
+        if self.settings[category] and self.settings[category][skinName] then
+            self:EnableSkin(name)
+        end
+    end
+end
+
+-- Enable a specific skin
+function Skins:EnableSkin(name)
+    local skin = self.registeredSkins[name]
+    if not skin or skin.enabled then return end
+    
+    VUI:Print("Enabling skin: " .. name)
+    
+    -- Run the OnEnable function
+    if type(skin.OnEnable) == "function" then
+        skin:OnEnable()
+    end
+    
+    skin.enabled = true
+    self.activeSkins[name] = skin
+end
+
+-- Disable a specific skin
+function Skins:DisableSkin(name)
+    local skin = self.registeredSkins[name]
+    if not skin or not skin.enabled then return end
+    
+    VUI:Print("Disabling skin: " .. name)
+    
+    -- Run the OnDisable function
+    if type(skin.OnDisable) == "function" then
+        skin:OnDisable()
+    end
+    
+    skin.enabled = false
+    self.activeSkins[name] = nil
+end
+
+-- Get a list of registered skins by category
+function Skins:GetSkinsByCategory(category)
+    local result = {}
+    
+    for name, skin in pairs(self.registeredSkins) do
+        if skin.category == category then
+            table.insert(result, skin)
+        end
+    end
+    
+    return result
+end
+
+-- Load skin modules from directories
+function Skins:LoadSkinModules()
+    VUI:Print("Loading skin modules...")
+    
+    -- Load Blizzard skin modules
+    self:LoadBlizzardSkins()
+    
+    -- Load Addon skin modules
+    self:LoadAddonSkins()
+end
+
+-- Load Blizzard skin modules
+function Skins:LoadBlizzardSkins()
+    -- This would typically load skin modules from blizzard directory
+    -- For simplicity, we'll just register skins directly
+    
+    -- Register core UI skins
+    local actionBarSkin = self:RegisterSkin("ActionBar", "Blizzard")
+    actionBarSkin.OnEnable = function()
+        if self.blizzardSkinFuncs["actionbar"] then
+            self.blizzardSkinFuncs["actionbar"]()
+        end
+    end
+    
+    local bagsSkin = self:RegisterSkin("Bags", "Blizzard")
+    bagsSkin.OnEnable = function()
+        if self.blizzardSkinFuncs["bags"] then
+            self.blizzardSkinFuncs["bags"]()
+        end
+    end
+    
+    local unitframesSkin = self:RegisterSkin("UnitFrames", "Blizzard")
+    unitframesSkin.OnEnable = function()
+        if self.blizzardSkinFuncs["unitframes"] then
+            self.blizzardSkinFuncs["unitframes"]()
+        end
+    end
+    
+    local minimapSkin = self:RegisterSkin("Minimap", "Blizzard")
+    minimapSkin.OnEnable = function()
+        if self.blizzardSkinFuncs["minimap"] then
+            self.blizzardSkinFuncs["minimap"]()
+        end
+    end
+end
+
+-- Load Addon skin modules
+function Skins:LoadAddonSkins()
+    -- Register addon skins
+    local bartenderSkin = self:RegisterSkin("Bartender", "Addons")
+    bartenderSkin.OnEnable = function()
+        if self.addonSkinFuncs["bartender"] then
+            self.addonSkinFuncs["bartender"]()
+        end
+    end
+    
+    local classicuiSkin = self:RegisterSkin("ClassicUI", "Addons")
+    classicuiSkin.OnEnable = function()
+        if self.addonSkinFuncs["classicui"] then
+            self.addonSkinFuncs["classicui"]()
+        end
+    end
+    
+    local auctionatorSkin = self:RegisterSkin("Auctionator", "Addons")
+    auctionatorSkin.OnEnable = function()
+        if self.addonSkinFuncs["auctionator"] then
+            self.addonSkinFuncs["auctionator"]()
+        end
+    end
+    
+    local angrykeystone = self:RegisterSkin("AngryKeystone", "Addons")
+    angrykeystone.OnEnable = function()
+        if self.addonSkinFuncs["angrykeystones"] then
+            self.addonSkinFuncs["angrykeystones"]()
+        end
+    end
+    
+    local omniccSkin = self:RegisterSkin("OmniCC", "Addons")
+    omniccSkin.OnEnable = function()
+        if self.addonSkinFuncs["omnicc"] then
+            self.addonSkinFuncs["omnicc"]()
+        end
+    end
+    
+    local omnicdSkin = self:RegisterSkin("OmniCD", "Addons")
+    omnicdSkin.OnEnable = function()
+        if self.addonSkinFuncs["omnicd"] then
+            self.addonSkinFuncs["omnicd"]()
+        end
+    end
+    
+    local trufigcdSkin = self:RegisterSkin("TrufiGCD", "Addons")
+    trufigcdSkin.OnEnable = function()
+        if self.addonSkinFuncs["trufigcd"] then
+            self.addonSkinFuncs["trufigcd"]()
+        end
+    end
+    
+    local idtipSkin = self:RegisterSkin("IDTip", "Addons")
+    idtipSkin.OnEnable = function()
+        if self.addonSkinFuncs["idtip"] then
+            self.addonSkinFuncs["idtip"]()
+        end
+    end
+    
+    local buffoSkin = self:RegisterSkin("BuffOverlay", "Addons")
+    buffoSkin.OnEnable = function()
+        if self.addonSkinFuncs["buffoverlay"] then
+            self.addonSkinFuncs["buffoverlay"]()
+        end
+    end
+    
+    local moveAnySkin = self:RegisterSkin("MoveAny", "Addons")
+    moveAnySkin.OnEnable = function()
+        if self.addonSkinFuncs["moveany"] then
+            self.addonSkinFuncs["moveany"]()
+        end
+    end
 end
 
 -- Register the module with VUI
