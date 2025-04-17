@@ -75,3 +75,9 @@ modules\premadegroupfinder\config.lua
 modules\unitframes\init.lua
 modules\unitframes\core.lua
 modules\unitframes\config.lua
+
+# Skins
+modules\skins\init.lua
+modules\skins\core.lua
+modules\skins\blizzard\core.lua
+modules\skins\addons\core.lua
