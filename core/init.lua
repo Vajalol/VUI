@@ -119,6 +119,11 @@ function VUI:OnInitialize()
         self.Integration:RegisterThemeChangeHandler()
     end
     
+    -- Initialize Dashboard
+    if self.Dashboard then
+        self.Dashboard:Initialize()
+    end
+    
     -- Initialize modules
     for name, module in pairs(self.modules) do
         if module.Initialize then
@@ -213,9 +218,14 @@ end
 -- Slash command handler
 function VUI:SlashCommand(input)
     if not input or input:trim() == "" then
-        -- Open main configuration panel
-        InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
-        InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+        -- Toggle dashboard
+        if self.Dashboard then
+            self.Dashboard:Toggle()
+        else
+            -- Fallback to main configuration panel if dashboard isn't available
+            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+        end
     else
         -- Parse the command
         local command, arg = input:match("^(%S+)%s*(.*)$")
@@ -232,6 +242,17 @@ function VUI:SlashCommand(input)
             end
         elseif command == "version" then
             self:Print("Version: " .. self.version)
+        elseif command == "config" or command == "options" then
+            -- Open main configuration panel
+            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+        elseif command == "dashboard" then
+            -- Toggle dashboard
+            if self.Dashboard then
+                self.Dashboard:Toggle()
+            else
+                self:Print("Dashboard is not available.")
+            end
         elseif command == "list" then
             self:Print("Available modules:")
             for name, _ in pairs(self.modules) do
@@ -240,7 +261,9 @@ function VUI:SlashCommand(input)
             end
         else
             self:Print("Usage:")
-            self:Print("  /vui - Opens the configuration panel")
+            self:Print("  /vui - Opens the dashboard")
+            self:Print("  /vui dashboard - Toggles the dashboard")
+            self:Print("  /vui config - Opens the configuration panel")
             self:Print("  /vui enable <module> - Enables a module")
             self:Print("  /vui disable <module> - Disables a module")
             self:Print("  /vui toggle <module> - Toggles a module")
@@ -253,20 +276,44 @@ end
 -- Add Interface Options button to Game Menu
 function VUI:GameMenuFrame_OnShow()
     if not GameMenuButtonVUI then
-        local button = CreateFrame("Button", "GameMenuButtonVUI", GameMenuFrame, "GameMenuButtonTemplate")
-        button:SetText(VUI.name .. " Options")
+        local configButton = CreateFrame("Button", "GameMenuButtonVUI", GameMenuFrame, "GameMenuButtonTemplate")
+        configButton:SetText(VUI.name .. " Options")
         
-        -- Position the button
+        -- Position the first button under Addons
         local lastButton = GameMenuButtonAddons
-        button:SetPoint("TOP", lastButton, "BOTTOM", 0, -1)
+        configButton:SetPoint("TOP", lastButton, "BOTTOM", 0, -1)
         
-        -- Adjust other buttons
-        GameMenuButtonLogout:SetPoint("TOP", button, "BOTTOM", 0, -16)
+        -- Add Dashboard button if available
+        if self.Dashboard then
+            local dashButton = CreateFrame("Button", "GameMenuButtonVUIDashboard", GameMenuFrame, "GameMenuButtonTemplate")
+            dashButton:SetText(VUI.name .. " Dashboard")
+            
+            -- Position the dashboard button under config button
+            dashButton:SetPoint("TOP", configButton, "BOTTOM", 0, -1)
+            
+            -- Adjust other buttons
+            GameMenuButtonLogout:SetPoint("TOP", dashButton, "BOTTOM", 0, -16)
+            
+            -- Adjust the height of the Game Menu frame for two buttons
+            GameMenuFrame:SetHeight(GameMenuFrame:GetHeight() + configButton:GetHeight() + dashButton:GetHeight() + 2)
+            
+            -- Dashboard button click handler
+            dashButton:SetScript("OnClick", function()
+                HideUIPanel(GameMenuFrame)
+                if self.Dashboard then
+                    self.Dashboard:Show()
+                end
+            end)
+        else
+            -- Adjust other buttons
+            GameMenuButtonLogout:SetPoint("TOP", configButton, "BOTTOM", 0, -16)
+            
+            -- Adjust the height of the Game Menu frame for one button
+            GameMenuFrame:SetHeight(GameMenuFrame:GetHeight() + configButton:GetHeight() + 1)
+        end
         
-        -- Adjust the height of the Game Menu frame
-        GameMenuFrame:SetHeight(GameMenuFrame:GetHeight() + button:GetHeight() + 1)
-        
-        button:SetScript("OnClick", function()
+        -- Config button click handler
+        configButton:SetScript("OnClick", function()
             HideUIPanel(GameMenuFrame)
             InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
             InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)

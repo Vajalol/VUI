@@ -36,6 +36,7 @@ core\config.lua
 core\module_template.lua
 core\module_api.lua
 core\integration.lua
+core\dashboard.lua
 core\demo.lua
 core\test.lua
 
@@ -60,6 +61,27 @@ modules\moveany\config.lua
 # Auctionator
 modules\auctionator\init.lua
 modules\auctionator\core.lua
+
+# AngryKeystones
+modules\angrykeystone\init.lua
+modules\angrykeystone\core.lua
+modules\angrykeystone\config.lua
+
+# OmniCC
+modules\omnicc\init.lua
+modules\omnicc\core.lua
+modules\omnicc\config.lua
+
+# OmniCD
+modules\omnicd\init.lua
+modules\omnicd\core.lua
+modules\omnicd\config.lua
+
+# idTip
+modules\idtip\init.lua
+modules\idtip\core.lua
+modules\idtip\config.lua
+modules\idtip\idtip.lua
 
 # Example (Integration Demo)
 modules\example\init.lua
@@ -89,3 +111,7 @@ modules\profiles\core.lua
 # Automation
 modules\automation\init.lua
 modules\automation\core.lua
+
+# Visual Configuration
+modules\visualconfig\init.lua
+modules\visualconfig\core.lua

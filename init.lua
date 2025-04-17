@@ -9,6 +9,7 @@ VUI.version = "0.0.1"
 VUI.author = "VortexQ8"
 
 -- Add module tables
+-- Original modules
 VUI.BuffOverlay = {}
 VUI.TrufiGCD = {}
 VUI.MoveAny = {}
@@ -16,16 +17,35 @@ VUI.Auctionator = {}
 VUI.AngryKeystones = {}
 VUI.OmniCC = {}
 VUI.OmniCD = {}
+VUI.idTip = {}
+VUI.premadegroupfinder = {}
+
+-- Core UI & Functionality modules
+VUI.unitframes = {}
+VUI.skins = {}
+VUI.profiles = {}
+VUI.automation = {}
+VUI.visualconfig = {}
 
 -- Internal module tracking
 VUI.modules = {
+    -- Original modules
     "BuffOverlay",
     "TrufiGCD",
     "MoveAny",
     "Auctionator",
     "AngryKeystones",
     "OmniCC",
-    "OmniCD"
+    "OmniCD",
+    "idTip",
+    "premadegroupfinder",
+    
+    -- Core UI & Functionality modules
+    "unitframes",
+    "skins",
+    "profiles",
+    "automation",
+    "visualconfig"
 }
 
 -- Module status tracking

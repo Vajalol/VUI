@@ -85,10 +85,177 @@ VUI.options = {
                 },
             },
         },
+        dashboard = {
+            type = "group",
+            name = "Dashboard",
+            order = 2,
+            args = {
+                header = {
+                    type = "header",
+                    name = "Dashboard Settings",
+                    order = 1,
+                },
+                desc = {
+                    type = "description",
+                    name = "Configure the VUI Dashboard panel",
+                    order = 2,
+                },
+                enabled = {
+                    type = "toggle",
+                    name = "Enable Dashboard",
+                    desc = "Enable or disable the VUI Dashboard",
+                    order = 3,
+                    get = function() return VUI.db.profile.dashboard.enabled end,
+                    set = function(_, value)
+                        VUI.db.profile.dashboard.enabled = value
+                        if value and VUI.Dashboard then
+                            VUI.Dashboard:Enable()
+                        elseif not value and VUI.Dashboard then
+                            VUI.Dashboard:Disable()
+                        end
+                    end,
+                },
+                autoHide = {
+                    type = "toggle",
+                    name = "Auto-Hide Dashboard",
+                    desc = "Automatically hide the dashboard when not in use",
+                    order = 4,
+                    get = function() return VUI.db.profile.dashboard.autoHide end,
+                    set = function(_, value)
+                        VUI.db.profile.dashboard.autoHide = value
+                        if VUI.Dashboard then
+                            VUI.Dashboard:Refresh()
+                        end
+                    end,
+                },
+                spacer1 = {
+                    type = "description",
+                    name = " ",
+                    order = 5,
+                },
+                scale = {
+                    type = "range",
+                    name = "Dashboard Scale",
+                    desc = "Adjust the scale of the Dashboard panel",
+                    min = 0.5,
+                    max = 2.0,
+                    step = 0.05,
+                    order = 6,
+                    get = function() return VUI.db.profile.dashboard.scale end,
+                    set = function(_, value)
+                        VUI.db.profile.dashboard.scale = value
+                        if VUI.Dashboard then
+                            VUI.Dashboard:Refresh()
+                        end
+                    end,
+                },
+                width = {
+                    type = "range",
+                    name = "Width",
+                    desc = "Adjust the width of the Dashboard panel",
+                    min = 500,
+                    max = 1200,
+                    step = 10,
+                    order = 7,
+                    get = function() return VUI.db.profile.dashboard.width end,
+                    set = function(_, value)
+                        VUI.db.profile.dashboard.width = value
+                        if VUI.Dashboard then
+                            VUI.Dashboard:Refresh()
+                        end
+                    end,
+                },
+                height = {
+                    type = "range",
+                    name = "Height",
+                    desc = "Adjust the height of the Dashboard panel",
+                    min = 400,
+                    max = 800,
+                    step = 10,
+                    order = 8,
+                    get = function() return VUI.db.profile.dashboard.height end,
+                    set = function(_, value)
+                        VUI.db.profile.dashboard.height = value
+                        if VUI.Dashboard then
+                            VUI.Dashboard:Refresh()
+                        end
+                    end,
+                },
+                spacer2 = {
+                    type = "description",
+                    name = " ",
+                    order = 9,
+                },
+                theme = {
+                    type = "select",
+                    name = "Dashboard Theme",
+                    desc = "Choose the theme for the Dashboard",
+                    order = 10,
+                    values = {
+                        ["dark"] = "Dark",
+                        ["light"] = "Light",
+                    },
+                    get = function() return VUI.db.profile.dashboard.theme end,
+                    set = function(_, value)
+                        VUI.db.profile.dashboard.theme = value
+                        if VUI.Dashboard then
+                            VUI.Dashboard:Refresh()
+                        end
+                    end,
+                },
+                display = {
+                    type = "multiselect",
+                    name = "Display Elements",
+                    desc = "Choose which elements to display on the Dashboard",
+                    order = 11,
+                    values = {
+                        ["showModuleCards"] = "Module Cards",
+                        ["showStatusDisplay"] = "Status Display",
+                    },
+                    get = function(_, key)
+                        return VUI.db.profile.dashboard[key]
+                    end,
+                    set = function(_, key, value)
+                        VUI.db.profile.dashboard[key] = value
+                        if VUI.Dashboard then
+                            VUI.Dashboard:Refresh()
+                        end
+                    end,
+                },
+                spacer3 = {
+                    type = "description",
+                    name = " ",
+                    order = 12,
+                },
+                resetPosition = {
+                    type = "execute",
+                    name = "Reset Position",
+                    desc = "Reset the Dashboard position to the center of the screen",
+                    order = 13,
+                    func = function()
+                        VUI.db.profile.dashboard.position = { x = 0, y = 0 }
+                        if VUI.Dashboard then
+                            VUI.Dashboard:Refresh()
+                        end
+                    end,
+                },
+                showDashboard = {
+                    type = "execute",
+                    name = "Show Dashboard",
+                    desc = "Display the Dashboard",
+                    order = 14,
+                    func = function()
+                        if VUI.Dashboard then
+                            VUI.Dashboard:Show()
+                        end
+                    end,
+                },
+            },
+        },
         appearance = {
             type = "group",
             name = "Appearance",
-            order = 2,
+            order = 3,
             args = {
                 header = {
                     type = "header",
@@ -230,7 +397,7 @@ VUI.options = {
         modules = {
             type = "group",
             name = "Modules",
-            order = 3,
+            order = 4,
             args = {
                 header = {
                     type = "header",
@@ -287,7 +454,7 @@ VUI.options = {
         profiles = {
             type = "group",
             name = "Profiles",
-            order = 4,
+            order = 5,
             args = {
                 header = {
                     type = "header",

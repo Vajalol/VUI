@@ -12,17 +12,50 @@ VUI.omnicc.defaults = {
 
 -- Initialize module
 function VUI.omnicc:Initialize()
-    -- Check if enabled
-    if not VUI.db.profile.modules.omnicc.enabled then return end
-
     -- Initialize module components
     self:SetupHooks()
 
     -- Print initialization message
-    VUI:Print("omnicc module initialized")
+    VUI:Print("OmniCC module initialized")
+    
+    -- Enable if set in profile
+    if VUI.db.profile.modules.omnicc.enabled then
+        self:Enable()
+    end
+end
+
+-- Enable module
+function VUI.omnicc:Enable()
+    self.enabled = true
+    
+    -- Apply hooks and show frames
+    self:ApplyHooks()
+    
+    VUI:Print("OmniCC module enabled")
+end
+
+-- Disable module
+function VUI.omnicc:Disable()
+    self.enabled = false
+    
+    -- Remove hooks and hide frames
+    self:RemoveHooks()
+    
+    VUI:Print("OmniCC module disabled")
 end
 
 -- Set up hooks for this module
 function VUI.omnicc:SetupHooks()
-    -- Hook into necessary WoW functions/frames
+    -- Define hooks but don't apply them yet
+end
+
+-- Apply hooks
+function VUI.omnicc:ApplyHooks()
+    if not self.enabled then return end
+    -- Apply the hooks defined in SetupHooks
+end
+
+-- Remove hooks
+function VUI.omnicc:RemoveHooks()
+    -- Remove any applied hooks
 end

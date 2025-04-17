@@ -21,6 +21,19 @@ VUI.defaults = {
             useClassColors = true,
         },
         
+        -- Dashboard settings
+        dashboard = {
+            enabled = true,
+            scale = 1.0,
+            position = { x = 0, y = 0 },
+            width = 800,
+            height = 600,
+            autoHide = false,
+            showModuleCards = true,
+            showStatusDisplay = true,
+            theme = "dark",
+        },
+        
         -- Modules settings with their defaults
         modules = {
             -- BuffOverlay Module
@@ -167,6 +180,21 @@ VUI.defaults = {
                     },
                 },
                 spellFilters = {},
+            },
+            
+            -- idTip Module
+            idtip = {
+                enabled = true,
+                showIds = true,
+                showItemIds = true,
+                showSpellIds = true,
+                showNpcIds = true,
+                showQuestIds = true,
+                showAchievementIds = true,
+                showTalentIds = true,
+                showCurrencyIds = true,
+                coloredText = true,
+                iconDisplay = true,
             },
         }
     },
