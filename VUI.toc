@@ -81,3 +81,7 @@ modules\skins\init.lua
 modules\skins\core.lua
 modules\skins\blizzard\core.lua
 modules\skins\addons\core.lua
+
+# Profiles
+modules\profiles\init.lua
+modules\profiles\core.lua
