@@ -70,3 +70,8 @@ modules\example\config.lua
 modules\premadegroupfinder\init.lua
 modules\premadegroupfinder\core.lua
 modules\premadegroupfinder\config.lua
+
+# UnitFrames
+modules\unitframes\init.lua
+modules\unitframes\core.lua
+modules\unitframes\config.lua
