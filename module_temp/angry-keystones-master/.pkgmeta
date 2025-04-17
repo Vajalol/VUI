@@ -1,7 +1,0 @@
-package-as: AngryKeystones
-
-manual-changelog: CHANGELOG.md
-
-ignore:
-	- CHANGELOG.md
-	- README.md

@@ -37,8 +37,6 @@ core\module_template.lua
 core\module_api.lua
 core\integration.lua
 core\dashboard.lua
-core\demo.lua
-core\test.lua
 
 # Modules
 # BuffOverlay
@@ -82,11 +80,6 @@ modules\idtip\init.lua
 modules\idtip\core.lua
 modules\idtip\config.lua
 modules\idtip\idtip.lua
-
-# Example (Integration Demo)
-modules\example\init.lua
-modules\example\core.lua
-modules\example\config.lua
 
 # Premade Group Finder
 modules\premadegroupfinder\init.lua
