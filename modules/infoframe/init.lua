@@ -33,10 +33,20 @@ local defaults = {
         showBorder = true,
     },
     
+    -- Stats Frame settings
+    statsFrame = {
+        locked = false,
+        scale = 1.0,
+        alpha = 0.8,
+        strata = "MEDIUM",
+        position = {"CENTER", "UIParent", "CENTER", 300, 0},
+    },
+    
     -- Feature settings
     features = {
         showSpecAndLootSpec = true,
         showStats = true,
+        showPlayerStatsFrame = true,
         showBattleRezCooldown = true,
         showBloodlustCooldown = true,
         showItemLevel = true,
@@ -222,11 +232,23 @@ local config = {
             end,
             disabled = function() return not InfoFrame.enabled end,
         },
+        showPlayerStatsFrame = {
+            type = "toggle",
+            name = "Show Player Stats Frame",
+            desc = "Show the advanced player stats frame with colored values and cooldown tracking",
+            order = 23,
+            get = function() return InfoFrame.settings.features.showPlayerStatsFrame end,
+            set = function(_, value) 
+                InfoFrame.settings.features.showPlayerStatsFrame = value 
+                InfoFrame:UpdateSettings()
+            end,
+            disabled = function() return not InfoFrame.enabled end,
+        },
         statsFormat = {
             type = "select",
             name = "Stats Format",
             desc = "Choose how to display stats",
-            order = 23,
+            order = 24,
             values = {
                 ["percentage"] = "Percentage",
                 ["rating"] = "Rating",
@@ -242,7 +264,7 @@ local config = {
             type = "toggle",
             name = "Show Battle Rez Cooldown",
             desc = "Show battle resurrection cooldown",
-            order = 24,
+            order = 25,
             get = function() return InfoFrame.settings.features.showBattleRezCooldown end,
             set = function(_, value) 
                 InfoFrame.settings.features.showBattleRezCooldown = value 
@@ -254,7 +276,7 @@ local config = {
             type = "toggle",
             name = "Show Bloodlust Cooldown",
             desc = "Show bloodlust/heroism cooldown",
-            order = 25,
+            order = 26,
             get = function() return InfoFrame.settings.features.showBloodlustCooldown end,
             set = function(_, value) 
                 InfoFrame.settings.features.showBloodlustCooldown = value 
@@ -266,7 +288,7 @@ local config = {
             type = "toggle",
             name = "Show Item Level",
             desc = "Show player item level",
-            order = 26,
+            order = 27,
             get = function() return InfoFrame.settings.features.showItemLevel end,
             set = function(_, value) 
                 InfoFrame.settings.features.showItemLevel = value 
@@ -278,7 +300,7 @@ local config = {
             type = "toggle",
             name = "Show Latency",
             desc = "Show network latency",
-            order = 27,
+            order = 28,
             get = function() return InfoFrame.settings.features.showLatency end,
             set = function(_, value) 
                 InfoFrame.settings.features.showLatency = value 
@@ -290,7 +312,7 @@ local config = {
             type = "toggle",
             name = "Show FPS",
             desc = "Show frames per second",
-            order = 28,
+            order = 29,
             get = function() return InfoFrame.settings.features.showFPS end,
             set = function(_, value) 
                 InfoFrame.settings.features.showFPS = value 
@@ -302,7 +324,7 @@ local config = {
             type = "toggle",
             name = "Show Durability",
             desc = "Show equipment durability",
-            order = 29,
+            order = 30,
             get = function() return InfoFrame.settings.features.showDurability end,
             set = function(_, value) 
                 InfoFrame.settings.features.showDurability = value 
@@ -314,7 +336,7 @@ local config = {
             type = "range",
             name = "Update Interval",
             desc = "Set how often the info frame updates (in seconds)",
-            order = 30,
+            order = 31,
             min = 0.1,
             max = 5.0,
             step = 0.1,
@@ -324,6 +346,53 @@ local config = {
                 InfoFrame:UpdateSettings()
             end,
             disabled = function() return not InfoFrame.enabled end,
+        },
+        statsFrameHeader = {
+            type = "header",
+            name = "Player Stats Frame Settings",
+            order = 35,
+        },
+        statsFrameLocked = {
+            type = "toggle",
+            name = "Lock Player Stats Frame",
+            desc = "Lock or unlock the player stats frame position",
+            order = 36,
+            get = function() return InfoFrame.settings.statsFrame.locked end,
+            set = function(_, value) 
+                InfoFrame.settings.statsFrame.locked = value 
+                InfoFrame:UpdateSettings()
+            end,
+            disabled = function() return not (InfoFrame.enabled and InfoFrame.settings.features.showPlayerStatsFrame) end,
+        },
+        statsFrameScale = {
+            type = "range",
+            name = "Player Stats Frame Scale",
+            desc = "Set the scale of the player stats frame",
+            order = 37,
+            min = 0.5,
+            max = 2.0,
+            step = 0.1,
+            get = function() return InfoFrame.settings.statsFrame.scale end,
+            set = function(_, value) 
+                InfoFrame.settings.statsFrame.scale = value 
+                InfoFrame:UpdateSettings()
+            end,
+            disabled = function() return not (InfoFrame.enabled and InfoFrame.settings.features.showPlayerStatsFrame) end,
+        },
+        statsFrameAlpha = {
+            type = "range",
+            name = "Player Stats Frame Alpha",
+            desc = "Set the transparency of the player stats frame",
+            order = 38,
+            min = 0.1,
+            max = 1.0,
+            step = 0.1,
+            get = function() return InfoFrame.settings.statsFrame.alpha end,
+            set = function(_, value) 
+                InfoFrame.settings.statsFrame.alpha = value 
+                InfoFrame:UpdateSettings()
+            end,
+            disabled = function() return not (InfoFrame.enabled and InfoFrame.settings.features.showPlayerStatsFrame) end,
         },
         statsHeader = {
             type = "header",

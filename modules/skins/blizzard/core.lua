@@ -281,6 +281,9 @@ blizzardSkins.Character = function(self) if not self.settings.blizzard.character
 blizzardSkins.Chat = function(self)
     if not self.settings.blizzard.chat then return end
     
+    -- Get chat settings from VUI.db
+    local chatSettings = VUI.db.profile.modules.chat or {}
+    
     -- Apply VUI styling to chat frames
     for i = 1, NUM_CHAT_WINDOWS do
         local chatFrame = _G["ChatFrame" .. i]
@@ -289,15 +292,23 @@ blizzardSkins.Chat = function(self)
         if chatFrame and not chatFrame.VUISkinned then
             -- Style main chat frame
             chatFrame:SetClampRectInsets(0, 0, 0, 0)
-            chatFrame:SetFont(VUI:GetFont(), VUI.db.profile.appearance.fontSize)
+            
+            -- Apply user font and font size settings
+            local fontSize = chatSettings.fontSize or VUI.db.profile.appearance.fontSize
+            local font = VUI:GetFont(chatSettings.font or VUI.db.profile.appearance.font)
+            
+            chatFrame:SetFont(font, fontSize)
             chatFrame:SetShadowColor(0, 0, 0, 0.5)
             chatFrame:SetShadowOffset(1, -1)
+            
+            -- Set history size to 500 lines (or user setting)
+            chatFrame:SetMaxLines(chatSettings.chatHistory or 500)
             
             -- Remove chat frame background and border textures
             local frameName = chatFrame:GetName()
             _G[frameName .. "Background"]:SetTexture(nil)
             _G[frameName .. "Tab"]:SetAlpha(1.0)
-            _G[frameName .. "TabText"]:SetFont(VUI:GetFont(), VUI.db.profile.appearance.fontSize)
+            _G[frameName .. "TabText"]:SetFont(font, fontSize)
             _G[frameName .. "TabText"]:SetShadowColor(0, 0, 0, 0.5)
             _G[frameName .. "TabText"]:SetShadowOffset(1, -1)
             
@@ -384,22 +395,26 @@ blizzardSkins.Chat = function(self)
                 editBox:SetShadowOffset(1, -1)
             end
             
-            -- Add copy button if not exists
-            if not chatFrame.vui_copyButton then
+            -- Add copy button if not exists or settings say to show it
+            local showCopyButton = chatSettings.showCopyButton == nil and true or chatSettings.showCopyButton
+            
+            if showCopyButton and not chatFrame.vui_copyButton then
                 local copyButton = CreateFrame("Button", nil, chatFrame)
-                copyButton:SetSize(16, 16)
+                copyButton:SetSize(20, 20) -- Slightly larger button
                 copyButton:SetPoint("TOPRIGHT", chatFrame, "TOPRIGHT", -5, -5)
                 copyButton:SetNormalTexture("Interface\\AddOns\\VUI\\media\\Textures\\Chat\\copynormal.tga")
                 copyButton:SetHighlightTexture("Interface\\AddOns\\VUI\\media\\Textures\\Chat\\copyhighlight.tga")
-                copyButton:SetAlpha(0)
+                
+                -- Initial alpha based on chat settings
+                local initialAlpha = 0
                 
                 -- Show/hide on mouseover
                 chatFrame:HookScript("OnEnter", function() copyButton:SetAlpha(1) end)
-                chatFrame:HookScript("OnLeave", function() copyButton:SetAlpha(0) end)
+                chatFrame:HookScript("OnLeave", function() copyButton:SetAlpha(initialAlpha) end)
                 copyButton:HookScript("OnEnter", function() copyButton:SetAlpha(1) end)
                 copyButton:HookScript("OnLeave", function() 
                     if not chatFrame:IsMouseOver() then
-                        copyButton:SetAlpha(0)
+                        copyButton:SetAlpha(initialAlpha)
                     end
                 end)
                 
@@ -413,7 +428,7 @@ blizzardSkins.Chat = function(self)
                             tile = true, tileSize = 32, edgeSize = 32,
                             insets = { left = 11, right = 12, top = 12, bottom = 11 }
                         })
-                        copyFrame:SetSize(500, 400)
+                        copyFrame:SetSize(600, 500) -- Larger frame for better readability
                         copyFrame:SetPoint("CENTER", UIParent, "CENTER")
                         copyFrame:SetFrameStrata("DIALOG")
                         copyFrame:EnableMouse(true)
@@ -428,14 +443,30 @@ blizzardSkins.Chat = function(self)
                         title:SetPoint("TOPLEFT", 15, -15)
                         title:SetText("VUI Chat Copy")
                         
+                        -- Add instructions text
+                        local instructions = copyFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                        instructions:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -5)
+                        instructions:SetText("Press Ctrl+C to copy the selected text")
+                        
                         -- Add close button
                         local closeButton = CreateFrame("Button", nil, copyFrame, "UIPanelCloseButton")
                         closeButton:SetPoint("TOPRIGHT", -5, -5)
                         
+                        -- Add Select All button
+                        local selectAllButton = CreateFrame("Button", nil, copyFrame, "UIPanelButtonTemplate")
+                        selectAllButton:SetText("Select All")
+                        selectAllButton:SetWidth(80)
+                        selectAllButton:SetHeight(22)
+                        selectAllButton:SetPoint("BOTTOMRIGHT", copyFrame, "BOTTOMRIGHT", -15, 15)
+                        selectAllButton:SetScript("OnClick", function()
+                            _G.VUIChatCopyEditBox:HighlightText()
+                            _G.VUIChatCopyEditBox:SetFocus()
+                        end)
+                        
                         -- Add ScrollFrame
                         local scrollFrame = CreateFrame("ScrollFrame", "VUIChatCopyScrollFrame", copyFrame, "UIPanelScrollFrameTemplate")
                         scrollFrame:SetPoint("TOPLEFT", 15, -40)
-                        scrollFrame:SetPoint("BOTTOMRIGHT", -35, 15)
+                        scrollFrame:SetPoint("BOTTOMRIGHT", -35, 45) -- Make room for the button
                         
                         -- Add EditBox for text display
                         local editBox = CreateFrame("EditBox", "VUIChatCopyEditBox", scrollFrame)
@@ -467,6 +498,55 @@ blizzardSkins.Chat = function(self)
                 end)
                 
                 chatFrame.vui_copyButton = copyButton
+                
+                -- Set initial visibility based on settings
+                copyButton:SetAlpha(initialAlpha)
+            elseif not showCopyButton and chatFrame.vui_copyButton then
+                -- Hide copy button if setting is disabled
+                chatFrame.vui_copyButton:Hide()
+            end
+            
+            -- Add class icons to chat messages if enabled
+            if chatSettings.showClassIcons then
+                -- Hook the AddMessage function to add class icons
+                if not chatFrame.AddMessageOriginal then
+                    chatFrame.AddMessageOriginal = chatFrame.AddMessage
+                    
+                    chatFrame.AddMessage = function(self, text, ...)
+                        -- Process the text to add class icons
+                        if text and type(text) == "string" then
+                            -- Match player names in chat and add class icons
+                            text = text:gsub("|Hplayer:(.-)|h%[(.-)%]|h", function(playerLink, playerName)
+                                -- Get player class/spec info if available
+                                local _, class = GetPlayerInfoByGUID(playerLink)
+                                if class then
+                                    local classColor = RAID_CLASS_COLORS[class]
+                                    local iconSize = chatSettings.classIconSize or 14
+                                    local iconPath = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
+                                    local iconString = string.format("|T%s:%d:%d:0:0:256:256:%d:%d:%d:%d|t", 
+                                        iconPath, iconSize, iconSize, 
+                                        CLASS_ICON_TCOORDS[class][1] * 256, 
+                                        CLASS_ICON_TCOORDS[class][2] * 256, 
+                                        CLASS_ICON_TCOORDS[class][3] * 256, 
+                                        CLASS_ICON_TCOORDS[class][4] * 256)
+                                    
+                                    -- Format with class color and icon
+                                    return string.format("|Hplayer:%s|h%s[%s]|h", 
+                                        playerLink, 
+                                        iconString, 
+                                        playerName)
+                                end
+                                return "|Hplayer:" .. playerLink .. "|h[" .. playerName .. "]|h"
+                            end)
+                        end
+                        
+                        return chatFrame:AddMessageOriginal(text, ...)
+                    end
+                end
+            elseif chatFrame.AddMessageOriginal then
+                -- Restore original AddMessage if class icons are disabled
+                chatFrame.AddMessage = chatFrame.AddMessageOriginal
+                chatFrame.AddMessageOriginal = nil
             end
             
             chatFrame.VUISkinned = true

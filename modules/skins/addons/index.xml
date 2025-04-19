@@ -1,0 +1,10 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <!-- Addon skins -->
+    <Script file="auctionator.lua"/>
+    <Script file="dbm.lua"/>
+    <Script file="details.lua"/>
+    <Script file="weakauras.lua"/>
+    <Script file="plater.lua"/>
+    <Script file="raiderio.lua"/>
+</Ui>

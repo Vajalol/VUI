@@ -103,6 +103,9 @@ function VUI:OnInitialize()
     -- Initialize the UI framework
     self:InitializeUI()
     
+    -- Setup profile options
+    self:SetupProfileOptions()
+    
     -- Register options table
     LibStub("AceConfig-3.0"):RegisterOptionsTable(addonName, self.options)
     self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(addonName, self.name)
@@ -122,6 +125,11 @@ function VUI:OnInitialize()
     -- Initialize Dashboard
     if self.Dashboard then
         self.Dashboard:Initialize()
+    end
+    
+    -- Initialize Chat module (core feature)
+    if self.Chat then
+        self.Chat:Initialize()
     end
     
     -- Initialize modules
@@ -167,7 +175,9 @@ function VUI:InitializeUI()
 end
 
 -- Update UI when settings change
-function VUI:UpdateUI()
+function VUI:UpdateUI(_, database, profileKey)
+    self:Print("Applying profile changes...")
+    
     -- Update framework UI elements
     if self.UI and self.UI.UpdateAppearance then
         self.UI:UpdateAppearance()
@@ -183,6 +193,13 @@ function VUI:UpdateUI()
         if self:IsModuleEnabled(name) and module.UpdateUI then
             module:UpdateUI()
         end
+    end
+    
+    -- Notify the user that the profile change is complete
+    if profileKey then
+        self:Print("Profile '" .. profileKey .. "' has been applied.")
+    else
+        self:Print("Settings updated.")
     end
 end
 
@@ -253,6 +270,10 @@ function VUI:SlashCommand(input)
             else
                 self:Print("Dashboard is not available.")
             end
+        elseif command == "profile" or command == "profiles" then
+            -- Open profiles section of the config panel
+            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+            LibStub("AceConfigDialog-3.0"):SelectGroup(addonName, "profiles")
         elseif command == "list" then
             self:Print("Available modules:")
             for name, _ in pairs(self.modules) do
@@ -264,6 +285,7 @@ function VUI:SlashCommand(input)
             self:Print("  /vui - Opens the dashboard")
             self:Print("  /vui dashboard - Toggles the dashboard")
             self:Print("  /vui config - Opens the configuration panel")
+            self:Print("  /vui profile - Opens the profile management panel")
             self:Print("  /vui enable <module> - Enables a module")
             self:Print("  /vui disable <module> - Disables a module")
             self:Print("  /vui toggle <module> - Toggles a module")

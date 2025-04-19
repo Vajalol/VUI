@@ -227,6 +227,9 @@ function InfoFrame:CreateInfoFrame()
     self.frame.itemLevel:SetPoint("TOPLEFT", self.frame.lootSpec, "BOTTOMLEFT", 0, -5)
     self.frame.itemLevel:SetText("Item Level: 0")
     
+    -- Create the player stats frame (transparent, movable)
+    self:CreatePlayerStatsFrame()
+    
     -- Add section for stats
     self.frame.stats = CreateFrame("Frame", nil, self.frame)
     self.frame.stats:SetPoint("TOPLEFT", self.frame.itemLevel, "BOTTOMLEFT", 0, -10)
@@ -316,6 +319,139 @@ function InfoFrame:CreateInfoFrame()
         self.frame:Show()
     else
         self.frame:Hide()
+    end
+end
+
+function InfoFrame:CreatePlayerStatsFrame()
+    -- Create a dedicated player stats frame
+    self.statsFrame = CreateFrame("Frame", "VUIPlayerStatsFrame", UIParent)
+    self.statsFrame:SetSize(180, 180)
+    self.statsFrame:SetPoint("CENTER", UIParent, "CENTER", 300, 0)
+    
+    -- Make it movable
+    self.statsFrame:SetMovable(true)
+    self.statsFrame:EnableMouse(true)
+    self.statsFrame:RegisterForDrag("LeftButton")
+    self.statsFrame:SetScript("OnDragStart", function(frame)
+        if not self.settings.statsFrame.locked then
+            frame:StartMoving()
+        end
+    end)
+    self.statsFrame:SetScript("OnDragStop", function(frame)
+        frame:StopMovingOrSizing()
+        -- Save position
+        local point, relativeTo, relativePoint, xOffset, yOffset = frame:GetPoint()
+        self.settings.statsFrame.position = {point, relativeTo:GetName(), relativePoint, xOffset, yOffset}
+    end)
+    
+    -- Create transparent backdrop
+    self.statsFrame:SetBackdrop({
+        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 16,
+        edgeSize = 16,
+        insets = {left = 4, right = 4, top = 4, bottom = 4}
+    })
+    
+    -- Set background color (transparent)
+    self.statsFrame:SetBackdropColor(0, 0, 0, 0.4)
+    
+    -- Set border color (slightly visible)
+    self.statsFrame:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.7)
+    
+    -- Create header
+    self.statsFrame.header = self.statsFrame:CreateFontString(nil, "OVERLAY")
+    self.statsFrame.header:SetFont(self.settings.general.fontFamily, self.settings.general.fontSize + 2, self.settings.general.fontOutline)
+    self.statsFrame.header:SetPoint("TOPLEFT", self.statsFrame, "TOPLEFT", 10, -10)
+    self.statsFrame.header:SetText("Player Stats")
+    
+    -- Create colored stat strings
+    local statOffsetY = -30
+    local statHeight = 16
+    local fontSize = self.settings.general.fontSize
+    local fontFamily = self.settings.general.fontFamily
+    local fontOutline = self.settings.general.fontOutline
+    
+    -- Define stat colors
+    local statColors = {
+        crit = {r = 0.9, g = 0.3, b = 0.3},        -- Light Red
+        haste = {r = 0.9, g = 0.9, b = 0.2},        -- Yellow
+        mastery = {r = 0.2, g = 0.6, b = 0.9},      -- Light Blue
+        versatility = {r = 0.2, g = 0.9, b = 0.2},  -- Green
+        speed = {r = 0.7, g = 0.4, b = 0.9},        -- Light Purple
+        leech = {r = 0.2, g = 0.9, b = 0.4},        -- Green
+        avoidance = {r = 1.0, g = 1.0, b = 1.0}     -- White
+    }
+    
+    -- Add colored stat strings
+    self.playerStatStrings = {}
+    
+    local function CreatePlayerStatString(statName, displayName, color)
+        self.playerStatStrings[statName] = self.statsFrame:CreateFontString(nil, "OVERLAY")
+        self.playerStatStrings[statName]:SetFont(fontFamily, fontSize, fontOutline)
+        self.playerStatStrings[statName]:SetPoint("TOPLEFT", self.statsFrame, "TOPLEFT", 10, statOffsetY)
+        self.playerStatStrings[statName]:SetText(displayName .. ": 0%")
+        self.playerStatStrings[statName]:SetTextColor(color.r, color.g, color.b)
+        statOffsetY = statOffsetY - statHeight
+    end
+    
+    CreatePlayerStatString("crit", "Crit", statColors.crit)
+    CreatePlayerStatString("haste", "Haste", statColors.haste)
+    CreatePlayerStatString("mastery", "Mastery", statColors.mastery)
+    CreatePlayerStatString("versatility", "Versatility", statColors.versatility)
+    CreatePlayerStatString("speed", "Speed", statColors.speed)
+    CreatePlayerStatString("leech", "Leech", statColors.leech)
+    CreatePlayerStatString("avoidance", "Avoidance", statColors.avoidance)
+    
+    -- Create cooldown trackers section
+    statOffsetY = statOffsetY - 10  -- Add some spacing
+    
+    -- Bloodlust Cooldown Tracker
+    self.statsFrame.bloodlustIcon = CreateFrame("Frame", nil, self.statsFrame)
+    self.statsFrame.bloodlustIcon:SetSize(24, 24)
+    self.statsFrame.bloodlustIcon:SetPoint("TOPLEFT", self.statsFrame, "TOPLEFT", 10, statOffsetY)
+    
+    self.statsFrame.bloodlustIcon.texture = self.statsFrame.bloodlustIcon:CreateTexture(nil, "OVERLAY")
+    self.statsFrame.bloodlustIcon.texture:SetAllPoints()
+    self.statsFrame.bloodlustIcon.texture:SetTexture(GetSpellTexture(2825)) -- Bloodlust spell texture
+    
+    self.statsFrame.bloodlustIcon.cooldown = CreateFrame("Cooldown", nil, self.statsFrame.bloodlustIcon, "CooldownFrameTemplate")
+    self.statsFrame.bloodlustIcon.cooldown:SetAllPoints()
+    self.statsFrame.bloodlustIcon.cooldown:SetDrawEdge(true)
+    self.statsFrame.bloodlustIcon.cooldown:SetDrawSwipe(true)
+    
+    self.statsFrame.bloodlustText = self.statsFrame:CreateFontString(nil, "OVERLAY")
+    self.statsFrame.bloodlustText:SetFont(fontFamily, fontSize - 1, fontOutline)
+    self.statsFrame.bloodlustText:SetPoint("LEFT", self.statsFrame.bloodlustIcon, "RIGHT", 5, 0)
+    self.statsFrame.bloodlustText:SetText("Bloodlust: Ready")
+    self.statsFrame.bloodlustText:SetTextColor(0.2, 0.9, 0.2)
+    
+    -- Combat Rez Cooldown Tracker
+    self.statsFrame.combatRezIcon = CreateFrame("Frame", nil, self.statsFrame)
+    self.statsFrame.combatRezIcon:SetSize(24, 24)
+    self.statsFrame.combatRezIcon:SetPoint("TOPLEFT", self.statsFrame.bloodlustIcon, "BOTTOMLEFT", 0, -5)
+    
+    self.statsFrame.combatRezIcon.texture = self.statsFrame.combatRezIcon:CreateTexture(nil, "OVERLAY")
+    self.statsFrame.combatRezIcon.texture:SetAllPoints()
+    self.statsFrame.combatRezIcon.texture:SetTexture(GetSpellTexture(20484)) -- Rebirth spell texture
+    
+    self.statsFrame.combatRezIcon.cooldown = CreateFrame("Cooldown", nil, self.statsFrame.combatRezIcon, "CooldownFrameTemplate")
+    self.statsFrame.combatRezIcon.cooldown:SetAllPoints()
+    self.statsFrame.combatRezIcon.cooldown:SetDrawEdge(true)
+    self.statsFrame.combatRezIcon.cooldown:SetDrawSwipe(true)
+    
+    self.statsFrame.combatRezText = self.statsFrame:CreateFontString(nil, "OVERLAY")
+    self.statsFrame.combatRezText:SetFont(fontFamily, fontSize - 1, fontOutline)
+    self.statsFrame.combatRezText:SetPoint("LEFT", self.statsFrame.combatRezIcon, "RIGHT", 5, 0)
+    self.statsFrame.combatRezText:SetText("Battle Rez: Ready")
+    self.statsFrame.combatRezText:SetTextColor(0.2, 0.9, 0.2)
+    
+    -- Set frame visibility based on settings
+    if self.settings.features.showPlayerStatsFrame then
+        self.statsFrame:Show()
+    else
+        self.statsFrame:Hide()
     end
 end
 
@@ -433,6 +569,117 @@ function InfoFrame:UpdateStatsData()
         elseif self.statStrings[statName] then
             self.statStrings[statName]:Hide()
         end
+    end
+    
+    -- Update the player stats frame if it exists and is enabled
+    self:UpdatePlayerStatsFrame()
+end
+
+function InfoFrame:UpdatePlayerStatsFrame()
+    -- Only update if the frame exists and the feature is enabled
+    if not self.statsFrame or not self.settings.features.showPlayerStatsFrame then
+        if self.statsFrame then
+            self.statsFrame:Hide()
+        end
+        return
+    end
+    
+    -- Show the player stats frame
+    self.statsFrame:Show()
+    
+    -- Update all stats
+    local stats = {
+        crit = {name = "Crit", value = GetCritChance()},
+        haste = {name = "Haste", value = GetHaste()},
+        mastery = {name = "Mastery", value = GetMastery()},
+        versatility = {name = "Versatility", value = GetVersatilityBonus(CR_VERSATILITY_DAMAGE_DONE)},
+        speed = {name = "Speed", value = GetUnitSpeed("player") / 7 * 100},
+        leech = {name = "Leech", value = GetLifesteal()},
+        avoidance = {name = "Avoidance", value = GetAvoidance()}
+    }
+    
+    -- Update the stat strings
+    for statName, statInfo in pairs(stats) do
+        if self.playerStatStrings[statName] then
+            local displayValue = string.format("%.2f%%", statInfo.value)
+            self.playerStatStrings[statName]:SetText(statInfo.name .. ": " .. displayValue)
+        end
+    end
+    
+    -- Update bloodlust cooldown
+    self:UpdateBloodlustCooldown()
+    
+    -- Update combat rez cooldown
+    self:UpdateCombatRezCooldown()
+end
+
+function InfoFrame:UpdateBloodlustCooldown()
+    if not self.statsFrame then return end
+    
+    local bloodlustDebuffName = "Exhaustion" -- Debuff after Bloodlust/Heroism
+    local bloodlustDuration = 600 -- 10 minutes cooldown
+    local name, _, _, _, _, expirationTime = UnitDebuff("player", bloodlustDebuffName)
+    
+    if name then
+        local remainingTime = expirationTime - GetTime()
+        if remainingTime > 0 then
+            -- Update cooldown display
+            self.statsFrame.bloodlustIcon.cooldown:SetCooldown(GetTime() - (bloodlustDuration - remainingTime), bloodlustDuration)
+            
+            -- Format time remaining (MM:SS)
+            local minutes = math.floor(remainingTime / 60)
+            local seconds = math.floor(remainingTime % 60)
+            self.statsFrame.bloodlustText:SetText(string.format("Bloodlust: %d:%02d", minutes, seconds))
+            self.statsFrame.bloodlustText:SetTextColor(0.9, 0.3, 0.3) -- Red for on cooldown
+        else
+            self.statsFrame.bloodlustIcon.cooldown:Clear()
+            self.statsFrame.bloodlustText:SetText("Bloodlust: Ready")
+            self.statsFrame.bloodlustText:SetTextColor(0.2, 0.9, 0.2) -- Green for ready
+        end
+    else
+        self.statsFrame.bloodlustIcon.cooldown:Clear()
+        self.statsFrame.bloodlustText:SetText("Bloodlust: Ready")
+        self.statsFrame.bloodlustText:SetTextColor(0.2, 0.9, 0.2) -- Green for ready
+    end
+end
+
+function InfoFrame:UpdateCombatRezCooldown()
+    if not self.statsFrame then return end
+    
+    local combatRezCooldown = 0
+    local maxCharges = 0
+    
+    -- Check for actual battle rez availability in raid/group
+    if IsInRaid() or IsInGroup() then
+        local charges, maxCharges, start, duration = GetSpellCharges(20484) -- Rebirth spell ID
+        
+        if charges and maxCharges then
+            if charges < maxCharges then
+                local timeToNextCharge = duration - (GetTime() - start)
+                if timeToNextCharge > 0 then
+                    -- Update cooldown display
+                    self.statsFrame.combatRezIcon.cooldown:SetCooldown(start, duration)
+                    
+                    -- Format time remaining (MM:SS)
+                    local minutes = math.floor(timeToNextCharge / 60)
+                    local seconds = math.floor(timeToNextCharge % 60)
+                    self.statsFrame.combatRezText:SetText(string.format("Battle Rez: %d:%02d (%d/%d)", minutes, seconds, charges, maxCharges))
+                    self.statsFrame.combatRezText:SetTextColor(0.9, 0.7, 0.2) -- Yellow for partial charges
+                end
+            else
+                self.statsFrame.combatRezIcon.cooldown:Clear()
+                self.statsFrame.combatRezText:SetText(string.format("Battle Rez: Ready (%d/%d)", charges, maxCharges))
+                self.statsFrame.combatRezText:SetTextColor(0.2, 0.9, 0.2) -- Green for ready
+            end
+        else
+            self.statsFrame.combatRezIcon.cooldown:Clear()
+            self.statsFrame.combatRezText:SetText("Battle Rez: N/A")
+            self.statsFrame.combatRezText:SetTextColor(0.7, 0.7, 0.7) -- Gray for not applicable
+        end
+    else
+        self.statsFrame.combatRezIcon.cooldown:Clear()
+        self.statsFrame.combatRezText:SetText("Battle Rez: N/A")
+        self.statsFrame.combatRezText:SetTextColor(0.7, 0.7, 0.7) -- Gray for not applicable
     end
 end
 
@@ -884,6 +1131,21 @@ function InfoFrame:UpdateSettings()
     else
         self.frame.itemLevel:Hide()
     end
+
+    -- Update the player stats frame if it exists
+    if self.statsFrame then
+        -- Apply settings
+        self.statsFrame:SetScale(self.settings.statsFrame.scale)
+        self.statsFrame:SetAlpha(self.settings.statsFrame.alpha)
+        self.statsFrame:SetFrameStrata(self.settings.statsFrame.strata)
+        
+        -- Show or hide the player stats frame based on settings
+        if self.enabled and self.settings.features.showPlayerStatsFrame then
+            self.statsFrame:Show()
+        else
+            self.statsFrame:Hide()
+        end
+    end
     
     -- Update data
     self:UpdateAllData()
@@ -905,6 +1167,17 @@ function InfoFrame:UpdateLock()
     else
         self.frame:SetMovable(true)
         self.frame:EnableMouse(true)
+    end
+    
+    -- Update player stats frame lock state
+    if self.statsFrame then
+        if self.settings.statsFrame.locked then
+            self.statsFrame:SetMovable(false)
+            self.statsFrame:EnableMouse(false)
+        else
+            self.statsFrame:SetMovable(true)
+            self.statsFrame:EnableMouse(true)
+        end
     end
 end
 

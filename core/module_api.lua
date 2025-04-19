@@ -5,6 +5,34 @@ local _, VUI = ...
 -- Create the Module API namespace
 VUI.ModuleAPI = {}
 
+-- Documentation for how to use profiles in modules:
+--[[
+    Profile Integration for Module Developers:
+    
+    1. Access the current profile settings:
+       local settings = VUI.db.profile.yourModuleName
+    
+    2. Save settings to profile:
+       VUI.db.profile.yourModuleName.setting = value
+    
+    3. Register for profile changes:
+       Implement UpdateUI() in your module:
+       function YourModule:UpdateUI()
+           -- Update UI based on VUI.db.profile.yourModuleName settings
+       end
+    
+    4. Define default settings in your module's defaults table:
+       defaultSettings = {
+           yourModuleName = {
+               setting1 = value1,
+               setting2 = value2,
+           }
+       }
+    
+    5. For character-specific settings, use:
+       VUI.charDB.profile.yourModuleName
+]]
+
 -- These functions are meant to be called from modules' init.lua files
 
 -- Create and register a new VUI module

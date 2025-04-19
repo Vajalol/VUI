@@ -36,6 +36,27 @@ VUI.defaults = {
         
         -- Modules settings with their defaults
         modules = {
+            -- Chat Module
+            chat = {
+                enabled = true,
+                fontSize = 12,
+                font = "Friz Quadrata TT",
+                chatHistory = 500,         -- Store 500 lines of chat history
+                showCopyButton = true,     -- Show copy chat button
+                showClassIcons = true,     -- Show class icons in chat
+                useClassColors = true,     -- Use class colors for names
+                timestampFormat = "[%H:%M:%S] ", -- Format for chat timestamps
+                classIconSize = 14,        -- Size of class icons in chat
+                saveHistory = true,        -- Save chat history between sessions
+                filterRaidSpam = true,     -- Filter out common raid spam messages
+                chatURLCopy = true,        -- Make URLs in chat clickable
+                nameplateStyling = "custom", -- Can be "default" or "custom"
+                nameplateFriendlySize = 1.0,
+                nameplateFriendlyAlpha = 1.0,
+                nameplateEnemySize = 1.0,
+                nameplateEnemyAlpha = 1.0,
+            },
+            
             -- BuffOverlay Module
             buffoverlay = {
                 enabled = true,

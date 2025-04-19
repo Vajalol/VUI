@@ -8,6 +8,9 @@ VUI.name = "VUI"
 VUI.version = "0.0.1"
 VUI.author = "VortexQ8"
 
+-- Define global library references that will be used throughout the addon
+local AceDBOptions = LibStub("AceDBOptions-3.0")
+
 -- Add module tables
 -- Original modules
 VUI.buffoverlay = {}

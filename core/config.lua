@@ -1,6 +1,7 @@
 local _, VUI = ...
 local AceConfig = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+local AceDBOptions = LibStub("AceDBOptions-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
 
 -- Main options table for the addon
@@ -415,6 +416,7 @@ VUI.options = {
                     desc = "Select a module to configure",
                     order = 3,
                     values = {
+                        ["chat"] = "Chat",
                         ["buffoverlay"] = "BuffOverlay",
                         ["trufigcd"] = "TrufiGCD",
                         ["moveany"] = "MoveAny",
@@ -516,6 +518,17 @@ VUI.options = {
         },
     },
 }
+
+-- Add profile options to the config panel
+function VUI:SetupProfileOptions()
+    -- Get the profile options table from AceDBOptions
+    local profilesOptions = AceDBOptions:GetOptionsTable(self.db)
+    
+    -- Add the profiles tab to our options table
+    self.options.args.profiles = profilesOptions
+    self.options.args.profiles.order = 99  -- Make it appear at the end
+    self.options.args.profiles.name = "Profiles"
+end
 
 -- Custom VUI config panel
 function VUI:CreateConfigPanel()
@@ -1054,10 +1067,18 @@ function VUI:CreateProfilesSection()
         frame.desc:SetPoint("TOPLEFT", frame.title, "BOTTOMLEFT", 0, -10)
         frame.desc:SetText("Manage your VUI configuration profiles")
         
-        -- This would be connected to Ace3 profile functionality
-        frame.profileText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-        frame.profileText:SetPoint("CENTER")
-        frame.profileText:SetText("Profile support coming soon!")
+        -- Make sure profile options are added first
+        if not self.options.args.profiles then
+            self:SetupProfileOptions()
+        end
+        
+        -- Create a container for the AceConfig profile options
+        frame.profilesContainer = CreateFrame("Frame", "VUIProfilesContainer", frame)
+        frame.profilesContainer:SetPoint("TOPLEFT", frame.desc, "BOTTOMLEFT", 0, -20)
+        frame.profilesContainer:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 20)
+        
+        -- Use AceConfigDialog to render the profile options
+        AceConfigDialog:Open("VUI", frame.profilesContainer, "profiles")
         
         -- Store the frame
         self.configFrame.sections.Profiles = frame

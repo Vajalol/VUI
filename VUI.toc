@@ -6,116 +6,17 @@
 ## SavedVariables: VUIDB, VUICharacterDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0
 
-# Libraries
-libs\Ace3\LibStub\LibStub.lua
-libs\Ace3\CallbackHandler-1.0\CallbackHandler-1.0.lua
+# Main addon file
+init.lua
 
-# Ace3 Libraries
-libs\Ace3\AceAddon-3.0\AceAddon-3.0.lua
-libs\Ace3\AceConfig-3.0\AceConfig-3.0.lua
-libs\Ace3\AceConsole-3.0\AceConsole-3.0.lua
-libs\Ace3\AceDB-3.0\AceDB-3.0.lua
-libs\Ace3\AceDBOptions-3.0\AceDBOptions-3.0.lua
-libs\Ace3\AceEvent-3.0\AceEvent-3.0.lua
-libs\Ace3\AceGUI-3.0\AceGUI-3.0.lua
-libs\Ace3\AceHook-3.0\AceHook-3.0.lua
-libs\Ace3\AceLocale-3.0\AceLocale-3.0.lua
-libs\Ace3\AceTimer-3.0\AceTimer-3.0.lua
-libs\Ace3\AceSerializer-3.0\AceSerializer-3.0.lua
-libs\Ace3\AceBucket-3.0\AceBucket-3.0.lua
-libs\Ace3\AceComm-3.0\AceComm-3.0.lua
+# Libraries (Ace3 and dependencies)
+libs\index.xml
 
 # Media Files
-media\load.xml
+media\Load.xml
 
 # Core Files
-core\init.lua
-core\defaults.lua
-core\media.lua
-core\utils.lua
-core\UI.lua
-core\widgets.lua
-core\config.lua
-core\module_template.lua
-core\module_api.lua
-core\integration.lua
-core\dashboard.lua
+core\index.xml
 
 # Modules
-# BuffOverlay
-modules\buffoverlay\init.lua
-modules\buffoverlay\core.lua
-modules\buffoverlay\config.lua
-modules\buffoverlay\buffoverlay.lua
-
-# TrufiGCD
-modules\trufigcd\init.lua
-modules\trufigcd\core.lua
-modules\trufigcd\config.lua
-modules\trufigcd\trufigcd.lua
-
-# MoveAny
-modules\moveany\init.lua
-modules\moveany\core.lua
-modules\moveany\config.lua
-
-# Auctionator
-modules\auctionator\init.lua
-modules\auctionator\core.lua
-
-# AngryKeystones
-modules\angrykeystone\init.lua
-modules\angrykeystone\core.lua
-modules\angrykeystone\config.lua
-
-# OmniCC
-modules\omnicc\init.lua
-modules\omnicc\core.lua
-modules\omnicc\config.lua
-
-# OmniCD
-modules\omnicd\init.lua
-modules\omnicd\core.lua
-modules\omnicd\config.lua
-
-# idTip
-modules\idtip\init.lua
-modules\idtip\core.lua
-modules\idtip\config.lua
-modules\idtip\idtip.lua
-
-# Premade Group Finder
-modules\premadegroupfinder\init.lua
-modules\premadegroupfinder\core.lua
-modules\premadegroupfinder\config.lua
-
-# UnitFrames
-modules\unitframes\init.lua
-modules\unitframes\core.lua
-modules\unitframes\config.lua
-
-# Skins
-modules\skins\init.lua
-modules\skins\core.lua
-modules\skins\blizzard\core.lua
-modules\skins\addons\core.lua
-
-# Profiles
-modules\profiles\init.lua
-modules\profiles\core.lua
-
-# Automation
-modules\automation\init.lua
-modules\automation\core.lua
-
-# Visual Configuration
-modules\visualconfig\init.lua
-modules\visualconfig\core.lua
-
-# InfoFrame
-modules\infoframe\init.lua
-modules\infoframe\core.lua
-
-# Enhanced Tooltip
-modules\tooltip\init.lua
-modules\tooltip\core.lua
+modules\index.xml

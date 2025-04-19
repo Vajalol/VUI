@@ -390,8 +390,50 @@ function VUI.ModuleTemplate:Create(name)
     
     -- AceAddon lifecycle methods
     function module:OnInitialize()
-        -- This will be called when the addon is fully loaded
-        -- Override in module implementation
+        -- Default initialization logic
+        self:Debug("Initializing")
+        
+        -- Get module settings from VUI main database
+        if self.name then
+            -- Get direct reference to our module's profile settings
+            self.db = VUI.db
+            self.settings = VUI.db.profile.modules[self.name] or {}
+            
+            -- Add profile change callback - calls UpdateUI when profile changes
+            if not self._profileCallbackRegistered then
+                VUI.db.RegisterCallback(self, "OnProfileChanged", "UpdateUI")
+                VUI.db.RegisterCallback(self, "OnProfileCopied", "UpdateUI")
+                VUI.db.RegisterCallback(self, "OnProfileReset", "UpdateUI")
+                self._profileCallbackRegistered = true
+            end
+        end
+        
+        -- If module has its own separate DB, also initialize that
+        if self.name and self.dbName then
+            self.moduleDB = LibStub("AceDB-3.0"):New(self.dbName, self.defaults or {})
+        end
+    end
+    
+    -- Handle profile changes
+    function module:UpdateUI()
+        self:Debug("Updating UI for profile change")
+        
+        -- Refresh settings reference
+        if self.name then
+            self.settings = VUI.db.profile.modules[self.name] or {}
+        end
+        
+        -- Update all the module's frames
+        for _, frame in pairs(self.frames) do
+            if frame.UpdateAppearance then
+                frame:UpdateAppearance(VUI.db.profile.appearance)
+            end
+        end
+        
+        -- Custom module UI updates
+        if self.UpdateSettings then
+            self:UpdateSettings()
+        end
     end
     
     function module:OnEnable()

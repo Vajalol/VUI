@@ -1,0 +1,23 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <!-- Core modules -->
+    <Include file="profiles\index.xml"/>
+    <Include file="skins\index.xml"/>
+    <Include file="automation\index.xml"/>
+    <Include file="infoframe\index.xml"/>
+    <Include file="tooltip\index.xml"/>
+    
+    <!-- Integrated addons -->
+    <Include file="angrykeystone\index.xml"/>
+    <Include file="auctionator\index.xml"/>
+    <Include file="buffoverlay\index.xml"/>
+    <Include file="idtip\index.xml"/>
+    <Include file="moveany\index.xml"/>
+    <Include file="omnicc\index.xml"/>
+    <Include file="omnicd\index.xml"/>
+    <Include file="premadegroupfinder\index.xml"/>
+    <Include file="trufigcd\index.xml"/>
+    
+    <!-- Visual configuration -->
+    <Include file="visualconfig\index.xml"/>
+</Ui>
