@@ -278,11 +278,42 @@ VUI.options = {
                         ["light"] = "Light",
                         ["classic"] = "Classic",
                         ["minimal"] = "Minimal",
+                        ["thunderstorm"] = "Thunder Storm",
+                        ["phoenixflame"] = "Phoenix Flame",
+                        ["arcanemystic"] = "Arcane Mystic",
+                        ["felenergy"] = "Fel Energy",
                     },
                     get = function() return VUI.db.profile.appearance.theme end,
                     set = function(_, value)
                         VUI.db.profile.appearance.theme = value
                         VUI:ApplySettings()
+                        
+                        -- Set colors based on the selected theme
+                        if value == "thunderstorm" then
+                            -- Thunder Storm theme colors
+                            VUI.db.profile.appearance.backdropColor = {r = 0.04, g = 0.04, b = 0.1, a = 0.8} -- Deep blue
+                            VUI.db.profile.appearance.borderColor = {r = 0.05, g = 0.62, b = 0.9, a = 1} -- Electric blue
+                        elseif value == "phoenixflame" then
+                            -- Phoenix Flame theme colors
+                            VUI.db.profile.appearance.backdropColor = {r = 0.1, g = 0.04, b = 0.02, a = 0.8} -- Dark red/brown
+                            VUI.db.profile.appearance.borderColor = {r = 0.9, g = 0.3, b = 0.05, a = 1} -- Fiery orange
+                        elseif value == "arcanemystic" then
+                            -- Arcane Mystic theme colors
+                            VUI.db.profile.appearance.backdropColor = {r = 0.1, g = 0.04, b = 0.18, a = 0.8} -- Deep purple
+                            VUI.db.profile.appearance.borderColor = {r = 0.61, g = 0.05, b = 0.9, a = 1} -- Bright violet
+                        elseif value == "felenergy" then
+                            -- Fel Energy theme colors
+                            VUI.db.profile.appearance.backdropColor = {r = 0.04, g = 0.1, b = 0.04, a = 0.8} -- Dark green
+                            VUI.db.profile.appearance.borderColor = {r = 0.1, g = 1.0, b = 0.1, a = 1} -- Fel green
+                        elseif value == "dark" then
+                            -- Default Dark theme colors
+                            VUI.db.profile.appearance.backdropColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8}
+                            VUI.db.profile.appearance.borderColor = {r = 0.3, g = 0.3, b = 0.3, a = 1}
+                        elseif value == "light" then
+                            -- Light theme colors
+                            VUI.db.profile.appearance.backdropColor = {r = 0.8, g = 0.8, b = 0.8, a = 0.8}
+                            VUI.db.profile.appearance.borderColor = {r = 0.5, g = 0.5, b = 0.5, a = 1}
+                        end
                     end,
                 },
                 font = {
@@ -791,6 +822,10 @@ function VUI:CreateAppearanceSection()
         frame.themeDropdown:SetPoint("TOPLEFT", frame.themeText, "BOTTOMLEFT", -15, -5)
         
         local themes = {
+            {text = "Thunder Storm", value = "thunderstorm"}, -- Make Thunder Storm first/default
+            {text = "Phoenix Flame", value = "phoenixflame"},
+            {text = "Arcane Mystic", value = "arcanemystic"},
+            {text = "Fel Energy", value = "felenergy"},
             {text = "Dark", value = "dark"},
             {text = "Light", value = "light"},
             {text = "Classic", value = "classic"},
@@ -807,6 +842,34 @@ function VUI:CreateAppearanceSection()
                 info.func = function()
                     VUI.db.profile.appearance.theme = theme.value
                     UIDropDownMenu_SetText(dropdown, theme.text)
+                    
+                    -- Set colors based on the selected theme
+                    if theme.value == "thunderstorm" then
+                        -- Thunder Storm theme colors
+                        VUI.db.profile.appearance.backdropColor = {r = 0.04, g = 0.04, b = 0.1, a = 0.8} -- Deep blue
+                        VUI.db.profile.appearance.borderColor = {r = 0.05, g = 0.62, b = 0.9, a = 1} -- Electric blue
+                    elseif theme.value == "phoenixflame" then
+                        -- Phoenix Flame theme colors
+                        VUI.db.profile.appearance.backdropColor = {r = 0.1, g = 0.04, b = 0.02, a = 0.8} -- Dark red/brown
+                        VUI.db.profile.appearance.borderColor = {r = 0.9, g = 0.3, b = 0.05, a = 1} -- Fiery orange
+                    elseif theme.value == "arcanemystic" then
+                        -- Arcane Mystic theme colors
+                        VUI.db.profile.appearance.backdropColor = {r = 0.1, g = 0.04, b = 0.18, a = 0.8} -- Deep purple
+                        VUI.db.profile.appearance.borderColor = {r = 0.61, g = 0.05, b = 0.9, a = 1} -- Bright violet
+                    elseif theme.value == "felenergy" then
+                        -- Fel Energy theme colors
+                        VUI.db.profile.appearance.backdropColor = {r = 0.04, g = 0.1, b = 0.04, a = 0.8} -- Dark green
+                        VUI.db.profile.appearance.borderColor = {r = 0.1, g = 1.0, b = 0.1, a = 1} -- Fel green
+                    elseif theme.value == "dark" then
+                        -- Default Dark theme colors
+                        VUI.db.profile.appearance.backdropColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8}
+                        VUI.db.profile.appearance.borderColor = {r = 0.3, g = 0.3, b = 0.3, a = 1}
+                    elseif theme.value == "light" then
+                        -- Light theme colors
+                        VUI.db.profile.appearance.backdropColor = {r = 0.8, g = 0.8, b = 0.8, a = 0.8}
+                        VUI.db.profile.appearance.borderColor = {r = 0.5, g = 0.5, b = 0.5, a = 1}
+                    end
+                    
                     VUI:ApplySettings()
                 end
                 UIDropDownMenu_AddButton(info)

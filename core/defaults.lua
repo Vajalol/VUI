@@ -11,12 +11,12 @@ VUI.defaults = {
             },
         },
         appearance = {
-            theme = "dark",
+            theme = "thunderstorm", -- Set Thunder Storm as the default theme
             font = "Friz Quadrata TT",
             fontSize = 12,
             border = "blizzard",
-            backdropColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
-            borderColor = {r = 0.3, g = 0.3, b = 0.3, a = 1},
+            backdropColor = {r = 0.04, g = 0.04, b = 0.1, a = 0.8}, -- Deep blue background for Thunder Storm
+            borderColor = {r = 0.05, g = 0.62, b = 0.9, a = 1}, -- Electric blue borders for Thunder Storm
             classColoredBorders = true,
             useClassColors = true,
         },
@@ -31,7 +31,7 @@ VUI.defaults = {
             autoHide = false,
             showModuleCards = true,
             showStatusDisplay = true,
-            theme = "dark",
+            theme = "thunderstorm", -- Set Thunder Storm as default for dashboard too
         },
         
         -- Modules settings with their defaults
