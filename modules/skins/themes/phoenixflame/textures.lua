@@ -1,189 +1,197 @@
--- Phoenix Flame Theme - Texture Definitions
+-- Phoenix Flame Theme Textures
 local _, VUI = ...
-local Skins = VUI:GetModule("skins")
-local PhoenixFlame = VUI.themes and VUI.themes.PhoenixFlame
+local LSM = LibStub("LibSharedMedia-3.0")
+local Skins = VUI:GetModule('skins')
+local PhoenixFlame = Skins.themes.phoenixflame
 
-if not PhoenixFlame then
-    PhoenixFlame = {}
-    VUI.themes = VUI.themes or {}
-    VUI.themes.PhoenixFlame = PhoenixFlame
+-- Media Type Constants
+local BACKGROUND = LSM.MediaType.BACKGROUND
+local BORDER = LSM.MediaType.BORDER
+local STATUSBAR = LSM.MediaType.STATUSBAR
+local FONT = LSM.MediaType.FONT
+
+-- Register shared media textures
+local function RegisterTextures()
+    -- Base textures
+    LSM:Register(BACKGROUND, "PhoenixFlame-Background", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\background.tga")
+    LSM:Register(BORDER, "PhoenixFlame-Border", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\border.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Shadow", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\shadow.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Glow", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\glow.tga")
+    
+    -- UI element textures
+    LSM:Register(BACKGROUND, "PhoenixFlame-Dropdown", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\dropdown.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Slider", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\slider.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Tab", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\tab.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Character", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\character.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Spellbook", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\spellbook.tga")
+    
+    -- Special effects
+    LSM:Register(BACKGROUND, "PhoenixFlame-Embers", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\embers.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Ash", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\ash.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Smoke", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\smoke.tga")
+    
+    -- State textures
+    LSM:Register(BACKGROUND, "PhoenixFlame-Hover", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\hover.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Pressed", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\pressed.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Disabled", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\disabled.tga")
+    
+    -- Animation frames
+    LSM:Register(BACKGROUND, "PhoenixFlame-Flame1", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\animation\\flame1.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Flame2", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\animation\\flame2.tga")
+    LSM:Register(BACKGROUND, "PhoenixFlame-Flame3", "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\animation\\flame3.tga")
+    
+    -- Register a statusbar texture
+    LSM:Register(STATUSBAR, "PhoenixFlame-StatusBar", "Interface\\AddOns\\VUI\\media\\textures\\statusbar-smooth.blp")
 end
 
--- Texture creation and management
-PhoenixFlame.Textures = {}
-
--- Initialize textures
-function PhoenixFlame.Textures:Initialize()
-    -- Register default textures
-    self:RegisterBackgroundTextures()
-    self:RegisterBorderTextures()
-    self:RegisterButtonTextures()
-    self:RegisterStatusBarTextures()
-    self:RegisterGlowTextures()
-    
-    -- Set texture paths in the theme
-    self:UpdateTexturePaths()
-end
-
--- Register background textures
-function PhoenixFlame.Textures:RegisterBackgroundTextures()
-    -- Register the main backgrounds:
-    -- 1. Dark smoky red background
-    local backgroundPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\background.tga"
-    
-    -- 2. Alternate slightly lighter background
-    local backgroundLightPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\background-light.tga"
-    
-    -- 3. Dark ember background with subtle flame pattern
-    local backgroundEmberPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\background-ember.tga"
-    
-    -- Register with the media system if available
-    if VUI.media and VUI.media.RegisterTexture then
-        VUI.media:RegisterTexture("PhoenixFlame-Background", backgroundPath)
-        VUI.media:RegisterTexture("PhoenixFlame-Background-Light", backgroundLightPath)
-        VUI.media:RegisterTexture("PhoenixFlame-Background-Ember", backgroundEmberPath)
-    end
-    
-    -- Store for later use
-    self.background = {
-        default = backgroundPath,
-        light = backgroundLightPath,
-        ember = backgroundEmberPath
+-- Create table for storing theme-specific texture references
+PhoenixFlame.mediaTable = {
+    backgrounds = {
+        main = "PhoenixFlame-Background",
+        shadow = "PhoenixFlame-Shadow",
+        glow = "PhoenixFlame-Glow",
+        character = "PhoenixFlame-Character",
+        spellbook = "PhoenixFlame-Spellbook",
+        dropdown = "PhoenixFlame-Dropdown",
+        tab = "PhoenixFlame-Tab",
+    },
+    borders = {
+        normal = "PhoenixFlame-Border",
+    },
+    statusbars = {
+        normal = "PhoenixFlame-StatusBar",
+    },
+    buttons = {
+        hover = "PhoenixFlame-Hover",
+        pressed = "PhoenixFlame-Pressed",
+        disabled = "PhoenixFlame-Disabled",
+    },
+    effects = {
+        embers = "PhoenixFlame-Embers",
+        ash = "PhoenixFlame-Ash",
+        smoke = "PhoenixFlame-Smoke",
+        flame1 = "PhoenixFlame-Flame1",
+        flame2 = "PhoenixFlame-Flame2",
+        flame3 = "PhoenixFlame-Flame3",
     }
-end
+}
 
--- Register border textures
-function PhoenixFlame.Textures:RegisterBorderTextures()
-    -- Register border textures:
-    -- 1. Glowing ember border
-    local borderPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\border.tga"
-    
-    -- 2. Alternative border with more pronounced flame effect
-    local borderFlamePath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\border-flame.tga"
-    
-    -- 3. Subtle border for less prominent elements
-    local borderSubtlePath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\border-subtle.tga"
-    
-    -- Register with the media system if available
-    if VUI.media and VUI.media.RegisterTexture then
-        VUI.media:RegisterTexture("PhoenixFlame-Border", borderPath)
-        VUI.media:RegisterTexture("PhoenixFlame-Border-Flame", borderFlamePath)
-        VUI.media:RegisterTexture("PhoenixFlame-Border-Subtle", borderSubtlePath)
+-- Applies the phoenixflame statusbar texture to all unit frames
+local function ApplyUnitFrameTextures()
+    -- Player health bar
+    if PlayerFrameHealthBar then
+        PlayerFrameHealthBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
     end
     
-    -- Store for later use
-    self.border = {
-        default = borderPath,
-        flame = borderFlamePath,
-        subtle = borderSubtlePath
-    }
-end
-
--- Register button textures
-function PhoenixFlame.Textures:RegisterButtonTextures()
-    -- Register button textures:
-    -- 1. Normal button state
-    local buttonNormalPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\button.tga"
-    
-    -- 2. Hover button state
-    local buttonHoverPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\button-hover.tga"
-    
-    -- 3. Pressed button state
-    local buttonPressedPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\button-pressed.tga"
-    
-    -- 4. Disabled button state
-    local buttonDisabledPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\button-disabled.tga"
-    
-    -- Register with the media system if available
-    if VUI.media and VUI.media.RegisterTexture then
-        VUI.media:RegisterTexture("PhoenixFlame-Button", buttonNormalPath)
-        VUI.media:RegisterTexture("PhoenixFlame-Button-Hover", buttonHoverPath)
-        VUI.media:RegisterTexture("PhoenixFlame-Button-Pressed", buttonPressedPath)
-        VUI.media:RegisterTexture("PhoenixFlame-Button-Disabled", buttonDisabledPath)
+    -- Player mana bar
+    if PlayerFrameManaBar then
+        PlayerFrameManaBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
     end
     
-    -- Store for later use
-    self.button = {
-        normal = buttonNormalPath,
-        hover = buttonHoverPath,
-        pressed = buttonPressedPath,
-        disabled = buttonDisabledPath
-    }
-end
-
--- Register status bar textures
-function PhoenixFlame.Textures:RegisterStatusBarTextures()
-    -- Register status bar textures:
-    -- 1. Standard status bar
-    local statusBarPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\statusbar.tga"
-    
-    -- 2. Status bar with flame pattern
-    local statusBarFlamePath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\statusbar-flame.tga"
-    
-    -- 3. Status bar with ember glow effect
-    local statusBarGlowPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\statusbar-glow.tga"
-    
-    -- Register with the media system if available
-    if VUI.media and VUI.media.RegisterTexture then
-        VUI.media:RegisterTexture("PhoenixFlame-StatusBar", statusBarPath)
-        VUI.media:RegisterTexture("PhoenixFlame-StatusBar-Flame", statusBarFlamePath)
-        VUI.media:RegisterTexture("PhoenixFlame-StatusBar-Glow", statusBarGlowPath)
+    -- Target health bar
+    if TargetFrameHealthBar then
+        TargetFrameHealthBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
     end
     
-    -- Store for later use
-    self.statusbar = {
-        default = statusBarPath,
-        flame = statusBarFlamePath,
-        glow = statusBarGlowPath
-    }
-end
-
--- Register glow textures
-function PhoenixFlame.Textures:RegisterGlowTextures()
-    -- Register glow textures:
-    -- 1. Standard glow effect
-    local glowPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\glow.tga"
-    
-    -- 2. Animated flame glow effect
-    local glowFlamePath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\glow-flame.tga"
-    
-    -- 3. Ember particle effect
-    local glowEmberPath = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\glow-ember.tga"
-    
-    -- Register with the media system if available
-    if VUI.media and VUI.media.RegisterTexture then
-        VUI.media:RegisterTexture("PhoenixFlame-Glow", glowPath)
-        VUI.media:RegisterTexture("PhoenixFlame-Glow-Flame", glowFlamePath)
-        VUI.media:RegisterTexture("PhoenixFlame-Glow-Ember", glowEmberPath)
+    -- Target mana bar
+    if TargetFrameManaBar then
+        TargetFrameManaBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
     end
     
-    -- Store for later use
-    self.glow = {
-        default = glowPath,
-        flame = glowFlamePath,
-        ember = glowEmberPath
-    }
-end
-
--- Update texture paths in the theme
-function PhoenixFlame.Textures:UpdateTexturePaths()
-    -- If we have access to the PhoenixFlame theme, update its media paths
-    if PhoenixFlame and PhoenixFlame.media and PhoenixFlame.media.textures then
-        -- Update the texture paths
-        PhoenixFlame.media.textures.background = self.background.default
-        PhoenixFlame.media.textures.border = self.border.default
-        PhoenixFlame.media.textures.button = self.button.normal
-        PhoenixFlame.media.textures.statusbar = self.statusbar.default
-        PhoenixFlame.media.textures.glow = self.glow.default
+    -- Focus frame
+    if FocusFrameHealthBar then
+        FocusFrameHealthBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+    end
+    
+    if FocusFrameManaBar then
+        FocusFrameManaBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+    end
+    
+    -- Party frames
+    for i = 1, 4 do
+        local healthBar = _G["PartyMemberFrame"..i.."HealthBar"]
+        local manaBar = _G["PartyMemberFrame"..i.."ManaBar"]
+        
+        if healthBar then
+            healthBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+        end
+        
+        if manaBar then
+            manaBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+        end
+    end
+    
+    -- Pet frame
+    if PetFrameHealthBar then
+        PetFrameHealthBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+    end
+    
+    if PetFrameManaBar then
+        PetFrameManaBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+    end
+    
+    -- Cast bars
+    if CastingBarFrame then
+        CastingBarFrame:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+    end
+    
+    if TargetFrameSpellBar then
+        TargetFrameSpellBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+    end
+    
+    if FocusFrameSpellBar then
+        FocusFrameSpellBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+    end
+    
+    -- Raid frames
+    if CompactRaidFrameContainer then
+        hooksecurefunc("CompactUnitFrame_SetUpFrame", function(frame)
+            if frame:IsForbidden() then return end
+            
+            if frame.healthBar then
+                frame.healthBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+            end
+            
+            if frame.powerBar then
+                frame.powerBar:SetStatusBarTexture(LSM:Fetch(STATUSBAR, "PhoenixFlame-StatusBar"))
+            end
+        end)
     end
 end
 
--- Utility functions for texture manipulation
-function PhoenixFlame.Textures:GenerateFireGradient(width, height, startColor, endColor)
-    -- In a real implementation, this would create a gradient texture
-    -- from orange to red, simulating fire
-    return "Interface\\Buttons\\WHITE8x8" -- Fallback to default texture for now
+-- Initialize function
+local function Initialize()
+    -- Register all textures with LibSharedMedia
+    RegisterTextures()
+    
+    -- Apply statusbar textures to unit frames when player enters world
+    local eventFrame = CreateFrame("Frame")
+    eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    eventFrame:SetScript("OnEvent", function(self, event)
+        if event == "PLAYER_ENTERING_WORLD" then
+            C_Timer.After(1, ApplyUnitFrameTextures)
+            self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        end
+    end)
+    
+    -- Update the PhoenixFlame.textures table to use LSM references
+    for category, items in pairs(PhoenixFlame.mediaTable) do
+        for name, key in pairs(items) do
+            if category == "backgrounds" or category == "effects" then
+                PhoenixFlame.textures[name] = LSM:Fetch(BACKGROUND, key)
+            elseif category == "borders" then
+                PhoenixFlame.textures[name] = LSM:Fetch(BORDER, key)
+            elseif category == "statusbars" then
+                PhoenixFlame.textures[name] = LSM:Fetch(STATUSBAR, key)
+            elseif category == "buttons" then
+                PhoenixFlame.textures[name] = LSM:Fetch(BACKGROUND, key)
+            end
+        end
+    end
 end
 
--- We'll call the initialize function when the theme is loaded
-PhoenixFlame.Textures:Initialize()
+-- Run initialization
+Initialize()
+
+-- Return the textures system
+return PhoenixFlame.mediaTable

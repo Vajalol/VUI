@@ -1,31 +1,58 @@
 # Phoenix Flame Theme Textures
 
-This folder contains the textures for the Phoenix Flame theme. The following textures are included:
+This directory contains all the textures needed for the Phoenix Flame theme, a fire-inspired visual style for VUI.
 
-## Background Textures
-- `background.tga` - Main background texture for panels
-- `background-light.tga` - Lighter background for secondary panels
-- `background-ember.tga` - Dark ember background with subtle flame pattern
+## Texture Overview
 
-## Border Textures
-- `border.tga` - Main border texture with ember glow
-- `border-flame.tga` - Border with more pronounced flame effect
-- `border-subtle.tga` - Subtle border for less prominent elements
+### Base Textures
+- **background.tga** - Main dark background texture with subtle flame pattern
+- **background-light.tga** - Lighter version of the background for contrasting elements
+- **background-dark.tga** - Darker version of the background for nested UI elements
+- **border.tga** - Fiery orange border texture
+- **glow.tga** - Ember glow effect for highlighting important elements
+- **button.tga** - Button background texture
+- **statusbar.tga** - Smooth gradient for health/mana/progress bars
 
-## Button Textures
-- `button.tga` - Normal button state
-- `button-hover.tga` - Hover state for buttons
-- `button-pressed.tga` - Pressed state for buttons
-- `button-disabled.tga` - Disabled state for buttons
+### UI Element Textures
+- **actionbutton.tga** - Custom texture for action bar buttons
+- **itembutton.tga** - Texture for item buttons (bags, inventory)
+- **tooltip.tga** - Background texture for tooltips
+- **unitframe.tga** - Frame texture for player/target frames
+- **castbar.tga** - Special texture for casting bars
+- **auraicon.tga** - Border texture for buff/debuff icons
+- **chatframe.tga** - Background texture for chat windows
 
-## Status Bar Textures
-- `statusbar.tga` - Standard status bar
-- `statusbar-flame.tga` - Status bar with flame pattern
-- `statusbar-glow.tga` - Status bar with ember glow effect
+### Special Effect Textures
+- **flame.tga** - Static flame texture for decorative elements
+- **ash.tga** - Ash particle texture
+- **embers.tga** - Glowing ember particles
+- **smoke.tga** - Smoke effect texture
 
-## Glow Textures
-- `glow.tga` - Standard glow effect
-- `glow-flame.tga` - Animated flame glow effect
-- `glow-ember.tga` - Ember particle effect
+### Animation Textures
+- **animation/flame1.tga** - First frame of flame animation
+- **animation/flame2.tga** - Second frame of flame animation
+- **animation/flame3.tga** - Third frame of flame animation
+- **animation/flame4.tga** - Fourth frame of flame animation
 
-These textures can be customized to fit your preferences while maintaining the Phoenix Flame theme aesthetic.
+### State Textures
+- **hover.tga** - Texture for mouse-over state
+- **pressed.tga** - Texture for clicked state
+- **disabled.tga** - Texture for disabled/unavailable state
+
+## Usage
+These textures are automatically used by the Phoenix Flame theme components. You shouldn't need to reference them directly in most cases.
+
+## Color Palette
+The Phoenix Flame theme uses a warm color palette inspired by fire:
+
+- Dark red/brown backgrounds (#1A0A05)
+- Fiery orange borders (#E64D0D)
+- Amber highlights (#FFA31A)
+- Cream text (#FFF4D9)
+
+## Creating New Phoenix Flame Textures
+When creating new textures for the Phoenix Flame theme, aim to match the existing style with these characteristics:
+- Dark, rich backgrounds
+- Vibrant orange/amber highlights
+- Subtle flame patterns
+- Smooth gradients from dark brown to orange

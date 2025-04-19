@@ -1,210 +1,313 @@
--- Phoenix Flame Theme for VUI
+-- VUI Phoenix Flame Theme
 local _, VUI = ...
-local Skins = VUI:GetModule("skins")
+local Skins = VUI:GetModule('skins')
+local PhoenixFlame = {}
 
--- Register the Phoenix Flame theme
-local PhoenixFlame = {
-    name = "Phoenix Flame",
-    description = "A fiery, phoenix-inspired theme with vibrant reds, oranges, and subtle flame effects",
+-- Theme registration with the skins module
+Skins.themes = Skins.themes or {}
+Skins.themes.phoenixflame = PhoenixFlame
+
+-- Theme metadata
+PhoenixFlame.name = "Phoenix Flame"
+PhoenixFlame.description = "A fiery theme inspired by the phoenix, with warm colors and flame effects"
+PhoenixFlame.author = "VortexQ8"
+PhoenixFlame.version = "1.0"
+
+-- Color scheme
+PhoenixFlame.colors = {
+    background = {r = 0.1, g = 0.04, b = 0.02, a = 0.9}, -- Dark red/brown
+    border = {r = 0.9, g = 0.3, b = 0.05, a = 1.0}, -- Fiery orange
+    highlight = {r = 1.0, g = 0.64, b = 0.1, a = 0.8}, -- Amber
+    text = {r = 1.0, g = 0.96, b = 0.85, a = 1.0}, -- Cream
+    shadow = {r = 0.0, g = 0.0, b = 0.0, a = 0.75}, -- Dark shadow
+    glow = {r = 1.0, g = 0.5, b = 0.1, a = 0.6}, -- Orange glow
+}
+
+-- Theme textures
+PhoenixFlame.textures = {
+    -- Base textures
+    background = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\background.tga",
+    border = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\border.tga",
+    shadow = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\shadow.tga",
+    glow = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\glow.tga",
     
-    -- Main colors
-    colors = {
-        backdrop = {
-            primary = {r = 0.1, g = 0.04, b = 0.02, a = 0.9},  -- Dark red/brown backdrop
-            secondary = {r = 0.15, g = 0.06, b = 0.03, a = 0.85},  -- Slightly lighter for alternating elements
-            highlight = {r = 0.25, g = 0.1, b = 0.05, a = 0.6},  -- Highlight areas
-        },
-        border = {
-            primary = {r = 0.9, g = 0.3, b = 0.05, a = 1.0},  -- Fiery orange border
-            secondary = {r = 0.8, g = 0.2, b = 0.05, a = 1.0},  -- Deeper red border
-            highlight = {r = 1.0, g = 0.5, b = 0.1, a = 1.0},  -- Brighter orange for highlights
-        },
-        text = {
-            primary = {r = 1.0, g = 0.92, b = 0.8, a = 1.0},   -- Light cream/gold for primary text
-            secondary = {r = 0.95, g = 0.8, b = 0.6, a = 1.0}, -- Light tan for secondary text
-            header = {r = 1.0, g = 0.6, b = 0.2, a = 1.0},     -- Orange headers
-            highlight = {r = 1.0, g = 0.7, b = 0.3, a = 1.0},  -- Amber highlight text
-        },
-        button = {
-            normal = {r = 0.2, g = 0.07, b = 0.04, a = 1.0},   -- Dark red normal state
-            hover = {r = 0.3, g = 0.12, b = 0.06, a = 1.0},    -- Lighter red hover state
-            pressed = {r = 0.15, g = 0.05, b = 0.02, a = 1.0}, -- Darker red pressed state
-            disabled = {r = 0.2, g = 0.1, b = 0.05, a = 0.5},  -- Faded, semi-transparent
-        },
-        class = {
-            overlay = {r = 0.8, g = 0.2, b = 0.1, a = 0.2},    -- Red tint for class colors
-        }
-    },
-    
-    -- Border style settings
-    border = {
-        size = 1,
-        glow = true,
-        glowColor = {r = 0.8, g = 0.3, b = 0.05, a = 0.6},
-        glowSize = 3
-    },
-    
-    -- Shadow settings
-    shadow = {
-        enabled = true,
-        color = {r = 0.9, g = 0.3, b = 0.05, a = 0.3},
-        size = 4,
-    },
-    
-    -- Gradient settings
-    gradient = {
-        enabled = true,
-        orientation = "VERTICAL",
-        minColor = {r = 0.1, g = 0.04, b = 0.02, a = 0.9},
-        maxColor = {r = 0.15, g = 0.06, b = 0.02, a = 0.9},
-    },
-    
-    -- Media paths
-    media = {
-        textures = {
-            background = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\background.tga",
-            border = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\border.tga",
-            button = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\button.tga",
-            statusbar = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\statusbar.tga",
-            glow = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\glow.tga",
-        },
-        fonts = {
-            primary = "Interface\\AddOns\\VUI\\media\\Fonts\\Expressway.ttf",
-            header = "Interface\\AddOns\\VUI\\media\\Fonts\\MagistralTTBold.ttf",
-        }
-    },
+    -- UI element textures
+    dropdown = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\dropdown.tga",
+    slider = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\slider.tga",
+    tab = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\tab.tga",
+    character = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\character.tga",
+    spellbook = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\spellbook.tga",
     
     -- Special effects
-    effects = {
-        frameFlash = {
-            enabled = true,
-            speed = 1.5,
-            minAlpha = 0.6,
-            maxAlpha = 1.0,
-            color = {r = 0.9, g = 0.4, b = 0.1, a = 0.3}
-        },
-        borderPulse = {
-            enabled = true,
-            speed = 1.2,
-            minSize = 1,
-            maxSize = 1.5,
-        }
+    embers = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\embers.tga",
+    ash = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\ash.tga",
+    smoke = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\smoke.tga",
+    
+    -- State textures
+    hover = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\hover.tga",
+    pressed = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\pressed.tga",
+    disabled = "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\disabled.tga",
+    
+    -- Animation frames
+    animationFrames = {
+        "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\animation\\flame1.tga",
+        "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\animation\\flame2.tga",
+        "Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\animation\\flame3.tga",
     }
 }
 
--- Apply the theme to an element
-function PhoenixFlame:ApplyToElement(frame, elementType)
-    -- Based on the element type, apply different styles
-    if not frame then return end
+-- Font configuration
+PhoenixFlame.fonts = {
+    normal = "InterBold",
+    header = "GothamNarrow-Black",
+    tooltip = "Expressway",
+    chat = "MyriadWebBold"
+}
+
+-- Animation settings
+PhoenixFlame.animations = {
+    -- Border glow animation
+    borderGlow = {
+        duration = 1.5,
+        minAlpha = 0.3,
+        maxAlpha = 0.7,
+        smoothing = "IN_OUT",
+        enabled = true,
+    },
     
-    -- Apply backdrop style
-    if frame.SetBackdrop and frame.SetBackdropColor and frame.SetBackdropBorderColor then
-        -- Create a backdrop based on the element type
-        local backdrop = {
-            bgFile = self.media.textures.background or "Interface\\Buttons\\WHITE8x8",
-            edgeFile = self.media.textures.border or "Interface\\Buttons\\WHITE8x8",
-            tile = false,
-            tileSize = 0,
-            edgeSize = self.border.size,
-            insets = { left = 0, right = 0, top = 0, bottom = 0 }
-        }
-        
-        frame:SetBackdrop(backdrop)
-        
-        -- Apply colors based on element type
-        local bgColor = self.colors.backdrop.primary
-        local borderColor = self.colors.border.primary
-        
-        if elementType == "button" then
-            bgColor = self.colors.button.normal
-        elseif elementType == "header" then
-            bgColor = self.colors.backdrop.secondary
-            borderColor = self.colors.border.highlight
-        elseif elementType == "tooltip" then
-            bgColor = self.colors.backdrop.secondary
-            -- Increase alpha for tooltips
-            bgColor.a = 0.95
-        end
-        
-        frame:SetBackdropColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
-        frame:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
+    -- Flame animation
+    flame = {
+        duration = 0.8, -- Time for a complete animation cycle
+        frameCount = 3, -- Number of animation frames
+        frameDelay = 0.2, -- Delay between frames
+        enabled = true,
+    },
+    
+    -- Ember particles animation
+    embers = {
+        particleCount = 5, -- Number of ember particles
+        minSize = 5, -- Minimum particle size
+        maxSize = 12, -- Maximum particle size
+        minDuration = 2.0, -- Minimum animation duration
+        maxDuration = 4.0, -- Maximum animation duration
+        fadeInTime = 0.5, -- Fade-in time
+        fadeOutTime = 1.0, -- Fade-out time
+        enabled = true,
+    }
+}
+
+-- Apply the theme to a frame
+function PhoenixFlame:ApplyToFrame(frame, options)
+    options = options or {}
+    
+    -- Default options
+    options.withBorder = options.withBorder ~= false
+    options.withBackground = options.withBackground ~= false
+    options.withShadow = options.withShadow ~= false
+    options.withAnimation = options.withAnimation == true
+    
+    -- Create backdrop if it doesn't exist
+    if not frame.backdrop then
+        frame.backdrop = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+        frame.backdrop:SetAllPoints()
+        frame.backdrop:SetFrameLevel(frame:GetFrameLevel())
     end
     
-    -- Apply text colors if it's a FontString
-    if frame.GetObjectType and frame:GetObjectType() == "FontString" then
-        local textColor = self.colors.text.primary
+    -- Apply background
+    if options.withBackground then
+        frame.backdrop:SetBackdrop({
+            bgFile = self.textures.background,
+            insets = {left = 3, right = 3, top = 3, bottom = 3}
+        })
+        local bg = self.colors.background
+        frame.backdrop:SetBackdropColor(bg.r, bg.g, bg.b, bg.a)
+    end
+    
+    -- Apply border
+    if options.withBorder then
+        if not frame.backdrop.border then
+            frame.backdrop.border = CreateFrame("Frame", nil, frame.backdrop, "BackdropTemplate")
+            frame.backdrop.border:SetAllPoints()
+            frame.backdrop.border:SetFrameLevel(frame.backdrop:GetFrameLevel() + 1)
+        end
         
-        if elementType == "header" then
-            textColor = self.colors.text.header
-            -- Also set the font for headers
-            if self.media.fonts.header then
-                frame:SetFont(self.media.fonts.header, frame:GetFont():GetHeight(), "OUTLINE")
+        frame.backdrop.border:SetBackdrop({
+            edgeFile = self.textures.border,
+            edgeSize = 3,
+        })
+        
+        local border = self.colors.border
+        frame.backdrop.border:SetBackdropBorderColor(border.r, border.g, border.b, border.a)
+    end
+    
+    -- Apply shadow
+    if options.withShadow then
+        if not frame.backdrop.shadow then
+            frame.backdrop.shadow = CreateFrame("Frame", nil, frame.backdrop, "BackdropTemplate")
+            frame.backdrop.shadow:SetFrameLevel(frame.backdrop:GetFrameLevel() - 1)
+            frame.backdrop.shadow:SetAllPoints(frame)
+            frame.backdrop.shadow:SetScale(1.05)
+        end
+        
+        frame.backdrop.shadow:SetBackdrop({
+            edgeFile = self.textures.shadow,
+            edgeSize = 4,
+        })
+        
+        local shadow = self.colors.shadow
+        frame.backdrop.shadow:SetBackdropBorderColor(shadow.r, shadow.g, shadow.b, shadow.a)
+    end
+    
+    -- Apply flame animations
+    if options.withAnimation and self.animations.flame.enabled then
+        if not frame.flameAnimation then
+            -- Animation container
+            frame.flameAnimation = CreateFrame("Frame", nil, frame)
+            frame.flameAnimation:SetFrameLevel(frame:GetFrameLevel() + 2)
+            frame.flameAnimation:SetAllPoints(frame)
+            
+            -- Animation textures
+            frame.flameAnimation.textures = {}
+            for i = 1, self.animations.flame.frameCount do
+                local tex = frame.flameAnimation:CreateTexture(nil, "OVERLAY")
+                tex:SetAllPoints()
+                tex:SetTexture(self.textures.animationFrames[i])
+                tex:SetBlendMode("ADD")
+                tex:SetAlpha(0)
+                frame.flameAnimation.textures[i] = tex
             end
-        elseif elementType == "secondary" then
-            textColor = self.colors.text.secondary
-        elseif elementType == "highlight" then
-            textColor = self.colors.text.highlight
+            
+            -- Animation group
+            frame.flameAnimation.group = frame.flameAnimation:CreateAnimationGroup()
+            frame.flameAnimation.group:SetLooping("REPEAT")
+            
+            -- Create animation sequence
+            local frameDelay = self.animations.flame.frameDelay
+            local frameDuration = self.animations.flame.duration / self.animations.flame.frameCount
+            
+            for i = 1, self.animations.flame.frameCount do
+                -- Fade in
+                local fadeIn = frame.flameAnimation.group:CreateAnimation("Alpha")
+                fadeIn:SetTarget(frame.flameAnimation.textures[i])
+                fadeIn:SetOrder(i * 2 - 1)
+                fadeIn:SetFromAlpha(0)
+                fadeIn:SetToAlpha(0.7)
+                fadeIn:SetDuration(frameDuration / 2)
+                
+                -- Fade out
+                local fadeOut = frame.flameAnimation.group:CreateAnimation("Alpha")
+                fadeOut:SetTarget(frame.flameAnimation.textures[i])
+                fadeOut:SetOrder(i * 2)
+                fadeOut:SetFromAlpha(0.7)
+                fadeOut:SetToAlpha(0)
+                fadeOut:SetDuration(frameDuration / 2)
+                fadeOut:SetStartDelay(frameDelay)
+            end
+            
+            -- Start the animation
+            frame.flameAnimation.group:Play()
         end
-        
-        frame:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
     end
     
-    -- Add special effects based on frame type
-    if self.effects.frameFlash.enabled and (elementType == "header" or elementType == "feature") then
-        -- Add a subtle flash effect to important elements
-        -- This would be implemented in a real addon by creating animation groups
-    end
-    
-    -- Apply glow if enabled
-    if self.border.glow and not frame.vui_phoenixGlow then
-        -- In a real implementation, this would add a subtle fiery glow around the frame
-        -- For now, we'll just mark the frame as having a glow
-        frame.vui_phoenixGlow = true
-    end
-    
-    -- Mark the frame as themed with Phoenix Flame
-    frame.vui_phoenixFlameThemed = true
-    
+    -- Return the modified frame
     return frame
 end
 
--- Apply the theme globally (when selected as the active theme)
-function PhoenixFlame:Apply()
-    -- This would be the function called when the theme is activated
-    -- It would update global skin colors and settings
+-- Helper function to create Phoenix Flame style buttons
+function PhoenixFlame:CreateButton(parent, name, text, width, height)
+    local button = CreateFrame("Button", name, parent, "UIPanelButtonTemplate")
+    button:SetSize(width or 100, height or 22)
+    button:SetText(text or "Button")
     
-    -- Update the skin module's color settings
-    if Skins and Skins.settings and Skins.settings.style then
-        -- Set main backdrop color
-        Skins.settings.style.backdropColor = self.colors.backdrop.primary
-        
-        -- Set border color
-        Skins.settings.style.borderColor = self.colors.border.primary
-        
-        -- Set shadow color and size if shadows are enabled
-        if self.shadow.enabled then
-            Skins.settings.style.shadowSize = self.shadow.size
-            Skins.settings.style.shadowColor = self.shadow.color
-        end
-        
-        -- Set border size
-        Skins.settings.style.borderSize = self.border.size
-        
-        -- Enable/disable gradient backdrops
-        Skins.settings.style.gradientBackdrop = self.gradient.enabled
-    end
+    -- Apply the Phoenix Flame theme to the button
+    self:ApplyToFrame(button, {withShadow = true})
     
-    -- Print a message indicating the theme has been applied
-    if VUI.Print then
-        VUI:Print("Phoenix Flame theme applied. Enjoy the warmth!")
-    end
+    -- Set text color
+    local textColor = self.colors.text
+    button:SetNormalFontObject("GameFontNormal")
+    button.Text:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
+    
+    -- Button textures for states
+    button:SetNormalTexture(self.textures.background)
+    button:SetHighlightTexture(self.textures.hover)
+    button:SetPushedTexture(self.textures.pressed)
+    button:SetDisabledTexture(self.textures.disabled)
+    
+    -- State colors
+    local normalTex = button:GetNormalTexture()
+    local bg = self.colors.background
+    normalTex:SetVertexColor(bg.r, bg.g, bg.b, bg.a)
+    
+    local highlightTex = button:GetHighlightTexture()
+    local highlight = self.colors.highlight
+    highlightTex:SetVertexColor(highlight.r, highlight.g, highlight.b, highlight.a)
+    highlightTex:SetBlendMode("ADD")
+    
+    local pushedTex = button:GetPushedTexture()
+    pushedTex:SetVertexColor(bg.r * 0.7, bg.g * 0.7, bg.b * 0.7, bg.a)
+    
+    local disabledTex = button:GetDisabledTexture()
+    disabledTex:SetVertexColor(bg.r * 0.5, bg.g * 0.5, bg.b * 0.5, bg.a)
+    
+    return button
 end
 
--- Register the theme with the Skins module
-if Skins and Skins.RegisterTheme then
-    Skins:RegisterTheme("PhoenixFlame", PhoenixFlame)
+-- Helper function to create themed checkboxes
+function PhoenixFlame:CreateCheckbox(parent, name, text, initialValue)
+    local checkbox = CreateFrame("CheckButton", name, parent, "UICheckButtonTemplate")
+    
+    -- Apply Phoenix Flame theme
+    self:ApplyToFrame(checkbox, {withBorder = false, withBackground = false})
+    
+    -- Set the checkbox text
+    _G[checkbox:GetName() .. "Text"]:SetText(text)
+    local textColor = self.colors.text
+    _G[checkbox:GetName() .. "Text"]:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
+    
+    -- Set initial state
+    checkbox:SetChecked(initialValue or false)
+    
+    -- Hook state changes to update appearance
+    checkbox:HookScript("OnClick", function(self)
+        -- Additional theme effects can be added here
+    end)
+    
+    return checkbox
 end
 
--- Return the theme object for external usage
-VUI.themes = VUI.themes or {}
-VUI.themes.PhoenixFlame = PhoenixFlame
+-- Helper function to create themed sliders
+function PhoenixFlame:CreateSlider(parent, name, text, min, max, step, initialValue)
+    local slider = CreateFrame("Slider", name, parent, "OptionsSliderTemplate")
+    slider:SetWidth(150)
+    slider:SetMinMaxValues(min or 0, max or 100)
+    slider:SetValue(initialValue or min or 0)
+    slider:SetValueStep(step or 1)
+    
+    -- Apply theme to slider
+    self:ApplyToFrame(slider, {withBackground = false})
+    
+    -- Set labels
+    _G[slider:GetName() .. "Text"]:SetText(text)
+    _G[slider:GetName() .. "Low"]:SetText(min or 0)
+    _G[slider:GetName() .. "High"]:SetText(max or 100)
+    
+    -- Set text colors
+    local textColor = self.colors.text
+    _G[slider:GetName() .. "Text"]:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
+    _G[slider:GetName() .. "Low"]:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
+    _G[slider:GetName() .. "High"]:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
+    
+    -- Set slider texture
+    slider:SetThumbTexture(self.textures.slider)
+    local thumbTex = slider:GetThumbTexture()
+    local highlight = self.colors.highlight
+    thumbTex:SetVertexColor(highlight.r, highlight.g, highlight.b, highlight.a)
+    
+    return slider
+end
+
+-- Register theme as a skin option
+Skins:RegisterTheme("phoenixflame", PhoenixFlame.name, PhoenixFlame.description)
+
+-- Return the theme
+return PhoenixFlame
