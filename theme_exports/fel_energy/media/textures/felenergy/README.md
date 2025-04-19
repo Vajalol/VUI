@@ -1,60 +1,30 @@
-# Fel Energy Theme Textures
+# Fel Energy Theme
 
-This directory contains all the textures needed for the Fel Energy theme, a demonic, corrupting visual style for VUI inspired by fel magic.
+A corrupted fel-themed UI with demonic elements for a Legion-inspired look in VUI.
 
-## Texture Overview
+## Color Scheme
+- Background: Dark green (#0A1A0A)
+- Border: Fel green (#1AFF1A)
+- Highlight: Bright fel (#64FF64)
+- Text: Light green with fel glow (#C8FFC8 with #1AFF1A glow)
 
-### Base Textures
-- **background.tga** - Dark green/black background with subtle fel corruption patterns
-- **background-light.tga** - Lighter version of the background for contrasting elements
-- **background-dark.tga** - Darker version of the background for nested UI elements
-- **border.tga** - Glowing fel green border with corrupt highlights
-- **glow.tga** - Fel glow effect for highlighting important elements
-- **button.tga** - Button background texture with fel gradient
-- **statusbar.tga** - Smooth gradient for health/mana/progress bars
+## Special Effects
+- Fel corruption spreading on important UI elements
+- Crystal formations in the background
+- Smoke and fel effects on interactive elements
+- Demonic runes and symbols appear during combat
 
-### UI Element Textures
-- **actionbutton.tga** - Custom texture for action bar buttons
-- **itembutton.tga** - Texture for item buttons (bags, inventory)
-- **tooltip.tga** - Background texture for tooltips
-- **unitframe.tga** - Frame texture for player/target frames
-- **castbar.tga** - Special texture for casting bars with fel effect
-- **auraicon.tga** - Border texture for buff/debuff icons
-- **chatframe.tga** - Background texture for chat windows
+## Animations
+- Fel energy pulses through UI elements
+- Corruption spreads on hover interactions
+- Crystals grow and shatter with notifications
+- Fel fire burns around action buttons
 
-### Special Effect Textures
-- **fel.tga** - Static fel energy texture for decorative elements
-- **corruption.tga** - Fel corruption particle texture
-- **smoke.tga** - Fel smoke texture for backgrounds
-- **crystal.tga** - Fel crystal effect texture
+## Installation
+1. Extract the contents of fel_energy_theme.zip to your WoW AddOns folder
+2. Enable the theme in VUI settings panel
+3. Select "Fel Energy" from the theme dropdown
 
-### Animation Textures
-- **animation/fel1.tga** - First frame of fel animation
-- **animation/fel2.tga** - Second frame of fel animation
-- **animation/fel3.tga** - Third frame of fel animation
-- **animation/fel4.tga** - Fourth frame of fel animation
-
-### State Textures
-- **hover.tga** - Texture for mouse-over state
-- **pressed.tga** - Texture for clicked state
-- **disabled.tga** - Texture for disabled/unavailable state
-
-## Usage
-These textures are automatically used by the Fel Energy theme components. You shouldn't need to reference them directly in most cases.
-
-## Color Palette
-The Fel Energy theme uses a demonic color palette inspired by fel magic:
-
-- Deep green-black backgrounds (#0A1A0A)
-- Bright fel green highlights (#1AFF1A)
-- Toxic yellow-green accents (#AAFF00)
-- Dark green gradients (#0E2F0E)
-- Corrupt purple highlights (#AA00FF)
-
-## Creating New Fel Energy Textures
-When creating new textures for the Fel Energy theme, aim to match the existing style with these characteristics:
-- Deep, dark green-black backgrounds
-- Bright fel green glowing highlights
-- Corrupting tendrils and patterns
-- Toxic and poisonous color gradients
-- Chaotic, unstable energy patterns
+## Credits
+- Created for VUI by VortexQ8
+- Part of the VUI theme collection for World of Warcraft: The War Within
