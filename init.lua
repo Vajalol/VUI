@@ -29,6 +29,7 @@ VUI.skins = {}
 VUI.profiles = {}
 VUI.automation = {}
 VUI.visualconfig = {}
+VUI.Castbar = {}
 
 -- Internal module tracking
 VUI.modules = {
@@ -48,7 +49,8 @@ VUI.modules = {
     "skins",
     "profiles",
     "automation",
-    "visualconfig"
+    "visualconfig",
+    "Castbar"
 }
 
 -- Module status tracking
@@ -64,6 +66,12 @@ function VUI:Initialize()
     self:InitializeModules()
     self:CreateConfigPanel()
     self:RegisterChatCommands()
+    
+    -- Initialize the Castbar module
+    if self.Castbar and self.Castbar.OnInitialize then
+        self.Castbar:OnInitialize()
+        self.Castbar:RegisterEvents()
+    end
     
     -- Print initialization message
     print("|cff1784d1VUI|r v" .. self.version .. " initialized. Type |cff1784d1/vui|r for options.")

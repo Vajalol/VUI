@@ -60,11 +60,80 @@ VUI.options = {
                     name = " ",
                     order = 6,
                 },
+                castbarHeader = {
+                    type = "header",
+                    name = "Castbar Settings",
+                    order = 7,
+                },
+                castbarEnabled = {
+                    type = "toggle",
+                    name = "Enable Custom Castbar",
+                    desc = "Enable or disable the custom castbar with Thunder Storm theme",
+                    order = 8,
+                    get = function() return VUI.db.profile.general.castbar.enabled end,
+                    set = function(_, value)
+                        VUI.db.profile.general.castbar.enabled = value
+                        VUI:ApplySettings()
+                    end,
+                },
+                castbarShowSpellName = {
+                    type = "toggle",
+                    name = "Show Spell Name",
+                    desc = "Show spell name on the castbar",
+                    order = 9,
+                    get = function() return VUI.db.profile.general.castbar.showSpellName end,
+                    set = function(_, value)
+                        VUI.db.profile.general.castbar.showSpellName = value
+                        VUI:ApplySettings()
+                    end,
+                    disabled = function() return not VUI.db.profile.general.castbar.enabled end,
+                },
+                castbarShowIcon = {
+                    type = "toggle",
+                    name = "Show Spell Icon",
+                    desc = "Show spell icon on the castbar",
+                    order = 10,
+                    get = function() return VUI.db.profile.general.castbar.showIcon end,
+                    set = function(_, value)
+                        VUI.db.profile.general.castbar.showIcon = value
+                        VUI:ApplySettings()
+                    end,
+                    disabled = function() return not VUI.db.profile.general.castbar.enabled end,
+                },
+                castbarShowTimer = {
+                    type = "toggle",
+                    name = "Show Cast Timer",
+                    desc = "Show the remaining time on the castbar",
+                    order = 11,
+                    get = function() return VUI.db.profile.general.castbar.showTimer end,
+                    set = function(_, value)
+                        VUI.db.profile.general.castbar.showTimer = value
+                        VUI:ApplySettings()
+                    end,
+                    disabled = function() return not VUI.db.profile.general.castbar.enabled end,
+                },
+                castbarCustomColors = {
+                    type = "toggle",
+                    name = "Use Theme Colors",
+                    desc = "Apply Thunder Storm theme colors to the castbar",
+                    order = 12,
+                    get = function() return VUI.db.profile.general.castbar.customColors end,
+                    set = function(_, value)
+                        VUI.db.profile.general.castbar.customColors = value
+                        VUI:ApplySettings()
+                    end,
+                    disabled = function() return not VUI.db.profile.general.castbar.enabled end,
+                },
+                spacerAfterCastbar = {
+                    type = "description",
+                    name = " ",
+                    order = 13,
+                },
                 resetButton = {
                     type = "execute",
                     name = "Reset All Settings",
                     desc = "Reset all settings to their default values",
-                    order = 7,
+                    order = 14,
                     func = function()
                         StaticPopupDialogs["VUI_RESET_CONFIRM"] = {
                             text = "Are you sure you want to reset all VUI settings to default values?",
@@ -193,6 +262,10 @@ VUI.options = {
                     desc = "Choose the theme for the Dashboard",
                     order = 10,
                     values = {
+                        ["thunderstorm"] = "Thunder Storm",
+                        ["phoenixflame"] = "Phoenix Flame",
+                        ["arcanemystic"] = "Arcane Mystic",
+                        ["felenergy"] = "Fel Energy",
                         ["dark"] = "Dark",
                         ["light"] = "Light",
                     },

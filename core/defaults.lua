@@ -9,6 +9,13 @@ VUI.defaults = {
                 hide = false,
                 position = 45,
             },
+            castbar = {
+                enabled = true,
+                customColors = true,
+                showSpellName = true,
+                showIcon = true,
+                showTimer = true,
+            },
         },
         appearance = {
             theme = "thunderstorm", -- Set Thunder Storm as the default theme
