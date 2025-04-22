@@ -46,6 +46,47 @@ VUI.defaults = {
         
         -- Modules settings with their defaults
         modules = {
+            -- Bags Module
+            bags = {
+                enabled = true,
+                combineAllBags = true,
+                showItemLevel = true,
+                showItemBorders = true,
+                colorItemBorders = true,
+                compactLayout = false,
+                itemLevelThreshold = 1,
+                enhancedSearch = true,
+            },
+            
+            -- Paperdoll (Character Panel) Module
+            paperdoll = {
+                enabled = true,
+                showItemLevel = true,
+                showIlvlDetails = true,
+                colorStatValues = true,
+                colorPrimaryStats = true,
+                showDurability = true,
+                highQualityPortrait = true,
+                enhancedItemTooltips = true,
+            },
+            
+            -- Action Bars Module
+            actionbars = {
+                enabled = true,
+                enhancedStyles = true,
+                showHotkeys = true,
+                showMacroNames = true,
+                showCooldownText = true,
+                showItemCount = true,
+                gridLayout = false,
+                highlightEquipped = true,
+                customBarBackground = true,
+                hideEmptyButtons = false,
+                colorKeyBinds = true,
+                largerButtons = false,
+                themeButtonBorders = true
+            },
+            
             -- Chat Module
             chat = {
                 enabled = true,
