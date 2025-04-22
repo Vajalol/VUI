@@ -29,7 +29,7 @@ VUI.skins = {}
 VUI.profiles = {}
 VUI.automation = {}
 VUI.visualconfig = {}
-VUI.Castbar = {}
+VUI.Player = {}
 
 -- Internal module tracking
 VUI.modules = {
@@ -50,7 +50,7 @@ VUI.modules = {
     "profiles",
     "automation",
     "visualconfig",
-    "Castbar"
+    "Player"
 }
 
 -- Module status tracking
@@ -67,10 +67,10 @@ function VUI:Initialize()
     self:CreateConfigPanel()
     self:RegisterChatCommands()
     
-    -- Initialize the Castbar module
-    if self.Castbar and self.Castbar.OnInitialize then
-        self.Castbar:OnInitialize()
-        self.Castbar:RegisterEvents()
+    -- Initialize the Player module
+    if self.Player and self.Player.OnInitialize then
+        self.Player:OnInitialize()
+        self.Player:RegisterEvents()
     end
     
     -- Print initialization message

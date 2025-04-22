@@ -22,7 +22,7 @@
     
     <!-- Core Features -->
     <Script file="chat.lua"/>
-    <Script file="castbar.lua"/>
+    <Script file="player.lua"/>
     
     <!-- Configuration -->
     <Script file="config.lua"/>

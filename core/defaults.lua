@@ -15,6 +15,9 @@ VUI.defaults = {
                 showSpellName = true,
                 showIcon = true,
                 showTimer = true,
+                showLatency = true,
+                showTarget = true,
+                showCastTime = true,
             },
         },
         appearance = {
