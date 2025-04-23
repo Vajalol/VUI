@@ -33,6 +33,9 @@
     <!-- idTip Module -->
     <Include file="idtip\index.xml"/>
     
+    <!-- Premade Group Finder Module -->
+    <Include file="premadegroupfinder\index.xml"/>
+    
     <!-- Skins Module -->
     <Include file="skins\index.xml"/>
 </Ui>
