@@ -605,6 +605,87 @@ end
 
 -- Create the Appearance tab
 function UnitFrames:CreateAppearanceTab(container)
+    -- Animation options group
+    local animGroup = AceGUI:Create("InlineGroup")
+    animGroup:SetTitle("Animation Settings")
+    animGroup:SetLayout("Flow")
+    animGroup:SetFullWidth(true)
+    container:AddChild(animGroup)
+    
+    -- Enable smooth updates toggle
+    local smoothCheckbox = AceGUI:Create("CheckBox")
+    smoothCheckbox:SetLabel("Enable Smooth Value Transitions")
+    smoothCheckbox:SetWidth(350)
+    smoothCheckbox:SetValue(self.settings.enableSmoothUpdates)
+    smoothCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        self.settings.enableSmoothUpdates = value
+        self:UpdateAllFrames()
+    end)
+    animGroup:AddChild(smoothCheckbox)
+    
+    -- Animation duration slider
+    local durationSlider = AceGUI:Create("Slider")
+    durationSlider:SetLabel("Animation Duration (seconds)")
+    durationSlider:SetWidth(350)
+    durationSlider:SetSliderValues(0.1, 1.0, 0.05)
+    durationSlider:SetValue(self.settings.animationDuration or 0.3)
+    durationSlider:SetCallback("OnValueChanged", function(widget, event, value)
+        self.settings.animationDuration = value
+        -- Update animation durations
+        for frame in pairs(self.animatedFrames or {}) do
+            if frame.fadeInAnimation then
+                local alpha = frame.fadeInAnimation:GetAnimations()
+                alpha:SetDuration(value)
+            end
+            if frame.fadeOutAnimation then
+                local alpha = frame.fadeOutAnimation:GetAnimations()
+                alpha:SetDuration(value)
+            end
+        end
+    end)
+    animGroup:AddChild(durationSlider)
+    
+    -- Combat animation toggle
+    local combatAnimCheckbox = AceGUI:Create("CheckBox")
+    combatAnimCheckbox:SetLabel("Show Combat State Animations")
+    combatAnimCheckbox:SetWidth(350)
+    combatAnimCheckbox:SetValue(self.settings.showCombatAnimations)
+    combatAnimCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        self.settings.showCombatAnimations = value
+        self:UpdateAllFrames()
+    end)
+    animGroup:AddChild(combatAnimCheckbox)
+    
+    -- Health change animation toggle
+    local healthAnimCheckbox = AceGUI:Create("CheckBox")
+    healthAnimCheckbox:SetLabel("Show Health Change Animations")
+    healthAnimCheckbox:SetWidth(350)
+    healthAnimCheckbox:SetValue(self.settings.showHealthChangeAnimations)
+    healthAnimCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        self.settings.showHealthChangeAnimations = value
+    end)
+    animGroup:AddChild(healthAnimCheckbox)
+    
+    -- Power change animation toggle
+    local powerAnimCheckbox = AceGUI:Create("CheckBox")
+    powerAnimCheckbox:SetLabel("Show Power Change Animations")
+    powerAnimCheckbox:SetWidth(350)
+    powerAnimCheckbox:SetValue(self.settings.showPowerChangeAnimations)
+    powerAnimCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        self.settings.showPowerChangeAnimations = value
+    end)
+    animGroup:AddChild(powerAnimCheckbox)
+    
+    -- Fade animations toggle
+    local fadeAnimCheckbox = AceGUI:Create("CheckBox")
+    fadeAnimCheckbox:SetLabel("Use Fade In/Out Animations")
+    fadeAnimCheckbox:SetWidth(350)
+    fadeAnimCheckbox:SetValue(self.settings.useFadeAnimations)
+    fadeAnimCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        self.settings.useFadeAnimations = value
+    end)
+    animGroup:AddChild(fadeAnimCheckbox)
+    
     -- Health color group
     local healthGroup = AceGUI:Create("InlineGroup")
     healthGroup:SetTitle("Health Colors")

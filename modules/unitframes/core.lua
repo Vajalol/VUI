@@ -59,11 +59,113 @@ function UnitFrames:CreateFrames()
     -- Mark as created
     self.framesCreated = true
     
+    -- Initialize animations for all frames
+    self:InitializeAllAnimations()
+    
     -- Apply theme
     self:ApplyTheme()
     
     -- Update visibility based on settings
     self:UpdateFrameVisibility()
+    
+    -- Setup animation updater
+    self:SetupAnimationUpdater()
+end
+
+-- Initialize animations for all unit frames
+function UnitFrames:InitializeAllAnimations()
+    -- Player frame
+    if self.frames.player then
+        self:InitializeFrameAnimations(self.frames.player)
+    end
+    
+    -- Target frame
+    if self.frames.target then
+        self:InitializeFrameAnimations(self.frames.target)
+    end
+    
+    -- Focus frame
+    if self.frames.focus then
+        self:InitializeFrameAnimations(self.frames.focus)
+    end
+    
+    -- Pet frame
+    if self.frames.pet then
+        self:InitializeFrameAnimations(self.frames.pet)
+    end
+    
+    -- Target of target frame
+    if self.frames.targettarget then
+        self:InitializeFrameAnimations(self.frames.targettarget)
+    end
+    
+    -- Party frames
+    if self.frames.party then
+        for i = 1, 5 do
+            if self.frames.party[i] then
+                self:InitializeFrameAnimations(self.frames.party[i])
+            end
+        end
+    end
+    
+    -- Boss frames
+    if self.frames.boss then
+        for i = 1, 5 do
+            if self.frames.boss[i] then
+                self:InitializeFrameAnimations(self.frames.boss[i])
+            end
+        end
+    end
+    
+    -- Arena frames
+    if self.frames.arena then
+        for i = 1, 5 do
+            if self.frames.arena[i] then
+                self:InitializeFrameAnimations(self.frames.arena[i])
+            end
+        end
+    end
+end
+
+-- Setup animation update frame
+function UnitFrames:SetupAnimationUpdater()
+    if self.animationUpdater then return end
+    
+    -- Create an OnUpdate handler for animations
+    self.animationUpdater = CreateFrame("Frame", nil, UIParent)
+    self.animationUpdater:SetScript("OnUpdate", function(_, elapsed)
+        -- Add any per-frame animation updates here
+        
+        -- Add throttled updates (advanced animation handling)
+        if self.lastAnimationUpdate and (GetTime() - self.lastAnimationUpdate) < 0.05 then
+            return
+        end
+        
+        self.lastAnimationUpdate = GetTime()
+        
+        -- Update any ongoing transitions for animated frames
+        for frame in pairs(self.animatedFrames or {}) do
+            if frame and frame.transitions then
+                -- Process ongoing transitions
+                for valueType, transition in pairs(frame.transitions) do
+                    if transition.inProgress then
+                        -- Each transition updates its own values based on specific frame elements
+                        if valueType == "health" and frame.HealthBar then
+                            local value = self:UpdateSmoothValue(frame, "health", transition.target)
+                            if frame.HealthBar.SetValue then
+                                frame.HealthBar:SetValue(value)
+                            end
+                        elseif valueType == "power" and frame.PowerBar then
+                            local value = self:UpdateSmoothValue(frame, "power", transition.target)
+                            if frame.PowerBar.SetValue then
+                                frame.PowerBar:SetValue(value)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
 end
 
 -- Create Player frame
@@ -1233,20 +1335,65 @@ end
 function UnitFrames:UpdateUnitFrame(frame, unit)
     if not frame or not UnitExists(unit) then return end
     
-    -- Update name
-    if frame.Name then
-        frame.Name:SetText(UnitName(unit))
+    -- Initialize animations if not already done
+    if not frame.animationsInitialized then
+        self:InitializeFrameAnimations(frame)
     end
     
-    -- Update health bar
-    local healthBar = frame:GetName() and _G[frame:GetName().."HealthBar"]
+    -- Save previous values for animation triggers
+    local oldHealth = frame.currentHealth or 0
+    local oldPower = frame.currentPower or 0
+    local oldCombatState = frame.inCombat or false
+    
+    -- Update name with proper coloring
+    if frame.Name then
+        local name = UnitName(unit)
+        
+        -- Apply class or reaction coloring
+        if UnitIsPlayer(unit) then
+            local _, class = UnitClass(unit)
+            if class and RAID_CLASS_COLORS[class] then
+                local color = RAID_CLASS_COLORS[class]
+                frame.Name:SetText(name)
+                frame.Name:SetTextColor(color.r, color.g, color.b)
+            else
+                frame.Name:SetText(name)
+                frame.Name:SetTextColor(1, 1, 1)
+            end
+        else
+            -- Color by reaction for NPCs
+            local r, g, b = UnitSelectionColor(unit)
+            frame.Name:SetText(name)
+            frame.Name:SetTextColor(r, g, b)
+        end
+    end
+    
+    -- Update health bar with smooth transitions
+    local healthBar = frame.HealthBar or (frame:GetName() and _G[frame:GetName().."HealthBar"])
     if healthBar then
         local health = UnitHealth(unit)
         local maxHealth = UnitHealthMax(unit)
         
+        -- Store values for reference
+        frame.currentHealth = health
+        frame.maxHealth = maxHealth
+        
         if maxHealth > 0 then
             healthBar:SetMinMaxValues(0, maxHealth)
-            healthBar:SetValue(health)
+            
+            -- Apply smooth transition if animations are enabled
+            if self.settings.enableSmoothUpdates and frame.transitions and frame.transitions.health then
+                -- Set target value (actual animation happens in the updater)
+                frame.transitions.health.target = health
+                
+                -- If this is a major health change, trigger the visual effect
+                if oldHealth > 0 and oldHealth > health and (oldHealth - health) / maxHealth > 0.05 then
+                    self:AnimateHealthChange(frame, oldHealth, health)
+                end
+            else
+                -- Direct update without animation
+                healthBar:SetValue(health)
+            end
             
             -- Set color based on settings
             if self.settings.classColoredBars and UnitIsPlayer(unit) then
@@ -1317,16 +1464,34 @@ function UnitFrames:UpdateUnitFrame(frame, unit)
         end
     end
     
-    -- Update power bar
-    local powerBar = frame:GetName() and _G[frame:GetName().."PowerBar"]
+    -- Update power bar with smooth transitions
+    local powerBar = frame.PowerBar or (frame:GetName() and _G[frame:GetName().."PowerBar"])
     if powerBar then
         local power = UnitPower(unit)
         local maxPower = UnitPowerMax(unit)
         local powerType = UnitPowerType(unit)
         
+        -- Store values for reference
+        frame.currentPower = power
+        frame.maxPower = maxPower
+        frame.powerType = powerType
+        
         if maxPower > 0 then
             powerBar:SetMinMaxValues(0, maxPower)
-            powerBar:SetValue(power)
+            
+            -- Apply smooth transition if animations are enabled
+            if self.settings.enableSmoothUpdates and frame.transitions and frame.transitions.power then
+                -- Set target value (actual animation happens in the updater)
+                frame.transitions.power.target = power
+                
+                -- If this is a significant power gain, trigger the visual effect
+                if power > oldPower and (power - oldPower) / maxPower > 0.1 then
+                    self:AnimatePowerChange(frame, oldPower, power)
+                end
+            else
+                -- Direct update without animation
+                powerBar:SetValue(power)
+            end
             
             -- Set color based on power type
             local powerTypeStr = POWER_TYPES[powerType] or "MANA"
@@ -1810,4 +1975,173 @@ end
 
 function UnitFrames:UpdateParty()
     self:UpdatePartyFrames()
+end
+
+-- Handle entering combat
+function UnitFrames:OnEnterCombat()
+    if not self.settings.showCombatAnimations then return end
+    
+    -- Player frame combat state
+    if self.frames.player and self.frames.player.animationsInitialized then
+        self.frames.player.inCombat = true
+        self:SetCombatState(self.frames.player, true)
+    end
+    
+    -- Also apply combat animation to party frames
+    if self.frames.party then
+        for i = 1, 5 do
+            if self.frames.party[i] and self.frames.party[i].animationsInitialized then
+                if UnitExists("party"..i) and UnitAffectingCombat("party"..i) then
+                    self.frames.party[i].inCombat = true
+                    self:SetCombatState(self.frames.party[i], true)
+                end
+            end
+        end
+    end
+end
+
+-- Handle leaving combat
+function UnitFrames:OnLeaveCombat()
+    if not self.settings.showCombatAnimations then return end
+    
+    -- Player frame combat state
+    if self.frames.player and self.frames.player.animationsInitialized then
+        self.frames.player.inCombat = false
+        self:SetCombatState(self.frames.player, false)
+    end
+    
+    -- Also clear combat animation from party frames
+    if self.frames.party then
+        for i = 1, 5 do
+            if self.frames.party[i] and self.frames.party[i].animationsInitialized then
+                self.frames.party[i].inCombat = false
+                self:SetCombatState(self.frames.party[i], false)
+            end
+        end
+    end
+end
+
+-- Handle power type changes
+function UnitFrames:UpdatePowerType(unit)
+    if not unit then return end
+    
+    -- Update the appropriate frame based on the unit
+    if unit == "player" then
+        self:UpdatePlayerFrame()
+    elseif unit == "target" then
+        self:UpdateTargetFrame()
+    elseif unit == "focus" then
+        self:UpdateFocusFrame()
+    elseif unit == "pet" then
+        self:UpdatePetFrame()
+    elseif unit == "targettarget" then
+        self:UpdateTargetTargetFrame()
+    elseif string.find(unit, "party") then
+        self:UpdatePartyFrames()
+    elseif string.find(unit, "boss") then
+        self:UpdateBossFrames()
+    elseif string.find(unit, "arena") then
+        self:UpdateArenaFrames()
+    end
+end
+
+-- Handle combat events for animation triggers
+function UnitFrames:OnUnitCombatEvent(unit, eventType, flagText, amount)
+    if not self.settings.showHealthChangeAnimations then return end
+    
+    -- Only process damage events with significant amounts
+    if eventType == "DAMAGE" and amount and amount > 0 then
+        local frame = nil
+        
+        -- Determine which frame to apply the effect to
+        if unit == "player" then
+            frame = self.frames.player
+        elseif unit == "target" then
+            frame = self.frames.target
+        elseif unit == "focus" then
+            frame = self.frames.focus
+        elseif unit == "pet" then
+            frame = self.frames.pet
+        elseif unit == "targettarget" then
+            frame = self.frames.targettarget
+        elseif string.find(unit, "party") then
+            local index = tonumber(string.match(unit, "party(%d+)"))
+            if index and self.frames.party and self.frames.party[index] then
+                frame = self.frames.party[index]
+            end
+        end
+        
+        -- Apply the animation if the frame exists and damage is significant
+        if frame and frame.animationsInitialized then
+            local maxHealth = UnitHealthMax(unit) or 1
+            local damagePercent = amount / maxHealth
+            
+            -- Only trigger for significant damage (more than 5% of max health)
+            if damagePercent > 0.05 then
+                -- Get the current health value for animation
+                local currentHealth = UnitHealth(unit) or 0
+                local previousHealth = currentHealth + amount
+                
+                -- Call the animation function
+                self:AnimateHealthChange(frame, previousHealth, currentHealth)
+            end
+        end
+    end
+end
+
+-- Handle threat state changes
+function UnitFrames:UpdateThreatState(unit)
+    if not unit or not self.settings.showCombatAnimations then return end
+    
+    local frame = nil
+    
+    -- Determine which frame to update
+    if unit == "player" then
+        frame = self.frames.player
+    elseif unit == "target" then
+        frame = self.frames.target
+    elseif unit == "focus" then
+        frame = self.frames.focus
+    elseif unit == "pet" then
+        frame = self.frames.pet
+    elseif string.find(unit, "party") then
+        local index = tonumber(string.match(unit, "party(%d+)"))
+        if index and self.frames.party and self.frames.party[index] then
+            frame = self.frames.party[index]
+        end
+    end
+    
+    -- Apply threat state changes if frame exists
+    if frame and frame.animationsInitialized then
+        local threatStatus = UnitThreatSituation(unit)
+        
+        -- Add threat highlighting if necessary
+        if threatStatus and threatStatus > 0 then
+            -- High threat gets aggressive animation
+            if threatStatus >= 2 and frame.combatStateAnimation then
+                if not frame.combatStateAnimation:IsPlaying() then
+                    frame.combatStateAnimation:Play()
+                end
+                
+                -- Color the glow based on threat level (yellow for caution, red for danger)
+                if frame.borderGlow then
+                    if threatStatus == 3 then
+                        -- Tanking - set to red
+                        frame.borderGlow:SetVertexColor(1, 0, 0, 0.7)
+                    else
+                        -- High threat but not tanking - set to yellow/orange
+                        frame.borderGlow:SetVertexColor(1, 0.6, 0, 0.7)
+                    end
+                end
+            end
+        else
+            -- No threat, remove highlighting
+            if frame.combatStateAnimation and frame.combatStateAnimation:IsPlaying() and not frame.inCombat then
+                frame.combatStateAnimation:Stop()
+                if frame.borderGlow then
+                    frame.borderGlow:SetAlpha(0)
+                end
+            end
+        end
+    end
 end

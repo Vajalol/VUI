@@ -17,6 +17,14 @@ local defaults = {
     showRoleIcon = true,
     showGroupNumber = true,
     showTargetHighlight = true,
+    
+    -- Animation settings
+    enableSmoothUpdates = true,
+    animationDuration = 0.3,
+    useFadeAnimations = true,
+    showCombatAnimations = true,
+    showHealthChangeAnimations = true,
+    showPowerChangeAnimations = true,
     frames = {
         player = {
             enabled = true,
@@ -423,6 +431,15 @@ function UnitFrames:Initialize()
     self:RegisterEvent("GROUP_ROSTER_UPDATE", "UpdateAllFrames")
     self:RegisterEvent("PARTY_MEMBER_ENABLE", "UpdateParty")
     self:RegisterEvent("PARTY_MEMBER_DISABLE", "UpdateParty")
+    
+    -- Combat state for animations
+    self:RegisterEvent("PLAYER_REGEN_DISABLED", "OnEnterCombat")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnLeaveCombat")
+    
+    -- Events for improved animation handling
+    self:RegisterEvent("UNIT_DISPLAYPOWER", "UpdatePowerType")
+    self:RegisterEvent("UNIT_COMBAT", "OnUnitCombatEvent")
+    self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", "UpdateThreatState")
 end
 
 -- Enable module
