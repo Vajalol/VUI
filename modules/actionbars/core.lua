@@ -6,6 +6,9 @@ VUI.ActionBars = VUI:NewModule("ActionBars")
 -- Local variables
 local activeTheme = "thunderstorm"  -- Default to Thunder Storm theme
 local themeColors = {}
+local combatFeedbackEffects = {}   -- Store combat feedback effects
+local isInCombat = false           -- Track combat state
+local lastCastTime = 0             -- Track last spell cast time
 
 function VUI.ActionBars:OnInitialize()
     -- Default settings
@@ -22,7 +25,15 @@ function VUI.ActionBars:OnInitialize()
         hideEmptyButtons = false,
         colorKeyBinds = true,
         largerButtons = false,
-        themeButtonBorders = true
+        themeButtonBorders = true,
+        
+        -- New improved settings
+        enhancedCombatFeedback = true,
+        smoothCooldownAnimation = true,
+        improvedKeyBindDisplay = true,
+        buttonPulseOnActivation = true,
+        animatedGlowEffects = true,
+        dynamicButtonHighlight = true
     }
     
     -- Initialize with default settings
@@ -56,24 +67,107 @@ function VUI.ActionBars:OnEnable()
     self:ApplyTheme(activeTheme, themeColors)
     -- Update all bars
     self:UpdateActionBars()
+    
+    -- Register additional events for enhanced functionality
+    if self.settings.enhancedCombatFeedback then
+        self:RegisterEvent("PLAYER_REGEN_DISABLED")
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
+        self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+        self:RegisterEvent("UNIT_SPELLCAST_START")
+        self:RegisterEvent("UNIT_SPELLCAST_STOP")
+        self:RegisterEvent("UNIT_SPELLCAST_FAILED")
+    end
+    
+    -- Initialize improved key bind display
+    if self.settings.improvedKeyBindDisplay then
+        self:EnhanceKeyBindDisplay()
+    end
+    
+    -- Initialize smooth cooldown animations
+    if self.settings.smoothCooldownAnimation then
+        self:InitializeSmoothCooldowns()
+    end
 end
 
 function VUI.ActionBars:OnDisable()
+    -- Unregister events
+    self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+    self:UnregisterEvent("UNIT_SPELLCAST_START")
+    self:UnregisterEvent("UNIT_SPELLCAST_STOP")
+    self:UnregisterEvent("UNIT_SPELLCAST_FAILED")
+    
     -- Reset to Blizzard defaults if needed
+    -- Remove any active visual effects
+    self:ClearAllCombatFeedback()
 end
 
 function VUI.ActionBars:PLAYER_ENTERING_WORLD()
     self:UpdateActionBars()
+    isInCombat = InCombatLockdown()
+    
+    -- Clear any lingering effects
+    self:ClearAllCombatFeedback()
+end
+
+function VUI.ActionBars:PLAYER_REGEN_DISABLED()
+    isInCombat = true
+    self:ApplyCombatState(true)
+end
+
+function VUI.ActionBars:PLAYER_REGEN_ENABLED()
+    isInCombat = false
+    self:ApplyCombatState(false)
+end
+
+function VUI.ActionBars:UNIT_SPELLCAST_SUCCEEDED(event, unit, castGUID, spellID)
+    if unit ~= "player" or not self.settings.enhancedCombatFeedback then return end
+    
+    -- Track the spell cast and create button feedback
+    lastCastTime = GetTime()
+    self:CreateSpellCastFeedback(spellID)
+end
+
+function VUI.ActionBars:UNIT_SPELLCAST_START(event, unit, castGUID, spellID)
+    if unit ~= "player" or not self.settings.enhancedCombatFeedback then return end
+    
+    -- Highlight the spell being cast
+    self:HighlightCastingSpell(spellID)
+end
+
+function VUI.ActionBars:UNIT_SPELLCAST_STOP(event, unit, castGUID, spellID)
+    if unit ~= "player" or not self.settings.enhancedCombatFeedback then return end
+    
+    -- Clear the casting highlight
+    self:ClearCastingHighlight(spellID)
+end
+
+function VUI.ActionBars:UNIT_SPELLCAST_FAILED(event, unit, castGUID, spellID)
+    if unit ~= "player" or not self.settings.enhancedCombatFeedback then return end
+    
+    -- Show failure feedback
+    self:ShowCastFailFeedback(spellID)
 end
 
 function VUI.ActionBars:ACTIONBAR_UPDATE_COOLDOWN()
     if self.settings.showCooldownText then
         self:UpdateCooldownText()
     end
+    
+    -- Apply enhanced cooldown visuals
+    if self.settings.smoothCooldownAnimation then
+        self:UpdateEnhancedCooldowns()
+    end
 end
 
 function VUI.ActionBars:ACTIONBAR_UPDATE_STATE()
     self:UpdateActionButtonState()
+    
+    -- Apply combat state enhancements if in combat
+    if isInCombat and self.settings.enhancedCombatFeedback then
+        self:RefreshCombatFeedback()
+    end
 end
 
 function VUI.ActionBars:HookActionBars()
@@ -506,6 +600,528 @@ function VUI.ActionBars:UpdateActionBars()
     end
 end
 
+-- Enhanced keybind display for better visibility
+function VUI.ActionBars:EnhanceKeyBindDisplay()
+    -- Apply to all action buttons
+    for i = 1, 120 do
+        local button = _G["ActionButton"..i]
+        if button and button.HotKey then
+            -- Only update if keybinds are shown
+            if self.settings.showHotkeys then
+                -- Clear any previous enhancements
+                if button.keyBindBackground then
+                    button.keyBindBackground:Hide()
+                end
+                
+                -- Create a background frame for the keybind if it doesn't exist
+                if not button.keyBindBackground then
+                    button.keyBindBackground = CreateFrame("Frame", nil, button)
+                    button.keyBindBackground:SetFrameLevel(button:GetFrameLevel() + 1)
+                    
+                    -- Position to match hotkey text
+                    button.keyBindBackground:ClearAllPoints()
+                    button.keyBindBackground:SetPoint("TOPRIGHT", button, "TOPRIGHT", 2, 2)
+                    button.keyBindBackground:SetSize(20, 14)
+                    
+                    -- Create backdrop
+                    button.keyBindBackground:SetBackdrop({
+                        bgFile = "Interface\\Buttons\\WHITE8x8",
+                        edgeFile = "Interface\\Buttons\\WHITE8x8",
+                        tile = false,
+                        tileSize = 0,
+                        edgeSize = 1,
+                        insets = {left = 1, right = 1, top = 1, bottom = 1}
+                    })
+                    
+                    -- Apply semi-transparent background
+                    button.keyBindBackground:SetBackdropColor(0, 0, 0, 0.7)
+                    
+                    -- Apply theme-colored border
+                    button.keyBindBackground:SetBackdropBorderColor(
+                        themeColors.border.r, 
+                        themeColors.border.g, 
+                        themeColors.border.b, 
+                        0.9
+                    )
+                end
+                
+                -- Show the enhanced background
+                button.keyBindBackground:Show()
+                
+                -- Make sure hotkey is above the background
+                button.HotKey:SetDrawLayer("OVERLAY", 2)
+                
+                -- Enhance font size and style
+                button.HotKey:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+                
+                -- Update text color based on theme
+                if self.settings.colorKeyBinds then
+                    button.HotKey:SetTextColor(
+                        themeColors.highlight.r,
+                        themeColors.highlight.g,
+                        themeColors.highlight.b,
+                        1
+                    )
+                else
+                    button.HotKey:SetTextColor(0.9, 0.9, 0.9)
+                end
+                
+                -- Adjust position for better visibility
+                button.HotKey:ClearAllPoints()
+                button.HotKey:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -2)
+                
+                -- Get the current key text and make it more readable
+                local keyText = button.HotKey:GetText()
+                if keyText and keyText ~= "" and keyText ~= RANGE_INDICATOR then
+                    -- Replace confusing key symbols with more readable ones
+                    keyText = keyText:gsub("(s%-)", "S") -- Shift
+                    keyText = keyText:gsub("(a%-)", "A") -- Alt
+                    keyText = keyText:gsub("(c%-)", "C") -- Control
+                    
+                    -- Remove the "Down" text that sometimes appears
+                    keyText = keyText:gsub("Down", "")
+                    
+                    -- Set the improved text
+                    button.HotKey:SetText(keyText)
+                end
+            elseif button.keyBindBackground then
+                button.keyBindBackground:Hide()
+            end
+        end
+    end
+end
+
+-- Initialize improved cooldown animations
+function VUI.ActionBars:InitializeSmoothCooldowns()
+    -- Apply to all action buttons
+    for i = 1, 120 do
+        local button = _G["ActionButton"..i]
+        if button and button.cooldown then
+            -- Make sure the cooldown animation is smoother
+            button.cooldown:SetDrawEdge(true)
+            button.cooldown:SetSwipeColor(0, 0, 0, 0.8) -- More visible but not too distracting
+            
+            -- Add a pulsing effect when cooldown is about to finish
+            if not button.cooldownPulse then
+                button.cooldownPulse = button:CreateTexture(nil, "OVERLAY")
+                button.cooldownPulse:SetAllPoints(button)
+                button.cooldownPulse:SetTexture("Interface\\Buttons\\CheckButtonHilight")
+                button.cooldownPulse:SetBlendMode("ADD")
+                button.cooldownPulse:SetAlpha(0)
+                
+                -- Apply theme color to the pulse
+                button.cooldownPulse:SetVertexColor(
+                    themeColors.highlight.r,
+                    themeColors.highlight.g,
+                    themeColors.highlight.b,
+                    0.7
+                )
+            end
+        end
+    end
+end
+
+-- Apply animation when ability comes off cooldown
+function VUI.ActionBars:AnimateCooldownFinish(button)
+    if not button or not button.cooldownPulse then return end
+    
+    -- Cancel any existing animation
+    if button.pulseAnim then
+        button.pulseAnim:Cancel()
+    end
+    
+    -- Create a smooth pulse animation
+    button.cooldownPulse:SetAlpha(0)
+    button.cooldownPulse:Show()
+    
+    button.pulseAnim = C_Timer.NewTimer(0.1, function()
+        -- Create a smooth pulse effect
+        local fadeInfo = {
+            mode = "IN",
+            timeToFade = 0.3,
+            startAlpha = 0,
+            endAlpha = 0.7,
+            finishedFunc = function()
+                local fadeOutInfo = {
+                    mode = "OUT",
+                    timeToFade = 0.5,
+                    startAlpha = 0.7,
+                    endAlpha = 0,
+                    finishedFunc = function()
+                        button.cooldownPulse:Hide()
+                    end
+                }
+                UIFrameFade(button.cooldownPulse, fadeOutInfo)
+            end
+        }
+        
+        UIFrameFade(button.cooldownPulse, fadeInfo)
+    end)
+end
+
+-- Apply visual effects based on combat state
+function VUI.ActionBars:ApplyCombatState(inCombat)
+    if not self.settings.enhancedCombatFeedback then return end
+    
+    -- Apply to all action buttons
+    for i = 1, 120 do
+        local button = _G["ActionButton"..i]
+        if button and button.VUISkinned then
+            if inCombat then
+                -- In combat - make buttons more prominent
+                
+                -- Enhance border
+                if button.backdrop then
+                    button.backdrop:SetBackdropBorderColor(
+                        themeColors.border.r * 1.5,
+                        themeColors.border.g * 1.5,
+                        themeColors.border.b * 1.5,
+                        0.9
+                    )
+                end
+                
+                -- Create a subtle glow effect if not already present
+                if not button.combatGlow and self.settings.animatedGlowEffects then
+                    button.combatGlow = button:CreateTexture(nil, "OVERLAY")
+                    button.combatGlow:SetPoint("CENTER", button, "CENTER", 0, 0)
+                    button.combatGlow:SetSize(button:GetWidth() + 15, button:GetHeight() + 15)
+                    button.combatGlow:SetTexture("Interface\\SpellActivationOverlay\\IconAlert")
+                    button.combatGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+                    button.combatGlow:SetBlendMode("ADD")
+                    button.combatGlow:SetVertexColor(
+                        themeColors.highlight.r,
+                        themeColors.highlight.g,
+                        themeColors.highlight.b,
+                        0.3
+                    )
+                    button.combatGlow:SetAlpha(0.5)
+                    
+                    -- Add a breathing animation
+                    if not button.glow_animation then
+                        button.glow_animation = button.combatGlow:CreateAnimationGroup()
+                        button.glow_animation:SetLooping("REPEAT")
+                        
+                        local fade1 = button.glow_animation:CreateAnimation("Alpha")
+                        fade1:SetFromAlpha(0.3)
+                        fade1:SetToAlpha(0.7)
+                        fade1:SetDuration(1.0)
+                        fade1:SetSmoothing("IN_OUT")
+                        
+                        local fade2 = button.glow_animation:CreateAnimation("Alpha")
+                        fade2:SetFromAlpha(0.7)
+                        fade2:SetToAlpha(0.3)
+                        fade2:SetDuration(1.0)
+                        fade2:SetSmoothing("IN_OUT")
+                        fade2:SetStartDelay(1.0)
+                    end
+                    
+                    button.glow_animation:Play()
+                end
+                
+                -- Show the combat glow
+                if button.combatGlow then
+                    button.combatGlow:Show()
+                    if button.glow_animation then
+                        button.glow_animation:Play()
+                    end
+                end
+            else
+                -- Out of combat - restore normal appearance
+                
+                -- Restore border
+                if button.backdrop then
+                    if self.settings.themeButtonBorders then
+                        button.backdrop:SetBackdropBorderColor(
+                            themeColors.border.r,
+                            themeColors.border.g,
+                            themeColors.border.b,
+                            0.8
+                        )
+                    else
+                        button.backdrop:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.8)
+                    end
+                end
+                
+                -- Hide combat glow
+                if button.combatGlow then
+                    button.combatGlow:Hide()
+                    if button.glow_animation then
+                        button.glow_animation:Stop()
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Create visual feedback when casting a spell
+function VUI.ActionBars:CreateSpellCastFeedback(spellID)
+    if not spellID or not self.settings.buttonPulseOnActivation then return end
+    
+    -- Find button containing this spell
+    local targetButton = nil
+    for i = 1, 120 do
+        local button = _G["ActionButton"..i]
+        if button and button.action then
+            local actionType, id = GetActionInfo(button.action)
+            if actionType == "spell" and id == spellID then
+                targetButton = button
+                break
+            end
+        end
+    end
+    
+    if targetButton then
+        -- Create feedback effect
+        if not targetButton.castFlash then
+            targetButton.castFlash = targetButton:CreateTexture(nil, "OVERLAY")
+            targetButton.castFlash:SetAllPoints(targetButton)
+            targetButton.castFlash:SetTexture("Interface\\Buttons\\CheckButtonHilight")
+            targetButton.castFlash:SetBlendMode("ADD")
+            targetButton.castFlash:SetVertexColor(
+                themeColors.highlight.r * 1.5,
+                themeColors.highlight.g * 1.5,
+                themeColors.highlight.b * 1.5,
+                0.7
+            )
+            targetButton.castFlash:Hide()
+        end
+        
+        -- Cancel any existing animation
+        if targetButton.flashAnimTimer then
+            targetButton.flashAnimTimer:Cancel()
+        end
+        
+        -- Show and animate the flash
+        targetButton.castFlash:Show()
+        targetButton.castFlash:SetAlpha(0.7)
+        
+        targetButton.flashAnimTimer = C_Timer.NewTimer(0.1, function()
+            local fadeInfo = {
+                mode = "OUT",
+                timeToFade = 0.4,
+                startAlpha = 0.7,
+                endAlpha = 0,
+                finishedFunc = function()
+                    targetButton.castFlash:Hide()
+                end
+            }
+            
+            UIFrameFade(targetButton.castFlash, fadeInfo)
+        end)
+        
+        -- Store this effect for potential cleanup
+        combatFeedbackEffects[targetButton] = true
+    end
+end
+
+-- Highlight the spell being cast
+function VUI.ActionBars:HighlightCastingSpell(spellID)
+    if not spellID or not self.settings.enhancedCombatFeedback then return end
+    
+    -- Find button containing this spell
+    for i = 1, 120 do
+        local button = _G["ActionButton"..i]
+        if button and button.action then
+            local actionType, id = GetActionInfo(button.action)
+            if actionType == "spell" and id == spellID then
+                -- Create highlight effect
+                if not button.castingHighlight then
+                    button.castingHighlight = button:CreateTexture(nil, "OVERLAY")
+                    button.castingHighlight:SetAllPoints(button.icon)
+                    button.castingHighlight:SetTexture("Interface\\Buttons\\WHITE8x8")
+                    button.castingHighlight:SetBlendMode("ADD")
+                    button.castingHighlight:SetVertexColor(
+                        themeColors.highlight.r,
+                        themeColors.highlight.g,
+                        themeColors.highlight.b,
+                        0.3
+                    )
+                    button.castingHighlight:Hide()
+                end
+                
+                button.castingHighlight:Show()
+                
+                -- Store for later reference
+                button.castingSpellID = spellID
+                combatFeedbackEffects[button] = true
+            end
+        end
+    end
+end
+
+-- Clear casting highlight
+function VUI.ActionBars:ClearCastingHighlight(spellID)
+    if not spellID then return end
+    
+    -- Find button containing this spell
+    for i = 1, 120 do
+        local button = _G["ActionButton"..i]
+        if button and button.castingSpellID == spellID and button.castingHighlight then
+            button.castingHighlight:Hide()
+            button.castingSpellID = nil
+        end
+    end
+end
+
+-- Show feedback when spell casting fails
+function VUI.ActionBars:ShowCastFailFeedback(spellID)
+    if not spellID or not self.settings.enhancedCombatFeedback then return end
+    
+    -- Find button containing this spell
+    for i = 1, 120 do
+        local button = _G["ActionButton"..i]
+        if button and button.action then
+            local actionType, id = GetActionInfo(button.action)
+            if actionType == "spell" and id == spellID then
+                -- Create fail effect
+                if not button.castFailTexture then
+                    button.castFailTexture = button:CreateTexture(nil, "OVERLAY")
+                    button.castFailTexture:SetAllPoints(button)
+                    button.castFailTexture:SetTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Down")
+                    button.castFailTexture:SetBlendMode("BLEND")
+                    button.castFailTexture:SetAlpha(0.8)
+                    button.castFailTexture:Hide()
+                end
+                
+                -- Show the fail texture
+                button.castFailTexture:Show()
+                
+                -- Cancel any existing animation
+                if button.failAnimTimer then
+                    button.failAnimTimer:Cancel()
+                end
+                
+                -- Hide after a short delay
+                button.failAnimTimer = C_Timer.NewTimer(0.5, function()
+                    local fadeInfo = {
+                        mode = "OUT",
+                        timeToFade = 0.3,
+                        startAlpha = 0.8,
+                        endAlpha = 0,
+                        finishedFunc = function()
+                            button.castFailTexture:Hide()
+                        end
+                    }
+                    
+                    UIFrameFade(button.castFailTexture, fadeInfo)
+                end)
+                
+                -- Store for potential cleanup
+                combatFeedbackEffects[button] = true
+            end
+        end
+    end
+end
+
+-- Clean up all combat feedback effects
+function VUI.ActionBars:ClearAllCombatFeedback()
+    for button, _ in pairs(combatFeedbackEffects) do
+        if button.castFlash then
+            button.castFlash:Hide()
+        end
+        
+        if button.castingHighlight then
+            button.castingHighlight:Hide()
+        end
+        
+        if button.castFailTexture then
+            button.castFailTexture:Hide()
+        end
+        
+        if button.glow_animation then
+            button.glow_animation:Stop()
+        end
+        
+        if button.combatGlow then
+            button.combatGlow:Hide()
+        end
+        
+        -- Cancel any timers
+        if button.flashAnimTimer then
+            button.flashAnimTimer:Cancel()
+            button.flashAnimTimer = nil
+        end
+        
+        if button.failAnimTimer then
+            button.failAnimTimer:Cancel()
+            button.failAnimTimer = nil
+        end
+        
+        button.castingSpellID = nil
+    end
+    
+    -- Clear the table
+    wipe(combatFeedbackEffects)
+end
+
+-- Refresh combat feedback effects
+function VUI.ActionBars:RefreshCombatFeedback()
+    -- This ensures that all visual combat effects stay active and properly visible
+    for button, _ in pairs(combatFeedbackEffects) do
+        if button.combatGlow and not button.combatGlow:IsShown() then
+            button.combatGlow:Show()
+            if button.glow_animation and not button.glow_animation:IsPlaying() then
+                button.glow_animation:Play()
+            end
+        end
+    end
+end
+
+-- Update enhanced cooldowns for all action buttons
+function VUI.ActionBars:UpdateEnhancedCooldowns()
+    for i = 1, 120 do
+        local button = _G["ActionButton"..i]
+        if button and button.cooldown then
+            local start, duration = button.cooldown:GetCooldownTimes()
+            
+            -- If a cooldown is about to finish (less than 1.5 seconds remaining)
+            if start > 0 and duration > 0 then
+                local remaining = (start + duration) / 1000 - GetTime()
+                
+                if remaining <= 0.1 and remaining > 0 then
+                    -- Cooldown just finished - animate
+                    self:AnimateCooldownFinish(button)
+                elseif remaining <= 1.5 and button.cooldownPulse and not button.cooldownPulse:IsShown() then
+                    -- Getting close to finished - start pulsing
+                    if not button.finalPulseAnim then
+                        button.cooldownPulse:SetAlpha(0.3)
+                        button.cooldownPulse:Show()
+                        
+                        button.finalPulseAnim = button.cooldownPulse:CreateAnimationGroup()
+                        button.finalPulseAnim:SetLooping("REPEAT")
+                        
+                        local fadeIn = button.finalPulseAnim:CreateAnimation("Alpha")
+                        fadeIn:SetFromAlpha(0.2)
+                        fadeIn:SetToAlpha(0.5)
+                        fadeIn:SetDuration(0.5)
+                        fadeIn:SetOrder(1)
+                        
+                        local fadeOut = button.finalPulseAnim:CreateAnimation("Alpha")
+                        fadeOut:SetFromAlpha(0.5)
+                        fadeOut:SetToAlpha(0.2)
+                        fadeOut:SetDuration(0.5)
+                        fadeOut:SetOrder(2)
+                        
+                        button.finalPulseAnim:Play()
+                    else
+                        button.cooldownPulse:Show()
+                        button.finalPulseAnim:Play()
+                    end
+                elseif remaining > 1.5 and button.cooldownPulse and button.cooldownPulse:IsShown() and button.finalPulseAnim then
+                    -- No longer close to finishing - stop pulse
+                    button.finalPulseAnim:Stop()
+                    button.cooldownPulse:Hide()
+                end
+            elseif button.cooldownPulse and button.cooldownPulse:IsShown() and button.finalPulseAnim then
+                -- No cooldown active - stop pulse
+                button.finalPulseAnim:Stop()
+                button.cooldownPulse:Hide()
+            end
+        end
+    end
+end
+
 function VUI.ActionBars:ApplyTheme(theme, themeData)
     activeTheme = theme
     themeColors = themeData or VUI.media.themes[theme] or {}
@@ -519,6 +1135,21 @@ function VUI.ActionBars:ApplyTheme(theme, themeData)
             frame:SetBackdropColor(themeColors.background.r, themeColors.background.g, themeColors.background.b, 0.7)
             frame:SetBackdropBorderColor(themeColors.border.r, themeColors.border.g, themeColors.border.b, 1)
         end
+    end
+    
+    -- Reapply enhanced keybind display with new theme colors
+    if self.settings.improvedKeyBindDisplay then
+        self:EnhanceKeyBindDisplay()
+    end
+    
+    -- Reapply smooth cooldown animations with new theme colors
+    if self.settings.smoothCooldownAnimation then
+        self:InitializeSmoothCooldowns()
+    end
+    
+    -- Reapply combat state if applicable
+    if isInCombat and self.settings.enhancedCombatFeedback then
+        self:ApplyCombatState(true)
     end
 end
 
