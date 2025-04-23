@@ -23,6 +23,11 @@ VUI.omnicd = {}
 VUI.idtip = {}
 VUI.premadegroupfinder = {}
 
+-- Enhanced UI modules (from Phoenix UI)
+VUI.bags = {}
+VUI.paperdoll = {}
+VUI.actionbars = {}
+
 -- Core UI & Functionality modules
 VUI.unitframes = {}
 VUI.skins = {}
@@ -44,6 +49,11 @@ VUI.modules = {
     "idtip",
     "premadegroupfinder",
     
+    -- Enhanced UI modules (from Phoenix UI)
+    "bags",
+    "paperdoll",
+    "actionbars",
+    
     -- Core UI & Functionality modules
     "unitframes",
     "skins",
@@ -63,6 +73,7 @@ end
 function VUI:Initialize()
     self:InitializeDB()
     self:LoadMedia()
+    self:InitializeThemeIntegration()
     self:InitializeModules()
     self:CreateConfigPanel()
     self:RegisterChatCommands()
@@ -72,6 +83,10 @@ function VUI:Initialize()
         self.Player:OnInitialize()
         self.Player:RegisterEvents()
     end
+    
+    -- Apply current theme
+    local theme = self.db.profile.appearance.theme or "thunderstorm"
+    self.ThemeIntegration:ApplyTheme(theme)
     
     -- Print initialization message
     print("|cff1784d1VUI|r v" .. self.version .. " initialized. Type |cff1784d1/vui|r for options.")
@@ -120,14 +135,35 @@ end
 function VUI:InitializeModules()
     for _, moduleName in ipairs(self.modules) do
         local module = self[moduleName]
-        if self.enabledModules[moduleName] and module and module.Initialize then
+        if self.enabledModules[moduleName] and module then
+            -- Apply performance optimizations
+            if self.Performance then
+                module = self.Performance:OptimizeModule(module)
+            end
+            
             -- Register the module with core system if it's not already registered
             if VUI.RegisterModule and not VUI.modules[moduleName] then
                 VUI:RegisterModule(moduleName, module)
             end
             
             -- Initialize the module
-            module:Initialize()
+            if module.Initialize then
+                module:Initialize()
+            end
         end
+    end
+    
+    -- Special handling for high-performance modules
+    -- Apply throttling to frequently updated UI elements
+    if self.bags and self.bags.UpdateAllBags then
+        self.bags.UpdateAllBags = self.Performance:Throttle(self.bags.UpdateAllBags, 0.2, true)
+    end
+    
+    if self.actionbars and self.actionbars.UpdateCooldownText then
+        self.actionbars.UpdateCooldownText = self.Performance:Throttle(self.actionbars.UpdateCooldownText, 0.05, false)
+    end
+    
+    if self.paperdoll and self.paperdoll.UpdateCharacterFrame then
+        self.paperdoll.UpdateCharacterFrame = self.Performance:Throttle(self.paperdoll.UpdateCharacterFrame, 0.1, true)
     end
 end
