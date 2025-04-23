@@ -4,6 +4,79 @@ local _, VUI = ...
 local BuffOverlay = {}
 VUI:RegisterModule("buffoverlay", BuffOverlay)
 
+-- Performance optimization variables
+local lastUpdate = 0
+local updateInterval = 0.1  -- Update interval in seconds (will be adjusted dynamically)
+local combatUpdateInterval = 0.05  -- Faster updates during combat
+local idleUpdateInterval = 0.25    -- Slower updates when idle
+local frameTimeThreshold = 16      -- Frame time threshold in ms (60 FPS = ~16ms per frame)
+local frameTimeHigh = 32           -- High frame time threshold (30 FPS = ~32ms per frame)
+local isInCombat = false           -- Combat state tracker
+local pendingUpdate = false        -- Flag to track if we need an update
+local playerAuraCache = {}         -- Cache for player auras
+local targetAuraCache = {}         -- Cache for target auras
+local focusAuraCache = {}          -- Cache for focus auras
+local auraImportance = {}          -- Table to store importance values for auras
+
+-- Get the importance of a spell for sorting
+function BuffOverlay:GetSpellImportance(spellID, isDebuff)
+    if not spellID then return 0 end
+    
+    -- Use cached value if available
+    if auraImportance[spellID] then
+        return auraImportance[spellID]
+    end
+    
+    local importance = 0
+    
+    -- Healer spells are more important
+    if self.HealerSpells and self.HealerSpells[spellID] then
+        importance = importance + 100
+    end
+    
+    -- Debuffs are generally more important than buffs
+    if isDebuff then
+        importance = importance + 50
+        
+        -- Check if it's a dangerous debuff by checking duration
+        -- Short duration debuffs are often more dangerous
+        local _, _, _, _, duration = GetSpellInfo(spellID)
+        if duration and duration > 0 and duration < 10 then
+            importance = importance + 30
+        end
+    end
+    
+    -- Whitelist spells are more important
+    if VUI.db.profile.modules.buffoverlay.whitelist[spellID] then
+        importance = importance + 40
+    end
+    
+    -- Cache the importance for future use
+    auraImportance[spellID] = importance
+    
+    return importance
+end
+
+-- Performance optimization function
+function BuffOverlay:GetAdjustedUpdateInterval()
+    -- Base update interval on combat state
+    local baseInterval = isInCombat and combatUpdateInterval or idleUpdateInterval
+    
+    -- Check frame time if GetFramerate is available
+    if GetFramerate then
+        local frameTime = 1000 / GetFramerate()
+        
+        -- If frame time is high (FPS is low), increase the interval
+        if frameTime > frameTimeHigh then
+            return baseInterval * 2  -- Much less frequent updates when FPS is very low
+        elseif frameTime > frameTimeThreshold then
+            return baseInterval * 1.5  -- Less frequent updates when FPS is somewhat low
+        end
+    end
+    
+    return baseInterval
+end
+
 -- Healer spell tracking for current mythic season based on Wowhead data
 -- These spell IDs represent important buffs, HoTs, and cooldowns for healers
 BuffOverlay.HealerSpells = {
@@ -222,26 +295,17 @@ function BuffOverlay:CreateBuffFrame(index)
     return frame
 end
 
--- Update displayed buffs and debuffs
-function BuffOverlay:UpdateAuras(unit)
-    if not unit or not UnitExists(unit) then return end
-    
-    -- Hide all frames initially
-    for _, frame in pairs(self.frames) do
-        frame:Hide()
-    end
+-- Cache auras for a specific unit to reduce processing load
+function BuffOverlay:CacheUnitAuras(unit)
+    if not unit or not UnitExists(unit) then return {} end
     
     local config = VUI.db.profile.modules.buffoverlay
-    local size = config.size
-    local spacing = config.spacing
-    local growthDirection = config.growthDirection
     local filterBuffs = config.filterBuffs
     local filterDebuffs = config.filterDebuffs
     local whitelist = config.whitelist
     local blacklist = config.blacklist
     
-    -- Get all auras on the unit
-    local visibleAuras = {}
+    local cache = {}
     
     -- Process buffs
     if not filterBuffs then
@@ -254,7 +318,9 @@ function BuffOverlay:UpdateAuras(unit)
             local isBlacklisted = blacklist[spellID]
             
             if isWhitelisted and not isBlacklisted then
-                table.insert(visibleAuras, {
+                local importance = self:GetSpellImportance(spellID, false)
+                
+                cache[spellID] = {
                     name = name,
                     icon = icon,
                     count = count,
@@ -263,8 +329,12 @@ function BuffOverlay:UpdateAuras(unit)
                     isDebuff = false,
                     debuffType = nil,
                     source = source,
-                    spellID = spellID
-                })
+                    spellID = spellID,
+                    importance = importance,
+                    
+                    -- Calculate remaining time for more efficient updates
+                    timeRemaining = expirationTime > 0 and (expirationTime / 1000 - GetTime()) or 9999
+                }
             end
         end
     end
@@ -280,7 +350,9 @@ function BuffOverlay:UpdateAuras(unit)
             local isBlacklisted = blacklist[spellID]
             
             if isWhitelisted and not isBlacklisted then
-                table.insert(visibleAuras, {
+                local importance = self:GetSpellImportance(spellID, true)
+                
+                cache[spellID] = {
                     name = name,
                     icon = icon,
                     count = count,
@@ -289,27 +361,309 @@ function BuffOverlay:UpdateAuras(unit)
                     isDebuff = true,
                     debuffType = debuffType,
                     source = source,
-                    spellID = spellID
-                })
+                    spellID = spellID,
+                    importance = importance,
+                    
+                    -- Calculate remaining time for more efficient updates
+                    timeRemaining = expirationTime > 0 and (expirationTime / 1000 - GetTime()) or 9999
+                }
             end
         end
     end
     
-    -- Sort auras (debuffs first, then by remaining time)
+    return cache
+end
+
+-- Update cached remaining times without re-scanning all auras
+function BuffOverlay:UpdateCachedTimers(cache)
+    if not cache then return end
+    
+    local now = GetTime()
+    for spellID, aura in pairs(cache) do
+        if aura.expirationTime > 0 then
+            aura.timeRemaining = (aura.expirationTime / 1000) - now
+            
+            -- Remove expired auras from cache
+            if aura.timeRemaining <= 0 then
+                cache[spellID] = nil
+            end
+        end
+    end
+end
+
+-- Enhanced visualization for aura frame - adds visual clarity
+function BuffOverlay:EnhanceAuraVisual(frame, aura, config)
+    -- Set icon and info
+    frame.icon:SetTexture(aura.icon)
+    frame.spellID = aura.spellID
+    
+    -- Set count if needed
+    if aura.count and aura.count > 1 and config.showStackCount then
+        frame.count:SetText(aura.count)
+        frame.count:Show()
+        
+        -- Make stack count more visible for high stacks
+        if aura.count >= 10 then
+            frame.count:SetTextColor(1, 0.5, 0)  -- Orange for high stacks
+        else
+            frame.count:SetTextColor(1, 1, 1)    -- White for normal stacks
+        end
+    else
+        frame.count:Hide()
+    end
+    
+    -- Set cooldown
+    if aura.duration and aura.duration > 0 then
+        frame.cooldown:SetCooldown(aura.expirationTime - aura.duration, aura.duration)
+        frame.cooldown:Show()
+        
+        -- For nearly expired auras, add a pulsing effect
+        local remaining = aura.timeRemaining
+        
+        if remaining < 3 and remaining > 0 then
+            -- Create a pulse highlight if it doesn't exist
+            if not frame.pulseHighlight then
+                frame.pulseHighlight = frame:CreateTexture(nil, "OVERLAY")
+                frame.pulseHighlight:SetAllPoints(frame)
+                frame.pulseHighlight:SetTexture("Interface\\Buttons\\UI-Panel-Button-Highlight")
+                frame.pulseHighlight:SetBlendMode("ADD")
+                frame.pulseHighlight:SetAlpha(0)
+                
+                -- Create animation groups for the pulse
+                if not frame.pulseAnim then
+                    frame.pulseAnim = frame.pulseHighlight:CreateAnimationGroup()
+                    frame.pulseAnim:SetLooping("REPEAT")
+                    
+                    local fadeIn = frame.pulseAnim:CreateAnimation("Alpha")
+                    fadeIn:SetFromAlpha(0)
+                    fadeIn:SetToAlpha(0.7)
+                    fadeIn:SetDuration(0.5)
+                    fadeIn:SetOrder(1)
+                    
+                    local fadeOut = frame.pulseAnim:CreateAnimation("Alpha")
+                    fadeOut:SetFromAlpha(0.7)
+                    fadeOut:SetToAlpha(0)
+                    fadeOut:SetDuration(0.5)
+                    fadeOut:SetOrder(2)
+                end
+            end
+            
+            -- Show the pulse effect
+            frame.pulseHighlight:Show()
+            frame.pulseAnim:Play()
+            
+            -- Increase size slightly for very low times
+            if remaining < 1 then
+                -- Add scale animation if needed
+                if not frame.scaleAnim then
+                    frame.scaleAnim = frame:CreateAnimationGroup()
+                    frame.scaleAnim:SetLooping("REPEAT")
+                    
+                    local grow = frame.scaleAnim:CreateAnimation("Scale")
+                    grow:SetScale(1.1, 1.1)
+                    grow:SetDuration(0.3)
+                    grow:SetOrder(1)
+                    
+                    local shrink = frame.scaleAnim:CreateAnimation("Scale")
+                    shrink:SetScale(1/1.1, 1/1.1)
+                    shrink:SetDuration(0.3)
+                    shrink:SetOrder(2)
+                end
+                
+                frame.scaleAnim:Play()
+            else
+                if frame.scaleAnim and frame.scaleAnim:IsPlaying() then
+                    frame.scaleAnim:Stop()
+                end
+            end
+        else
+            -- Stop animations if running
+            if frame.pulseHighlight then
+                frame.pulseHighlight:Hide()
+                if frame.pulseAnim and frame.pulseAnim:IsPlaying() then
+                    frame.pulseAnim:Stop()
+                end
+            end
+            
+            if frame.scaleAnim and frame.scaleAnim:IsPlaying() then
+                frame.scaleAnim:Stop()
+            end
+        end
+    else
+        frame.cooldown:Hide()
+        
+        -- Hide animations for buffs with no duration
+        if frame.pulseHighlight then
+            frame.pulseHighlight:Hide()
+            if frame.pulseAnim and frame.pulseAnim:IsPlaying() then
+                frame.pulseAnim:Stop()
+            end
+        end
+        
+        if frame.scaleAnim and frame.scaleAnim:IsPlaying() then
+            frame.scaleAnim:Stop()
+        end
+    end
+    
+    -- Set border color and enhancements
+    if aura.isDebuff then
+        local color = DebuffTypeColor[aura.debuffType or "none"]
+        frame.border:SetVertexColor(color.r, color.g, color.b)
+        
+        -- Add additional visual indicator for dangerous debuffs
+        if not frame.dangerGlow and (aura.importance >= 80 or (aura.duration and aura.duration < 5)) then
+            frame.dangerGlow = frame:CreateTexture(nil, "OVERLAY")
+            frame.dangerGlow:SetPoint("CENTER")
+            frame.dangerGlow:SetSize(frame:GetWidth() * 1.4, frame:GetHeight() * 1.4)
+            frame.dangerGlow:SetTexture("Interface\\SpellActivationOverlay\\IconAlert")
+            frame.dangerGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+            frame.dangerGlow:SetBlendMode("ADD")
+            frame.dangerGlow:SetVertexColor(1, 0, 0, 0.6)  -- Red for danger
+            frame.dangerGlow:Show()
+        elseif frame.dangerGlow and (aura.importance < 80 and (not aura.duration or aura.duration >= 5)) then
+            frame.dangerGlow:Hide()
+        end
+    else
+        -- It's a buff
+        if self.HealerSpells and self.HealerSpells[aura.spellID] then
+            -- Special color for healer spells
+            frame.border:SetVertexColor(0, 0.7, 1)  -- Cyan for healer spells
+            
+            -- Add healer indicator if not already present
+            if not frame.healerIcon then
+                frame.healerIcon = frame:CreateTexture(nil, "OVERLAY")
+                frame.healerIcon:SetSize(16, 16)
+                frame.healerIcon:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 2, 2)
+                frame.healerIcon:SetTexture("Interface\\AddOns\\VUI\\media\\icons\\plus")
+                frame.healerIcon:SetVertexColor(0, 1, 0)
+            end
+            frame.healerIcon:Show()
+        else
+            -- Regular buff
+            frame.border:SetVertexColor(0.1, 0.7, 0.1)  -- Green for normal buffs
+            
+            -- Hide healer icon if it exists
+            if frame.healerIcon then
+                frame.healerIcon:Hide()
+            end
+        end
+        
+        -- Hide danger glow for buffs
+        if frame.dangerGlow then
+            frame.dangerGlow:Hide()
+        end
+    end
+    
+    -- Apply visual enhancements based on importance
+    if aura.importance >= 50 then
+        -- More important auras are brighter
+        frame.icon:SetVertexColor(1, 1, 1)
+        frame.icon:SetDesaturated(false)
+        
+        -- Add a subtle glow for important buffs
+        if not frame.importantGlow and not aura.isDebuff then
+            frame.importantGlow = frame:CreateTexture(nil, "OVERLAY")
+            frame.importantGlow:SetPoint("CENTER")
+            frame.importantGlow:SetSize(frame:GetWidth() * 1.3, frame:GetHeight() * 1.3)
+            frame.importantGlow:SetTexture("Interface\\SpellActivationOverlay\\IconAlert")
+            frame.importantGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+            frame.importantGlow:SetBlendMode("ADD")
+            frame.importantGlow:SetVertexColor(0.3, 0.8, 0.3, 0.4)  -- Green for good buffs
+            frame.importantGlow:Show()
+        elseif frame.importantGlow and not aura.isDebuff then
+            frame.importantGlow:Show()
+        elseif frame.importantGlow then
+            frame.importantGlow:Hide()
+        end
+    else
+        -- Less important auras are slightly desaturated
+        frame.icon:SetVertexColor(0.9, 0.9, 0.9)
+        
+        -- Hide important glow for less important auras
+        if frame.importantGlow then
+            frame.importantGlow:Hide()
+        end
+    end
+    
+    frame:Show()
+end
+
+-- Update displayed buffs and debuffs with performance optimization
+function BuffOverlay:UpdateAuras(unit)
+    if not unit or not UnitExists(unit) then return end
+    
+    -- For full update requests, update the appropriate cache
+    local currentCache
+    if unit == "player" then
+        playerAuraCache = self:CacheUnitAuras(unit)
+        currentCache = playerAuraCache
+    elseif unit == "target" then
+        targetAuraCache = self:CacheUnitAuras(unit)
+        currentCache = targetAuraCache
+    elseif unit == "focus" then
+        focusAuraCache = self:CacheUnitAuras(unit)
+        currentCache = focusAuraCache
+    else
+        -- For other units, just do a one-time process without caching
+        currentCache = self:CacheUnitAuras(unit)
+    end
+    
+    -- Schedule the actual display update
+    self:ScheduleDisplayUpdate(unit, currentCache)
+end
+
+-- Schedule actual display update to avoid redundant processing
+function BuffOverlay:ScheduleDisplayUpdate(unit, cache)
+    if not unit or not cache then return end
+    
+    -- Hide all frames initially
+    for _, frame in pairs(self.frames) do
+        frame:Hide()
+    end
+    
+    local config = VUI.db.profile.modules.buffoverlay
+    local size = config.size
+    local spacing = config.spacing
+    local growthDirection = config.growthDirection
+    
+    -- Convert cache to array for sorting
+    local visibleAuras = {}
+    for _, aura in pairs(cache) do
+        table.insert(visibleAuras, aura)
+    end
+    
+    -- If there are no auras, just return
+    if #visibleAuras == 0 then return end
+    
+    -- Enhanced sort with importance factored in
     table.sort(visibleAuras, function(a, b)
+        -- If one is a healer spell and the other isn't, healer spell comes first
+        local aIsHealer = self.HealerSpells and self.HealerSpells[a.spellID] or false
+        local bIsHealer = self.HealerSpells and self.HealerSpells[b.spellID] or false
+        
+        if aIsHealer ~= bIsHealer then
+            return aIsHealer
+        end
+        
+        -- If one is more important, it comes first
+        if math.abs(a.importance - b.importance) > 30 then
+            return a.importance > b.importance
+        end
+        
+        -- If importance is similar, use standard sorting
         if a.isDebuff ~= b.isDebuff then
             return a.isDebuff
-        elseif a.expirationTime ~= b.expirationTime then
-            -- Non-expiring buffs (expirationTime == 0) at the end
-            if a.expirationTime == 0 then return false end
-            if b.expirationTime == 0 then return true end
-            return a.expirationTime < b.expirationTime
+        elseif a.timeRemaining ~= b.timeRemaining then
+            -- Non-expiring buffs (timeRemaining == 9999) at the end
+            if a.timeRemaining >= 9999 then return false end
+            if b.timeRemaining >= 9999 then return true end
+            return a.timeRemaining < b.timeRemaining
         else
             return a.name < b.name
         end
     end)
     
-    -- Display auras
+    -- Display auras with enhanced visuals
     local numVisible = math.min(#visibleAuras, #self.frames)
     for i = 1, numVisible do
         local aura = visibleAuras[i]
@@ -342,55 +696,129 @@ function BuffOverlay:UpdateAuras(unit)
             frame:SetPoint(anchor, self.frames[i-1], anchorTo, x, y)
         end
         
-        -- Set icon and info
-        frame.icon:SetTexture(aura.icon)
-        frame.spellID = aura.spellID
-        
-        -- Set count if needed
-        if aura.count and aura.count > 1 and config.showStackCount then
-            frame.count:SetText(aura.count)
-            frame.count:Show()
-        else
-            frame.count:Hide()
-        end
-        
-        -- Set cooldown
-        if aura.duration and aura.duration > 0 then
-            frame.cooldown:SetCooldown(aura.expirationTime - aura.duration, aura.duration)
-            frame.cooldown:Show()
-        else
-            frame.cooldown:Hide()
-        end
-        
-        -- Set border color
-        if aura.isDebuff then
-            local color = DebuffTypeColor[aura.debuffType or "none"]
-            frame.border:SetVertexColor(color.r, color.g, color.b)
-        else
-            frame.border:SetVertexColor(0.1, 0.7, 0.1) -- Green for buffs
-        end
-        
-        frame:Show()
+        -- Apply enhanced visuals
+        self:EnhanceAuraVisual(frame, aura, config)
     end
+end
+
+-- Throttled update function with performance optimization
+function BuffOverlay:ThrottledUpdate()
+    -- Check if we have a timer running already
+    if self.updateTimer then return end
+    
+    -- Determine appropriate update interval based on system performance
+    updateInterval = self:GetAdjustedUpdateInterval()
+    
+    -- Update the timer
+    self.updateTimer = C_Timer.NewTimer(updateInterval, function()
+        self.updateTimer = nil
+        
+        -- Only process if we have pending updates
+        if pendingUpdate then
+            pendingUpdate = false
+            
+            -- Update cached timer values for all auras
+            if next(playerAuraCache) then
+                self:UpdateCachedTimers(playerAuraCache)
+                self:ScheduleDisplayUpdate("player", playerAuraCache)
+            end
+            
+            if next(targetAuraCache) then
+                self:UpdateCachedTimers(targetAuraCache)
+                self:ScheduleDisplayUpdate("target", targetAuraCache)
+            end
+            
+            if next(focusAuraCache) then
+                self:UpdateCachedTimers(focusAuraCache)
+                self:ScheduleDisplayUpdate("focus", focusAuraCache)
+            end
+        end
+        
+        -- Schedule the next update if we're still enabled
+        if self.throttleActive then
+            pendingUpdate = true
+            self:ThrottledUpdate()
+        end
+    end)
+end
+
+-- Combat state tracking
+function BuffOverlay:PLAYER_REGEN_DISABLED()
+    isInCombat = true
+    
+    -- Make updates more frequent in combat
+    updateInterval = combatUpdateInterval
+    
+    -- Force an immediate update
+    if self.updateTimer then
+        self.updateTimer:Cancel()
+        self.updateTimer = nil
+    end
+    
+    pendingUpdate = true
+    self:ThrottledUpdate()
+end
+
+function BuffOverlay:PLAYER_REGEN_ENABLED()
+    isInCombat = false
+    
+    -- Slow down updates out of combat
+    updateInterval = idleUpdateInterval
+    
+    -- Update caches for more accurate display
+    playerAuraCache = self:CacheUnitAuras("player")
+    targetAuraCache = self:CacheUnitAuras("target")
+    focusAuraCache = self:CacheUnitAuras("focus")
+    
+    -- Force an immediate update
+    pendingUpdate = true
+    if self.updateTimer then
+        self.updateTimer:Cancel()
+        self.updateTimer = nil
+    end
+    self:ThrottledUpdate()
 end
 
 -- Event handlers
 function BuffOverlay:UNIT_AURA(event, unit)
     if unit == "player" or unit == "target" or unit == "focus" then
-        self:UpdateAuras(unit)
+        -- For these units, update the cache and schedule display update
+        if unit == "player" then
+            playerAuraCache = self:CacheUnitAuras(unit)
+        elseif unit == "target" then
+            targetAuraCache = self:CacheUnitAuras(unit)
+        elseif unit == "focus" then
+            focusAuraCache = self:CacheUnitAuras(unit)
+        end
+        
+        -- Request update on next throttle tick
+        pendingUpdate = true
+        self:ThrottledUpdate()
     end
 end
 
 function BuffOverlay:PLAYER_ENTERING_WORLD()
-    self:UpdateAuras("player")
+    -- Reset combat state
+    isInCombat = InCombatLockdown()
+    
+    -- Reset caches
+    playerAuraCache = self:CacheUnitAuras("player")
+    pendingUpdate = true
+    self:ThrottledUpdate()
 end
 
 function BuffOverlay:PLAYER_TARGET_CHANGED()
-    self:UpdateAuras("target")
+    -- Update target cache
+    targetAuraCache = self:CacheUnitAuras("target")
+    pendingUpdate = true
+    self:ThrottledUpdate()
 end
 
 function BuffOverlay:PLAYER_FOCUS_CHANGED()
-    self:UpdateAuras("focus")
+    -- Update focus cache
+    focusAuraCache = self:CacheUnitAuras("focus")
+    pendingUpdate = true
+    self:ThrottledUpdate()
 end
 
 -- Module enable/disable functions
@@ -403,11 +831,18 @@ function BuffOverlay:Enable()
     self:RegisterEvent("PLAYER_ENTERING_WORLD", self.PLAYER_ENTERING_WORLD)
     self:RegisterEvent("PLAYER_TARGET_CHANGED", self.PLAYER_TARGET_CHANGED)
     self:RegisterEvent("PLAYER_FOCUS_CHANGED", self.PLAYER_FOCUS_CHANGED)
+    self:RegisterEvent("PLAYER_REGEN_DISABLED", self.PLAYER_REGEN_DISABLED)
+    self:RegisterEvent("PLAYER_REGEN_ENABLED", self.PLAYER_REGEN_ENABLED)
     
-    -- Update current units
-    self:UpdateAuras("player")
-    self:UpdateAuras("target")
-    self:UpdateAuras("focus")
+    -- Initialize caches
+    playerAuraCache = self:CacheUnitAuras("player")
+    targetAuraCache = self:CacheUnitAuras("target")
+    focusAuraCache = self:CacheUnitAuras("focus")
+    
+    -- Enable throttled updates
+    self.throttleActive = true
+    pendingUpdate = true
+    self:ThrottledUpdate()
     
     VUI:Print("BuffOverlay module enabled")
 end
@@ -422,11 +857,25 @@ function BuffOverlay:Disable()
         self.container:Hide()
     end
     
+    -- Stop throttled updates
+    self.throttleActive = false
+    if self.updateTimer then
+        self.updateTimer:Cancel()
+        self.updateTimer = nil
+    end
+    
     -- Unregister events
     self:UnregisterEvent("UNIT_AURA")
     self:UnregisterEvent("PLAYER_ENTERING_WORLD")
     self:UnregisterEvent("PLAYER_TARGET_CHANGED")
     self:UnregisterEvent("PLAYER_FOCUS_CHANGED")
+    self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    
+    -- Clear caches
+    playerAuraCache = {}
+    targetAuraCache = {}
+    focusAuraCache = {}
     
     VUI:Print("BuffOverlay module disabled")
 end
