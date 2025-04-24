@@ -1960,8 +1960,45 @@ function UnitFrames:UpdateReaction(unit)
 end
 
 function UnitFrames:UpdatePortrait(unit)
-    -- Same as UpdateHealth
-    self:UpdateHealth(unit)
+    if not unit then return end
+    
+    -- First update the relevant frame as usual
+    if unit == "player" then
+        self:UpdatePlayerFrame()
+        -- Animate the portrait if enabled
+        if self.frames.player and self.frames.player.Portrait then
+            self:AnimatePortrait(self.frames.player, unit)
+        end
+    elseif unit == "target" then
+        self:UpdateTargetFrame()
+        -- Animate the portrait if enabled
+        if self.frames.target and self.frames.target.Portrait then
+            self:AnimatePortrait(self.frames.target, unit)
+        end
+    elseif unit == "focus" then
+        self:UpdateFocusFrame()
+        -- Animate the portrait if enabled
+        if self.frames.focus and self.frames.focus.Portrait then
+            self:AnimatePortrait(self.frames.focus, unit)
+        end
+    elseif unit == "pet" then
+        self:UpdatePetFrame()
+        -- Animate the portrait if enabled
+        if self.frames.pet and self.frames.pet.Portrait then
+            self:AnimatePortrait(self.frames.pet, unit)
+        end
+    elseif string.find(unit, "party") then
+        self:UpdatePartyFrames()
+        -- Animate the relevant party member's portrait
+        local index = tonumber(string.match(unit, "party(%d+)"))
+        if index and self.frames.party and self.frames.party[index] and 
+           self.frames.party[index].Portrait then
+            self:AnimatePortrait(self.frames.party[index], unit)
+        end
+    else
+        -- For other units fallback to the standard update
+        self:UpdateHealth(unit)
+    end
 end
 
 function UnitFrames:UpdateTarget()
@@ -1985,6 +2022,11 @@ function UnitFrames:OnEnterCombat()
     if self.frames.player and self.frames.player.animationsInitialized then
         self.frames.player.inCombat = true
         self:SetCombatState(self.frames.player, true)
+        
+        -- Animate player health value text for emphasis
+        if self.frames.player.Health then
+            self:AnimateText(self.frames.player.Health, 1.0, 1.3, 0.5, 0.3)
+        end
     end
     
     -- Also apply combat animation to party frames
@@ -1998,6 +2040,9 @@ function UnitFrames:OnEnterCombat()
             end
         end
     end
+    
+    -- Update portrait animations - stop subtle animations during combat
+    self:UpdatePortraitAnimations(true)
 end
 
 -- Handle leaving combat
@@ -2019,6 +2064,9 @@ function UnitFrames:OnLeaveCombat()
             end
         end
     end
+    
+    -- Restart portrait animations after leaving combat
+    self:UpdatePortraitAnimations(false)
 end
 
 -- Handle power type changes

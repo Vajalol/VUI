@@ -34,6 +34,50 @@ function UnitFrames:CreateSmoothValueTransition(frame, valueType)
     return frame.transitions[valueType]
 end
 
+-- Get theme color for animations
+function UnitFrames:GetThemeColor(colorType)
+    -- Get theme from VUI
+    local theme = VUI.db.profile.appearance.theme or "phoenix"
+    local themeColors = {
+        phoenix = {
+            border = {r = 0.9, g = 0.3, b = 0.1}, -- Phoenix Flame's fiery orange
+            glow = {r = 1.0, g = 0.5, b = 0.1},   -- Amber glow
+            highlight = {r = 1.0, g = 0.6, b = 0.2} -- Amber highlight
+        },
+        thunder = {
+            border = {r = 0.1, g = 0.5, b = 0.9}, -- Thunder Storm's electric blue
+            glow = {r = 0.3, g = 0.7, b = 1.0},   -- Blue glow
+            highlight = {r = 0.4, g = 0.6, b = 1.0} -- Blue highlight
+        },
+        arcane = {
+            border = {r = 0.6, g = 0.2, b = 0.9}, -- Arcane Mystic's purple
+            glow = {r = 0.8, g = 0.4, b = 1.0},   -- Purple glow
+            highlight = {r = 0.7, g = 0.3, b = 1.0} -- Purple highlight
+        },
+        fel = {
+            border = {r = 0.3, g = 0.9, b = 0.3}, -- Fel Energy's green
+            glow = {r = 0.5, g = 1.0, b = 0.5},   -- Green glow
+            highlight = {r = 0.4, g = 0.8, b = 0.4} -- Green highlight
+        },
+        default = {
+            border = {r = 0.7, g = 0.7, b = 0.7}, -- Default gray
+            glow = {r = 0.9, g = 0.9, b = 0.9},   -- White glow
+            highlight = {r = 0.9, g = 0.9, b = 0.9} -- White highlight
+        }
+    }
+    
+    -- Get the color for this theme
+    local themeData = themeColors[theme] or themeColors.default
+    local color = themeData[colorType] or themeData.border
+    
+    -- Add combat red variation for border
+    if colorType == "combat" then
+        return 1.0, 0.3, 0.3 -- Combat is always reddish
+    end
+    
+    return color.r, color.g, color.b
+end
+
 -- Create animations for a unit frame
 function UnitFrames:InitializeFrameAnimations(frame)
     if not frame then return end
@@ -47,6 +91,11 @@ function UnitFrames:InitializeFrameAnimations(frame)
         frame.animationGroup:SetLooping("NONE")
     end
     
+    -- Get theme colors
+    local borderR, borderG, borderB = self:GetThemeColor("border")
+    local glowR, glowG, glowB = self:GetThemeColor("glow")
+    local highlightR, highlightG, highlightB = self:GetThemeColor("highlight")
+    
     -- Create health bar value transitions
     if frame.HealthBar then
         self:CreateSmoothValueTransition(frame, "health")
@@ -56,11 +105,13 @@ function UnitFrames:InitializeFrameAnimations(frame)
             local glowTexture = frame.HealthBar:CreateTexture(nil, "OVERLAY")
             glowTexture:SetAllPoints()
             glowTexture:SetTexture("Interface\\Buttons\\WHITE8x8")
-            glowTexture:SetVertexColor(1, 0, 0, 0)
+            glowTexture:SetVertexColor(1, 0, 0, 0) -- Red for damage
             glowTexture:SetBlendMode("ADD")
             frame.HealthBar.glowTexture = glowTexture
             
             local animGroup = frame.HealthBar:CreateAnimationGroup()
+            
+            -- Flash animation
             local fadeIn = animGroup:CreateAnimation("Alpha")
             fadeIn:SetFromAlpha(0)
             fadeIn:SetToAlpha(0.3)
@@ -73,6 +124,7 @@ function UnitFrames:InitializeFrameAnimations(frame)
             fadeOut:SetDuration(0.3)
             fadeOut:SetOrder(2)
             
+            -- Add the animation to the frame
             frame.HealthBar.glowAnimation = animGroup
         end
     end
@@ -86,19 +138,21 @@ function UnitFrames:InitializeFrameAnimations(frame)
             local pulseTexture = frame.PowerBar:CreateTexture(nil, "OVERLAY")
             pulseTexture:SetAllPoints()
             pulseTexture:SetTexture("Interface\\Buttons\\WHITE8x8")
-            pulseTexture:SetVertexColor(1, 1, 0, 0)
+            pulseTexture:SetVertexColor(highlightR, highlightG, highlightB, 0) -- Theme-based power gain color
             pulseTexture:SetBlendMode("ADD")
             frame.PowerBar.pulseTexture = pulseTexture
             
             local animGroup = frame.PowerBar:CreateAnimationGroup()
+            
+            -- Animation sequence with theme-based color
             local fadeIn = animGroup:CreateAnimation("Alpha")
             fadeIn:SetFromAlpha(0)
-            fadeIn:SetToAlpha(0.2)
+            fadeIn:SetToAlpha(0.3)
             fadeIn:SetDuration(0.15)
             fadeIn:SetOrder(1)
             
             local fadeOut = animGroup:CreateAnimation("Alpha")
-            fadeOut:SetFromAlpha(0.2)
+            fadeOut:SetFromAlpha(0.3)
             fadeOut:SetToAlpha(0)
             fadeOut:SetDuration(0.25)
             fadeOut:SetOrder(2)
@@ -107,21 +161,38 @@ function UnitFrames:InitializeFrameAnimations(frame)
         end
     end
     
-    -- Combat state transition
+    -- Combat state transition with theme integration
     if not frame.combatStateAnimation then
         -- Border glow for combat state
         local borderGlow = frame:CreateTexture(nil, "OVERLAY")
         borderGlow:SetPoint("TOPLEFT", frame, "TOPLEFT", -3, 3)
         borderGlow:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 3, -3)
-        borderGlow:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\unitframe_border_glow")
+        
+        -- Check for custom theme textures
+        local glowTexture = "Interface\\AddOns\\VUI\\media\\textures\\unitframe_border_glow"
+        local themeTexture = "Interface\\AddOns\\VUI\\media\\textures\\" .. 
+                           (VUI.db.profile.appearance.theme or "phoenix") .. 
+                           "_border_glow"
+                           
+        -- Attempt to use theme-specific texture, fall back to default
+        local textureFile = glowTexture
+        if themeTexture and VUI.media.CheckFileExists and VUI.media:CheckFileExists(themeTexture) then
+            textureFile = themeTexture
+        end
+        
+        borderGlow:SetTexture(textureFile)
         borderGlow:SetBlendMode("ADD")
-        borderGlow:SetVertexColor(1, 0.3, 0.3, 0)
+        
+        -- Get combat color (red)
+        local combatR, combatG, combatB = self:GetThemeColor("combat")
+        borderGlow:SetVertexColor(combatR, combatG, combatB, 0)
         frame.borderGlow = borderGlow
         
         -- Animation group for combat state
         local animGroup = frame:CreateAnimationGroup()
         animGroup:SetLooping("REPEAT")
         
+        -- The animation sequence
         local fadeIn = animGroup:CreateAnimation("Alpha")
         fadeIn:SetFromAlpha(0)
         fadeIn:SetToAlpha(0.7)
@@ -139,6 +210,76 @@ function UnitFrames:InitializeFrameAnimations(frame)
         fadeOut:SetOrder(2)
         
         frame.combatStateAnimation = animGroup
+    end
+    
+    -- Add portrait animations if enabled
+    if frame.Portrait and self.settings.showPortraits then
+        -- Portrait frame animation
+        if not frame.Portrait.animationGroup then
+            local portraitAnimGroup = frame.Portrait:CreateAnimationGroup()
+            
+            -- Create a subtle breathing animation for portrait
+            local portraitScale = portraitAnimGroup:CreateAnimation("Scale")
+            portraitScale:SetScale(1.05, 1.05)  -- 5% larger
+            portraitScale:SetOrigin("CENTER", 0, 0)
+            portraitScale:SetDuration(2.5)
+            portraitScale:SetSmoothing("IN_OUT")
+            portraitScale:SetOrder(1)
+            
+            local portraitScaleBack = portraitAnimGroup:CreateAnimation("Scale")
+            portraitScaleBack:SetScale(0.95238, 0.95238)  -- Back to normal (1/1.05)
+            portraitScaleBack:SetOrigin("CENTER", 0, 0)
+            portraitScaleBack:SetDuration(2.5)
+            portraitScaleBack:SetSmoothing("IN_OUT")
+            portraitScaleBack:SetOrder(2)
+            
+            -- Set looping
+            portraitAnimGroup:SetLooping("REPEAT")
+            frame.Portrait.animationGroup = portraitAnimGroup
+            
+            -- Start the animation if not in combat
+            if not UnitAffectingCombat("player") then
+                portraitAnimGroup:Play()
+            end
+            
+            -- Create highlight glow for portraits
+            local portraitHighlight = frame.Portrait:CreateTexture(nil, "OVERLAY")
+            portraitHighlight:SetAllPoints()
+            portraitHighlight:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\portrait_highlight")
+            
+            -- Get the theme highlight color
+            local r, g, b = self:GetThemeColor("highlight")
+            portraitHighlight:SetVertexColor(r, g, b, 0)
+            portraitHighlight:SetBlendMode("ADD")
+            frame.Portrait.highlight = portraitHighlight
+            
+            -- Create a separate animation group for the highlight
+            local highlightGroup = frame.Portrait:CreateAnimationGroup()
+            highlightGroup:SetLooping("NONE")
+            
+            local highlightFadeIn = highlightGroup:CreateAnimation("Alpha")
+            highlightFadeIn:SetTarget(portraitHighlight)
+            highlightFadeIn:SetFromAlpha(0)
+            highlightFadeIn:SetToAlpha(0.7)
+            highlightFadeIn:SetDuration(0.3)
+            highlightFadeIn:SetOrder(1)
+            
+            local highlightHold = highlightGroup:CreateAnimation("Alpha")
+            highlightHold:SetTarget(portraitHighlight)
+            highlightHold:SetFromAlpha(0.7)
+            highlightHold:SetToAlpha(0.7)
+            highlightHold:SetDuration(0.2)
+            highlightHold:SetOrder(2)
+            
+            local highlightFadeOut = highlightGroup:CreateAnimation("Alpha")
+            highlightFadeOut:SetTarget(portraitHighlight)
+            highlightFadeOut:SetFromAlpha(0.7)
+            highlightFadeOut:SetToAlpha(0)
+            highlightFadeOut:SetDuration(0.5)
+            highlightFadeOut:SetOrder(3)
+            
+            frame.Portrait.highlightAnimation = highlightGroup
+        end
     end
     
     -- Add enter/exit animations if supported
@@ -330,6 +471,115 @@ function UnitFrames:ShouldUpdatePower()
         return true
     end
     return false
+end
+
+-- Animate portraits
+function UnitFrames:AnimatePortrait(frame, unit)
+    if not frame or not frame.Portrait or not frame.animationsInitialized then return end
+    if not self.settings.showPortraits then return end
+    
+    -- Play highlight animation when portrait changes
+    if frame.Portrait.highlightAnimation and not frame.Portrait.highlightAnimation:IsPlaying() then
+        frame.Portrait.highlightAnimation:Play()
+    end
+    
+    -- Toggle breathing animation based on combat state
+    if UnitAffectingCombat("player") then
+        -- Stop subtle animations during combat to improve performance
+        if frame.Portrait.animationGroup and frame.Portrait.animationGroup:IsPlaying() then
+            frame.Portrait.animationGroup:Stop()
+        end
+    else
+        -- Start the breathing animation when not in combat
+        if frame.Portrait.animationGroup and not frame.Portrait.animationGroup:IsPlaying() then
+            frame.Portrait.animationGroup:Play()
+        end
+    end
+end
+
+-- Update portrait animations when combat state changes
+function UnitFrames:UpdatePortraitAnimations(inCombat)
+    if not self.settings.showPortraits then return end
+    
+    -- Process each frame with a portrait
+    for frame in pairs(self.animatedFrames or {}) do
+        if frame.Portrait and frame.Portrait.animationGroup then
+            if inCombat then
+                -- Stop portrait animations in combat
+                if frame.Portrait.animationGroup:IsPlaying() then
+                    frame.Portrait.animationGroup:Stop()
+                end
+            else
+                -- Start portrait animations when leaving combat
+                if not frame.Portrait.animationGroup:IsPlaying() then
+                    frame.Portrait.animationGroup:Play()
+                end
+            end
+        end
+    end
+end
+
+-- Text scaling animation for important info
+function UnitFrames:AnimateText(fontString, startScale, endScale, duration, holdTime)
+    if not fontString then return end
+    
+    -- Create animation group if needed
+    if not fontString.scaleAnimGroup then
+        fontString.scaleAnimGroup = fontString:GetParent():CreateAnimationGroup()
+        fontString.scaleAnimGroup:SetLooping("NONE")
+        
+        -- Create a scale animation
+        local scaleUp = fontString.scaleAnimGroup:CreateAnimation("Scale")
+        scaleUp:SetScaleFrom(1, 1)
+        scaleUp:SetScaleTo(1.2, 1.2)  -- 20% larger 
+        scaleUp:SetDuration(0.2)
+        scaleUp:SetSmoothing("OUT")
+        scaleUp:SetOrder(1)
+        
+        -- Hold at larger size briefly
+        local holdScale = fontString.scaleAnimGroup:CreateAnimation("Scale")
+        holdScale:SetScaleFrom(1.2, 1.2)
+        holdScale:SetScaleTo(1.2, 1.2)
+        holdScale:SetDuration(0.3)
+        holdScale:SetOrder(2)
+        
+        -- Scale back down
+        local scaleDown = fontString.scaleAnimGroup:CreateAnimation("Scale")
+        scaleDown:SetScaleFrom(1.2, 1.2)
+        scaleDown:SetScaleTo(1, 1)
+        scaleDown:SetDuration(0.2)
+        scaleDown:SetSmoothing("IN")
+        scaleDown:SetOrder(3)
+        
+        -- Update parameters based on input
+        fontString.scaleAnimations = {
+            scaleUp = scaleUp,
+            holdScale = holdScale,
+            scaleDown = scaleDown
+        }
+    end
+    
+    -- Update animation parameters if provided
+    if startScale and endScale and duration then
+        if fontString.scaleAnimations then
+            fontString.scaleAnimations.scaleUp:SetScaleFrom(startScale, startScale)
+            fontString.scaleAnimations.scaleUp:SetScaleTo(endScale, endScale)
+            fontString.scaleAnimations.scaleUp:SetDuration(duration / 3)
+            
+            fontString.scaleAnimations.holdScale:SetScaleFrom(endScale, endScale)
+            fontString.scaleAnimations.holdScale:SetScaleTo(endScale, endScale)
+            fontString.scaleAnimations.holdScale:SetDuration(holdTime or (duration / 3))
+            
+            fontString.scaleAnimations.scaleDown:SetScaleFrom(endScale, endScale)
+            fontString.scaleAnimations.scaleDown:SetScaleTo(startScale, startScale)
+            fontString.scaleAnimations.scaleDown:SetDuration(duration / 3)
+        end
+    end
+    
+    -- Play the animation if it's not already playing
+    if fontString.scaleAnimGroup and not fontString.scaleAnimGroup:IsPlaying() then
+        fontString.scaleAnimGroup:Play()
+    end
 end
 
 -- On Animation finished callbacks
