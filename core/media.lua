@@ -77,6 +77,7 @@ function VUI:InitializeMedia()
     
     -- Theme-specific textures
     self.media.themes = {
+        -- Legacy themes (kept for backward compatibility)
         dark = {
             background = self.media.backgrounds.dark,
             border = self.media.borders.simple,
@@ -123,6 +124,91 @@ function VUI:InitializeMedia()
                 highlight = {r = 0.2, g = 0.2, b = 0.2, a = 0.3},
                 text = {r = 1, g = 1, b = 1, a = 1},
                 header = {r = 0.9, g = 0.9, b = 0.9, a = 1},
+            }
+        },
+        
+        -- New VUI themes
+        thunderstorm = {
+            name = "Thunder Storm",
+            description = "Dark blue theme with electric blue accents",
+            background = self.media.backgrounds.thunderstorm,
+            border = self.media.borders.thunderstorm,
+            statusbar = self.media.statusbars.thunderstorm,
+            icon = "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\icon.svg",
+            preview = "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\preview.tga",
+            colors = {
+                backdrop = {r = 0.04, g = 0.04, b = 0.1, a = 0.8}, -- Deep blue background
+                border = {r = 0.05, g = 0.62, b = 0.9, a = 1}, -- Electric blue borders
+                highlight = {r = 0.1, g = 0.4, b = 0.8, a = 0.3},
+                text = {r = 0.8, g = 0.9, b = 1.0, a = 1},
+                header = {r = 0.5, g = 0.8, b = 1.0, a = 1},
+            },
+            effects = {
+                glow = "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\glow.tga",
+                spark = "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\spark.tga",
+            }
+        },
+        
+        phoenixflame = {
+            name = "Phoenix Flame",
+            description = "Fiery theme with dark red backgrounds and orange accents",
+            background = self.media.backgrounds.phoenixflame,
+            border = self.media.borders.phoenixflame,
+            statusbar = self.media.statusbars.phoenixflame,
+            icon = "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\icon.svg",
+            preview = "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\preview.tga",
+            colors = {
+                backdrop = {r = 0.1, g = 0.04, b = 0.02, a = 0.8}, -- Dark red background
+                border = {r = 0.9, g = 0.3, b = 0.05, a = 1}, -- Fiery orange borders
+                highlight = {r = 0.8, g = 0.4, b = 0.1, a = 0.3},
+                text = {r = 1.0, g = 0.9, b = 0.7, a = 1},
+                header = {r = 1.0, g = 0.7, b = 0.4, a = 1},
+            },
+            effects = {
+                glow = "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\glow.tga",
+                spark = "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\spark.tga",
+            }
+        },
+        
+        arcanemystic = {
+            name = "Arcane Mystic",
+            description = "Mystical purple theme with arcane accents",
+            background = self.media.backgrounds.arcanemystic,
+            border = self.media.borders.arcanemystic,
+            statusbar = self.media.statusbars.arcanemystic,
+            icon = "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\icon.svg",
+            preview = "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\preview.tga",
+            colors = {
+                backdrop = {r = 0.1, g = 0.04, b = 0.18, a = 0.8}, -- Deep purple background
+                border = {r = 0.62, g = 0.05, b = 0.9, a = 1}, -- Violet borders
+                highlight = {r = 0.4, g = 0.1, b = 0.8, a = 0.3},
+                text = {r = 0.9, g = 0.8, b = 1.0, a = 1},
+                header = {r = 0.8, g = 0.5, b = 1.0, a = 1},
+            },
+            effects = {
+                glow = "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\glow.tga",
+                spark = "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\spark.tga",
+            }
+        },
+        
+        felenergy = {
+            name = "Fel Energy",
+            description = "Demonic green theme with fel energy accents",
+            background = self.media.backgrounds.felenergy,
+            border = self.media.borders.felenergy,
+            statusbar = self.media.statusbars.felenergy,
+            icon = "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\icon.svg",
+            preview = "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\preview.tga",
+            colors = {
+                backdrop = {r = 0.04, g = 0.1, b = 0.04, a = 0.8}, -- Dark green background
+                border = {r = 0.1, g = 0.9, b = 0.1, a = 1}, -- Fel green borders
+                highlight = {r = 0.1, g = 0.8, b = 0.1, a = 0.3},
+                text = {r = 0.7, g = 1.0, b = 0.7, a = 1},
+                header = {r = 0.4, g = 1.0, b = 0.4, a = 1},
+            },
+            effects = {
+                glow = "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\glow.tga",
+                spark = "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\spark.tga",
             }
         }
     }

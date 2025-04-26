@@ -49,3 +49,27 @@ LSM:Register("statusbar", "Minimalist", [[Interface\Addons\VUI\Media\Textures\St
 LSM:Register("statusbar", "Smooth", [[Interface\Addons\VUI\Media\Textures\Status\Smooth.blp]])
 LSM:Register("statusbar", "Smooth v2", [[Interface\Addons\VUI\Media\Textures\Status\Smoothv2.tga]])
 LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\VUI\Media\Textures\Status\DragonflightTexture.tga]])
+
+-- -----
+--   THEME TEXTURES
+-- -----
+
+-- Thunder Storm Theme
+LSM:Register("statusbar", "ThunderStorm Bar", [[Interface\AddOns\VUI\media\textures\themes\thunderstorm\statusbar.blp]])
+LSM:Register("border", "ThunderStorm Border", [[Interface\AddOns\VUI\media\textures\themes\thunderstorm\border.tga]])
+LSM:Register("background", "ThunderStorm Background", [[Interface\AddOns\VUI\media\textures\themes\thunderstorm\background.tga]])
+
+-- Phoenix Flame Theme
+LSM:Register("statusbar", "PhoenixFlame Bar", [[Interface\AddOns\VUI\media\textures\themes\phoenixflame\statusbar.blp]])
+LSM:Register("border", "PhoenixFlame Border", [[Interface\AddOns\VUI\media\textures\themes\phoenixflame\border.tga]])
+LSM:Register("background", "PhoenixFlame Background", [[Interface\AddOns\VUI\media\textures\themes\phoenixflame\background.tga]])
+
+-- Arcane Mystic Theme
+LSM:Register("statusbar", "ArcaneMystic Bar", [[Interface\AddOns\VUI\media\textures\themes\arcanemystic\statusbar.blp]])
+LSM:Register("border", "ArcaneMystic Border", [[Interface\AddOns\VUI\media\textures\themes\arcanemystic\border.tga]])
+LSM:Register("background", "ArcaneMystic Background", [[Interface\AddOns\VUI\media\textures\themes\arcanemystic\background.tga]])
+
+-- Fel Energy Theme
+LSM:Register("statusbar", "FelEnergy Bar", [[Interface\AddOns\VUI\media\textures\themes\felenergy\statusbar.blp]])
+LSM:Register("border", "FelEnergy Border", [[Interface\AddOns\VUI\media\textures\themes\felenergy\border.tga]])
+LSM:Register("background", "FelEnergy Background", [[Interface\AddOns\VUI\media\textures\themes\felenergy\background.tga]])

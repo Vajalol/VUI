@@ -188,7 +188,23 @@ end
 -- Get the statusbar texture path based on current settings
 function VUI.Utils:GetStatusBarTexture()
     local style = VUI.db.profile.appearance.statusbarTexture or "smooth"
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     
+    -- Return theme-specific statusbar if using theme's default statusbar
+    if style == "theme" then
+        -- Use the theme-specific statusbar texture
+        if theme == "thunderstorm" then
+            return "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\statusbar.blp"
+        elseif theme == "phoenixflame" then
+            return "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\statusbar.blp"
+        elseif theme == "arcanemystic" then
+            return "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\statusbar.blp"
+        elseif theme == "felenergy" then
+            return "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\statusbar.blp"
+        end
+    end
+    
+    -- Return standard statusbar textures
     if style == "flat" then
         return "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-flat.blp"
     elseif style == "gloss" then
