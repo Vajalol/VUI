@@ -10,7 +10,7 @@ LSM:Register("background", "VUI Solid", [[Interface\AddOns\VUI\media\textures\co
 -- -----
 --  BORDER
 -- ----
-LSM:Register("border", "VUI Simple", [[Interface\AddOns\VUI\media\textures\border-simple.tga]])
+LSM:Register("border", "VUI Simple", [[Interface\AddOns\VUI\media\textures\common\border-simple.tga]])
 
 -- -----
 --   FONT
@@ -35,9 +35,9 @@ LSM:Register("font", "Myriad Web Bold", [[Interface\Addons\VUI\Media\Fonts\Myria
 --   STATUSBAR
 -- -----
 LSM:Register("statusbar", "Default", [[Interface\Default]])
-LSM:Register("statusbar", "VUI Flat", [[Interface\Addons\VUI\media\textures\statusbar-flat.blp]])
-LSM:Register("statusbar", "VUI Gloss", [[Interface\Addons\VUI\media\textures\statusbar-gloss.tga]])
-LSM:Register("statusbar", "VUI Smooth", [[Interface\Addons\VUI\media\textures\statusbar-smooth.blp]])
+LSM:Register("statusbar", "VUI Flat", [[Interface\Addons\VUI\media\textures\common\statusbar-flat.blp]])
+LSM:Register("statusbar", "VUI Gloss", [[Interface\Addons\VUI\media\textures\common\statusbar-gloss.tga]])
+LSM:Register("statusbar", "VUI Smooth", [[Interface\Addons\VUI\media\textures\common\statusbar-smooth.blp]])
 
 -- Also register SUI media for backward compatibility
 LSM:Register("statusbar", "Flat", [[Interface\Addons\VUI\Media\Textures\Status\Flat.blp]])

@@ -159,10 +159,10 @@ function VUI.Utils:GetBorderStyle()
     if style == "blizzard" then
         return "Interface\\DialogFrame\\UI-DialogBox-Border"
     elseif style == "thin" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga"
+        return "Interface\\AddOns\\VUI\\media\\textures\\common\\border-simple.tga"
     elseif style == "custom" then
         -- Custom border would be set elsewhere
-        return VUI.db.profile.appearance.customBorder or "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga"
+        return VUI.db.profile.appearance.customBorder or "Interface\\AddOns\\VUI\\media\\textures\\common\\border-simple.tga"
     else
         return ""  -- For "none" style
     end
@@ -190,11 +190,11 @@ function VUI.Utils:GetStatusBarTexture()
     local style = VUI.db.profile.appearance.statusbarTexture or "smooth"
     
     if style == "flat" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\statusbar-flat.blp"
+        return "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-flat.blp"
     elseif style == "gloss" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\statusbar-gloss.tga"
+        return "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-gloss.tga"
     else -- smooth
-        return "Interface\\AddOns\\VUI\\media\\textures\\statusbar-smooth.blp"
+        return "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-smooth.blp"
     end
 end
 
