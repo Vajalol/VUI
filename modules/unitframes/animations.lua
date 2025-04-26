@@ -37,24 +37,24 @@ end
 -- Get theme color for animations
 function UnitFrames:GetThemeColor(colorType)
     -- Get theme from VUI
-    local theme = VUI.db.profile.appearance.theme or "phoenix"
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     local themeColors = {
-        phoenix = {
+        phoenixflame = {
             border = {r = 0.9, g = 0.3, b = 0.1}, -- Phoenix Flame's fiery orange
             glow = {r = 1.0, g = 0.5, b = 0.1},   -- Amber glow
             highlight = {r = 1.0, g = 0.6, b = 0.2} -- Amber highlight
         },
-        thunder = {
+        thunderstorm = {
             border = {r = 0.1, g = 0.5, b = 0.9}, -- Thunder Storm's electric blue
             glow = {r = 0.3, g = 0.7, b = 1.0},   -- Blue glow
             highlight = {r = 0.4, g = 0.6, b = 1.0} -- Blue highlight
         },
-        arcane = {
+        arcanemystic = {
             border = {r = 0.6, g = 0.2, b = 0.9}, -- Arcane Mystic's purple
             glow = {r = 0.8, g = 0.4, b = 1.0},   -- Purple glow
             highlight = {r = 0.7, g = 0.3, b = 1.0} -- Purple highlight
         },
-        fel = {
+        felenergy = {
             border = {r = 0.3, g = 0.9, b = 0.3}, -- Fel Energy's green
             glow = {r = 0.5, g = 1.0, b = 0.5},   -- Green glow
             highlight = {r = 0.4, g = 0.8, b = 0.4} -- Green highlight
@@ -171,8 +171,8 @@ function UnitFrames:InitializeFrameAnimations(frame)
         -- Check for custom theme textures
         local glowTexture = "Interface\\AddOns\\VUI\\media\\textures\\unitframe_border_glow"
         local themeTexture = "Interface\\AddOns\\VUI\\media\\textures\\" .. 
-                           (VUI.db.profile.appearance.theme or "phoenix") .. 
-                           "_border_glow"
+                           (VUI.db.profile.appearance.theme or "thunderstorm") .. 
+                           "\\unitframe_border_glow"
                            
         -- Attempt to use theme-specific texture, fall back to default
         local textureFile = glowTexture

@@ -10,7 +10,7 @@ local MediaPath = "Interface\\AddOns\\VUI\\media\\"
 
 -- Theme-specific castbar customizations
 local themeCustomizations = {
-    PhoenixFlame = {
+    phoenixflame = {
         colors = {
             standard = {r = 0.9, g = 0.5, b = 0.2, a = 1.0},
             channeling = {r = 0.9, g = 0.4, b = 0.1, a = 1.0},
@@ -27,7 +27,7 @@ local themeCustomizations = {
         soundEffect = "burning"
     },
     
-    ThunderStorm = {
+    thunderstorm = {
         colors = {
             standard = {r = 0.2, g = 0.6, b = 0.9, a = 1.0},
             channeling = {r = 0.3, g = 0.5, b = 0.9, a = 1.0},
@@ -44,7 +44,7 @@ local themeCustomizations = {
         soundEffect = "thunder"
     },
     
-    ArcaneMystic = {
+    arcanemystic = {
         colors = {
             standard = {r = 0.6, g = 0.3, b = 0.9, a = 1.0},
             channeling = {r = 0.5, g = 0.3, b = 0.8, a = 1.0},
@@ -61,7 +61,7 @@ local themeCustomizations = {
         soundEffect = "magic"
     },
     
-    FelEnergy = {
+    felenergy = {
         colors = {
             standard = {r = 0.3, g = 0.9, b = 0.3, a = 1.0},
             channeling = {r = 0.2, g = 0.8, b = 0.2, a = 1.0},
@@ -82,7 +82,7 @@ local themeCustomizations = {
 -- Apply theme customizations to all castbars
 function Castbar:ApplyThemeCustomizations(themeName)
     -- Use the current theme if none specified
-    themeName = themeName or VUI.activeTheme or "PhoenixFlame"
+    themeName = themeName or VUI.db.profile.appearance.theme or "thunderstorm"
     
     -- Get theme customizations
     local customizations = themeCustomizations[themeName]

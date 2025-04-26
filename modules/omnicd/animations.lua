@@ -148,7 +148,7 @@ end
 -- Initialize theme-specific animation elements for all cooldown frames
 function OmniCD:ApplyThemeAnimations()
     -- Get current theme
-    local theme = VUI.activeTheme or "PhoenixFlame"
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     
     -- Apply theme-specific animations to each icon frame
     for _, frame in ipairs(self.iconFrames) do
@@ -171,13 +171,13 @@ function OmniCD:ApplyThemeAnimations()
         frame.themeElements = {}
         
         -- Apply theme-specific elements
-        if theme == "PhoenixFlame" then
+        if theme == "phoenixflame" then
             self:ApplyPhoenixFlameTheme(frame)
-        elseif theme == "ThunderStorm" then
+        elseif theme == "thunderstorm" then
             self:ApplyThunderStormTheme(frame)
-        elseif theme == "ArcaneMystic" then
+        elseif theme == "arcanemystic" then
             self:ApplyArcaneMysticTheme(frame)
-        elseif theme == "FelEnergy" then
+        elseif theme == "felenergy" then
             self:ApplyFelEnergyTheme(frame)
         end
     end

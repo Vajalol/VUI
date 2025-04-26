@@ -9,8 +9,14 @@
     <!-- Enhanced Action Bars -->
     <Script file="actionbars\core.lua"/>
     
+    <!-- Enhanced Unit Frames -->
+    <Include file="unitframes\index.xml"/>
+    
     <!-- Enhanced Castbar with Animations -->
     <Include file="castbar\index.xml"/>
+    
+    <!-- Enhanced Tooltip -->
+    <Include file="tooltip\index.xml"/>
     
     <!-- BuffOverlay Module -->
     <Include file="buffoverlay\index.xml"/>
@@ -38,6 +44,18 @@
     
     <!-- Premade Group Finder Module -->
     <Include file="premadegroupfinder\index.xml"/>
+    
+    <!-- Info Frame Module -->
+    <Include file="infoframe\index.xml"/>
+    
+    <!-- Automation Module -->
+    <Include file="automation\index.xml"/>
+    
+    <!-- Visual Config Module -->
+    <Include file="visualconfig\index.xml"/>
+    
+    <!-- Profiles Module -->
+    <Include file="profiles\index.xml"/>
     
     <!-- Skins Module -->
     <Include file="skins\index.xml"/>
