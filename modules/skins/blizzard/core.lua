@@ -402,8 +402,8 @@ blizzardSkins.Chat = function(self)
                 local copyButton = CreateFrame("Button", nil, chatFrame)
                 copyButton:SetSize(20, 20) -- Slightly larger button
                 copyButton:SetPoint("TOPRIGHT", chatFrame, "TOPRIGHT", -5, -5)
-                copyButton:SetNormalTexture("Interface\\AddOns\\VUI\\media\\Textures\\Chat\\copynormal.tga")
-                copyButton:SetHighlightTexture("Interface\\AddOns\\VUI\\media\\Textures\\Chat\\copyhighlight.tga")
+                copyButton:SetNormalTexture("Interface\\AddOns\\VUI\\media\\textures\\common\\chat\\copynormal.tga")
+                copyButton:SetHighlightTexture("Interface\\AddOns\\VUI\\media\\textures\\common\\chat\\copyhighlight.tga")
                 
                 -- Initial alpha based on chat settings
                 local initialAlpha = 0

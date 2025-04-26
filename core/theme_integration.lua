@@ -30,6 +30,9 @@ function VUI.ThemeIntegration:ApplyTheme(theme)
         themeData = VUI.media.themes[theme] or {}
     end
     
+    -- Set theme path for assets
+    themeData.path = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\"
+    
     -- Store current theme
     VUI.db.profile.appearance.theme = theme
     
@@ -47,6 +50,17 @@ function VUI.ThemeIntegration:ApplyTheme(theme)
     
     -- Print message about theme change
     print("|cff1784d1VUI|r: Applied theme: " .. theme)
+end
+
+-- Get a theme-specific asset path
+function VUI.ThemeIntegration:GetThemeAssetPath(assetName, theme)
+    theme = theme or VUI.db.profile.appearance.theme or "thunderstorm"
+    return "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\" .. assetName
+end
+
+-- Get a common asset path (theme-agnostic)
+function VUI.ThemeIntegration:GetCommonAssetPath(assetName)
+    return "Interface\\AddOns\\VUI\\media\\textures\\common\\" .. assetName
 end
 
 -- Hook this function to be called when theme changes in config

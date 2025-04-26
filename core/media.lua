@@ -21,17 +21,35 @@ function VUI:InitializeMedia()
     -- Register default borders
     self.media.borders.thin = "Interface\\DialogFrame\\UI-DialogBox-Border"
     self.media.borders.dialog = "Interface\\DialogFrame\\UI-DialogBox-Border"
-    self.media.borders.simple = "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga"
+    self.media.borders.simple = "Interface\\AddOns\\VUI\\media\\textures\\common\\border-simple.tga"
+    
+    -- Register theme-specific borders
+    self.media.borders.phoenixflame = "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\border.tga"
+    self.media.borders.thunderstorm = "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\border.tga"
+    self.media.borders.arcanemystic = "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\border.tga"
+    self.media.borders.felenergy = "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\border.tga"
     
     -- Register default backgrounds
-    self.media.backgrounds.dark = "Interface\\AddOns\\VUI\\media\\textures\\background-dark.tga"
-    self.media.backgrounds.light = "Interface\\AddOns\\VUI\\media\\textures\\background-light.tga"
-    self.media.backgrounds.solid = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga"
+    self.media.backgrounds.dark = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-dark.tga"
+    self.media.backgrounds.light = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-light.tga" 
+    self.media.backgrounds.solid = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-solid.tga"
+    
+    -- Register theme-specific backgrounds
+    self.media.backgrounds.phoenixflame = "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\background.tga"
+    self.media.backgrounds.thunderstorm = "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\background.tga"
+    self.media.backgrounds.arcanemystic = "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\background.tga"
+    self.media.backgrounds.felenergy = "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\background.tga"
     
     -- Register default statusbars
-    self.media.statusbars.smooth = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-smooth.blp"
-    self.media.statusbars.flat = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-flat.blp"
-    self.media.statusbars.gloss = "Interface\\AddOns\\VUI\\media\\textures\\statusbar-gloss.tga"
+    self.media.statusbars.smooth = "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-smooth.blp"
+    self.media.statusbars.flat = "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-flat.blp"
+    self.media.statusbars.gloss = "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-gloss.tga"
+    
+    -- Register theme-specific statusbars
+    self.media.statusbars.phoenixflame = "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\statusbar.blp"
+    self.media.statusbars.thunderstorm = "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\statusbar.blp"
+    self.media.statusbars.arcanemystic = "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\statusbar.blp"
+    self.media.statusbars.felenergy = "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\statusbar.blp"
     
     -- Register sounds
     self.media.sounds.select = "Sound\\Interface\\iAbilitiesOpen.ogg"
@@ -270,6 +288,30 @@ function VUI:GetTexture(category, name)
     else
         return "" -- Return empty string if not found
     end
+end
+
+-- Get theme-specific texture path
+function VUI:GetThemeTexturePath(themeName, textureType, assetName)
+    themeName = themeName or self.db.profile.appearance.theme or "thunderstorm"
+    return "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. themeName .. "\\" .. (textureType or "") .. (assetName and "\\" .. assetName or "")
+end
+
+-- Get common texture path
+function VUI:GetCommonTexturePath(textureType, assetName)
+    return "Interface\\AddOns\\VUI\\media\\textures\\common\\" .. (textureType or "") .. (assetName and "\\" .. assetName or "")
+end
+
+-- Get theme-specific asset for the current or specified theme
+function VUI:GetThemeAsset(assetType, themeName)
+    themeName = themeName or self.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Check if we have a direct registration for this theme and asset type
+    if self.media[assetType] and self.media[assetType][themeName] then
+        return self.media[assetType][themeName]
+    end
+    
+    -- Otherwise return a path based on the standard theme structure
+    return self:GetThemeTexturePath(themeName, assetType)
 end
 
 -- Helper function to apply a texture to a frame

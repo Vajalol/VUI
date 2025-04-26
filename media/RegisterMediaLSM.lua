@@ -3,9 +3,9 @@ local LSM = LibStub("LibSharedMedia-3.0")
 -- -----
 -- BACKGROUND
 -- -----
-LSM:Register("background", "VUI Dark", [[Interface\AddOns\VUI\media\textures\background-dark.tga]])
-LSM:Register("background", "VUI Light", [[Interface\AddOns\VUI\media\textures\background-light.tga]])
-LSM:Register("background", "VUI Solid", [[Interface\AddOns\VUI\media\textures\background-solid.tga]])
+LSM:Register("background", "VUI Dark", [[Interface\AddOns\VUI\media\textures\common\background-dark.tga]])
+LSM:Register("background", "VUI Light", [[Interface\AddOns\VUI\media\textures\common\background-light.tga]])
+LSM:Register("background", "VUI Solid", [[Interface\AddOns\VUI\media\textures\common\background-solid.tga]])
 
 -- -----
 --  BORDER

@@ -137,8 +137,8 @@ function Dashboard:SetupFrame()
     -- Set backdrop
     local theme = VUI.db.profile.dashboard.theme
     panel:SetBackdrop({
-        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-" .. theme .. ".tga",
-        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga",
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background.tga",
+        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\border-simple.tga",
         tile = false,
         tileSize = 0,
         edgeSize = 16,
@@ -150,7 +150,7 @@ function Dashboard:SetupFrame()
     header:SetSize(panel:GetWidth(), HEADER_HEIGHT)
     header:SetPoint("TOPLEFT", panel, "TOPLEFT", 0, 0)
     header:SetBackdrop({
-        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga",
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-solid.tga",
         edgeFile = nil,
         tile = false,
         tileSize = 0,
@@ -163,7 +163,7 @@ function Dashboard:SetupFrame()
     local logo = header:CreateTexture(nil, "OVERLAY")
     logo:SetSize(32, 32)
     logo:SetPoint("LEFT", header, "LEFT", 10, 0)
-    logo:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\logo.tga")
+    logo:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\common\\logo.tga")
     
     local title = header:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("LEFT", logo, "RIGHT", 10, 0)
@@ -179,7 +179,7 @@ function Dashboard:SetupFrame()
     local settingsButton = CreateFrame("Button", nil, header)
     settingsButton:SetPoint("RIGHT", closeButton, "LEFT", -5, 0)
     settingsButton:SetSize(24, 24)
-    settingsButton:SetNormalTexture("Interface\\AddOns\\VUI\\media\\Icons\\SUI.tga")
+    settingsButton:SetNormalTexture("Interface\\AddOns\\VUI\\media\\Icons\\common\\settings.tga")
     settingsButton:GetNormalTexture():SetTexCoord(0.75, 1, 0, 0.25) -- Settings icon portion
     settingsButton:SetScript("OnClick", function() 
         InterfaceOptionsFrame_OpenToCategory("VUI")
@@ -255,8 +255,8 @@ function Dashboard:CreateModuleCards()
         card:SetSize(CARD_WIDTH, CARD_HEIGHT)
         card:SetPoint("TOPLEFT", contentFrame, "TOPLEFT", x, y)
         card:SetBackdrop({
-            bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga",
-            edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga",
+            bgFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-solid.tga",
+            edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\border-simple.tga",
             tile = false,
             tileSize = 0,
             edgeSize = 12,
@@ -269,7 +269,7 @@ function Dashboard:CreateModuleCards()
         local icon = card:CreateTexture(nil, "OVERLAY")
         icon:SetSize(24, 24)
         icon:SetPoint("TOPLEFT", card, "TOPLEFT", 10, -10)
-        icon:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\logo.tga") -- Default icon
+        icon:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\common\\logo.tga") -- Default icon
         
         -- Module name
         local name = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -280,7 +280,7 @@ function Dashboard:CreateModuleCards()
         local statusTexture = card:CreateTexture(nil, "OVERLAY")
         statusTexture:SetSize(16, 16)
         statusTexture:SetPoint("TOPRIGHT", card, "TOPRIGHT", -10, -10)
-        statusTexture:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\glow.tga")
+        statusTexture:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\common\\glow.tga")
         
         -- Description text
         local description = card:CreateFontString(nil, "OVERLAY", "GameFontSmall")
@@ -406,7 +406,7 @@ function Dashboard:CreateStatusDisplay()
     statusBar:SetSize(self.panel:GetWidth(), STATUS_HEIGHT)
     statusBar:SetPoint("BOTTOMLEFT", self.panel, "BOTTOMLEFT", 0, 0)
     statusBar:SetBackdrop({
-        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga",
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-solid.tga",
         edgeFile = nil,
         tile = false,
         tileSize = 0,
@@ -468,7 +468,7 @@ function Dashboard:RegisterModule(name, options)
     if not name or not options then return end
     
     -- Default options
-    options.icon = options.icon or "Interface\\AddOns\\VUI\\media\\textures\\logo.tga"
+    options.icon = options.icon or "Interface\\AddOns\\VUI\\media\\textures\\common\\logo.tga"
     options.description = options.description or "No description provided"
     options.category = options.category or "Core"
     options.config = options.config or function() end
@@ -507,7 +507,7 @@ function Dashboard:CreateFilterBar()
     filterBar:SetSize(self.panel:GetWidth(), FILTER_BAR_HEIGHT)
     filterBar:SetPoint("TOPLEFT", self.header, "BOTTOMLEFT", 0, 0)
     filterBar:SetBackdrop({
-        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga",
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-solid.tga",
         edgeFile = nil,
         tile = false,
         tileSize = 0,
@@ -655,8 +655,8 @@ function Dashboard:CreatePerformanceMonitor()
     perfFrame:SetSize(PERFORMANCE_WIDGET_WIDTH, FILTER_BAR_HEIGHT - 10)
     perfFrame:SetPoint("RIGHT", self.panel, "TOPRIGHT", -PANEL_PADDING, -(HEADER_HEIGHT + 13))
     perfFrame:SetBackdrop({
-        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga",
-        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga",
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-solid.tga",
+        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\border-simple.tga",
         tile = false,
         tileSize = 0,
         edgeSize = 8,
@@ -1020,7 +1020,7 @@ function Dashboard:Refresh()
     local theme = VUI.db.profile.dashboard.theme
     self.panel:SetBackdrop({
         bgFile = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background.tga",
-        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga",
+        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\border-simple.tga",
         tile = false,
         tileSize = 0,
         edgeSize = 16,

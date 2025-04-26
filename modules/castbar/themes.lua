@@ -18,8 +18,8 @@ local themeCustomizations = {
             success = {r = 0.9, g = 0.7, b = 0.2, a = 1.0},
             failed = {r = 0.9, g = 0.2, b = 0.1, a = 1.0}
         },
-        statusBar = MediaPath.."textures\\phoenixflame\\statusbar",
-        border = MediaPath.."textures\\phoenixflame\\border",
+        statusBar = MediaPath.."textures\\themes\\phoenixflame\\castbar\\statusbar",
+        border = MediaPath.."textures\\themes\\phoenixflame\\castbar\\border",
         font = MediaPath.."fonts\\expressway.ttf",
         fontOutline = "OUTLINE",
         textureStyle = "flame",
@@ -35,8 +35,8 @@ local themeCustomizations = {
             success = {r = 0.4, g = 0.7, b = 0.9, a = 1.0},
             failed = {r = 0.9, g = 0.3, b = 0.3, a = 1.0}
         },
-        statusBar = MediaPath.."textures\\thunderstorm\\statusbar",
-        border = MediaPath.."textures\\thunderstorm\\border",
+        statusBar = MediaPath.."textures\\themes\\thunderstorm\\castbar\\statusbar",
+        border = MediaPath.."textures\\themes\\thunderstorm\\castbar\\border",
         font = MediaPath.."fonts\\expressway.ttf",
         fontOutline = "OUTLINE",
         textureStyle = "lightning",
@@ -52,8 +52,8 @@ local themeCustomizations = {
             success = {r = 0.8, g = 0.5, b = 0.9, a = 1.0},
             failed = {r = 0.9, g = 0.3, b = 0.3, a = 1.0}
         },
-        statusBar = MediaPath.."textures\\arcanemystic\\statusbar",
-        border = MediaPath.."textures\\arcanemystic\\border",
+        statusBar = MediaPath.."textures\\themes\\arcanemystic\\castbar\\statusbar",
+        border = MediaPath.."textures\\themes\\arcanemystic\\castbar\\border",
         font = MediaPath.."fonts\\expressway.ttf",
         fontOutline = "OUTLINE",
         textureStyle = "arcane",
@@ -69,8 +69,8 @@ local themeCustomizations = {
             success = {r = 0.5, g = 0.9, b = 0.5, a = 1.0},
             failed = {r = 0.9, g = 0.3, b = 0.3, a = 1.0}
         },
-        statusBar = MediaPath.."textures\\felenergy\\statusbar",
-        border = MediaPath.."textures\\felenergy\\border",
+        statusBar = MediaPath.."textures\\themes\\felenergy\\castbar\\statusbar",
+        border = MediaPath.."textures\\themes\\felenergy\\castbar\\border",
         font = MediaPath.."fonts\\expressway.ttf",
         fontOutline = "OUTLINE",
         textureStyle = "fel",
@@ -78,6 +78,12 @@ local themeCustomizations = {
         soundEffect = "corruption"
     }
 }
+
+-- Get theme-specific asset path
+function Castbar:GetThemeAssetPath(assetName, themeName)
+    themeName = themeName or VUI.db.profile.appearance.theme or "thunderstorm"
+    return MediaPath.."textures\\themes\\" .. themeName .. "\\castbar\\" .. assetName
+end
 
 -- Apply theme customizations to all castbars
 function Castbar:ApplyThemeCustomizations(themeName)

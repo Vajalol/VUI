@@ -10,6 +10,8 @@ VUI.UI.frames = {}
 
 -- Media paths
 local MEDIA_PATH = "Interface\\AddOns\\VUI\\media\\textures\\"
+local THEME_PATH = "Interface\\AddOns\\VUI\\media\\textures\\themes\\"
+local COMMON_PATH = "Interface\\AddOns\\VUI\\media\\textures\\common\\"
 
 -- Element Templates
 local BACKDROP_TEMPLATE = {
@@ -66,6 +68,17 @@ function VUI.UI:GetThemeColors()
     else
         return COLORS
     end
+end
+
+-- Get theme texture path
+function VUI.UI:GetThemeTexturePath(textureName)
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    return THEME_PATH .. theme .. "\\" .. textureName
+end
+
+-- Get common texture path (theme-agnostic)
+function VUI.UI:GetCommonTexturePath(textureName)
+    return COMMON_PATH .. textureName
 end
 
 -- Get class color
