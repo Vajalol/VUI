@@ -1831,6 +1831,9 @@ end
 function UnitFrames:ApplyThemeToFrame(frame, themeData)
     if not frame then return end
     
+    -- Get theme name and info
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    
     -- Apply backdrop colors
     frame:SetBackdropColor(
         themeData.colors.backdrop.r,
@@ -1870,6 +1873,9 @@ function UnitFrames:ApplyThemeToFrame(frame, themeData)
             themeData.colors.border.b,
             themeData.colors.border.a
         )
+        
+        -- Apply theme-specific portrait animations
+        self:ApplyThemePortraitAnimations(frame, theme)
     end
     
     -- Apply text colors
@@ -1889,6 +1895,9 @@ function UnitFrames:ApplyThemeToFrame(frame, themeData)
             themeData.colors.text.b,
             themeData.colors.text.a
         )
+        
+        -- Apply theme-specific health bar animations
+        self:ApplyThemeHealthBarAnimations(frame, theme)
     end
     
     if frame.Power then
@@ -1898,6 +1907,9 @@ function UnitFrames:ApplyThemeToFrame(frame, themeData)
             themeData.colors.text.b,
             themeData.colors.text.a
         )
+        
+        -- Apply theme-specific power bar animations
+        self:ApplyThemePowerBarAnimations(frame, theme)
     end
     
     if frame.Level then
@@ -1908,6 +1920,832 @@ function UnitFrames:ApplyThemeToFrame(frame, themeData)
             themeData.colors.text.a
         )
     end
+    
+    -- Apply theme-specific combat animation visuals
+    if frame.combatStateAnimation then
+        self:ApplyThemeCombatAnimations(frame, theme)
+    end
+    
+    -- Apply theme-specific border glow and effects
+    if frame.borderGlow then
+        self:ApplyThemeBorderEffects(frame, theme)
+    end
+end
+
+-- Apply theme-specific portrait animations
+function UnitFrames:ApplyThemePortraitAnimations(frame, theme)
+    if not frame or not frame.Portrait then return end
+    
+    -- Clear any existing animations
+    if frame.Portrait.animationGroup then
+        frame.Portrait.animationGroup:Stop()
+        frame.Portrait.animationGroup = nil
+    end
+    
+    if frame.Portrait.highlightAnimation then
+        frame.Portrait.highlightAnimation:Stop()
+        frame.Portrait.highlightAnimation = nil
+    end
+    
+    -- Create new animation group for the portrait
+    frame.Portrait.animationGroup = frame.Portrait:CreateAnimationGroup()
+    frame.Portrait.animationGroup:SetLooping("REPEAT")
+    
+    -- Add theme-specific animations
+    if theme == "phoenixflame" then
+        -- Phoenix Flame: Subtle burning effect on portraits
+        local fadeIn = frame.Portrait.animationGroup:CreateAnimation("Alpha")
+        fadeIn:SetFromAlpha(0.8)
+        fadeIn:SetToAlpha(1.0)
+        fadeIn:SetDuration(1.5)
+        fadeIn:SetSmoothing("IN_OUT")
+        fadeIn:SetOrder(1)
+        
+        local fadeOut = frame.Portrait.animationGroup:CreateAnimation("Alpha")
+        fadeOut:SetFromAlpha(1.0)
+        fadeOut:SetToAlpha(0.8)
+        fadeOut:SetDuration(1.5)
+        fadeOut:SetSmoothing("IN_OUT")
+        fadeOut:SetOrder(2)
+        
+        -- Create an overlay with flame texture
+        if not frame.Portrait.flameOverlay then
+            frame.Portrait.flameOverlay = frame.Portrait:CreateTexture(nil, "OVERLAY")
+            frame.Portrait.flameOverlay:SetPoint("TOPLEFT", frame.Portrait, "TOPLEFT", -2, 2)
+            frame.Portrait.flameOverlay:SetPoint("BOTTOMRIGHT", frame.Portrait, "BOTTOMRIGHT", 2, -2)
+            frame.Portrait.flameOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\animation\\flame1.tga")
+            frame.Portrait.flameOverlay:SetBlendMode("ADD")
+            frame.Portrait.flameOverlay:SetAlpha(0.3)
+        end
+        
+        -- Animate the flame overlay
+        local flameAnim = frame.Portrait.animationGroup:CreateAnimation("TexCoordTranslation")
+        flameAnim:SetTexCoord(0, 1, 0, 1)
+        flameAnim:SetDuration(3.0)
+        flameAnim:SetOrder(1)
+        
+    elseif theme == "thunderstorm" then
+        -- Thunder Storm: Electric pulses
+        local pulse1 = frame.Portrait.animationGroup:CreateAnimation("Scale")
+        pulse1:SetScaleFrom(1.0, 1.0)
+        pulse1:SetScaleTo(1.03, 1.03)
+        pulse1:SetDuration(0.5)
+        pulse1:SetSmoothing("IN_OUT")
+        pulse1:SetOrder(1)
+        
+        local pulse2 = frame.Portrait.animationGroup:CreateAnimation("Scale")
+        pulse2:SetScaleFrom(1.03, 1.03)
+        pulse2:SetScaleTo(1.0, 1.0)
+        pulse2:SetDuration(0.5)
+        pulse2:SetSmoothing("IN_OUT")
+        pulse2:SetOrder(2)
+        
+        -- Create lightning overlay
+        if not frame.Portrait.lightningOverlay then
+            frame.Portrait.lightningOverlay = frame.Portrait:CreateTexture(nil, "OVERLAY")
+            frame.Portrait.lightningOverlay:SetPoint("TOPLEFT", frame.Portrait, "TOPLEFT", -2, 2)
+            frame.Portrait.lightningOverlay:SetPoint("BOTTOMRIGHT", frame.Portrait, "BOTTOMRIGHT", 2, -2)
+            frame.Portrait.lightningOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\animation\\lightning1.tga")
+            frame.Portrait.lightningOverlay:SetBlendMode("ADD")
+            frame.Portrait.lightningOverlay:SetAlpha(0)
+        end
+        
+        -- Periodic lightning flash
+        local lightningIn = frame.Portrait.animationGroup:CreateAnimation("Alpha")
+        lightningIn:SetTarget(frame.Portrait.lightningOverlay)
+        lightningIn:SetFromAlpha(0)
+        lightningIn:SetToAlpha(0.4)
+        lightningIn:SetDuration(0.1)
+        lightningIn:SetSmoothing("IN")
+        lightningIn:SetOrder(3)
+        
+        local lightningOut = frame.Portrait.animationGroup:CreateAnimation("Alpha")
+        lightningOut:SetTarget(frame.Portrait.lightningOverlay)
+        lightningOut:SetFromAlpha(0.4)
+        lightningOut:SetToAlpha(0)
+        lightningOut:SetDuration(0.2)
+        lightningOut:SetSmoothing("OUT")
+        lightningOut:SetOrder(4)
+        
+    elseif theme == "arcanemystic" then
+        -- Arcane Mystic: Magical pulsing
+        local arcaneRotate = frame.Portrait.animationGroup:CreateAnimation("Rotation")
+        arcaneRotate:SetDegrees(360)
+        arcaneRotate:SetDuration(12)
+        arcaneRotate:SetOrder(1)
+        
+        -- Create arcane overlay
+        if not frame.Portrait.arcaneOverlay then
+            frame.Portrait.arcaneOverlay = frame.Portrait:CreateTexture(nil, "OVERLAY")
+            frame.Portrait.arcaneOverlay:SetPoint("TOPLEFT", frame.Portrait, "TOPLEFT", -4, 4)
+            frame.Portrait.arcaneOverlay:SetPoint("BOTTOMRIGHT", frame.Portrait, "BOTTOMRIGHT", 4, -4)
+            frame.Portrait.arcaneOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\arcanemystic\\animation\\arcane1.tga")
+            frame.Portrait.arcaneOverlay:SetBlendMode("ADD")
+            frame.Portrait.arcaneOverlay:SetAlpha(0.25)
+        end
+        
+        -- Arcane pulse animation
+        local pulseIn = frame.Portrait.animationGroup:CreateAnimation("Alpha")
+        pulseIn:SetTarget(frame.Portrait.arcaneOverlay)
+        pulseIn:SetFromAlpha(0.25)
+        pulseIn:SetToAlpha(0.5)
+        pulseIn:SetDuration(2.0)
+        pulseIn:SetSmoothing("IN_OUT")
+        pulseIn:SetOrder(1)
+        
+        local pulseOut = frame.Portrait.animationGroup:CreateAnimation("Alpha")
+        pulseOut:SetTarget(frame.Portrait.arcaneOverlay)
+        pulseOut:SetFromAlpha(0.5)
+        pulseOut:SetToAlpha(0.25)
+        pulseOut:SetDuration(2.0)
+        pulseOut:SetSmoothing("IN_OUT")
+        pulseOut:SetOrder(2)
+        
+    elseif theme == "felenergy" then
+        -- Fel Energy: Toxic pulsing
+        local felPulse1 = frame.Portrait.animationGroup:CreateAnimation("Scale")
+        felPulse1:SetScaleFrom(0.97, 0.97)
+        felPulse1:SetScaleTo(1.0, 1.0)
+        felPulse1:SetDuration(2.0)
+        felPulse1:SetSmoothing("IN_OUT")
+        felPulse1:SetOrder(1)
+        
+        local felPulse2 = frame.Portrait.animationGroup:CreateAnimation("Scale")
+        felPulse2:SetScaleFrom(1.0, 1.0)
+        felPulse2:SetScaleTo(0.97, 0.97)
+        felPulse2:SetDuration(2.0)
+        felPulse2:SetSmoothing("IN_OUT")
+        felPulse2:SetOrder(2)
+        
+        -- Create fel overlay
+        if not frame.Portrait.felOverlay then
+            frame.Portrait.felOverlay = frame.Portrait:CreateTexture(nil, "OVERLAY")
+            frame.Portrait.felOverlay:SetPoint("TOPLEFT", frame.Portrait, "TOPLEFT", -3, 3)
+            frame.Portrait.felOverlay:SetPoint("BOTTOMRIGHT", frame.Portrait, "BOTTOMRIGHT", 3, -3)
+            frame.Portrait.felOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\felenergy\\animation\\fel1.tga")
+            frame.Portrait.felOverlay:SetBlendMode("ADD")
+            frame.Portrait.felOverlay:SetAlpha(0.3)
+        end
+        
+        -- Fel energy animation
+        local felGlow = frame.Portrait.animationGroup:CreateAnimation("Alpha")
+        felGlow:SetTarget(frame.Portrait.felOverlay)
+        felGlow:SetFromAlpha(0.3)
+        felGlow:SetToAlpha(0.5)
+        felGlow:SetDuration(2.0)
+        felGlow:SetSmoothing("IN_OUT")
+        felGlow:SetOrder(1)
+        
+        local felFade = frame.Portrait.animationGroup:CreateAnimation("Alpha")
+        felFade:SetTarget(frame.Portrait.felOverlay)
+        felFade:SetFromAlpha(0.5)
+        felFade:SetToAlpha(0.3)
+        felFade:SetDuration(2.0)
+        felFade:SetSmoothing("IN_OUT")
+        felFade:SetOrder(2)
+    end
+    
+    -- Create highlight animation for target/focus changes
+    frame.Portrait.highlightAnimation = frame.Portrait:CreateAnimationGroup()
+    frame.Portrait.highlightAnimation:SetLooping("NONE")
+    
+    -- Add theme-specific highlight animations
+    if theme == "phoenixflame" then
+        -- Phoenix Flame: Fiery flare when targeted
+        local flare = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+        if frame.Portrait.flameOverlay then
+            flare:SetTarget(frame.Portrait.flameOverlay)
+            flare:SetFromAlpha(0.3)
+            flare:SetToAlpha(0.8)
+            flare:SetDuration(0.3)
+            flare:SetSmoothing("IN")
+            flare:SetOrder(1)
+            
+            local flareOut = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            flareOut:SetTarget(frame.Portrait.flameOverlay)
+            flareOut:SetFromAlpha(0.8)
+            flareOut:SetToAlpha(0.3)
+            flareOut:SetDuration(0.7)
+            flareOut:SetSmoothing("OUT")
+            flareOut:SetOrder(2)
+        end
+        
+    elseif theme == "thunderstorm" then
+        -- Thunder Storm: Lightning flash when targeted
+        if frame.Portrait.lightningOverlay then
+            local flash1 = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            flash1:SetTarget(frame.Portrait.lightningOverlay)
+            flash1:SetFromAlpha(0)
+            flash1:SetToAlpha(0.7)
+            flash1:SetDuration(0.1)
+            flash1:SetOrder(1)
+            
+            local flash2 = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            flash2:SetTarget(frame.Portrait.lightningOverlay)
+            flash2:SetFromAlpha(0.7)
+            flash2:SetToAlpha(0)
+            flash2:SetDuration(0.1)
+            flash2:SetOrder(2)
+            
+            local flash3 = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            flash3:SetTarget(frame.Portrait.lightningOverlay)
+            flash3:SetFromAlpha(0)
+            flash3:SetToAlpha(0.5)
+            flash3:SetDuration(0.1)
+            flash3:SetOrder(3)
+            
+            local flash4 = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            flash4:SetTarget(frame.Portrait.lightningOverlay)
+            flash4:SetFromAlpha(0.5)
+            flash4:SetToAlpha(0)
+            flash4:SetDuration(0.3)
+            flash4:SetOrder(4)
+        end
+        
+    elseif theme == "arcanemystic" then
+        -- Arcane Mystic: Magical flash when targeted
+        if frame.Portrait.arcaneOverlay then
+            local arcaneFlare = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            arcaneFlare:SetTarget(frame.Portrait.arcaneOverlay)
+            arcaneFlare:SetFromAlpha(0.25)
+            arcaneFlare:SetToAlpha(0.8)
+            arcaneFlare:SetDuration(0.3)
+            arcaneFlare:SetSmoothing("IN")
+            arcaneFlare:SetOrder(1)
+            
+            local arcaneFade = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            arcaneFade:SetTarget(frame.Portrait.arcaneOverlay)
+            arcaneFade:SetFromAlpha(0.8)
+            arcaneFade:SetToAlpha(0.25)
+            arcaneFade:SetDuration(0.7)
+            arcaneFade:SetSmoothing("OUT")
+            arcaneFade:SetOrder(2)
+        end
+        
+    elseif theme == "felenergy" then
+        -- Fel Energy: Green flare when targeted
+        if frame.Portrait.felOverlay then
+            local felFlare = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            felFlare:SetTarget(frame.Portrait.felOverlay)
+            felFlare:SetFromAlpha(0.3)
+            felFlare:SetToAlpha(0.9)
+            felFlare:SetDuration(0.3)
+            felFlare:SetSmoothing("IN")
+            felFlare:SetOrder(1)
+            
+            local felFade = frame.Portrait.highlightAnimation:CreateAnimation("Alpha")
+            felFade:SetTarget(frame.Portrait.felOverlay)
+            felFade:SetFromAlpha(0.9)
+            felFade:SetToAlpha(0.3)
+            felFade:SetDuration(0.7)
+            felFade:SetSmoothing("OUT")
+            felFade:SetOrder(2)
+        end
+    end
+    
+    -- Start the animation if not in combat
+    if not UnitAffectingCombat("player") and frame.Portrait.animationGroup then
+        frame.Portrait.animationGroup:Play()
+    end
+end
+
+-- Apply theme-specific health bar animations
+function UnitFrames:ApplyThemeHealthBarAnimations(frame, theme)
+    if not frame or not frame.HealthBar then return end
+    
+    -- Clear any existing health bar animations
+    if frame.HealthBar.themeAnimation then
+        frame.HealthBar.themeAnimation:Stop()
+        frame.HealthBar.themeAnimation = nil
+    end
+    
+    -- Create a new animation group for the health bar
+    frame.HealthBar.themeAnimation = frame.HealthBar:CreateAnimationGroup()
+    frame.HealthBar.themeAnimation:SetLooping("REPEAT")
+    
+    -- Add theme-specific health bar animations
+    if theme == "phoenixflame" then
+        -- Phoenix Flame: Subtle fire effect on health bars
+        if not frame.HealthBar.flameOverlay then
+            frame.HealthBar.flameOverlay = frame.HealthBar:CreateTexture(nil, "OVERLAY")
+            frame.HealthBar.flameOverlay:SetAllPoints(frame.HealthBar)
+            frame.HealthBar.flameOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\flame.tga")
+            frame.HealthBar.flameOverlay:SetBlendMode("ADD")
+            frame.HealthBar.flameOverlay:SetAlpha(0.2)
+            frame.HealthBar.flameOverlay:SetVertexColor(1.0, 0.5, 0.0) -- Orange-red
+        end
+        
+        -- Create pulsing effect for the flame overlay
+        local flamePulse1 = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        flamePulse1:SetTarget(frame.HealthBar.flameOverlay)
+        flamePulse1:SetFromAlpha(0.1)
+        flamePulse1:SetToAlpha(0.3)
+        flamePulse1:SetDuration(2.0)
+        flamePulse1:SetSmoothing("IN_OUT")
+        flamePulse1:SetOrder(1)
+        
+        local flamePulse2 = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        flamePulse2:SetTarget(frame.HealthBar.flameOverlay)
+        flamePulse2:SetFromAlpha(0.3)
+        flamePulse2:SetToAlpha(0.1)
+        flamePulse2:SetDuration(2.0)
+        flamePulse2:SetSmoothing("IN_OUT")
+        flamePulse2:SetOrder(2)
+        
+    elseif theme == "thunderstorm" then
+        -- Thunder Storm: Lightning effect on health bars
+        if not frame.HealthBar.lightningOverlay then
+            frame.HealthBar.lightningOverlay = frame.HealthBar:CreateTexture(nil, "OVERLAY")
+            frame.HealthBar.lightningOverlay:SetAllPoints(frame.HealthBar)
+            frame.HealthBar.lightningOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\glow.tga")
+            frame.HealthBar.lightningOverlay:SetBlendMode("ADD")
+            frame.HealthBar.lightningOverlay:SetAlpha(0.0)
+            frame.HealthBar.lightningOverlay:SetVertexColor(0.4, 0.6, 1.0) -- Blue-white
+        end
+        
+        -- Create periodic lightning flashes
+        local lightningIn = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        lightningIn:SetTarget(frame.HealthBar.lightningOverlay)
+        lightningIn:SetFromAlpha(0.0)
+        lightningIn:SetToAlpha(0.3)
+        lightningIn:SetDuration(0.2)
+        lightningIn:SetSmoothing("IN")
+        lightningIn:SetOrder(1)
+        
+        local lightningHold = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        lightningHold:SetTarget(frame.HealthBar.lightningOverlay)
+        lightningHold:SetFromAlpha(0.3)
+        lightningHold:SetToAlpha(0.3)
+        lightningHold:SetDuration(0.1)
+        lightningHold:SetOrder(2)
+        
+        local lightningOut = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        lightningOut:SetTarget(frame.HealthBar.lightningOverlay)
+        lightningOut:SetFromAlpha(0.3)
+        lightningOut:SetToAlpha(0.0)
+        lightningOut:SetDuration(0.3)
+        lightningOut:SetSmoothing("OUT")
+        lightningOut:SetOrder(3)
+        
+        local lightningWait = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        lightningWait:SetTarget(frame.HealthBar.lightningOverlay)
+        lightningWait:SetFromAlpha(0.0)
+        lightningWait:SetToAlpha(0.0)
+        lightningWait:SetDuration(math.random(3, 8)) -- Random interval between flashes
+        lightningWait:SetOrder(4)
+        
+    elseif theme == "arcanemystic" then
+        -- Arcane Mystic: Magical glow effect on health bars
+        if not frame.HealthBar.arcaneOverlay then
+            frame.HealthBar.arcaneOverlay = frame.HealthBar:CreateTexture(nil, "OVERLAY")
+            frame.HealthBar.arcaneOverlay:SetAllPoints(frame.HealthBar)
+            frame.HealthBar.arcaneOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\arcanemystic\\glow.tga")
+            frame.HealthBar.arcaneOverlay:SetBlendMode("ADD")
+            frame.HealthBar.arcaneOverlay:SetAlpha(0.2)
+            frame.HealthBar.arcaneOverlay:SetVertexColor(0.8, 0.4, 1.0) -- Purple
+        end
+        
+        -- Create a smooth pulsing effect
+        local arcanePulse1 = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        arcanePulse1:SetTarget(frame.HealthBar.arcaneOverlay)
+        arcanePulse1:SetFromAlpha(0.2)
+        arcanePulse1:SetToAlpha(0.4)
+        arcanePulse1:SetDuration(2.5)
+        arcanePulse1:SetSmoothing("IN_OUT")
+        arcanePulse1:SetOrder(1)
+        
+        local arcanePulse2 = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        arcanePulse2:SetTarget(frame.HealthBar.arcaneOverlay)
+        arcanePulse2:SetFromAlpha(0.4)
+        arcanePulse2:SetToAlpha(0.2)
+        arcanePulse2:SetDuration(2.5)
+        arcanePulse2:SetSmoothing("IN_OUT")
+        arcanePulse2:SetOrder(2)
+        
+    elseif theme == "felenergy" then
+        -- Fel Energy: Toxic glow effect on health bars
+        if not frame.HealthBar.felOverlay then
+            frame.HealthBar.felOverlay = frame.HealthBar:CreateTexture(nil, "OVERLAY")
+            frame.HealthBar.felOverlay:SetAllPoints(frame.HealthBar)
+            frame.HealthBar.felOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\felenergy\\glow.tga")
+            frame.HealthBar.felOverlay:SetBlendMode("ADD")
+            frame.HealthBar.felOverlay:SetAlpha(0.15)
+            frame.HealthBar.felOverlay:SetVertexColor(0.0, 0.8, 0.0) -- Fel green
+        end
+        
+        -- Create a toxic pulsing effect
+        local felPulse1 = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        felPulse1:SetTarget(frame.HealthBar.felOverlay)
+        felPulse1:SetFromAlpha(0.15)
+        felPulse1:SetToAlpha(0.3)
+        felPulse1:SetDuration(3.0)
+        felPulse1:SetSmoothing("IN_OUT")
+        felPulse1:SetOrder(1)
+        
+        local felPulse2 = frame.HealthBar.themeAnimation:CreateAnimation("Alpha")
+        felPulse2:SetTarget(frame.HealthBar.felOverlay)
+        felPulse2:SetFromAlpha(0.3)
+        felPulse2:SetToAlpha(0.15)
+        felPulse2:SetDuration(3.0)
+        felPulse2:SetSmoothing("IN_OUT")
+        felPulse2:SetOrder(2)
+    end
+    
+    -- Only play the animation when not in combat
+    if not UnitAffectingCombat("player") and frame.HealthBar.themeAnimation then
+        frame.HealthBar.themeAnimation:Play()
+    end
+end
+
+-- Apply theme-specific power bar animations
+function UnitFrames:ApplyThemePowerBarAnimations(frame, theme)
+    if not frame or not frame.PowerBar then return end
+    
+    -- Clear any existing power bar animations
+    if frame.PowerBar.themeAnimation then
+        frame.PowerBar.themeAnimation:Stop()
+        frame.PowerBar.themeAnimation = nil
+    end
+    
+    -- Create a new animation group for the power bar
+    frame.PowerBar.themeAnimation = frame.PowerBar:CreateAnimationGroup()
+    frame.PowerBar.themeAnimation:SetLooping("REPEAT")
+    
+    -- Add theme-specific power bar animations
+    if theme == "phoenixflame" then
+        -- Phoenix Flame: Subtle ember effect on power bars
+        if not frame.PowerBar.emberOverlay then
+            frame.PowerBar.emberOverlay = frame.PowerBar:CreateTexture(nil, "OVERLAY")
+            frame.PowerBar.emberOverlay:SetAllPoints(frame.PowerBar)
+            frame.PowerBar.emberOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\embers.tga")
+            frame.PowerBar.emberOverlay:SetBlendMode("ADD")
+            frame.PowerBar.emberOverlay:SetAlpha(0.15)
+            
+            -- Color based on power type
+            if frame.unit then
+                local powerType = UnitPowerType(frame.unit)
+                if powerType == 0 then -- Mana
+                    frame.PowerBar.emberOverlay:SetVertexColor(0.2, 0.4, 1.0) -- Blue
+                elseif powerType == 1 then -- Rage
+                    frame.PowerBar.emberOverlay:SetVertexColor(1.0, 0.0, 0.0) -- Red
+                elseif powerType == 2 then -- Focus
+                    frame.PowerBar.emberOverlay:SetVertexColor(1.0, 0.5, 0.0) -- Orange
+                elseif powerType == 3 then -- Energy
+                    frame.PowerBar.emberOverlay:SetVertexColor(1.0, 1.0, 0.0) -- Yellow
+                elseif powerType == 6 then -- Runic Power
+                    frame.PowerBar.emberOverlay:SetVertexColor(0.0, 0.8, 1.0) -- Light blue
+                else
+                    frame.PowerBar.emberOverlay:SetVertexColor(0.7, 0.7, 0.7) -- Gray default
+                end
+            else
+                frame.PowerBar.emberOverlay:SetVertexColor(0.7, 0.7, 0.7) -- Gray default
+            end
+        end
+        
+        -- Create pulsing effect for the ember overlay
+        local emberPulse1 = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        emberPulse1:SetTarget(frame.PowerBar.emberOverlay)
+        emberPulse1:SetFromAlpha(0.15)
+        emberPulse1:SetToAlpha(0.3)
+        emberPulse1:SetDuration(2.0)
+        emberPulse1:SetSmoothing("IN_OUT")
+        emberPulse1:SetOrder(1)
+        
+        local emberPulse2 = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        emberPulse2:SetTarget(frame.PowerBar.emberOverlay)
+        emberPulse2:SetFromAlpha(0.3)
+        emberPulse2:SetToAlpha(0.15)
+        emberPulse2:SetDuration(2.0)
+        emberPulse2:SetSmoothing("IN_OUT")
+        emberPulse2:SetOrder(2)
+        
+    elseif theme == "thunderstorm" then
+        -- Thunder Storm: Energy sparks effect on power bars
+        if not frame.PowerBar.sparkOverlay then
+            frame.PowerBar.sparkOverlay = frame.PowerBar:CreateTexture(nil, "OVERLAY")
+            frame.PowerBar.sparkOverlay:SetAllPoints(frame.PowerBar)
+            frame.PowerBar.sparkOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\glow.tga")
+            frame.PowerBar.sparkOverlay:SetBlendMode("ADD")
+            frame.PowerBar.sparkOverlay:SetAlpha(0.0)
+            
+            -- Color based on power type
+            if frame.unit then
+                local powerType = UnitPowerType(frame.unit)
+                if powerType == 0 then -- Mana
+                    frame.PowerBar.sparkOverlay:SetVertexColor(0.2, 0.4, 1.0) -- Blue
+                elseif powerType == 1 then -- Rage
+                    frame.PowerBar.sparkOverlay:SetVertexColor(1.0, 0.0, 0.0) -- Red
+                elseif powerType == 2 then -- Focus
+                    frame.PowerBar.sparkOverlay:SetVertexColor(1.0, 0.5, 0.0) -- Orange
+                elseif powerType == 3 then -- Energy
+                    frame.PowerBar.sparkOverlay:SetVertexColor(1.0, 1.0, 0.0) -- Yellow
+                elseif powerType == 6 then -- Runic Power
+                    frame.PowerBar.sparkOverlay:SetVertexColor(0.0, 0.8, 1.0) -- Light blue
+                else
+                    frame.PowerBar.sparkOverlay:SetVertexColor(0.7, 0.7, 0.7) -- Gray default
+                end
+            else
+                frame.PowerBar.sparkOverlay:SetVertexColor(0.7, 0.7, 0.7) -- Gray default
+            end
+        end
+        
+        -- Create periodic spark flashes
+        local sparkIn = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        sparkIn:SetTarget(frame.PowerBar.sparkOverlay)
+        sparkIn:SetFromAlpha(0.0)
+        sparkIn:SetToAlpha(0.3)
+        sparkIn:SetDuration(0.2)
+        sparkIn:SetSmoothing("IN")
+        sparkIn:SetOrder(1)
+        
+        local sparkHold = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        sparkHold:SetTarget(frame.PowerBar.sparkOverlay)
+        sparkHold:SetFromAlpha(0.3)
+        sparkHold:SetToAlpha(0.3)
+        sparkHold:SetDuration(0.1)
+        sparkHold:SetOrder(2)
+        
+        local sparkOut = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        sparkOut:SetTarget(frame.PowerBar.sparkOverlay)
+        sparkOut:SetFromAlpha(0.3)
+        sparkOut:SetToAlpha(0.0)
+        sparkOut:SetDuration(0.3)
+        sparkOut:SetSmoothing("OUT")
+        sparkOut:SetOrder(3)
+        
+        local sparkWait = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        sparkWait:SetTarget(frame.PowerBar.sparkOverlay)
+        sparkWait:SetFromAlpha(0.0)
+        sparkWait:SetToAlpha(0.0)
+        sparkWait:SetDuration(math.random(2, 6)) -- Random interval between sparks
+        sparkWait:SetOrder(4)
+        
+    elseif theme == "arcanemystic" then
+        -- Arcane Mystic: Runes effect on power bars
+        if not frame.PowerBar.runeOverlay then
+            frame.PowerBar.runeOverlay = frame.PowerBar:CreateTexture(nil, "OVERLAY")
+            frame.PowerBar.runeOverlay:SetAllPoints(frame.PowerBar)
+            frame.PowerBar.runeOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\arcanemystic\\glow.tga")
+            frame.PowerBar.runeOverlay:SetBlendMode("ADD")
+            frame.PowerBar.runeOverlay:SetAlpha(0.2)
+            
+            -- Color based on power type
+            if frame.unit then
+                local powerType = UnitPowerType(frame.unit)
+                if powerType == 0 then -- Mana
+                    frame.PowerBar.runeOverlay:SetVertexColor(0.4, 0.4, 0.8) -- Blue-purple
+                elseif powerType == 1 then -- Rage
+                    frame.PowerBar.runeOverlay:SetVertexColor(0.8, 0.2, 0.4) -- Red-purple
+                elseif powerType == 2 then -- Focus
+                    frame.PowerBar.runeOverlay:SetVertexColor(0.8, 0.4, 0.2) -- Orange-purple
+                elseif powerType == 3 then -- Energy
+                    frame.PowerBar.runeOverlay:SetVertexColor(0.8, 0.8, 0.2) -- Yellow-purple
+                elseif powerType == 6 then -- Runic Power
+                    frame.PowerBar.runeOverlay:SetVertexColor(0.2, 0.6, 0.8) -- Light blue-purple
+                else
+                    frame.PowerBar.runeOverlay:SetVertexColor(0.6, 0.4, 0.8) -- Purple default
+                end
+            else
+                frame.PowerBar.runeOverlay:SetVertexColor(0.6, 0.4, 0.8) -- Purple default
+            end
+        end
+        
+        -- Create rune glow animation
+        local runeGlow1 = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        runeGlow1:SetTarget(frame.PowerBar.runeOverlay)
+        runeGlow1:SetFromAlpha(0.2)
+        runeGlow1:SetToAlpha(0.4)
+        runeGlow1:SetDuration(3.0)
+        runeGlow1:SetSmoothing("IN_OUT")
+        runeGlow1:SetOrder(1)
+        
+        local runeGlow2 = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        runeGlow2:SetTarget(frame.PowerBar.runeOverlay)
+        runeGlow2:SetFromAlpha(0.4)
+        runeGlow2:SetToAlpha(0.2)
+        runeGlow2:SetDuration(3.0)
+        runeGlow2:SetSmoothing("IN_OUT")
+        runeGlow2:SetOrder(2)
+        
+    elseif theme == "felenergy" then
+        -- Fel Energy: Toxic glow effect on power bars
+        if not frame.PowerBar.felOverlay then
+            frame.PowerBar.felOverlay = frame.PowerBar:CreateTexture(nil, "OVERLAY")
+            frame.PowerBar.felOverlay:SetAllPoints(frame.PowerBar)
+            frame.PowerBar.felOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\felenergy\\glow.tga")
+            frame.PowerBar.felOverlay:SetBlendMode("ADD")
+            frame.PowerBar.felOverlay:SetAlpha(0.15)
+            
+            -- Color based on power type but with fel green tint
+            if frame.unit then
+                local powerType = UnitPowerType(frame.unit)
+                if powerType == 0 then -- Mana
+                    frame.PowerBar.felOverlay:SetVertexColor(0.0, 0.6, 0.4) -- Green-blue
+                elseif powerType == 1 then -- Rage
+                    frame.PowerBar.felOverlay:SetVertexColor(0.5, 0.6, 0.0) -- Green-red
+                elseif powerType == 2 then -- Focus
+                    frame.PowerBar.felOverlay:SetVertexColor(0.5, 0.7, 0.0) -- Green-orange
+                elseif powerType == 3 then -- Energy
+                    frame.PowerBar.felOverlay:SetVertexColor(0.5, 0.8, 0.0) -- Green-yellow
+                elseif powerType == 6 then -- Runic Power
+                    frame.PowerBar.felOverlay:SetVertexColor(0.0, 0.8, 0.4) -- Green-blue
+                else
+                    frame.PowerBar.felOverlay:SetVertexColor(0.0, 0.8, 0.0) -- Fel green default
+                end
+            else
+                frame.PowerBar.felOverlay:SetVertexColor(0.0, 0.8, 0.0) -- Fel green default
+            end
+        end
+        
+        -- Create a toxic pulsing effect
+        local felPulse1 = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        felPulse1:SetTarget(frame.PowerBar.felOverlay)
+        felPulse1:SetFromAlpha(0.15)
+        felPulse1:SetToAlpha(0.3)
+        felPulse1:SetDuration(3.0)
+        felPulse1:SetSmoothing("IN_OUT")
+        felPulse1:SetOrder(1)
+        
+        local felPulse2 = frame.PowerBar.themeAnimation:CreateAnimation("Alpha")
+        felPulse2:SetTarget(frame.PowerBar.felOverlay)
+        felPulse2:SetFromAlpha(0.3)
+        felPulse2:SetToAlpha(0.15)
+        felPulse2:SetDuration(3.0)
+        felPulse2:SetSmoothing("IN_OUT")
+        felPulse2:SetOrder(2)
+    end
+    
+    -- Only play the animation when not in combat
+    if not UnitAffectingCombat("player") and frame.PowerBar.themeAnimation then
+        frame.PowerBar.themeAnimation:Play()
+    end
+end
+
+-- Apply theme-specific combat animations
+function UnitFrames:ApplyThemeCombatAnimations(frame, theme)
+    if not frame or not frame.combatStateAnimation then return end
+    
+    -- Clear existing animation
+    frame.combatStateAnimation:Stop()
+    frame.combatStateAnimation = nil
+    
+    -- Create new animation group
+    frame.combatStateAnimation = frame:CreateAnimationGroup()
+    frame.combatStateAnimation:SetLooping("REPEAT")
+    
+    if theme == "phoenixflame" then
+        -- Phoenix Flame: Fiery border in combat
+        if not frame.fireBorder then
+            frame.fireBorder = frame:CreateTexture(nil, "OVERLAY")
+            frame.fireBorder:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\border.tga")
+            frame.fireBorder:SetPoint("TOPLEFT", frame, "TOPLEFT", -5, 5)
+            frame.fireBorder:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 5, -5)
+            frame.fireBorder:SetBlendMode("ADD")
+            frame.fireBorder:SetVertexColor(1.0, 0.4, 0.0) -- Orange-red
+            frame.fireBorder:SetAlpha(0)
+        end
+        
+        -- Create pulsing animation for the border
+        local fireIn = frame.combatStateAnimation:CreateAnimation("Alpha")
+        fireIn:SetTarget(frame.fireBorder)
+        fireIn:SetFromAlpha(0.3)
+        fireIn:SetToAlpha(0.7)
+        fireIn:SetDuration(1.0)
+        fireIn:SetSmoothing("IN_OUT")
+        fireIn:SetOrder(1)
+        
+        local fireOut = frame.combatStateAnimation:CreateAnimation("Alpha")
+        fireOut:SetTarget(frame.fireBorder)
+        fireOut:SetFromAlpha(0.7)
+        fireOut:SetToAlpha(0.3)
+        fireOut:SetDuration(1.0)
+        fireOut:SetSmoothing("IN_OUT")
+        fireOut:SetOrder(2)
+        
+    elseif theme == "thunderstorm" then
+        -- Thunder Storm: Electric border in combat
+        if not frame.lightningBorder then
+            frame.lightningBorder = frame:CreateTexture(nil, "OVERLAY")
+            frame.lightningBorder:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\border.tga")
+            frame.lightningBorder:SetPoint("TOPLEFT", frame, "TOPLEFT", -5, 5)
+            frame.lightningBorder:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 5, -5)
+            frame.lightningBorder:SetBlendMode("ADD")
+            frame.lightningBorder:SetVertexColor(0.3, 0.6, 1.0) -- Blue
+            frame.lightningBorder:SetAlpha(0)
+        end
+        
+        -- Create lightning flash animation for the border
+        local lightningIn = frame.combatStateAnimation:CreateAnimation("Alpha")
+        lightningIn:SetTarget(frame.lightningBorder)
+        lightningIn:SetFromAlpha(0.2)
+        lightningIn:SetToAlpha(0.6)
+        lightningIn:SetDuration(0.2)
+        lightningIn:SetSmoothing("IN")
+        lightningIn:SetOrder(1)
+        
+        local lightningOut = frame.combatStateAnimation:CreateAnimation("Alpha")
+        lightningOut:SetTarget(frame.lightningBorder)
+        lightningOut:SetFromAlpha(0.6)
+        lightningOut:SetToAlpha(0.2)
+        lightningOut:SetDuration(0.3)
+        lightningOut:SetSmoothing("OUT")
+        lightningOut:SetOrder(2)
+        
+        local lightningWait = frame.combatStateAnimation:CreateAnimation("Alpha")
+        lightningWait:SetTarget(frame.lightningBorder)
+        lightningWait:SetFromAlpha(0.2)
+        lightningWait:SetToAlpha(0.2)
+        lightningWait:SetDuration(math.random(1, 3)) -- Random interval between flashes
+        lightningWait:SetOrder(3)
+        
+    elseif theme == "arcanemystic" then
+        -- Arcane Mystic: Mystical border in combat
+        if not frame.arcaneBorder then
+            frame.arcaneBorder = frame:CreateTexture(nil, "OVERLAY")
+            frame.arcaneBorder:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\arcanemystic\\border.tga")
+            frame.arcaneBorder:SetPoint("TOPLEFT", frame, "TOPLEFT", -5, 5)
+            frame.arcaneBorder:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 5, -5)
+            frame.arcaneBorder:SetBlendMode("ADD")
+            frame.arcaneBorder:SetVertexColor(0.7, 0.3, 1.0) -- Purple
+            frame.arcaneBorder:SetAlpha(0)
+        end
+        
+        -- Create smooth pulsing animation
+        local arcaneIn = frame.combatStateAnimation:CreateAnimation("Alpha")
+        arcaneIn:SetTarget(frame.arcaneBorder)
+        arcaneIn:SetFromAlpha(0.2)
+        arcaneIn:SetToAlpha(0.6)
+        arcaneIn:SetDuration(2.0)
+        arcaneIn:SetSmoothing("IN_OUT")
+        arcaneIn:SetOrder(1)
+        
+        local arcaneOut = frame.combatStateAnimation:CreateAnimation("Alpha")
+        arcaneOut:SetTarget(frame.arcaneBorder)
+        arcaneOut:SetFromAlpha(0.6)
+        arcaneOut:SetToAlpha(0.2)
+        arcaneOut:SetDuration(2.0)
+        arcaneOut:SetSmoothing("IN_OUT")
+        arcaneOut:SetOrder(2)
+        
+    elseif theme == "felenergy" then
+        -- Fel Energy: Toxic border in combat
+        if not frame.felBorder then
+            frame.felBorder = frame:CreateTexture(nil, "OVERLAY")
+            frame.felBorder:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\felenergy\\border.tga")
+            frame.felBorder:SetPoint("TOPLEFT", frame, "TOPLEFT", -5, 5)
+            frame.felBorder:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 5, -5)
+            frame.felBorder:SetBlendMode("ADD")
+            frame.felBorder:SetVertexColor(0.0, 0.8, 0.0) -- Fel green
+            frame.felBorder:SetAlpha(0)
+        end
+        
+        -- Create toxic pulsing animation
+        local felIn = frame.combatStateAnimation:CreateAnimation("Alpha")
+        felIn:SetTarget(frame.felBorder)
+        felIn:SetFromAlpha(0.3)
+        felIn:SetToAlpha(0.7)
+        felIn:SetDuration(2.0)
+        felIn:SetSmoothing("IN_OUT")
+        felIn:SetOrder(1)
+        
+        local felOut = frame.combatStateAnimation:CreateAnimation("Alpha")
+        felOut:SetTarget(frame.felBorder)
+        felOut:SetFromAlpha(0.7)
+        felOut:SetToAlpha(0.3)
+        felOut:SetDuration(2.0)
+        felOut:SetSmoothing("IN_OUT")
+        felOut:SetOrder(2)
+    end
+end
+
+-- Apply theme-specific border glow and effects
+function UnitFrames:ApplyThemeBorderEffects(frame, theme)
+    if not frame or not frame.borderGlow then return end
+    
+    -- Reset the border glow
+    frame.borderGlow:SetTexture(nil)
+    frame.borderGlow:SetAlpha(0)
+    
+    -- Apply theme-specific border glow texture and color
+    if theme == "phoenixflame" then
+        frame.borderGlow:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\glow.tga")
+        frame.borderGlow:SetVertexColor(1.0, 0.4, 0.0) -- Orange-red
+    elseif theme == "thunderstorm" then
+        frame.borderGlow:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\glow.tga")
+        frame.borderGlow:SetVertexColor(0.3, 0.6, 1.0) -- Blue
+    elseif theme == "arcanemystic" then
+        frame.borderGlow:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\arcanemystic\\glow.tga")
+        frame.borderGlow:SetVertexColor(0.7, 0.3, 1.0) -- Purple
+    elseif theme == "felenergy" then
+        frame.borderGlow:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\felenergy\\glow.tga")
+        frame.borderGlow:SetVertexColor(0.0, 0.8, 0.0) -- Fel green
+    end
+    
+    -- Ensure correct positioning
+    frame.borderGlow:ClearAllPoints()
+    frame.borderGlow:SetPoint("TOPLEFT", frame, "TOPLEFT", -8, 8)
+    frame.borderGlow:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 8, -8)
+    frame.borderGlow:SetBlendMode("ADD")
 end
 
 -- Event handlers
