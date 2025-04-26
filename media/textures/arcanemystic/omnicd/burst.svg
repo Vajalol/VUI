@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="burstGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#CC99FF" stop-opacity="0.7"/>
+      <stop offset="70%" stop-color="#9933FF" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#6600CC" stop-opacity="0.3"/>
+    </radialGradient>
+  </defs>
+  
+  <g>
+    <!-- Arcane burst -->
+    <circle cx="64" cy="64" r="48" fill="url(#burstGradient)" />
+    
+    <!-- Arcane energy rays -->
+    <g>
+      <!-- Main rays -->
+      <path d="M64,16 L58,38 L64,34 L70,38 Z" fill="#EEDDFF" />
+      <path d="M64,112 L70,90 L64,94 L58,90 Z" fill="#EEDDFF" />
+      <path d="M16,64 L38,70 L34,64 L38,58 Z" fill="#EEDDFF" />
+      <path d="M112,64 L90,58 L94,64 L90,70 Z" fill="#EEDDFF" />
+      
+      <!-- Diagonal rays -->
+      <path d="M32,32 L48,48 M96,32 L80,48 M32,96 L48,80 M96,96 L80,80" 
+            stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+      
+      <!-- Arcane sigils around the burst -->
+      <g fill="#CC99FF" fill-opacity="0.9">
+        <circle cx="64" cy="30" r="4" />
+        <circle cx="64" cy="98" r="4" />
+        <circle cx="30" cy="64" r="4" />
+        <circle cx="98" cy="64" r="4" />
+        
+        <circle cx="40" cy="40" r="3" />
+        <circle cx="88" cy="40" r="3" />
+        <circle cx="40" cy="88" r="3" />
+        <circle cx="88" cy="88" r="3" />
+      </g>
+    </g>
+    
+    <!-- Center arcane energy -->
+    <circle cx="64" cy="64" r="20" fill="#FFFFFF" fill-opacity="0.8" />
+    <circle cx="64" cy="64" r="14" fill="#CC99FF" fill-opacity="0.9" />
+    <circle cx="64" cy="64" r="8" fill="#9933FF" fill-opacity="1" />
+    
+    <!-- Arcane symbols inside -->
+    <path d="M58,64 L70,64 M64,58 L64,70 M56,56 L72,72 M56,72 L72,56" 
+          stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
+  </g>
+</svg>

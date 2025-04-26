@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="flameGradientCore" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="20%" stop-color="#FFF6D9" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#FFCC33" stop-opacity="0.7"/>
+      <stop offset="60%" stop-color="#FF9933" stop-opacity="0.6"/>
+      <stop offset="80%" stop-color="#FF6600" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#CC3300" stop-opacity="0.4"/>
+    </radialGradient>
+    
+    <radialGradient id="flameGradientOuter" cx="50%" cy="50%" r="60%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FF6600" stop-opacity="0.5"/>
+      <stop offset="40%" stop-color="#CC3300" stop-opacity="0.4"/>
+      <stop offset="70%" stop-color="#991A00" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#660000" stop-opacity="0.1"/>
+    </radialGradient>
+    
+    <filter id="flameBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+    </filter>
+    
+    <filter id="flameShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+      <feOffset dx="0" dy="1" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <g>
+    <!-- Base glow -->
+    <circle cx="64" cy="64" r="60" fill="url(#flameGradientOuter)" filter="url(#flameBlur)" />
+    
+    <!-- Main flame body -->
+    <path d="M64,15 
+             C68,20 76,28 82,38 
+             C88,48 92,60 88,70 
+             C84,80 76,88 64,96 
+             C52,88 44,80 40,70 
+             C36,60 40,48 46,38 
+             C52,28 60,20 64,15 Z" 
+          fill="url(#flameGradientCore)" 
+          filter="url(#flameShadow)" />
+    
+    <!-- Flame details - middle layer -->
+    <path d="M64,25 
+             C67,31 72,38 75,46 
+             C78,54 80,62 76,70 
+             C72,78 68,84 64,88 
+             C60,84 56,78 52,70 
+             C48,62 50,54 53,46 
+             C56,38 61,31 64,25 Z" 
+          fill="#FF9933" fill-opacity="0.7" />
+    
+    <!-- Flame details - inner layer -->
+    <path d="M64,32 
+             C66,36 68,42 70,48 
+             C72,54 73,60 70,66 
+             C67,72 66,76 64,80 
+             C62,76 61,72 58,66 
+             C55,60 56,54 58,48 
+             C60,42 62,36 64,32 Z" 
+          fill="#FFCC33" fill-opacity="0.8" />
+    
+    <!-- Flame core -->
+    <path d="M64,40 
+             C65,42 66,46 67,50 
+             C68,54 68,58 67,62 
+             C66,66 65,68 64,70 
+             C63,68 62,66 61,62 
+             C60,58 60,54 61,50 
+             C62,46 63,42 64,40 Z" 
+          fill="#FFFFFF" fill-opacity="0.9" />
+    
+    <!-- Flame sparks -->
+    <g fill="#FFFFFF" filter="url(#flameBlur)">
+      <circle cx="54" cy="42" r="1.5" fill-opacity="0.8" />
+      <circle cx="74" cy="48" r="1.2" fill-opacity="0.8" />
+      <circle cx="64" cy="28" r="2" fill-opacity="0.9" />
+      <circle cx="58" cy="60" r="1" fill-opacity="0.7" />
+      <circle cx="48" cy="52" r="0.8" fill-opacity="0.6" />
+      <circle cx="80" cy="58" r="1.3" fill-opacity="0.7" />
+      <circle cx="70" cy="66" r="0.9" fill-opacity="0.6" />
+    </g>
+    
+    <!-- Ember trails -->
+    <g stroke="#FFCC33" stroke-width="0.5" fill="none">
+      <path d="M50,50 C52,45 53,40 56,37" stroke-opacity="0.4" />
+      <path d="M78,50 C76,45 75,40 72,37" stroke-opacity="0.4" />
+      <path d="M64,20 C64,25 64,30 64,35" stroke-opacity="0.5" />
+      <path d="M58,65 C54,60 52,55 50,50" stroke-opacity="0.3" />
+      <path d="M70,65 C74,60 76,55 78,50" stroke-opacity="0.3" />
+    </g>
+  </g>
+</svg>

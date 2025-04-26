@@ -3,4 +3,5 @@
     <Script file="init.lua"/>
     <Script file="config.lua"/>
     <Script file="core.lua"/>
+    <Script file="animations.lua"/>
 </Ui>

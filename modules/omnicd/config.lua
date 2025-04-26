@@ -193,6 +193,270 @@ function OmniCD:CreateDisplayTab(container)
         OmniCD:SetContainerLayout()
     end)
     displayGroup:AddChild(directionDropdown)
+    
+    -- Animation settings group
+    local animationGroup = AceGUI:Create("InlineGroup")
+    animationGroup:SetTitle("Animation Options")
+    animationGroup:SetLayout("Flow")
+    animationGroup:SetFullWidth(true)
+    container:AddChild(animationGroup)
+    
+    -- Enable animations checkbox
+    local animCheckbox = AceGUI:Create("CheckBox")
+    animCheckbox:SetLabel("Enable Animations")
+    animCheckbox:SetWidth(200)
+    animCheckbox:SetValue(VUI.db.profile.modules.omnicd.animations)
+    animCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.omnicd.animations = value
+        if value then
+            OmniCD:InitializeAnimations()
+        else
+            OmniCD:DisableAnimations()
+        end
+    end)
+    animationGroup:AddChild(animCheckbox)
+    
+    -- Disable animations in combat for performance
+    local combatAnimCheckbox = AceGUI:Create("CheckBox")
+    combatAnimCheckbox:SetLabel("Disable Animations in Combat")
+    combatAnimCheckbox:SetWidth(250)
+    combatAnimCheckbox:SetDisabled(not VUI.db.profile.modules.omnicd.animations)
+    combatAnimCheckbox:SetValue(VUI.db.profile.modules.omnicd.performance.disableAnimationsInCombat)
+    combatAnimCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.omnicd.performance.disableAnimationsInCombat = value
+    end)
+    animationGroup:AddChild(combatAnimCheckbox)
+    
+    -- Update enabled state of combat checkbox when animation checkbox changes
+    animCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.omnicd.animations = value
+        combatAnimCheckbox:SetDisabled(not value)
+        if value then
+            OmniCD:InitializeAnimations()
+        else
+            OmniCD:DisableAnimations()
+        end
+    end)
+    
+    -- Header for theme-specific animations
+    local themeHeader = AceGUI:Create("Heading")
+    themeHeader:SetText("Theme-Specific Animations")
+    themeHeader:SetFullWidth(true)
+    animationGroup:AddChild(themeHeader)
+    
+    -- Theme description
+    local themeDesc = AceGUI:Create("Label")
+    themeDesc:SetText("Each theme includes specialized animations that match the theme's visual style. Animations will automatically update when changing themes.")
+    themeDesc:SetFullWidth(true)
+    animationGroup:AddChild(themeDesc)
+    
+    -- Preview button
+    local previewButton = AceGUI:Create("Button")
+    previewButton:SetText("Preview Current Theme Animations")
+    previewButton:SetWidth(250)
+    previewButton:SetCallback("OnClick", function()
+        OmniCD:PreviewThemeAnimations()
+    end)
+    animationGroup:AddChild(previewButton)
+end
+
+-- Function to preview animations
+function OmniCD:PreviewThemeAnimations()
+    -- Create a temporary frame to show the preview
+    if not self.previewFrame then
+        self.previewFrame = CreateFrame("Frame", "VUIOmniCDPreview", UIParent)
+        self.previewFrame:SetSize(200, 100)
+        self.previewFrame:SetPoint("CENTER")
+        self.previewFrame:SetFrameStrata("DIALOG")
+        
+        -- Add a backdrop
+        self.previewFrame.bg = self.previewFrame:CreateTexture(nil, "BACKGROUND")
+        self.previewFrame.bg:SetAllPoints()
+        self.previewFrame.bg:SetColorTexture(0, 0, 0, 0.8)
+        
+        -- Add a border
+        self.previewFrame.border = CreateFrame("Frame", nil, self.previewFrame)
+        self.previewFrame.border:SetPoint("TOPLEFT", -1, 1)
+        self.previewFrame.border:SetPoint("BOTTOMRIGHT", 1, -1)
+        self.previewFrame.border:SetBackdrop({
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            edgeSize = 16,
+            insets = {left = 4, right = 4, top = 4, bottom = 4}
+        })
+        
+        -- Title
+        self.previewFrame.title = self.previewFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        self.previewFrame.title:SetPoint("TOP", 0, -10)
+        
+        -- Close button
+        self.previewFrame.close = CreateFrame("Button", nil, self.previewFrame, "UIPanelCloseButton")
+        self.previewFrame.close:SetPoint("TOPRIGHT", 0, 0)
+        self.previewFrame.close:SetScript("OnClick", function()
+            self.previewFrame:Hide()
+        end)
+        
+        -- Container for icons
+        self.previewFrame.container = CreateFrame("Frame", nil, self.previewFrame)
+        self.previewFrame.container:SetSize(180, 40)
+        self.previewFrame.container:SetPoint("TOP", 0, -30)
+        
+        -- Create sample icons
+        self.previewFrame.icons = {}
+        for i = 1, 3 do
+            local icon = CreateFrame("Frame", nil, self.previewFrame.container)
+            icon:SetSize(30, 30)
+            icon:SetPoint("LEFT", (i-1) * 40, 0)
+            
+            -- Icon texture
+            icon.texture = icon:CreateTexture(nil, "ARTWORK")
+            icon.texture:SetAllPoints()
+            icon.texture:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+            
+            -- Cooldown overlay
+            icon.cooldown = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
+            icon.cooldown:SetAllPoints()
+            icon.cooldown:SetReverse(false)
+            icon.cooldown:SetHideCountdownNumbers(true)
+            
+            -- Border
+            icon.border = icon:CreateTexture(nil, "OVERLAY")
+            icon.border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1, 1)
+            icon.border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1, -1)
+            icon.border:SetTexture("Interface\\Buttons\\UI-Debuff-Overlays")
+            icon.border:SetTexCoord(0.296875, 0.5703125, 0, 0.515625)
+            
+            -- Store in our icons table
+            self.previewFrame.icons[i] = icon
+        end
+        
+        -- Description
+        self.previewFrame.desc = self.previewFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        self.previewFrame.desc:SetPoint("TOP", self.previewFrame.container, "BOTTOM", 0, -10)
+        self.previewFrame.desc:SetWidth(180)
+        self.previewFrame.desc:SetJustifyH("CENTER")
+    end
+    
+    -- Update title with current theme
+    local theme = VUI.activeTheme or "PhoenixFlame"
+    self.previewFrame.title:SetText(theme .. " Animations")
+    
+    -- Set some spell icons based on theme
+    local iconTextureTheme = {
+        PhoenixFlame = {31661, 11366, 133},   -- Fire spells
+        ThunderStorm = {403, 45438, 190356},  -- Frost/lightning spells
+        ArcaneMystic = {30451, 5143, 118},    -- Arcane spells
+        FelEnergy = {980, 27243, 116858}      -- Fel/warlock spells
+    }
+    
+    local textures = iconTextureTheme[theme] or iconTextureTheme.PhoenixFlame
+    
+    -- Update icons
+    for i, icon in ipairs(self.previewFrame.icons) do
+        local _, _, texture = GetSpellInfo(textures[i])
+        icon.texture:SetTexture(texture or "Interface\\Icons\\INV_Misc_QuestionMark")
+        
+        -- Set class color based on theme
+        local color = {r = 1, g = 1, b = 1}
+        if theme == "PhoenixFlame" then
+            color = {r = 1, g = 0.5, b = 0.1}
+        elseif theme == "ThunderStorm" then 
+            color = {r = 0.2, g = 0.6, b = 1}
+        elseif theme == "ArcaneMystic" then
+            color = {r = 0.7, g = 0.3, b = 1}
+        elseif theme == "FelEnergy" then
+            color = {r = 0.1, g = 1, b = 0.1}
+        end
+        
+        icon.border:SetVertexColor(color.r, color.g, color.b)
+        
+        -- Apply theme animations to preview icon
+        if not icon.initialized then
+            -- First add base animations
+            icon.animations = {}
+            
+            -- Add show animation
+            icon.animations.show = CreateAnimationGroup(icon)
+            local showScale = icon.animations.show:CreateAnimation("Scale")
+            showScale:SetFromScale(0.1, 0.1)
+            showScale:SetToScale(1, 1)
+            showScale:SetDuration(0.2)
+            showScale:SetOrder(1)
+            
+            local showAlpha = icon.animations.show:CreateAnimation("Alpha")
+            showAlpha:SetFromAlpha(0)
+            showAlpha:SetToAlpha(1)
+            showAlpha:SetDuration(0.2)
+            showAlpha:SetOrder(1)
+            
+            -- Add pulse animation
+            icon.animations.pulse = CreateAnimationGroup(icon)
+            local pulseScale1 = icon.animations.pulse:CreateAnimation("Scale")
+            pulseScale1:SetFromScale(1, 1)
+            pulseScale1:SetToScale(1.3, 1.3)
+            pulseScale1:SetDuration(0.3)
+            pulseScale1:SetOrder(1)
+            
+            local pulseScale2 = icon.animations.pulse:CreateAnimation("Scale")
+            pulseScale2:SetFromScale(1.3, 1.3)
+            pulseScale2:SetToScale(1, 1)
+            pulseScale2:SetDuration(0.3)
+            pulseScale2:SetOrder(2)
+            
+            icon.initialized = true
+        end
+        
+        -- Apply the theme-specific animations
+        if theme == "PhoenixFlame" then
+            OmniCD:ApplyPhoenixFlameTheme(icon)
+        elseif theme == "ThunderStorm" then
+            OmniCD:ApplyThunderStormTheme(icon)
+        elseif theme == "ArcaneMystic" then
+            OmniCD:ApplyArcaneMysticTheme(icon)
+        elseif theme == "FelEnergy" then
+            OmniCD:ApplyFelEnergyTheme(icon)
+        end
+    end
+    
+    -- Update description based on theme
+    local descriptions = {
+        PhoenixFlame = "Fiery animations with ember effects and flame bursts when cooldowns finish.",
+        ThunderStorm = "Electric animations with lightning flashes and surges when abilities are ready.",
+        ArcaneMystic = "Mystical animations with arcane runes and bursts of magical energy.",
+        FelEnergy = "Fel-infused animations with green glows and explosive finishes."
+    }
+    
+    self.previewFrame.desc:SetText(descriptions[theme] or descriptions.PhoenixFlame)
+    
+    -- Show the frame
+    self.previewFrame:Show()
+    
+    -- Play some animations for preview
+    for _, icon in ipairs(self.previewFrame.icons) do
+        -- Start with show animation
+        icon.animations.show:Play()
+        
+        -- Schedule the pulse animation
+        C_Timer.After(0.5, function()
+            if icon.animations.pulse then
+                icon.animations.pulse:Play()
+            end
+        end)
+        
+        -- Start theme animation
+        if icon.themeElements and icon.themeElements.glow and icon.themeElements.glow.animGroup then
+            C_Timer.After(1, function()
+                icon.themeElements.glow.texture:Show()
+                icon.themeElements.glow.animGroup:Play()
+            end)
+        end
+        
+        -- Show cooldown finish animation after a few seconds
+        C_Timer.After(3, function()
+            if icon.cooldown.OldClear then
+                icon.cooldown:OldClear()
+            end
+        end)
+    end
 end
 
 -- Create the Spells tab

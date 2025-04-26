@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="surgeGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#99DDFF" stop-opacity="0.7"/>
+      <stop offset="70%" stop-color="#0099FF" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0066CC" stop-opacity="0.3"/>
+    </radialGradient>
+  </defs>
+  
+  <g>
+    <!-- Electrical burst -->
+    <circle cx="64" cy="64" r="48" fill="url(#surgeGradient)" />
+    
+    <!-- Lightning rays -->
+    <g stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none">
+      <line x1="64" y1="16" x2="64" y2="36" />
+      <line x1="64" y1="92" x2="64" y2="112" />
+      <line x1="16" y1="64" x2="36" y2="64" />
+      <line x1="92" y1="64" x2="112" y2="64" />
+      
+      <line x1="30.3" y1="30.3" x2="44.4" y2="44.4" />
+      <line x1="83.6" y1="83.6" x2="97.7" y2="97.7" />
+      <line x1="30.3" y1="97.7" x2="44.4" y2="83.6" />
+      <line x1="83.6" y1="44.4" x2="97.7" y2="30.3" />
+    </g>
+    
+    <!-- Center electrical discharge -->
+    <circle cx="64" cy="64" r="20" fill="#FFFFFF" fill-opacity="0.8" />
+    <circle cx="64" cy="64" r="12" fill="#66CCFF" fill-opacity="0.9" />
+    
+    <!-- Additional electrical arcs -->
+    <path d="M38,48 C45,40 45,52 52,46 C59,40 59,52 66,46 C73,40 73,52 80,46 C87,40 87,52 94,46" 
+          stroke="#99DDFF" stroke-width="2" fill="none" stroke-linecap="round" />
+    
+    <path d="M38,78 C45,70 45,82 52,76 C59,70 59,82 66,76 C73,70 73,82 80,76 C87,70 87,82 94,76" 
+          stroke="#99DDFF" stroke-width="2" fill="none" stroke-linecap="round" />
+  </g>
+</svg>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="runeGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#F1D9FF" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#CC99FF" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#9933FF" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#6600CC" stop-opacity="0.2"/>
+    </radialGradient>
+  </defs>
+  
+  <g>
+    <!-- Base glow -->
+    <circle cx="64" cy="64" r="60" fill="url(#runeGlow)" />
+    
+    <!-- Inner arcane circle -->
+    <circle cx="64" cy="64" r="48" stroke="#CC99FF" stroke-width="2" fill="none" />
+    
+    <!-- Outer arcane circle -->
+    <circle cx="64" cy="64" r="54" stroke="#CC99FF" stroke-width="1" fill="none" />
+    
+    <!-- Arcane rune pattern -->
+    <g stroke="#FFFFFF" stroke-width="1.5" fill="none">
+      <!-- Inner star pattern -->
+      <path d="M64,16 L64,112 M16,64 L112,64 M28.7,28.7 L99.3,99.3 M28.7,99.3 L99.3,28.7" />
+      
+      <!-- Small runes at cardinal points -->
+      <path d="M64,16 L68,24 L64,20 L60,24 Z" />
+      <path d="M112,64 L104,68 L108,64 L104,60 Z" />
+      <path d="M64,112 L60,104 L64,108 L68,104 Z" />
+      <path d="M16,64 L24,60 L20,64 L24,68 Z" />
+      
+      <!-- Small runes at diagonal points -->
+      <path d="M28.7,28.7 L34.7,34.7 L30.7,30.7 L26.7,34.7 Z" />
+      <path d="M99.3,28.7 L93.3,34.7 L97.3,30.7 L101.3,34.7 Z" />
+      <path d="M28.7,99.3 L34.7,93.3 L30.7,97.3 L26.7,93.3 Z" />
+      <path d="M99.3,99.3 L93.3,93.3 L97.3,97.3 L101.3,93.3 Z" />
+      
+      <!-- Arcane sigils -->
+      <path d="M64,38 L70,50 L64,46 L58,50 L64,38 Z" />
+      <path d="M64,90 L58,78 L64,82 L70,78 L64,90 Z" />
+      <path d="M38,64 L50,58 L46,64 L50,70 L38,64 Z" />
+      <path d="M90,64 L78,70 L82,64 L78,58 L90,64 Z" />
+    </g>
+    
+    <!-- Arcane energy flowing around rune -->
+    <circle cx="64" cy="64" r="42" stroke="#9966FF" stroke-width="1" stroke-dasharray="4,4" fill="none">
+      <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="20s" repeatCount="indefinite" />
+    </circle>
+    
+    <circle cx="64" cy="64" r="36" stroke="#9966FF" stroke-width="1" stroke-dasharray="4,4" fill="none">
+      <animateTransform attributeName="transform" type="rotate" from="360 64 64" to="0 64 64" dur="15s" repeatCount="indefinite" />
+    </circle>
+  </g>
+</svg>

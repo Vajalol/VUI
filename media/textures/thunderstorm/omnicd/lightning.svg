@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="lightningGlowOuter" cx="50%" cy="50%" r="60%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#99CCFF" stop-opacity="0.7"/>
+      <stop offset="40%" stop-color="#0099FF" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#0066CC" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#003366" stop-opacity="0.1"/>
+    </radialGradient>
+    
+    <radialGradient id="lightningGlowInner" cx="50%" cy="50%" r="40%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="30%" stop-color="#D9F2FF" stop-opacity="0.8"/>
+      <stop offset="60%" stop-color="#99CCFF" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#66CCFF" stop-opacity="0.4"/>
+    </radialGradient>
+    
+    <filter id="lightningBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" />
+    </filter>
+    
+    <filter id="boltGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1" />
+      <feOffset dx="0" dy="0" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.8" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    
+    <!-- Lightning animation -->
+    <animate xlink:href="#lightningPulse"
+            attributeName="opacity"
+            values="0;0.8;0;0.6;0"
+            dur="2.5s"
+            repeatCount="indefinite" />
+  </defs>
+  
+  <g>
+    <!-- Base glow -->
+    <circle cx="64" cy="64" r="60" fill="url(#lightningGlowOuter)" />
+    <circle cx="64" cy="64" r="30" fill="url(#lightningGlowInner)" filter="url(#lightningBlur)" />
+    
+    <!-- Cloud background suggestion -->
+    <path d="M30,40 C25,35 28,25 35,22 C40,10 60,15 65,20 C75,10 90,15 95,25 C105,22 110,35 105,40 C110,50 100,55 95,52 C90,60 75,65 65,58 C55,65 35,60 35,50 C25,55 25,45 30,40 Z"
+          fill="#4477AA" fill-opacity="0.15" />
+    
+    <!-- Main lightning bolt -->
+    <path d="M52,20 L68,20 L64,50 L78,50 L50,108 L54,68 L40,68 Z" 
+          fill="#FFFFFF" fill-opacity="0.9" 
+          filter="url(#boltGlow)" />
+    
+    <!-- Secondary lightning bolt 1 -->
+    <path d="M76,26 L82,26 L78,46 L88,46 L64,90 L68,56 L60,56 Z" 
+          fill="#99DDFF" fill-opacity="0.8" 
+          filter="url(#boltGlow)" />
+    
+    <!-- Secondary lightning bolt 2 -->
+    <path d="M38,40 L46,40 L42,60 L52,60 L36,92 L40,68 L30,68 Z" 
+          fill="#99DDFF" fill-opacity="0.8" 
+          filter="url(#boltGlow)" />
+    
+    <!-- Lightning branches -->
+    <g stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.7" filter="url(#lightningBlur)">
+      <path d="M54,40 L48,36" />
+      <path d="M60,30 L55,25" />
+      <path d="M74,55 L80,53" />
+      <path d="M50,80 L45,83" />
+      <path d="M52,95 L48,100" />
+    </g>
+    
+    <!-- Electrical crackling -->
+    <g stroke="#FFFFFF" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M30,35 L42,38 L36,42 L48,45 L40,50 L52,53 L38,60" />
+      <path d="M70,32 L82,35 L76,40 L90,43 L84,48 L96,52 L88,58" />
+      <path d="M60,80 L70,84 L64,88 L76,92 L68,96 L80,100 L72,105" />
+    </g>
+    
+    <!-- Subtle electric field lines -->
+    <g stroke="#66CCFF" stroke-width="0.6" stroke-opacity="0.4" fill="none">
+      <path d="M64,15 C70,25 80,30 90,25" />
+      <path d="M64,15 C58,25 48,30 38,25" />
+      <path d="M20,64 C30,58 35,48 30,38" />
+      <path d="M20,64 C30,70 35,80 30,90" />
+      <path d="M64,113 C58,103 48,98 38,103" />
+      <path d="M64,113 C70,103 80,98 90,103" />
+      <path d="M108,64 C98,70 93,80 98,90" />
+      <path d="M108,64 C98,58 93,48 98,38" />
+    </g>
+    
+    <!-- Pulsing light effect overlay -->
+    <circle id="lightningPulse" cx="64" cy="64" r="40" fill="#99DDFF" fill-opacity="0" filter="url(#lightningBlur)" />
+    
+    <!-- Small electric sparks -->
+    <g fill="#FFFFFF">
+      <circle cx="70" cy="40" r="1" />
+      <circle cx="50" cy="35" r="0.8" />
+      <circle cx="80" cy="60" r="1.2" />
+      <circle cx="60" cy="75" r="0.6" />
+      <circle cx="45" cy="55" r="0.7" />
+      <circle cx="75" cy="85" r="0.9" />
+    </g>
+  </g>
+</svg>
