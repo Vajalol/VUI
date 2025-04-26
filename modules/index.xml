@@ -59,4 +59,7 @@
     
     <!-- Skins Module -->
     <Include file="skins\index.xml"/>
+    
+    <!-- SpellNotifications Module -->
+    <Include file="spellnotifications\load.xml"/>
 </Ui>
