@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Phoenix Flame Theme Icon -->
+  <!-- Base circle with gradient -->
+  <circle cx="64" cy="64" r="60" fill="url(#phoenixGradient)" />
+  
+  <!-- Flame shape -->
+  <path d="M64 20 C70 40, 100 50, 80 80 C90 60, 80 90, 64 100 C48 90, 38 60, 48 80 C28 50, 58 40, 64 20" 
+        fill="url(#flameGradient)" />
+  
+  <!-- Inner flame highlight -->
+  <path d="M64 30 C68 45, 85 50, 73 70 C80 55, 75 80, 64 85 C53 80, 48 55, 55 70 C43 50, 60 45, 64 30" 
+        fill="#ffcc00" fill-opacity="0.7" />
+  
+  <!-- Ember particles -->
+  <circle cx="50" cy="40" r="2" fill="#ffcc00" />
+  <circle cx="78" cy="45" r="2" fill="#ffcc00" />
+  <circle cx="60" cy="75" r="2" fill="#ffcc00" />
+  <circle cx="45" cy="60" r="2" fill="#ffcc00" />
+  <circle cx="72" cy="65" r="2" fill="#ffcc00" />
+  
+  <!-- Circular border -->
+  <circle cx="64" cy="64" r="60" fill="none" stroke="#e64d0d" stroke-width="4" />
+  
+  <!-- Definitions -->
+  <defs>
+    <linearGradient id="phoenixGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a0a05" />
+      <stop offset="100%" stop-color="#2d100a" />
+    </linearGradient>
+    <linearGradient id="flameGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ffcc00" />
+      <stop offset="50%" stop-color="#ff6600" />
+      <stop offset="100%" stop-color="#e64d0d" />
+    </linearGradient>
+  </defs>
+</svg>

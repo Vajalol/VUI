@@ -29,4 +29,5 @@
     <!-- Configuration -->
     <Script file="config.lua"/>
     <Script file="config_panel.lua"/>
+    <Script file="settings.lua"/>
 </Ui>

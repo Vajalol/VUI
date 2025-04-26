@@ -1068,9 +1068,382 @@ function VUI:CreateEnhancedAppearanceSection()
         frame.title:SetPoint("TOPLEFT", 20, -20)
         frame.title:SetText(self.configFrame.themeData.headerColor .. "Appearance Settings|r")
         
-        -- Set up the rest of the appearance settings here...
-        -- This is a placeholder for now
+        -- Description
+        frame.desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        frame.desc:SetPoint("TOPLEFT", frame.title, "BOTTOMLEFT", 0, -10)
+        frame.desc:SetText("Customize the visual appearance of VUI across all modules")
+        frame.desc:SetTextColor(0.9, 0.9, 0.9)
         
+        -- Create a scrollable frame for the content
+        local scrollFrame, content = self:CreateScrollFrame(frame)
+        frame.scrollFrame = scrollFrame
+        frame.content = content
+        
+        -- Theme selection section
+        local themeSection = CreateFrame("Frame", nil, content)
+        themeSection:SetSize(content:GetWidth() - 40, 300)
+        themeSection:SetPoint("TOPLEFT", 20, -20)
+        
+        -- Theme section title
+        themeSection.title = themeSection:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        themeSection.title:SetPoint("TOPLEFT", 0, 0)
+        themeSection.title:SetText(self.configFrame.themeData.headerColor .. "Theme Selection|r")
+        
+        -- Theme preview containers
+        local themes = {
+            { name = "Thunder Storm", value = "thunderstorm", desc = "Deep blue theme with electric blue accents and lightning effects" },
+            { name = "Phoenix Flame", value = "phoenixflame", desc = "Warm red-orange theme with fiery accents and ember effects" },
+            { name = "Arcane Mystic", value = "arcanemystic", desc = "Rich purple theme with arcane rune accents and mystic effects" },
+            { name = "Fel Energy", value = "felenergy", desc = "Vibrant green theme with fel energy accents and corruption effects" }
+        }
+        
+        local activeTheme = self.db.profile.appearance.theme or "thunderstorm"
+        local previewWidth = (content:GetWidth() - 100) / 2
+        local previewHeight = 120
+        
+        for i, theme in ipairs(themes) do
+            local col = (i-1) % 2
+            local row = math.floor((i-1) / 2)
+            
+            local preview = CreateFrame("Button", nil, themeSection)
+            preview:SetSize(previewWidth, previewHeight)
+            preview:SetPoint("TOPLEFT", col * (previewWidth + 40), -40 - (row * (previewHeight + 30)))
+            
+            -- Theme preview background
+            preview:SetBackdrop({
+                bgFile = "Interface\\Buttons\\WHITE8x8",
+                edgeFile = "Interface\\Buttons\\WHITE8x8",
+                edgeSize = 1,
+                insets = { left = 1, right = 1, top = 1, bottom = 1 }
+            })
+            
+            -- Set theme-specific colors
+            local backdropColor, borderColor
+            if theme.value == "thunderstorm" then
+                backdropColor = {r=0.04, g=0.04, b=0.1, a=0.9}
+                borderColor = {r=0.05, g=0.62, b=0.9, a=1}
+            elseif theme.value == "phoenixflame" then
+                backdropColor = {r=0.1, g=0.04, b=0.02, a=0.9}
+                borderColor = {r=0.9, g=0.3, b=0.05, a=1}
+            elseif theme.value == "arcanemystic" then
+                backdropColor = {r=0.1, g=0.04, b=0.18, a=0.9}
+                borderColor = {r=0.61, g=0.05, b=0.9, a=1}
+            elseif theme.value == "felenergy" then
+                backdropColor = {r=0.04, g=0.1, b=0.04, a=0.9}
+                borderColor = {r=0.1, g=1.0, b=0.1, a=1}
+            end
+            
+            preview:SetBackdropColor(backdropColor.r, backdropColor.g, backdropColor.b, backdropColor.a)
+            preview:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
+            
+            -- Theme name
+            preview.name = preview:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            preview.name:SetPoint("TOP", 0, -10)
+            preview.name:SetText(theme.name)
+            preview.name:SetTextColor(1, 1, 1)
+            
+            -- Theme icon/logo
+            preview.icon = preview:CreateTexture(nil, "ARTWORK")
+            preview.icon:SetSize(64, 64)
+            preview.icon:SetPoint("CENTER", 0, 0)
+            preview.icon:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme.value .. "\\icon.tga")
+            
+            -- Theme description
+            preview.desc = preview:CreateFontString(nil, "OVERLAY", "GameFontSmall")
+            preview.desc:SetPoint("BOTTOM", 0, 10)
+            preview.desc:SetWidth(previewWidth - 20)
+            preview.desc:SetText(theme.desc)
+            preview.desc:SetTextColor(0.9, 0.9, 0.9)
+            
+            -- Active theme indicator
+            if theme.value == activeTheme then
+                preview.activeIndicator = preview:CreateTexture(nil, "OVERLAY")
+                preview.activeIndicator:SetSize(24, 24)
+                preview.activeIndicator:SetPoint("TOPRIGHT", -5, -5)
+                preview.activeIndicator:SetTexture("Interface\\RAIDFRAME\\ReadyCheck-Ready")
+            end
+            
+            -- Highlight on mouseover
+            preview.highlightTexture = preview:CreateTexture(nil, "HIGHLIGHT")
+            preview.highlightTexture:SetAllPoints()
+            preview.highlightTexture:SetColorTexture(1, 1, 1, 0.1)
+            preview:SetHighlightTexture(preview.highlightTexture)
+            
+            -- Set click handler
+            preview:SetScript("OnClick", function()
+                -- Remove active indicator from previous active theme
+                for _, otherPreview in ipairs(themeSection.previews or {}) do
+                    if otherPreview.activeIndicator then
+                        otherPreview.activeIndicator:Hide()
+                        otherPreview.activeIndicator = nil
+                    end
+                end
+                
+                -- Set active indicator on this theme
+                if not preview.activeIndicator then
+                    preview.activeIndicator = preview:CreateTexture(nil, "OVERLAY")
+                    preview.activeIndicator:SetSize(24, 24)
+                    preview.activeIndicator:SetPoint("TOPRIGHT", -5, -5)
+                    preview.activeIndicator:SetTexture("Interface\\RAIDFRAME\\ReadyCheck-Ready")
+                end
+                
+                -- Apply the theme
+                self.db.profile.appearance.theme = theme.value
+                self:ApplySettings()
+                
+                -- Update config panel with new theme colors
+                self:UpdateConfigTheme()
+            end)
+            
+            -- Store for later reference
+            themeSection.previews = themeSection.previews or {}
+            themeSection.previews[i] = preview
+        end
+        
+        -- Statusbar texture section
+        local statusbarSection = CreateFrame("Frame", nil, content)
+        statusbarSection:SetSize(content:GetWidth() - 40, 200)
+        statusbarSection:SetPoint("TOPLEFT", themeSection, "BOTTOMLEFT", 0, -40)
+        
+        -- Statusbar section title
+        statusbarSection.title = statusbarSection:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        statusbarSection.title:SetPoint("TOPLEFT", 0, 0)
+        statusbarSection.title:SetText(self.configFrame.themeData.headerColor .. "Status Bar Texture|r")
+        
+        -- Statusbar preview containers
+        local statusbars = {
+            { name = "Flat", value = "flat", texture = "statusbar-flat.blp" },
+            { name = "Gloss", value = "gloss", texture = "statusbar-gloss.tga" },
+            { name = "Smooth", value = "smooth", texture = "statusbar-smooth.blp" }
+        }
+        
+        local activeStatusbar = self.db.profile.appearance.statusbarTexture or "smooth"
+        local statusbarPreviewWidth = (content:GetWidth() - 100) / 3
+        local statusbarPreviewHeight = 30
+        
+        for i, statusbar in ipairs(statusbars) do
+            local preview = CreateFrame("Button", nil, statusbarSection)
+            preview:SetSize(statusbarPreviewWidth, statusbarPreviewHeight)
+            preview:SetPoint("TOPLEFT", (i-1) * (statusbarPreviewWidth + 20), -40)
+            
+            -- Preview background for contrast
+            preview:SetBackdrop({
+                bgFile = "Interface\\Buttons\\WHITE8x8",
+                edgeFile = "Interface\\Buttons\\WHITE8x8",
+                edgeSize = 1,
+                insets = { left = 1, right = 1, top = 1, bottom = 1 }
+            })
+            preview:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
+            
+            -- Set border color based on active theme
+            local theme = self.db.profile.appearance.theme or "thunderstorm"
+            local borderColor = {r=0.05, g=0.62, b=0.9, a=1} -- Default Thunder Storm
+            
+            if theme == "phoenixflame" then
+                borderColor = {r=0.9, g=0.3, b=0.05, a=1}
+            elseif theme == "arcanemystic" then
+                borderColor = {r=0.61, g=0.05, b=0.9, a=1}
+            elseif theme == "felenergy" then
+                borderColor = {r=0.1, g=1.0, b=0.1, a=1}
+            end
+            
+            preview:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
+            
+            -- Statusbar texture sample
+            preview.bar = CreateFrame("StatusBar", nil, preview)
+            preview.bar:SetPoint("TOPLEFT", 5, -5)
+            preview.bar:SetPoint("BOTTOMRIGHT", -5, 5)
+            preview.bar:SetStatusBarTexture("Interface\\AddOns\\VUI\\media\\textures\\common\\" .. statusbar.texture)
+            preview.bar:SetStatusBarColor(borderColor.r, borderColor.g, borderColor.b, 1)
+            preview.bar:SetMinMaxValues(0, 100)
+            preview.bar:SetValue(75)
+            
+            -- Statusbar name
+            preview.name = statusbarSection:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            preview.name:SetPoint("TOP", preview, "BOTTOM", 0, -5)
+            preview.name:SetText(statusbar.name)
+            preview.name:SetTextColor(0.9, 0.9, 0.9)
+            
+            -- Active statusbar indicator
+            if statusbar.value == activeStatusbar then
+                preview.activeIndicator = preview:CreateTexture(nil, "OVERLAY")
+                preview.activeIndicator:SetSize(16, 16)
+                preview.activeIndicator:SetPoint("TOPRIGHT", -2, -2)
+                preview.activeIndicator:SetTexture("Interface\\RAIDFRAME\\ReadyCheck-Ready")
+            end
+            
+            -- Highlight on mouseover
+            preview.highlightTexture = preview:CreateTexture(nil, "HIGHLIGHT")
+            preview.highlightTexture:SetAllPoints()
+            preview.highlightTexture:SetColorTexture(1, 1, 1, 0.1)
+            preview:SetHighlightTexture(preview.highlightTexture)
+            
+            -- Set click handler
+            preview:SetScript("OnClick", function()
+                -- Remove active indicator from previous active statusbar
+                for _, otherPreview in ipairs(statusbarSection.previews or {}) do
+                    if otherPreview.activeIndicator then
+                        otherPreview.activeIndicator:Hide()
+                        otherPreview.activeIndicator = nil
+                    end
+                end
+                
+                -- Set active indicator on this statusbar
+                if not preview.activeIndicator then
+                    preview.activeIndicator = preview:CreateTexture(nil, "OVERLAY")
+                    preview.activeIndicator:SetSize(16, 16)
+                    preview.activeIndicator:SetPoint("TOPRIGHT", -2, -2)
+                    preview.activeIndicator:SetTexture("Interface\\RAIDFRAME\\ReadyCheck-Ready")
+                end
+                
+                -- Apply the statusbar
+                self.db.profile.appearance.statusbarTexture = statusbar.value
+                self:ApplySettings()
+            end)
+            
+            -- Store for later reference
+            statusbarSection.previews = statusbarSection.previews or {}
+            statusbarSection.previews[i] = preview
+        end
+        
+        -- Additional appearance options
+        local optionsSection = CreateFrame("Frame", nil, content)
+        optionsSection:SetSize(content:GetWidth() - 40, 180)
+        optionsSection:SetPoint("TOPLEFT", statusbarSection, "BOTTOMLEFT", 0, -40)
+        
+        -- Options section title
+        optionsSection.title = optionsSection:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        optionsSection.title:SetPoint("TOPLEFT", 0, 0)
+        optionsSection.title:SetText(self.configFrame.themeData.headerColor .. "Additional Options|r")
+        
+        -- UI scale option
+        local scaleLabel = optionsSection:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        scaleLabel:SetPoint("TOPLEFT", 20, -40)
+        scaleLabel:SetText("UI Scale:")
+        scaleLabel:SetTextColor(0.9, 0.9, 0.9)
+        
+        local scaleSlider = CreateFrame("Slider", nil, optionsSection, "OptionsSliderTemplate")
+        scaleSlider:SetWidth(200)
+        scaleSlider:SetHeight(16)
+        scaleSlider:SetPoint("LEFT", scaleLabel, "RIGHT", 20, 0)
+        scaleSlider:SetMinMaxValues(0.5, 1.5)
+        scaleSlider:SetValueStep(0.05)
+        scaleSlider:SetValue(self.db.profile.appearance.scale or 1.0)
+        
+        _G[scaleSlider:GetName() .. "Low"]:SetText("0.5")
+        _G[scaleSlider:GetName() .. "High"]:SetText("1.5")
+        _G[scaleSlider:GetName() .. "Text"]:SetText(scaleSlider:GetValue())
+        
+        -- Theme the slider based on current theme
+        scaleSlider:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
+        local thumbTexture = scaleSlider:GetThumbTexture()
+        thumbTexture:SetVertexColor(
+            self.configFrame.themeData.borderColor.r,
+            self.configFrame.themeData.borderColor.g,
+            self.configFrame.themeData.borderColor.b,
+            1
+        )
+        
+        scaleSlider:SetScript("OnValueChanged", function(self, value)
+            value = math.floor(value * 100 + 0.5) / 100 -- Round to 2 decimal places
+            _G[self:GetName() .. "Text"]:SetText(value)
+            VUI.db.profile.appearance.scale = value
+            
+            -- Apply the scale change
+            VUI:ApplySettings()
+        end)
+        
+        -- Toggle for compact mode
+        local compactModeCheckbox = CreateFrame("CheckButton", nil, optionsSection, "UICheckButtonTemplate")
+        compactModeCheckbox:SetSize(26, 26)
+        compactModeCheckbox:SetPoint("TOPLEFT", 20, -80)
+        
+        -- Theme the checkbox
+        compactModeCheckbox:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
+        local checkedTexture = compactModeCheckbox:GetCheckedTexture()
+        checkedTexture:SetVertexColor(
+            self.configFrame.themeData.borderColor.r,
+            self.configFrame.themeData.borderColor.g,
+            self.configFrame.themeData.borderColor.b,
+            1
+        )
+        
+        -- Set checkbox state and handler
+        compactModeCheckbox:SetChecked(self.db.profile.appearance.compactMode or false)
+        compactModeCheckbox:SetScript("OnClick", function(checkbox)
+            local isChecked = checkbox:GetChecked()
+            self.db.profile.appearance.compactMode = isChecked
+            self:ApplySettings()
+        end)
+        
+        -- Checkbox label
+        local compactModeLabel = optionsSection:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        compactModeLabel:SetPoint("LEFT", compactModeCheckbox, "RIGHT", 5, 0)
+        compactModeLabel:SetText("Compact Mode - Use smaller UI elements for a more minimalist interface")
+        compactModeLabel:SetTextColor(0.9, 0.9, 0.9)
+        
+        -- Toggle for class-colored borders
+        local classColorCheckbox = CreateFrame("CheckButton", nil, optionsSection, "UICheckButtonTemplate")
+        classColorCheckbox:SetSize(26, 26)
+        classColorCheckbox:SetPoint("TOPLEFT", 20, -110)
+        
+        -- Theme the checkbox
+        classColorCheckbox:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
+        local classColorCheckedTexture = classColorCheckbox:GetCheckedTexture()
+        classColorCheckedTexture:SetVertexColor(
+            self.configFrame.themeData.borderColor.r,
+            self.configFrame.themeData.borderColor.g,
+            self.configFrame.themeData.borderColor.b,
+            1
+        )
+        
+        -- Set checkbox state and handler
+        classColorCheckbox:SetChecked(self.db.profile.appearance.useClassColors or false)
+        classColorCheckbox:SetScript("OnClick", function(checkbox)
+            local isChecked = checkbox:GetChecked()
+            self.db.profile.appearance.useClassColors = isChecked
+            self:ApplySettings()
+        end)
+        
+        -- Checkbox label
+        local classColorLabel = optionsSection:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        classColorLabel:SetPoint("LEFT", classColorCheckbox, "RIGHT", 5, 0)
+        classColorLabel:SetText("Use Class Colors - Border and accent colors will be based on your character's class")
+        classColorLabel:SetTextColor(0.9, 0.9, 0.9)
+        
+        -- Toggle for animations
+        local animationsCheckbox = CreateFrame("CheckButton", nil, optionsSection, "UICheckButtonTemplate")
+        animationsCheckbox:SetSize(26, 26)
+        animationsCheckbox:SetPoint("TOPLEFT", 20, -140)
+        
+        -- Theme the checkbox
+        animationsCheckbox:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
+        local animationsCheckedTexture = animationsCheckbox:GetCheckedTexture()
+        animationsCheckedTexture:SetVertexColor(
+            self.configFrame.themeData.borderColor.r,
+            self.configFrame.themeData.borderColor.g,
+            self.configFrame.themeData.borderColor.b,
+            1
+        )
+        
+        -- Set checkbox state and handler
+        animationsCheckbox:SetChecked(self.db.profile.appearance.enableAnimations or true)
+        animationsCheckbox:SetScript("OnClick", function(checkbox)
+            local isChecked = checkbox:GetChecked()
+            self.db.profile.appearance.enableAnimations = isChecked
+            self:ApplySettings()
+        end)
+        
+        -- Checkbox label
+        local animationsLabel = optionsSection:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        animationsLabel:SetPoint("LEFT", animationsCheckbox, "RIGHT", 5, 0)
+        animationsLabel:SetText("Enable Animations - Use animated effects for a more dynamic interface")
+        animationsLabel:SetTextColor(0.9, 0.9, 0.9)
+        
+        -- Set content height to accommodate all sections
+        content:SetHeight(700)
+        
+        -- Store the section
         self.configFrame.sections.Appearance = frame
     end
 end

@@ -29,6 +29,10 @@ VUI.defaults = {
             borderColor = {r = 0.05, g = 0.62, b = 0.9, a = 1}, -- Electric blue borders for Thunder Storm
             classColoredBorders = true,
             useClassColors = true,
+            statusbarTexture = "smooth", -- Default statusbar texture
+            scale = 1.0, -- UI scale
+            compactMode = false, -- Use smaller UI elements
+            enableAnimations = true, -- Use animated effects
         },
         
         -- Dashboard settings
