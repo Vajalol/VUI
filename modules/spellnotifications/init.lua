@@ -13,11 +13,6 @@ function SN:Initialize()
     
     -- Register with VUI's module system
     VUI:RegisterModule("SpellNotifications", self)
-    
-    -- Register with GUI config panel
-    VUI.Options:RegisterModuleOptions("SpellNotifications", function(container)
-        return self:CreateConfigPanel(container)
-    end)
 end
 
 -- TableContains helper function

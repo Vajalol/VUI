@@ -74,8 +74,8 @@ function SN:InitializeSoundPaths()
     end
 end
 
--- Create config panel
-function SN:CreateConfigPanel(parentFrame)
+-- Create config options (standard VUI pattern for module configuration)
+function SN:CreateConfigOptions(parentFrame)
     local AceGUI = LibStub("AceGUI-3.0")
     
     -- Main container

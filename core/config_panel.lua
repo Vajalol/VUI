@@ -501,7 +501,7 @@ function VUI:CreateEnhancedModulesSection()
         
         -- Create a module category system
         local categories = {
-            { name = "Core Addons", modules = {"buffoverlay", "trufigcd", "moveany", "auctionator", "angrykeystone", "omnicc", "omnicd", "idtip", "premadegroupfinder"} },
+            { name = "Core Addons", modules = {"buffoverlay", "trufigcd", "moveany", "auctionator", "angrykeystone", "omnicc", "omnicd", "idtip", "premadegroupfinder", "spellnotifications"} },
             { name = "Interface Enhancements", modules = {"bags", "paperdoll", "actionbars"} },
             { name = "Visual & Performance", modules = {"unitframes", "skins"} }
         }
