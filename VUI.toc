@@ -2,9 +2,12 @@
 ## Title: |cff1784d1VUI|r
 ## Notes: A unified addon suite combining multiple popular addons with centralized configuration
 ## Author: VortexQ8
-## Version: 0.0.1
+## Version: 0.1.0
 ## SavedVariables: VUIDB, VUICharacterDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0
+## X-Website: https://github.com/VortexQ8/VUI
+## X-Curse-Project-ID: 123456
+## X-WoWI-ID: 12345
 
 # Main addon file
 init.lua
