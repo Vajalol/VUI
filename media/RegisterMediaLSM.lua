@@ -40,15 +40,15 @@ LSM:Register("statusbar", "VUI Gloss", [[Interface\Addons\VUI\media\textures\com
 LSM:Register("statusbar", "VUI Smooth", [[Interface\Addons\VUI\media\textures\common\statusbar-smooth.blp]])
 
 -- Also register SUI media for backward compatibility
-LSM:Register("statusbar", "Flat", [[Interface\Addons\VUI\media\Textures\Status\Flat.blp]])
-LSM:Register("statusbar", "Melli", [[Interface\Addons\VUI\media\Textures\Status\Melli.tga]])
-LSM:Register("statusbar", "Melli 6px", [[Interface\Addons\VUI\media\Textures\Status\Melli6px.tga]])
-LSM:Register("statusbar", "Melli Dark", [[Interface\Addons\VUI\media\Textures\Status\MelliDark.tga]])
-LSM:Register("statusbar", "Melli Dark Rough", [[Interface\Addons\VUI\media\Textures\Status\MelliDarkRough.tga]])
-LSM:Register("statusbar", "Minimalist", [[Interface\Addons\VUI\media\Textures\Status\Minimalist.tga]])
-LSM:Register("statusbar", "Smooth", [[Interface\Addons\VUI\media\Textures\Status\Smooth.blp]])
-LSM:Register("statusbar", "Smooth v2", [[Interface\Addons\VUI\media\Textures\Status\Smoothv2.tga]])
-LSM:Register("statusbar", "Dragonflight", [[Interface\Addons\VUI\media\Textures\Status\DragonflightTexture.tga]])
+LSM:Register("statusbar", "Flat", [[Interface\Addons\VUI\media\textures\status\Flat.blp]])
+LSM:Register("statusbar", "Melli", [[Interface\Addons\VUI\media\textures\status\Melli.tga]])
+LSM:Register("statusbar", "Melli 6px", [[Interface\Addons\VUI\media\textures\status\Melli6px.tga]])
+LSM:Register("statusbar", "Melli Dark", [[Interface\Addons\VUI\media\textures\status\MelliDark.tga]])
+LSM:Register("statusbar", "Melli Dark Rough", [[Interface\Addons\VUI\media\textures\status\MelliDarkRough.tga]])
+LSM:Register("statusbar", "Minimalist", [[Interface\Addons\VUI\media\textures\status\Minimalist.tga]])
+LSM:Register("statusbar", "Smooth", [[Interface\Addons\VUI\media\textures\status\Smooth.blp]])
+LSM:Register("statusbar", "Smooth v2", [[Interface\Addons\VUI\media\textures\status\Smoothv2.tga]])
+LSM:Register("statusbar", "Dragonflight", [[Interface\Addons\VUI\media\textures\status\DragonflightTexture.tga]])
 
 -- -----
 --   THEME TEXTURES

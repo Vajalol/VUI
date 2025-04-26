@@ -50,7 +50,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
     
     castbar.backdrop:SetBackdrop({
         bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\border.tga",
+        edgeFile = "Interface\\Addons\\VUI\\media\\textures\\themes\\thunderstorm\\border.tga",
         tile = true, tileSize = 16, edgeSize = 8,
         insets = { left = 2, right = 2, top = 2, bottom = 2 }
     })
@@ -58,7 +58,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
     castbar.backdrop:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
     
     -- Style the castbar itself
-    castbar:SetStatusBarTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\statusbar.tga")
+    castbar:SetStatusBarTexture("Interface\\Addons\\VUI\\media\\textures\\themes\\thunderstorm\\statusbar.blp")
     castbar:SetStatusBarColor(barColor.r, barColor.g, barColor.b, barColor.a)
     
     -- Add a subtle lightning effect
@@ -66,7 +66,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
         castbar.lightning = castbar:CreateTexture(nil, "OVERLAY")
         castbar.lightning:SetPoint("TOPLEFT", castbar, "TOPLEFT", 0, 0)
         castbar.lightning:SetPoint("BOTTOMRIGHT", castbar, "BOTTOMRIGHT", 0, 0)
-        castbar.lightning:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\lightning_overlay.tga")
+        castbar.lightning:SetTexture("Interface\\Addons\\VUI\\media\\textures\\themes\\thunderstorm\\lightning_overlay.tga")
         castbar.lightning:SetBlendMode("ADD")
         castbar.lightning:SetAlpha(0.1)
     end
@@ -93,7 +93,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
     
     -- Style the text
     if castbar.Text then
-        castbar.Text:SetFont("Interface\\AddOns\\VUI\\media\\fonts\\expressway.ttf", 10, "OUTLINE")
+        castbar.Text:SetFont("Interface\\Addons\\VUI\\media\\Fonts\\expressway.ttf", 10, "OUTLINE")
         castbar.Text:SetTextColor(1, 1, 1)
         castbar.Text:SetShadowOffset(1, -1)
         castbar.Text:SetShadowColor(0, 0, 0, 1)
@@ -101,7 +101,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
     
     -- Style timer text
     if castbar.Timer then
-        castbar.Timer:SetFont("Interface\\AddOns\\VUI\\media\\fonts\\expressway.ttf", 10, "OUTLINE")
+        castbar.Timer:SetFont("Interface\\Addons\\VUI\\media\\Fonts\\expressway.ttf", 10, "OUTLINE")
         castbar.Timer:SetTextColor(1, 1, 1)
         castbar.Timer:SetShadowOffset(1, -1)
         castbar.Timer:SetShadowColor(0, 0, 0, 1)
@@ -118,7 +118,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
         end
         
         castbar.Icon.backdrop:SetBackdrop({
-            edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\border.tga",
+            edgeFile = "Interface\\Addons\\VUI\\media\\textures\\themes\\thunderstorm\\border.tga",
             edgeSize = 8,
             insets = { left = 2, right = 2, top = 2, bottom = 2 }
         })
@@ -133,14 +133,14 @@ local function ApplyThunderStormTheme(castbar, unitID)
         
         -- Create the latency texture
         local latencyTexture = latencyFrame:CreateTexture(nil, "OVERLAY")
-        latencyTexture:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\statusbar.tga")
+        latencyTexture:SetTexture("Interface\\Addons\\VUI\\media\\textures\\themes\\thunderstorm\\statusbar.blp")
         latencyTexture:SetVertexColor(1, 0, 0, 0.5) -- Red with 50% transparency
         latencyTexture:SetAllPoints(latencyFrame)
         latencyFrame.texture = latencyTexture
         
         -- Create the latency text
         local latencyText = latencyFrame:CreateFontString(nil, "OVERLAY")
-        latencyText:SetFont("Interface\\AddOns\\VUI\\media\\fonts\\expressway.ttf", 9, "OUTLINE")
+        latencyText:SetFont("Interface\\Addons\\VUI\\media\\Fonts\\expressway.ttf", 9, "OUTLINE")
         latencyText:SetTextColor(1, 0.8, 0.8, 1)
         latencyText:SetPoint("LEFT", castbar, "LEFT", 5, 0)
         latencyText:SetJustifyH("LEFT")
@@ -157,7 +157,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
         targetNameFrame:SetAllPoints(castbar)
         
         local targetNameText = targetNameFrame:CreateFontString(nil, "OVERLAY")
-        targetNameText:SetFont("Interface\\AddOns\\VUI\\media\\fonts\\expressway.ttf", 9, "OUTLINE")
+        targetNameText:SetFont("Interface\\Addons\\VUI\\media\\Fonts\\expressway.ttf", 9, "OUTLINE")
         targetNameText:SetTextColor(0.8, 1, 0.8, 1) -- Light green
         targetNameText:SetPoint("RIGHT", castbar, "RIGHT", -5, 0)
         targetNameText:SetJustifyH("RIGHT")
@@ -173,7 +173,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
         castTimeFrame:SetAllPoints(castbar)
         
         local castTimeText = castTimeFrame:CreateFontString(nil, "OVERLAY")
-        castTimeText:SetFont("Interface\\AddOns\\VUI\\media\\fonts\\expressway.ttf", 9, "OUTLINE")
+        castTimeText:SetFont("Interface\\Addons\\VUI\\media\\Fonts\\expressway.ttf", 9, "OUTLINE")
         castTimeText:SetTextColor(1, 1, 1, 1)
         castTimeText:SetPoint("RIGHT", castbar, "RIGHT", -5, 0)
         castTimeText:SetJustifyH("RIGHT")
@@ -209,7 +209,7 @@ local function ApplyThunderStormTheme(castbar, unitID)
         iconBorder:SetPoint("BOTTOMRIGHT", spellIconFrame, "BOTTOMRIGHT", 2, -2)
         
         iconBorder:SetBackdrop({
-            edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\border.tga",
+            edgeFile = "Interface\\Addons\\VUI\\media\\textures\\themes\\thunderstorm\\border.tga",
             edgeSize = 8,
             insets = { left = 2, right = 2, top = 2, bottom = 2 }
         })

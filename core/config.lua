@@ -1275,7 +1275,7 @@ function VUI:CreateAboutSection()
         frame.logo = frame:CreateTexture(nil, "ARTWORK")
         frame.logo:SetSize(64, 64)
         frame.logo:SetPoint("TOPRIGHT", -20, -20)
-        frame.logo:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\logo.tga")
+        frame.logo:SetTexture("Interface\\Addons\\VUI\\media\\textures\\common\\logo.tga")
         
         -- Version
         frame.version = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -1485,7 +1485,7 @@ function VUI:InitializeConfig()
             local launcher = LDB:NewDataObject("VUI", {
                 type = "launcher",
                 text = "VUI",
-                icon = "Interface\\AddOns\\VUI\\media\\textures\\logo.tga",
+                icon = "Interface\\Addons\\VUI\\media\\textures\\common\\logo.tga",
                 OnClick = function(_, button)
                     if button == "LeftButton" then
                         self:CreateConfigPanel()

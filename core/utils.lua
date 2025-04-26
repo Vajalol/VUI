@@ -194,23 +194,23 @@ function VUI.Utils:GetStatusBarTexture()
     if style == "theme" then
         -- Use the theme-specific statusbar texture
         if theme == "thunderstorm" then
-            return "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\statusbar.blp"
+            return "Interface\\Addons\\VUI\\media\\textures\\themes\\thunderstorm\\statusbar.blp"
         elseif theme == "phoenixflame" then
-            return "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\statusbar.blp"
+            return "Interface\\Addons\\VUI\\media\\textures\\themes\\phoenixflame\\statusbar.blp"
         elseif theme == "arcanemystic" then
-            return "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\statusbar.blp"
+            return "Interface\\Addons\\VUI\\media\\textures\\themes\\arcanemystic\\statusbar.blp"
         elseif theme == "felenergy" then
-            return "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\statusbar.blp"
+            return "Interface\\Addons\\VUI\\media\\textures\\themes\\felenergy\\statusbar.blp"
         end
     end
     
     -- Return standard statusbar textures
     if style == "flat" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-flat.blp"
+        return "Interface\\Addons\\VUI\\media\\textures\\common\\statusbar-flat.blp"
     elseif style == "gloss" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-gloss.tga"
+        return "Interface\\Addons\\VUI\\media\\textures\\common\\statusbar-gloss.tga"
     else -- smooth
-        return "Interface\\AddOns\\VUI\\media\\textures\\common\\statusbar-smooth.blp"
+        return "Interface\\Addons\\VUI\\media\\textures\\common\\statusbar-smooth.blp"
     end
 end
 
