@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="256" height="32" viewBox="0 0 256 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="32" fill="#00FF00" fill-opacity="0.2"/>
+  <path d="M128 0L136 8L144 0L136 16L144 32L136 24L128 32L136 16L128 0Z" fill="#00FF00" fill-opacity="0.9"/>
+  <path d="M106 6L114 14L122 6L114 16L122 26L114 18L106 26L114 16L106 6Z" fill="#00FF00" fill-opacity="0.7"/>
+  <path d="M150 6L158 14L166 6L158 16L166 26L158 18L150 26L158 16L150 6Z" fill="#00FF00" fill-opacity="0.7"/>
+  <path d="M84 10L92 18L100 10L92 16L100 22L92 14L84 22L92 16L84 10Z" fill="#00FF00" fill-opacity="0.5"/>
+  <path d="M172 10L180 18L188 10L180 16L188 22L180 14L172 22L180 16L172 10Z" fill="#00FF00" fill-opacity="0.5"/>
+  <path d="M62 12L70 20L78 12L70 16L78 20L70 12L62 20L70 16L62 12Z" fill="#00FF00" fill-opacity="0.3"/>
+  <path d="M194 12L202 20L210 12L202 16L210 20L202 12L194 20L202 16L194 12Z" fill="#00FF00" fill-opacity="0.3"/>
+</svg>

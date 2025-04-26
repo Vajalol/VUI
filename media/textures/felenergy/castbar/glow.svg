@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="256" height="32" viewBox="0 0 256 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="32" rx="4" fill="#00FF00" fill-opacity="0.1"/>
+  <rect x="2" y="2" width="252" height="28" rx="2" stroke="#00FF00" stroke-width="1" stroke-opacity="0.3" fill="none"/>
+  <rect x="4" y="4" width="248" height="24" rx="1" fill="#00FF00" fill-opacity="0.05"/>
+  <path d="M16 4L12 28M32 4L28 28M48 4L44 28M64 4L60 28M80 4L76 28M96 4L92 28M112 4L108 28M128 4L124 28M144 4L140 28M160 4L156 28M176 4L172 28M192 4L188 28M208 4L204 28M224 4L220 28M240 4L236 28" stroke="#00FF00" stroke-opacity="0.2"/>
+</svg>

@@ -171,6 +171,25 @@ function BuffOverlay:Initialize()
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_TARGET_CHANGED")
     self:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    
+    -- Register for theme changes
+    VUI.RegisterCallback(self, "ThemeChanged", "ApplyTheme")
+end
+
+-- Apply theme to all buff frames
+function BuffOverlay:ApplyTheme(theme)
+    -- If theme not provided, get it from the current profile
+    theme = theme or VUI.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Apply theme to existing frames
+    for _, frame in pairs(self.frames) do
+        self:ApplyThemeToBuffFrame(frame)
+    end
+    
+    -- Update visual effects for active buffs
+    self:UpdateAuras("player")
+    if UnitExists("target") then self:UpdateAuras("target") end
+    if UnitExists("focus") then self:UpdateAuras("focus") end
 end
 
 -- Create the anchor frame for positioning
@@ -267,6 +286,20 @@ function BuffOverlay:CreateBuffFrame(index)
     frame.border:SetTexCoord(0.296875, 0.5703125, 0, 0.515625)
     frame.border:SetVertexColor(1, 0, 0, 1) -- Default red border
     
+    -- Glow overlay for theme effects
+    frame.glow = frame:CreateTexture(nil, "OVERLAY")
+    frame.glow:SetPoint("TOPLEFT", frame, "TOPLEFT", -3, 3)
+    frame.glow:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 3, -3)
+    frame.glow:SetTexture("Interface\\Buttons\\UI-Panel-Button-Glow")
+    frame.glow:SetBlendMode("ADD")
+    frame.glow:SetAlpha(0)
+    
+    -- Theme-specific overlay texture
+    frame.themeOverlay = frame:CreateTexture(nil, "OVERLAY")
+    frame.themeOverlay:SetAllPoints(frame.icon)
+    frame.themeOverlay:SetBlendMode("ADD")
+    frame.themeOverlay:SetAlpha(0)
+    
     -- Cooldown swipe
     frame.cooldown = CreateFrame("Cooldown", frame:GetName() .. "Cooldown", frame, "CooldownFrameTemplate")
     frame.cooldown:SetHideCountdownNumbers(not VUI.db.profile.modules.buffoverlay.showTimer)
@@ -277,6 +310,9 @@ function BuffOverlay:CreateBuffFrame(index)
     frame.count:SetFont(VUI:GetFont(VUI.db.profile.appearance.font), VUI.db.profile.appearance.fontSize, "OUTLINE")
     frame.count:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
     
+    -- Create animation containers
+    frame.animations = {}
+    
     -- Set up tooltip display if enabled
     if VUI.db.profile.modules.buffoverlay.showTooltip then
         frame:SetScript("OnEnter", function(self)
@@ -284,15 +320,329 @@ function BuffOverlay:CreateBuffFrame(index)
                 GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
                 GameTooltip:SetSpellByID(self.spellID)
                 GameTooltip:Show()
+                
+                -- Play hover animation
+                if self.animations.hoverAnimation then
+                    self.animations.hoverAnimation:Play()
+                end
             end
         end)
         
-        frame:SetScript("OnLeave", function()
+        frame:SetScript("OnLeave", function(self)
             GameTooltip:Hide()
+            
+            -- Stop hover animation
+            if self.animations.hoverAnimation and self.animations.hoverAnimation:IsPlaying() then
+                self.animations.hoverAnimation:Stop()
+                
+                -- Reset glow alpha
+                self.glow:SetAlpha(0)
+            end
         end)
     end
     
+    -- Apply theme-specific visuals
+    self:ApplyThemeToBuffFrame(frame)
+    
     return frame
+end
+
+-- Apply theme-specific visuals and animations to buff frame
+function BuffOverlay:ApplyThemeToBuffFrame(frame)
+    -- Clear existing animations
+    if frame.animations then
+        for _, anim in pairs(frame.animations) do
+            if anim and anim:IsPlaying() then
+                anim:Stop()
+            end
+        end
+    end
+    
+    frame.animations = {}
+    
+    -- Get current theme
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Set theme-specific textures and visuals
+    if theme == "phoenixflame" then
+        -- Phoenix Flame theme
+        frame.themeOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\phoenixflame\\flame.tga")
+        frame.themeOverlay:SetVertexColor(1.0, 0.5, 0.0) -- Orange-red
+        frame.glow:SetVertexColor(1.0, 0.4, 0.0) -- Orange-red
+        
+        -- Create hover animation
+        local hoverAnim = frame:CreateAnimationGroup()
+        hoverAnim:SetLooping("NONE")
+        
+        local glowIn = hoverAnim:CreateAnimation("Alpha")
+        glowIn:SetTarget(frame.glow)
+        glowIn:SetFromAlpha(0)
+        glowIn:SetToAlpha(0.7)
+        glowIn:SetDuration(0.3)
+        glowIn:SetOrder(1)
+        
+        frame.animations.hoverAnimation = hoverAnim
+        
+        -- Create appear animation
+        local appearAnim = frame:CreateAnimationGroup()
+        appearAnim:SetLooping("NONE")
+        
+        local fadeIn = appearAnim:CreateAnimation("Alpha")
+        fadeIn:SetFromAlpha(0)
+        fadeIn:SetToAlpha(1)
+        fadeIn:SetDuration(0.3)
+        fadeIn:SetOrder(1)
+        
+        local scaleUp = appearAnim:CreateAnimation("Scale")
+        scaleUp:SetFromScale(0.8, 0.8)
+        scaleUp:SetToScale(1.1, 1.1)
+        scaleUp:SetDuration(0.2)
+        scaleUp:SetOrder(1)
+        
+        local scaleDown = appearAnim:CreateAnimation("Scale")
+        scaleDown:SetFromScale(1.1, 1.1)
+        scaleDown:SetToScale(1.0, 1.0)
+        scaleDown:SetDuration(0.1)
+        scaleDown:SetOrder(2)
+        
+        frame.animations.appearAnimation = appearAnim
+        
+        -- Create theme-specific pulse animation
+        local themePulse = frame:CreateAnimationGroup()
+        themePulse:SetLooping("REPEAT")
+        
+        local pulseStart = themePulse:CreateAnimation("Alpha")
+        pulseStart:SetTarget(frame.themeOverlay)
+        pulseStart:SetFromAlpha(0)
+        pulseStart:SetToAlpha(0.3)
+        pulseStart:SetDuration(1.0)
+        pulseStart:SetSmoothing("IN")
+        pulseStart:SetOrder(1)
+        
+        local pulseEnd = themePulse:CreateAnimation("Alpha")
+        pulseEnd:SetTarget(frame.themeOverlay)
+        pulseEnd:SetFromAlpha(0.3)
+        pulseEnd:SetToAlpha(0)
+        pulseEnd:SetDuration(1.0)
+        pulseEnd:SetSmoothing("OUT")
+        pulseEnd:SetOrder(2)
+        
+        frame.animations.themeAnimation = themePulse
+        
+    elseif theme == "thunderstorm" then
+        -- Thunder Storm theme
+        frame.themeOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\animation\\lightning1.tga")
+        frame.themeOverlay:SetVertexColor(0.3, 0.6, 1.0) -- Blue
+        frame.glow:SetVertexColor(0.3, 0.6, 1.0) -- Blue
+        
+        -- Create hover animation
+        local hoverAnim = frame:CreateAnimationGroup()
+        hoverAnim:SetLooping("NONE")
+        
+        local glowIn = hoverAnim:CreateAnimation("Alpha")
+        glowIn:SetTarget(frame.glow)
+        glowIn:SetFromAlpha(0)
+        glowIn:SetToAlpha(0.6)
+        glowIn:SetDuration(0.3)
+        glowIn:SetOrder(1)
+        
+        frame.animations.hoverAnimation = hoverAnim
+        
+        -- Create appear animation
+        local appearAnim = frame:CreateAnimationGroup()
+        appearAnim:SetLooping("NONE")
+        
+        local fadeIn = appearAnim:CreateAnimation("Alpha")
+        fadeIn:SetFromAlpha(0)
+        fadeIn:SetToAlpha(1)
+        fadeIn:SetDuration(0.2)
+        fadeIn:SetSmoothing("OUT")
+        fadeIn:SetOrder(1)
+        
+        local lightningFlash = appearAnim:CreateAnimation("Alpha")
+        lightningFlash:SetTarget(frame.themeOverlay)
+        lightningFlash:SetFromAlpha(0)
+        lightningFlash:SetToAlpha(0.7)
+        lightningFlash:SetDuration(0.1)
+        lightningFlash:SetOrder(1)
+        
+        local lightningFade = appearAnim:CreateAnimation("Alpha")
+        lightningFade:SetTarget(frame.themeOverlay)
+        lightningFade:SetFromAlpha(0.7)
+        lightningFade:SetToAlpha(0)
+        lightningFade:SetDuration(0.3)
+        lightningFade:SetOrder(2)
+        
+        frame.animations.appearAnimation = appearAnim
+        
+        -- Create theme-specific pulse animation - occasional lightning flashes
+        local themePulse = frame:CreateAnimationGroup()
+        themePulse:SetLooping("REPEAT")
+        
+        local flashWait = themePulse:CreateAnimation("Alpha")
+        flashWait:SetTarget(frame.themeOverlay)
+        flashWait:SetFromAlpha(0)
+        flashWait:SetToAlpha(0)
+        flashWait:SetDuration(3 + math.random() * 5) -- Random delay
+        flashWait:SetOrder(1)
+        
+        local flashIn = themePulse:CreateAnimation("Alpha")
+        flashIn:SetTarget(frame.themeOverlay)
+        flashIn:SetFromAlpha(0)
+        flashIn:SetToAlpha(0.5)
+        flashIn:SetDuration(0.1)
+        flashIn:SetOrder(2)
+        
+        local flashOut = themePulse:CreateAnimation("Alpha")
+        flashOut:SetTarget(frame.themeOverlay)
+        flashOut:SetFromAlpha(0.5)
+        flashOut:SetToAlpha(0)
+        flashOut:SetDuration(0.2)
+        flashOut:SetOrder(3)
+        
+        frame.animations.themeAnimation = themePulse
+        
+    elseif theme == "arcanemystic" then
+        -- Arcane Mystic theme
+        frame.themeOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\arcanemystic\\animation\\arcane1.tga")
+        frame.themeOverlay:SetVertexColor(0.7, 0.3, 1.0) -- Purple
+        frame.glow:SetVertexColor(0.7, 0.3, 1.0) -- Purple
+        
+        -- Create hover animation
+        local hoverAnim = frame:CreateAnimationGroup()
+        hoverAnim:SetLooping("NONE")
+        
+        local glowIn = hoverAnim:CreateAnimation("Alpha")
+        glowIn:SetTarget(frame.glow)
+        glowIn:SetFromAlpha(0)
+        glowIn:SetToAlpha(0.7)
+        glowIn:SetDuration(0.3)
+        glowIn:SetOrder(1)
+        
+        frame.animations.hoverAnimation = hoverAnim
+        
+        -- Create appear animation - arcane flash
+        local appearAnim = frame:CreateAnimationGroup()
+        appearAnim:SetLooping("NONE")
+        
+        local fadeIn = appearAnim:CreateAnimation("Alpha")
+        fadeIn:SetFromAlpha(0)
+        fadeIn:SetToAlpha(1)
+        fadeIn:SetDuration(0.3)
+        fadeIn:SetSmoothing("IN_OUT")
+        fadeIn:SetOrder(1)
+        
+        local arcaneFlash = appearAnim:CreateAnimation("Alpha")
+        arcaneFlash:SetTarget(frame.themeOverlay)
+        arcaneFlash:SetFromAlpha(0)
+        arcaneFlash:SetToAlpha(0.6)
+        arcaneFlash:SetDuration(0.3)
+        arcaneFlash:SetOrder(1)
+        
+        local arcaneFade = appearAnim:CreateAnimation("Alpha")
+        arcaneFade:SetTarget(frame.themeOverlay)
+        arcaneFade:SetFromAlpha(0.6)
+        arcaneFade:SetToAlpha(0.2)
+        arcaneFade:SetDuration(0.5)
+        arcaneFade:SetOrder(2)
+        
+        frame.animations.appearAnimation = appearAnim
+        
+        -- Create theme-specific pulse animation - arcane glow
+        local themePulse = frame:CreateAnimationGroup()
+        themePulse:SetLooping("REPEAT")
+        
+        local pulseIn = themePulse:CreateAnimation("Alpha")
+        pulseIn:SetTarget(frame.themeOverlay)
+        pulseIn:SetFromAlpha(0.1)
+        pulseIn:SetToAlpha(0.3)
+        pulseIn:SetDuration(2.0)
+        pulseIn:SetSmoothing("IN_OUT")
+        pulseIn:SetOrder(1)
+        
+        local pulseOut = themePulse:CreateAnimation("Alpha")
+        pulseOut:SetTarget(frame.themeOverlay)
+        pulseOut:SetFromAlpha(0.3)
+        pulseOut:SetToAlpha(0.1)
+        pulseOut:SetDuration(2.0)
+        pulseOut:SetSmoothing("IN_OUT")
+        pulseOut:SetOrder(2)
+        
+        local rotateAnim = themePulse:CreateAnimation("Rotation")
+        rotateAnim:SetTarget(frame.themeOverlay)
+        rotateAnim:SetDegrees(360)
+        rotateAnim:SetDuration(10.0)
+        rotateAnim:SetOrder(1)
+        
+        frame.animations.themeAnimation = themePulse
+        
+    elseif theme == "felenergy" then
+        -- Fel Energy theme
+        frame.themeOverlay:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\felenergy\\animation\\fel1.tga")
+        frame.themeOverlay:SetVertexColor(0.0, 0.8, 0.0) -- Fel green
+        frame.glow:SetVertexColor(0.0, 0.8, 0.0) -- Fel green
+        
+        -- Create hover animation
+        local hoverAnim = frame:CreateAnimationGroup()
+        hoverAnim:SetLooping("NONE")
+        
+        local glowIn = hoverAnim:CreateAnimation("Alpha")
+        glowIn:SetTarget(frame.glow)
+        glowIn:SetFromAlpha(0)
+        glowIn:SetToAlpha(0.6)
+        glowIn:SetDuration(0.3)
+        glowIn:SetOrder(1)
+        
+        frame.animations.hoverAnimation = hoverAnim
+        
+        -- Create appear animation - fel corruption effect
+        local appearAnim = frame:CreateAnimationGroup()
+        appearAnim:SetLooping("NONE")
+        
+        local fadeIn = appearAnim:CreateAnimation("Alpha")
+        fadeIn:SetFromAlpha(0)
+        fadeIn:SetToAlpha(1)
+        fadeIn:SetDuration(0.4)
+        fadeIn:SetOrder(1)
+        
+        local felFlash = appearAnim:CreateAnimation("Alpha")
+        felFlash:SetTarget(frame.themeOverlay)
+        felFlash:SetFromAlpha(0)
+        felFlash:SetToAlpha(0.7)
+        felFlash:SetDuration(0.3)
+        felFlash:SetOrder(1)
+        
+        local felFade = appearAnim:CreateAnimation("Alpha")
+        felFade:SetTarget(frame.themeOverlay)
+        felFade:SetFromAlpha(0.7)
+        felFade:SetToAlpha(0.2)
+        felFade:SetDuration(0.7)
+        felFade:SetOrder(2)
+        
+        frame.animations.appearAnimation = appearAnim
+        
+        -- Create theme-specific pulse animation - fel corruption
+        local themePulse = frame:CreateAnimationGroup()
+        themePulse:SetLooping("REPEAT")
+        
+        local pulseIn = themePulse:CreateAnimation("Alpha")
+        pulseIn:SetTarget(frame.themeOverlay)
+        pulseIn:SetFromAlpha(0.1)
+        pulseIn:SetToAlpha(0.3)
+        pulseIn:SetDuration(3.0)
+        pulseIn:SetSmoothing("IN_OUT")
+        pulseIn:SetOrder(1)
+        
+        local pulseOut = themePulse:CreateAnimation("Alpha")
+        pulseOut:SetTarget(frame.themeOverlay)
+        pulseOut:SetFromAlpha(0.3)
+        pulseOut:SetToAlpha(0.1)
+        pulseOut:SetDuration(3.0)
+        pulseOut:SetSmoothing("IN_OUT")
+        pulseOut:SetOrder(2)
+        
+        frame.animations.themeAnimation = themePulse
+    end
 end
 
 -- Cache auras for a specific unit to reduce processing load
@@ -393,6 +743,9 @@ end
 
 -- Enhanced visualization for aura frame - adds visual clarity
 function BuffOverlay:EnhanceAuraVisual(frame, aura, config)
+    -- Check if this is a new aura being displayed in this frame
+    local isNew = (frame.spellID ~= aura.spellID)
+    
     -- Set icon and info
     frame.icon:SetTexture(aura.icon)
     frame.spellID = aura.spellID
@@ -410,6 +763,16 @@ function BuffOverlay:EnhanceAuraVisual(frame, aura, config)
         end
     else
         frame.count:Hide()
+    end
+    
+    -- Play appear animation if this is a new aura
+    if isNew and frame.animations and frame.animations.appearAnimation then
+        frame.animations.appearAnimation:Play()
+        
+        -- Start theme animation for ongoing effects
+        if frame.animations.themeAnimation then
+            frame.animations.themeAnimation:Play()
+        end
     end
     
     -- Set cooldown

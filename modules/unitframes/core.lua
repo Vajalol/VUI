@@ -2748,6 +2748,100 @@ function UnitFrames:ApplyThemeBorderEffects(frame, theme)
     frame.borderGlow:SetBlendMode("ADD")
 end
 
+-- Set the combat state for a frame
+function UnitFrames:SetCombatState(frame, inCombat)
+    if not frame then return end
+    
+    -- Get current theme
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Apply theme-specific combat animations if they're not already set up
+    if inCombat and not frame.combatStateAnimation then
+        self:ApplyThemeCombatAnimations(frame, theme)
+    end
+    
+    -- Check again after potentially setting up the animation
+    if not frame.combatStateAnimation then return end
+    
+    if inCombat then
+        -- Enter combat state
+        if not frame.combatStateAnimation:IsPlaying() then
+            frame.combatStateAnimation:Play()
+        end
+        
+        -- Show border glow if it exists with theme-specific effects
+        if frame.borderGlow then
+            frame.borderGlow:SetAlpha(0.6)
+            
+            -- Apply theme-specific border color for combat state
+            if theme == "phoenixflame" then
+                frame.borderGlow:SetVertexColor(1.0, 0.4, 0.0) -- Orange-red
+            elseif theme == "thunderstorm" then
+                frame.borderGlow:SetVertexColor(0.3, 0.6, 1.0) -- Blue
+            elseif theme == "arcanemystic" then
+                frame.borderGlow:SetVertexColor(0.7, 0.3, 1.0) -- Purple
+            elseif theme == "felenergy" then
+                frame.borderGlow:SetVertexColor(0.0, 0.8, 0.0) -- Fel green
+            end
+        end
+        
+        -- Apply theme-specific combat effects to health and power bars
+        if frame.HealthBar and frame.HealthBar.themeAnimation then
+            frame.HealthBar.themeAnimation:Stop()
+        end
+        
+        if frame.PowerBar and frame.PowerBar.themeAnimation then
+            frame.PowerBar.themeAnimation:Stop()
+        end
+        
+        -- Apply theme-specific effects to combat text
+        if frame.CombatText then
+            -- Color the combat text based on theme
+            if theme == "phoenixflame" then
+                frame.CombatText:SetTextColor(1.0, 0.5, 0.0) -- Orange-red
+            elseif theme == "thunderstorm" then
+                frame.CombatText:SetTextColor(0.3, 0.6, 1.0) -- Blue
+            elseif theme == "arcanemystic" then
+                frame.CombatText:SetTextColor(0.7, 0.3, 1.0) -- Purple
+            elseif theme == "felenergy" then
+                frame.CombatText:SetTextColor(0.0, 0.8, 0.0) -- Fel green
+            else
+                frame.CombatText:SetTextColor(1.0, 0.0, 0.0) -- Default red
+            end
+        end
+    else
+        -- Exit combat state
+        if frame.combatStateAnimation:IsPlaying() then
+            frame.combatStateAnimation:Stop()
+        end
+        
+        -- Hide border glow if it exists
+        if frame.borderGlow then
+            frame.borderGlow:SetAlpha(0)
+        end
+        
+        -- Restart non-combat animations if not in combat
+        if not UnitAffectingCombat("player") then
+            if frame.HealthBar and frame.HealthBar.themeAnimation then
+                frame.HealthBar.themeAnimation:Play()
+            end
+            
+            if frame.PowerBar and frame.PowerBar.themeAnimation then
+                frame.PowerBar.themeAnimation:Play()
+            end
+            
+            if frame.Portrait and frame.Portrait.animationGroup then
+                frame.Portrait.animationGroup:Play()
+            end
+        end
+        
+        -- Reset combat text
+        if frame.CombatText then
+            frame.CombatText:SetText("")
+        end
+    end
+end
+
 -- Event handlers
 function UnitFrames:UpdateHealth(unit)
     if not unit then return end

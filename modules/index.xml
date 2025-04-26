@@ -9,6 +9,9 @@
     <!-- Enhanced Action Bars -->
     <Script file="actionbars\core.lua"/>
     
+    <!-- Enhanced Castbar with Animations -->
+    <Include file="castbar\index.xml"/>
+    
     <!-- BuffOverlay Module -->
     <Include file="buffoverlay\index.xml"/>
     
