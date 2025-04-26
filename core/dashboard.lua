@@ -18,7 +18,7 @@ VUI.Dashboard.defaults = {
     showSearchBar = true,
     showPerformanceMonitor = true,
     showQuickButtons = true,
-    theme = "dark", -- dark or light
+    theme = "thunderstorm", -- thunderstorm or light
     compactView = false,
     cardSize = "medium", -- small, medium, large
     activeCategory = "all" -- all, core, ui, tools, addon
@@ -805,13 +805,22 @@ function Dashboard:CreateQuickButtons()
     local themeButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
     themeButton:SetSize(buttonWidth, buttonHeight)
     themeButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
-    themeButton:SetText("Toggle Theme")
+    themeButton:SetText("Cycle Theme")
     themeButton:SetScript("OnClick", function()
-        if VUI.db.profile.dashboard.theme == "dark" then
-            VUI.db.profile.dashboard.theme = "light"
-        else
-            VUI.db.profile.dashboard.theme = "dark"
+        local currentTheme = VUI.db.profile.dashboard.theme
+        local themes = {"thunderstorm", "phoenixflame", "arcanemystic", "felenergy"}
+        local nextIndex = 1
+        
+        -- Find the current theme's index
+        for i, theme in ipairs(themes) do
+            if theme == currentTheme then
+                nextIndex = (i % #themes) + 1
+                break
+            end
         end
+        
+        -- Set the next theme
+        VUI.db.profile.dashboard.theme = themes[nextIndex]
         Dashboard:Refresh()
     end)
     
@@ -1010,7 +1019,7 @@ function Dashboard:Refresh()
     -- Update theme
     local theme = VUI.db.profile.dashboard.theme
     self.panel:SetBackdrop({
-        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\background-" .. theme .. ".tga",
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background.tga",
         edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border-simple.tga",
         tile = false,
         tileSize = 0,

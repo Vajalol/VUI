@@ -1775,7 +1775,7 @@ function UnitFrames:ApplyTheme()
     if not self.frames then return end
     
     -- Get theme colors
-    local theme = VUI.db.profile.appearance.theme or "dark"
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     local themeData = VUI.media and VUI.media.themes and VUI.media.themes[theme]
     
     if not themeData then

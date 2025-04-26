@@ -170,18 +170,18 @@ end
 
 -- Get the backdrop file path based on the current theme
 function VUI.Utils:GetBackdropStyle()
-    local theme = VUI.db.profile.appearance.theme or "dark"
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     
-    if theme == "dark" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\background-dark.tga"
-    elseif theme == "light" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\background-light.tga"
-    elseif theme == "classic" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\background-dark.tga" -- Could be different
-    elseif theme == "minimal" then
-        return "Interface\\AddOns\\VUI\\media\\textures\\background-solid.tga"
+    if theme == "thunderstorm" then
+        return "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\background.tga"
+    elseif theme == "phoenixflame" then
+        return "Interface\\AddOns\\VUI\\media\\textures\\themes\\phoenixflame\\background.tga"
+    elseif theme == "arcanemystic" then
+        return "Interface\\AddOns\\VUI\\media\\textures\\themes\\arcanemystic\\background.tga"
+    elseif theme == "felenergy" then
+        return "Interface\\AddOns\\VUI\\media\\textures\\themes\\felenergy\\background.tga"
     else
-        return "Interface\\AddOns\\VUI\\media\\textures\\background-dark.tga"
+        return "Interface\\AddOns\\VUI\\media\\textures\\themes\\thunderstorm\\background.tga"
     end
 end
 

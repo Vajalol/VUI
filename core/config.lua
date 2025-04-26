@@ -948,11 +948,7 @@ function VUI:CreateAppearanceSection()
             {text = "Thunder Storm", value = "thunderstorm"}, -- Make Thunder Storm first/default
             {text = "Phoenix Flame", value = "phoenixflame"},
             {text = "Arcane Mystic", value = "arcanemystic"},
-            {text = "Fel Energy", value = "felenergy"},
-            {text = "Dark", value = "dark"},
-            {text = "Light", value = "light"},
-            {text = "Classic", value = "classic"},
-            {text = "Minimal", value = "minimal"}
+            {text = "Fel Energy", value = "felenergy"}
         }
         
         frame.themeDropdown.initialize = function(dropdown)
@@ -983,14 +979,6 @@ function VUI:CreateAppearanceSection()
                         -- Fel Energy theme colors
                         VUI.db.profile.appearance.backdropColor = {r = 0.04, g = 0.1, b = 0.04, a = 0.8} -- Dark green
                         VUI.db.profile.appearance.borderColor = {r = 0.1, g = 1.0, b = 0.1, a = 1} -- Fel green
-                    elseif theme.value == "dark" then
-                        -- Default Dark theme colors
-                        VUI.db.profile.appearance.backdropColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8}
-                        VUI.db.profile.appearance.borderColor = {r = 0.3, g = 0.3, b = 0.3, a = 1}
-                    elseif theme.value == "light" then
-                        -- Light theme colors
-                        VUI.db.profile.appearance.backdropColor = {r = 0.8, g = 0.8, b = 0.8, a = 0.8}
-                        VUI.db.profile.appearance.borderColor = {r = 0.5, g = 0.5, b = 0.5, a = 1}
                     end
                     
                     VUI:ApplySettings()

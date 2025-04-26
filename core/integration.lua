@@ -185,7 +185,7 @@ function VUI.Integration:ApplyThemeToModules()
         return
     end
     
-    local theme = VUI.db.profile.appearance.theme or "dark"
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     local themeData = VUI.media.themes[theme]
     
     -- Apply theme to each module

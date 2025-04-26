@@ -152,7 +152,7 @@ function VUI:InitializeUI()
     -- Ensure appearance settings exist
     if not self.db.profile.appearance then
         self.db.profile.appearance = {
-            theme = "dark",
+            theme = "thunderstorm",
             font = "Friz Quadrata TT",
             fontSize = 12,
             border = "thin",

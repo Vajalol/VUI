@@ -1039,7 +1039,7 @@ function PGF:ApplyTheme()
     if not self.enabled then return end
     
     -- Get theme colors
-    local theme = VUI.db.profile.appearance.theme or "dark"
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     local themeData = VUI.media.themes[theme]
     
     if not themeData then return end
@@ -1104,7 +1104,7 @@ function PGF:UpdateButtonStyles()
         if not button then return end
         
         -- Get theme colors
-        local theme = VUI.db.profile.appearance.theme or "dark"
+        local theme = VUI.db.profile.appearance.theme or "thunderstorm"
         local themeData = VUI.media.themes[theme]
         
         if not themeData then return end

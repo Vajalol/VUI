@@ -33,35 +33,35 @@ local COLORS = {
 
 -- Get appropriate theme colors
 function VUI.UI:GetThemeColors()
-    local theme = VUI.db.profile.appearance.theme or "dark"
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     
-    if theme == "dark" then
+    if theme == "thunderstorm" then
         return {
             backdrop = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
             border = {r = 0.4, g = 0.4, b = 0.4, a = 1},
             highlight = {r = 0.3, g = 0.3, b = 0.3, a = 0.5},
             text = {r = 1, g = 1, b = 1, a = 1}
         }
-    elseif theme == "light" then
+    elseif theme == "phoenixflame" then
         return {
-            backdrop = {r = 0.8, g = 0.8, b = 0.8, a = 0.8},
-            border = {r = 0.6, g = 0.6, b = 0.6, a = 1},
-            highlight = {r = 0.7, g = 0.7, b = 0.7, a = 0.5},
-            text = {r = 0.1, g = 0.1, b = 0.1, a = 1}
+            backdrop = {r = 0.1, g = 0.04, b = 0.02, a = 0.8},
+            border = {r = 0.9, g = 0.3, b = 0.05, a = 1},
+            highlight = {r = 1.0, g = 0.64, b = 0.1, a = 0.5},
+            text = {r = 1.0, g = 0.9, b = 0.8, a = 1}
         }
-    elseif theme == "classic" then
+    elseif theme == "arcanemystic" then
         return {
-            backdrop = {r = 0.15, g = 0.15, b = 0.2, a = 0.8},
-            border = {r = 0.6, g = 0.5, b = 0.3, a = 1},
-            highlight = {r = 0.4, g = 0.3, b = 0.2, a = 0.5},
-            text = {r = 0.9, g = 0.8, b = 0.7, a = 1}
+            backdrop = {r = 0.1, g = 0.04, b = 0.18, a = 0.8},
+            border = {r = 0.62, g = 0.05, b = 0.9, a = 1},
+            highlight = {r = 0.7, g = 0.3, b = 0.9, a = 0.5},
+            text = {r = 0.9, g = 0.8, b = 1.0, a = 1}
         }
-    elseif theme == "minimal" then
+    elseif theme == "felenergy" then
         return {
-            backdrop = {r = 0.05, g = 0.05, b = 0.05, a = 0.5},
-            border = {r = 0.3, g = 0.3, b = 0.3, a = 0.7},
-            highlight = {r = 0.2, g = 0.2, b = 0.2, a = 0.3},
-            text = {r = 1, g = 1, b = 1, a = 1}
+            backdrop = {r = 0.04, g = 0.1, b = 0.04, a = 0.8},
+            border = {r = 0.1, g = 1.0, b = 0.1, a = 1},
+            highlight = {r = 0.3, g = 0.9, b = 0.3, a = 0.5},
+            text = {r = 0.8, g = 1.0, b = 0.8, a = 1}
         }
     else
         return COLORS
