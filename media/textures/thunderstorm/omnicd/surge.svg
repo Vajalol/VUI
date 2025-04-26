@@ -1,40 +1,162 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="surgeGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
-      <stop offset="40%" stop-color="#99DDFF" stop-opacity="0.7"/>
-      <stop offset="70%" stop-color="#0099FF" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#0066CC" stop-opacity="0.3"/>
+    <radialGradient id="surgeOuterGradient" cx="50%" cy="50%" r="60%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#99DDFF" stop-opacity="0.7"/>
+      <stop offset="40%" stop-color="#66CCFF" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#0099FF" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0066CC" stop-opacity="0.2"/>
     </radialGradient>
+    
+    <radialGradient id="surgeInnerGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="30%" stop-color="#D9F2FF" stop-opacity="0.8"/>
+      <stop offset="60%" stop-color="#99DDFF" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#66CCFF" stop-opacity="0.6"/>
+    </radialGradient>
+    
+    <filter id="blurFilter" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+    </filter>
+    
+    <filter id="lightningGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.7" />
+      </feComponentTransfer>
+      <feOffset dx="0" dy="0" result="offsetblur" />
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    
+    <!-- Animation definitions -->
+    <animate xlink:href="#surgePulse"
+             attributeName="r"
+             values="30;34;30;32;30"
+             dur="2s"
+             repeatCount="indefinite" />
+             
+    <animate xlink:href="#surgePulse"
+             attributeName="opacity"
+             values="0.7;0.9;0.7;0.8;0.7"
+             dur="2s"
+             repeatCount="indefinite" />
+             
+    <animate xlink:href="#coreSurge"
+             attributeName="r"
+             values="18;20;18;19;18"
+             dur="1.5s"
+             repeatCount="indefinite" />
   </defs>
   
   <g>
-    <!-- Electrical burst -->
-    <circle cx="64" cy="64" r="48" fill="url(#surgeGradient)" />
+    <!-- Base surge background -->
+    <circle cx="64" cy="64" r="60" fill="url(#surgeOuterGradient)" />
     
-    <!-- Lightning rays -->
-    <g stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none">
-      <line x1="64" y1="16" x2="64" y2="36" />
-      <line x1="64" y1="92" x2="64" y2="112" />
-      <line x1="16" y1="64" x2="36" y2="64" />
-      <line x1="92" y1="64" x2="112" y2="64" />
+    <!-- Pulsing surge effect -->
+    <circle id="surgePulse" cx="64" cy="64" r="30" fill="url(#surgeInnerGradient)" opacity="0.7" filter="url(#blurFilter)" />
+    
+    <!-- Lightning rays - more WoW style with jagged lines -->
+    <g stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" fill="none" filter="url(#lightningGlow)">
+      <!-- North -->
+      <path d="M64,16 L62,26 L66,30 L64,36" />
+      <!-- South -->
+      <path d="M64,112 L66,102 L62,98 L64,92" />
+      <!-- East -->
+      <path d="M112,64 L102,62 L98,66 L92,64" />
+      <!-- West -->
+      <path d="M16,64 L26,66 L30,62 L36,64" />
       
-      <line x1="30.3" y1="30.3" x2="44.4" y2="44.4" />
-      <line x1="83.6" y1="83.6" x2="97.7" y2="97.7" />
-      <line x1="30.3" y1="97.7" x2="44.4" y2="83.6" />
-      <line x1="83.6" y1="44.4" x2="97.7" y2="30.3" />
+      <!-- Northeast -->
+      <path d="M97.7,30.3 L89,36 L86,33 L83.6,44.4" />
+      <!-- Southeast -->
+      <path d="M97.7,97.7 L91,89 L94,86 L83.6,83.6" />
+      <!-- Southwest -->
+      <path d="M30.3,97.7 L36,89 L33,86 L44.4,83.6" />
+      <!-- Northwest -->
+      <path d="M30.3,30.3 L36,39 L39,36 L44.4,44.4" />
     </g>
     
-    <!-- Center electrical discharge -->
-    <circle cx="64" cy="64" r="20" fill="#FFFFFF" fill-opacity="0.8" />
-    <circle cx="64" cy="64" r="12" fill="#66CCFF" fill-opacity="0.9" />
+    <!-- Secondary lightning rays -->
+    <g stroke="#99DDFF" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.8" filter="url(#lightningGlow)">
+      <path d="M64,24 L68,36 L62,40 L64,50" />
+      <path d="M64,104 L60,92 L66,88 L64,78" />
+      <path d="M104,64 L92,60 L88,66 L78,64" />
+      <path d="M24,64 L36,68 L40,62 L50,64" />
+      
+      <path d="M88,40 L78,46 L80,50 L74,56" />
+      <path d="M88,88 L82,78 L78,80 L74,74" />
+      <path d="M40,88 L46,78 L42,76 L52,70" />
+      <path d="M40,40 L46,50 L50,48 L52,58" />
+    </g>
     
-    <!-- Additional electrical arcs -->
-    <path d="M38,48 C45,40 45,52 52,46 C59,40 59,52 66,46 C73,40 73,52 80,46 C87,40 87,52 94,46" 
-          stroke="#99DDFF" stroke-width="2" fill="none" stroke-linecap="round" />
+    <!-- Core surge center -->
+    <circle id="coreSurge" cx="64" cy="64" r="18" fill="#FFFFFF" opacity="0.9" filter="url(#blurFilter)" />
+    <circle cx="64" cy="64" r="12" fill="#66CCFF" opacity="0.85" />
     
-    <path d="M38,78 C45,70 45,82 52,76 C59,70 59,82 66,76 C73,70 73,82 80,76 C87,70 87,82 94,76" 
-          stroke="#99DDFF" stroke-width="2" fill="none" stroke-linecap="round" />
+    <!-- WoW-inspired electric runes around core -->
+    <g stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.9" fill="none" filter="url(#lightningGlow)">
+      <circle cx="64" cy="64" r="24" />
+      <circle cx="64" cy="64" r="28" stroke-dasharray="4,4" />
+      
+      <!-- Rune markings -->
+      <path d="M64,40 L68,44 L64,48 L60,44 Z" />
+      <path d="M88,64 L84,68 L80,64 L84,60 Z" />
+      <path d="M64,88 L60,84 L64,80 L68,84 Z" />
+      <path d="M40,64 L44,60 L48,64 L44,68 Z" />
+    </g>
+    
+    <!-- Electric arcs with more WoW-style zigzag patterns -->
+    <g>
+      <!-- Upper arc -->
+      <path d="M38,48 
+               C42,44 44,42 48,44 
+               C52,46 54,48 58,44 
+               C62,40 66,42 70,44 
+               C74,46 78,48 82,44 
+               C86,40 90,42 94,46" 
+            stroke="#FFFFFF" stroke-width="1.5" fill="none" stroke-linecap="round" 
+            filter="url(#lightningGlow)" />
+      
+      <!-- Lower arc -->
+      <path d="M38,80 
+               C42,84 44,86 48,84 
+               C52,82 54,80 58,84 
+               C62,88 66,86 70,84 
+               C74,82 78,80 82,84 
+               C86,88 90,86 94,82" 
+            stroke="#FFFFFF" stroke-width="1.5" fill="none" stroke-linecap="round" 
+            filter="url(#lightningGlow)" />
+            
+      <!-- Inner zigzag arcs -->
+      <path d="M50,58 L56,54 L62,58 L68,54 L74,58 L80,54" 
+            stroke="#99DDFF" stroke-width="1" fill="none" stroke-linecap="round" />
+            
+      <path d="M50,70 L56,74 L62,70 L68,74 L74,70 L80,74" 
+            stroke="#99DDFF" stroke-width="1" fill="none" stroke-linecap="round" />
+    </g>
+    
+    <!-- Shamanic rune pattern suggestion -->
+    <g stroke="#66CCFF" stroke-width="0.7" stroke-opacity="0.6" fill="none">
+      <path d="M56,54 C54,52 54,48 56,46 C58,44 62,44 64,46 C66,48 66,52 64,54 C62,56 58,56 56,54 Z" />
+      <path d="M74,54 C72,52 72,48 74,46 C76,44 80,44 82,46 C84,48 84,52 82,54 C80,56 76,56 74,54 Z" />
+      <path d="M56,82 C54,80 54,76 56,74 C58,72 62,72 64,74 C66,76 66,80 64,82 C62,84 58,84 56,82 Z" />
+      <path d="M74,82 C72,80 72,76 74,74 C76,72 80,72 82,74 C84,76 84,80 82,82 C80,84 76,84 74,82 Z" />
+    </g>
+    
+    <!-- Small electric sparks -->
+    <g fill="#FFFFFF" fill-opacity="0.9">
+      <circle cx="64" cy="40" r="1.2" />
+      <circle cx="88" cy="64" r="1.2" />
+      <circle cx="64" cy="88" r="1.2" />
+      <circle cx="40" cy="64" r="1.2" />
+      
+      <circle cx="48" cy="48" r="0.8" />
+      <circle cx="80" cy="48" r="0.8" />
+      <circle cx="80" cy="80" r="0.8" />
+      <circle cx="48" cy="80" r="0.8" />
+    </g>
   </g>
 </svg>
