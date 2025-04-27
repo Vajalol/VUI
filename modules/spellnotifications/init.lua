@@ -11,8 +11,7 @@ function SN:Initialize()
     -- Initialize event handling
     self:InitializeEvents()
     
-    -- Register with VUI's module system
-    VUI:RegisterModule("SpellNotifications", self)
+    -- Module is registered at the end of this file
 end
 
 -- TableContains helper function
