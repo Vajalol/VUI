@@ -3,6 +3,84 @@ local _, VUI = ...
 -- Character Panel module (Paperdoll)
 VUI.Paperdoll = VUI:NewModule("Paperdoll")
 
+-- Get configuration options for main UI integration
+function VUI.Paperdoll:GetConfig()
+    local config = {
+        name = "Character Panel",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Enhanced Character Panel",
+                desc = "Enable or disable the Enhanced Character Panel module",
+                get = function() return self.settings.enabled end,
+                set = function(_, value) 
+                    self.settings.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                    VUI.db.profile.modules.paperdoll.enabled = value
+                end,
+                order = 1
+            },
+            showItemLevel = {
+                type = "toggle",
+                name = "Show Item Level",
+                desc = "Display item level on character panel",
+                get = function() return self.settings.showItemLevel end,
+                set = function(_, value) 
+                    self.settings.showItemLevel = value
+                    VUI.db.profile.modules.paperdoll.showItemLevel = value
+                    self:UpdateCharacterFrame()
+                end,
+                order = 2
+            },
+            colorStatValues = {
+                type = "toggle",
+                name = "Color Stat Values",
+                desc = "Color secondary stat values (Crit, Haste, etc.)",
+                get = function() return self.settings.colorStatValues end,
+                set = function(_, value) 
+                    self.settings.colorStatValues = value
+                    VUI.db.profile.modules.paperdoll.colorStatValues = value
+                    self:UpdateCharacterStats()
+                end,
+                order = 3
+            },
+            showDetailedInfo = {
+                type = "toggle",
+                name = "Show Detailed Info",
+                desc = "Show detailed information on mouseover (percentage + rating)",
+                get = function() return self.settings.showDetailedInfo end,
+                set = function(_, value) 
+                    self.settings.showDetailedInfo = value
+                    VUI.db.profile.modules.paperdoll.showDetailedInfo = value
+                end,
+                order = 4
+            },
+            showExtraPaperdollInfo = {
+                type = "toggle",
+                name = "Show Extra Character Info",
+                desc = "Show extra information like spec, class and guild details",
+                get = function() return self.settings.showExtraPaperdollInfo end,
+                set = function(_, value) 
+                    self.settings.showExtraPaperdollInfo = value
+                    VUI.db.profile.modules.paperdoll.showExtraPaperdollInfo = value
+                    self:UpdateCharacterFrame()
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("paperdoll", VUI.Paperdoll:GetConfig())
+
 -- Local variables
 local activeTheme = "thunderstorm"  -- Default to Thunder Storm theme
 local themeColors = {}

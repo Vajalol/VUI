@@ -4,6 +4,84 @@ local _, VUI = ...
 local MoveAny = {}
 VUI:RegisterModule("moveany", MoveAny)
 
+-- Get configuration options for main UI integration
+function MoveAny:GetConfig()
+    local config = {
+        name = "MoveAny",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable MoveAny",
+                desc = "Enable or disable the MoveAny module",
+                get = function() return VUI.db.profile.modules.moveany.enabled end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.moveany.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            showGrid = {
+                type = "toggle",
+                name = "Show Grid",
+                desc = "Show a grid overlay for precise positioning",
+                get = function() return VUI.db.profile.modules.moveany.showGrid end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.moveany.showGrid = value
+                    if value then
+                        self:ShowGrid()
+                    else
+                        self:HideGrid()
+                    end
+                end,
+                order = 2
+            },
+            gridSize = {
+                type = "range",
+                name = "Grid Size",
+                desc = "Size of the grid cells",
+                min = 8,
+                max = 64,
+                step = 8,
+                get = function() return VUI.db.profile.modules.moveany.gridSize or 32 end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.moveany.gridSize = value
+                    self:UpdateGrid()
+                end,
+                order = 3
+            },
+            snapToGrid = {
+                type = "toggle",
+                name = "Snap to Grid",
+                desc = "Automatically snap frames to the grid when moving",
+                get = function() return VUI.db.profile.modules.moveany.snapToGrid end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.moveany.snapToGrid = value
+                end,
+                order = 4
+            },
+            configButton = {
+                type = "execute",
+                name = "Open Frame Mover",
+                desc = "Open the MoveAny frame mover interface",
+                func = function()
+                    self:ToggleMover()
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("moveany", MoveAny:GetConfig())
+
 -- Initialize the module
 function MoveAny:Initialize()
     -- Create table to store moveable frames

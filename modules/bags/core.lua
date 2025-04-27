@@ -3,6 +3,85 @@ local _, VUI = ...
 -- Bags module
 VUI.Bags = VUI:NewModule("Bags")
 
+-- Get configuration options for main UI integration
+function VUI.Bags:GetConfig()
+    local config = {
+        name = "Bags",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Enhanced Bags",
+                desc = "Enable or disable the Enhanced Bags module",
+                get = function() return self.settings.enabled end,
+                set = function(_, value) 
+                    self.settings.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                    VUI.db.profile.modules.bags.enabled = value
+                end,
+                order = 1
+            },
+            combineAllBags = {
+                type = "toggle",
+                name = "Combine All Bags",
+                desc = "Show all bags in a single window",
+                get = function() return self.settings.combineAllBags end,
+                set = function(_, value) 
+                    self.settings.combineAllBags = value
+                    VUI.db.profile.modules.bags.combineAllBags = value
+                    self:UpdateBagFrames()
+                end,
+                order = 2
+            },
+            showItemLevel = {
+                type = "toggle",
+                name = "Show Item Level",
+                desc = "Display item level on equipment",
+                get = function() return self.settings.showItemLevel end,
+                set = function(_, value) 
+                    self.settings.showItemLevel = value
+                    VUI.db.profile.modules.bags.showItemLevel = value
+                    self:UpdateBagFrames()
+                end,
+                order = 3
+            },
+            showItemBorders = {
+                type = "toggle",
+                name = "Show Item Borders",
+                desc = "Display colored borders around items based on quality",
+                get = function() return self.settings.showItemBorders end,
+                set = function(_, value) 
+                    self.settings.showItemBorders = value
+                    VUI.db.profile.modules.bags.showItemBorders = value
+                    self:UpdateBagFrames()
+                end,
+                order = 4
+            },
+            compactLayout = {
+                type = "toggle",
+                name = "Compact Layout",
+                desc = "Use a more compact layout for the bag frames",
+                get = function() return self.settings.compactLayout end,
+                set = function(_, value) 
+                    self.settings.compactLayout = value
+                    VUI.db.profile.modules.bags.compactLayout = value
+                    self:UpdateBagFrames()
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("bags", VUI.Bags:GetConfig())
+
 -- Local variables
 local activeTheme = "thunderstorm"  -- Default to Thunder Storm theme
 local themeColors = {}

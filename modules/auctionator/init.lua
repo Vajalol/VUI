@@ -4,6 +4,84 @@ local _, VUI = ...
 local Auctionator = {}
 VUI:RegisterModule("auctionator", Auctionator)
 
+-- Get configuration options for main UI integration
+function Auctionator:GetConfig()
+    local config = {
+        name = "Auctionator",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Auctionator",
+                desc = "Enable or disable the Auctionator module",
+                get = function() return VUI.db.profile.modules.auctionator.enabled end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            autoscan = {
+                type = "toggle",
+                name = "Auto-Scan AH",
+                desc = "Automatically scan the auction house when opened",
+                get = function() return VUI.db.profile.modules.auctionator.autoscan end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.autoscan = value
+                end,
+                order = 2
+            },
+            undercut = {
+                type = "range",
+                name = "Default Undercut",
+                desc = "Default undercut amount when listing items",
+                min = 1,
+                max = 100,
+                step = 1,
+                get = function() return VUI.db.profile.modules.auctionator.undercut or 5 end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.undercut = value
+                end,
+                order = 3
+            },
+            scanSpeed = {
+                type = "select",
+                name = "Scan Speed",
+                desc = "How quickly to scan the auction house",
+                values = {
+                    ["slow"] = "Slow (Less Resource Usage)",
+                    ["medium"] = "Medium (Balanced)",
+                    ["fast"] = "Fast (More Resource Usage)"
+                },
+                get = function() return VUI.db.profile.modules.auctionator.scanSpeed or "medium" end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.scanSpeed = value
+                end,
+                order = 4
+            },
+            saveHistory = {
+                type = "toggle",
+                name = "Save Price History",
+                desc = "Save historical price data for items",
+                get = function() return VUI.db.profile.modules.auctionator.saveHistory end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.saveHistory = value
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("auctionator", Auctionator:GetConfig())
+
 -- Initialize the module
 function Auctionator:Initialize()
     -- Create tables for storing data

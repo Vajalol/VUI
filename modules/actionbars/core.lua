@@ -3,6 +3,81 @@ local _, VUI = ...
 -- Action Bars module
 VUI.ActionBars = VUI:NewModule("ActionBars")
 
+-- Get configuration options for main UI integration
+function VUI.ActionBars:GetConfig()
+    local config = {
+        name = "ActionBars",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable ActionBars",
+                desc = "Enable or disable the ActionBars module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            enhancedStyles = {
+                type = "toggle",
+                name = "Enhanced Button Styles",
+                desc = "Apply enhanced styling to action buttons",
+                get = function() return self.db.enhancedStyles end,
+                set = function(_, value) 
+                    self.db.enhancedStyles = value
+                    self:RefreshButtonStyles()
+                end,
+                order = 2
+            },
+            showHotkeys = {
+                type = "toggle",
+                name = "Show Hotkeys",
+                desc = "Show keybindings on action buttons",
+                get = function() return self.db.showHotkeys end,
+                set = function(_, value) 
+                    self.db.showHotkeys = value
+                    self:UpdateHotkeyDisplay()
+                end,
+                order = 3
+            },
+            showMacroNames = {
+                type = "toggle",
+                name = "Show Macro Names",
+                desc = "Show macro names on action buttons",
+                get = function() return self.db.showMacroNames end,
+                set = function(_, value) 
+                    self.db.showMacroNames = value
+                    self:UpdateMacroNameDisplay()
+                end,
+                order = 4
+            },
+            configButton = {
+                type = "execute",
+                name = "Advanced Settings",
+                desc = "Open detailed configuration panel",
+                func = function()
+                    -- This would open a detailed config panel
+                    if self.ToggleAdvancedConfig then
+                        self:ToggleAdvancedConfig()
+                    end
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("actionbars", VUI.ActionBars:GetConfig())
+
 -- Local variables
 local activeTheme = "thunderstorm"  -- Default to Thunder Storm theme
 local themeColors = {}

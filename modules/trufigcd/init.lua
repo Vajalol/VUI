@@ -4,6 +4,93 @@ local _, VUI = ...
 local TrufiGCD = {}
 VUI:RegisterModule("trufigcd", TrufiGCD)
 
+-- Get configuration options for main UI integration
+function TrufiGCD:GetConfig()
+    local config = {
+        name = "TrufiGCD",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable TrufiGCD",
+                desc = "Enable or disable the TrufiGCD module",
+                get = function() return VUI.db.profile.modules.trufigcd.enabled end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.trufigcd.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            iconSize = {
+                type = "range",
+                name = "Icon Size",
+                desc = "Size of spell icons in the GCD display",
+                min = 16,
+                max = 64,
+                step = 1,
+                get = function() return VUI.db.profile.modules.trufigcd.iconSize or 32 end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.trufigcd.iconSize = value
+                    self:UpdateFrames()
+                end,
+                order = 2
+            },
+            iconSpacing = {
+                type = "range",
+                name = "Icon Spacing",
+                desc = "Space between spell icons",
+                min = 0,
+                max = 10,
+                step = 1,
+                get = function() return VUI.db.profile.modules.trufigcd.iconSpacing or 2 end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.trufigcd.iconSpacing = value
+                    self:UpdateFrames()
+                end,
+                order = 3
+            },
+            direction = {
+                type = "select",
+                name = "Flow Direction",
+                desc = "Direction in which new spells are displayed",
+                values = {
+                    ["LEFT"] = "Left",
+                    ["RIGHT"] = "Right",
+                    ["UP"] = "Up",
+                    ["DOWN"] = "Down"
+                },
+                get = function() return VUI.db.profile.modules.trufigcd.direction or "LEFT" end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.trufigcd.direction = value
+                    self:UpdateFrames()
+                end,
+                order = 4
+            },
+            configButton = {
+                type = "execute",
+                name = "Advanced Settings",
+                desc = "Open detailed configuration panel",
+                func = function()
+                    -- Show the anchor for positioning
+                    if self.anchor then
+                        self.anchor:Show()
+                    end
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("trufigcd", TrufiGCD:GetConfig())
+
 -- Initialize the module
 function TrufiGCD:Initialize()
     -- Create frames table to store spell icons

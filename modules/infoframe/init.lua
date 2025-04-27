@@ -10,6 +10,93 @@ local InfoFrame = {
     author = "VortexQ8",
 }
 
+-- Get configuration options for main UI integration
+function InfoFrame:GetConfig()
+    local config = {
+        name = "Info Frame",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Info Frame",
+                desc = "Enable or disable the Info Frame module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            locked = {
+                type = "toggle",
+                name = "Lock Frame",
+                desc = "Lock or unlock the Info Frame position",
+                get = function() return self.db.general.locked end,
+                set = function(_, value) 
+                    self.db.general.locked = value
+                    self:ToggleLock()
+                end,
+                order = 2
+            },
+            scale = {
+                type = "range",
+                name = "Frame Scale",
+                desc = "Adjust the size of the Info Frame",
+                min = 0.5,
+                max = 2.0,
+                step = 0.05,
+                get = function() return self.db.general.scale end,
+                set = function(_, value) 
+                    self.db.general.scale = value
+                    self:UpdateFrameSize()
+                end,
+                order = 3
+            },
+            alpha = {
+                type = "range",
+                name = "Frame Opacity",
+                desc = "Adjust the transparency of the Info Frame",
+                min = 0.1,
+                max = 1.0,
+                step = 0.05,
+                get = function() return self.db.general.alpha end,
+                set = function(_, value) 
+                    self.db.general.alpha = value
+                    self:UpdateFrameAppearance()
+                end,
+                order = 4
+            },
+            sections = {
+                type = "multiselect",
+                name = "Display Sections",
+                desc = "Choose which sections to display in the Info Frame",
+                values = {
+                    ["character"] = "Character Info",
+                    ["gear"] = "Gear Status",
+                    ["resources"] = "Resources",
+                    ["performance"] = "Performance",
+                    ["cooldowns"] = "Important Cooldowns"
+                },
+                get = function(_, key) return self.db.sections[key] end,
+                set = function(_, key, value) 
+                    self.db.sections[key] = value
+                    self:UpdateContent()
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("infoframe", InfoFrame:GetConfig())
+
 -- Default settings
 local defaults = {
     enabled = true,

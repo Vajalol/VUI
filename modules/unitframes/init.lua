@@ -4,6 +4,86 @@ local _, VUI = ...
 -- Create the module using the module API
 local UnitFrames = VUI.ModuleAPI:CreateModule("unitframes")
 
+-- Get configuration options for main UI integration
+function UnitFrames:GetConfig()
+    local config = {
+        name = "UnitFrames",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable UnitFrames",
+                desc = "Enable or disable the UnitFrames module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            style = {
+                type = "select",
+                name = "Frame Style",
+                desc = "Select the style for unit frames",
+                values = {
+                    ["modern"] = "Modern",
+                    ["classic"] = "Classic",
+                    ["minimal"] = "Minimal"
+                },
+                get = function() return self.db.style end,
+                set = function(_, value) 
+                    self.db.style = value
+                    self:ApplyStyle()
+                end,
+                order = 2
+            },
+            classColoredBars = {
+                type = "toggle",
+                name = "Class Colored Bars",
+                desc = "Use class colors for health bars",
+                get = function() return self.db.classColoredBars end,
+                set = function(_, value) 
+                    self.db.classColoredBars = value
+                    self:UpdateAllFrames()
+                end,
+                order = 3
+            },
+            showPortraits = {
+                type = "toggle",
+                name = "Show Portraits",
+                desc = "Show unit portraits in frames",
+                get = function() return self.db.showPortraits end,
+                set = function(_, value) 
+                    self.db.showPortraits = value
+                    self:UpdatePortraits()
+                end,
+                order = 4
+            },
+            configButton = {
+                type = "execute",
+                name = "Advanced Settings",
+                desc = "Open detailed configuration panel",
+                func = function()
+                    -- This would open a detailed config panel
+                    if self.ShowAdvancedConfig then
+                        self:ShowAdvancedConfig()
+                    end
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("unitframes", UnitFrames:GetConfig())
+
 -- Set up module defaults
 local defaults = {
     enabled = true,

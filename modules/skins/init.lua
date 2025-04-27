@@ -4,6 +4,92 @@ local _, VUI = ...
 -- Create the module using the module API
 local Skins = VUI.ModuleAPI:CreateModule("skins")
 
+-- Get configuration options for main UI integration
+function Skins:GetConfig()
+    local config = {
+        name = "Skins",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Skins",
+                desc = "Enable or disable the Skins module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            blizzardHeader = {
+                type = "header",
+                name = "Blizzard UI Skins",
+                order = 2
+            },
+            blizzardEnabled = {
+                type = "toggle",
+                name = "Enable Blizzard Skins",
+                desc = "Enable or disable skinning for Blizzard UI frames",
+                get = function() return self.db.blizzard.enabled end,
+                set = function(_, value) 
+                    self.db.blizzard.enabled = value
+                    self:UpdateBlizzardSkins()
+                end,
+                order = 3
+            },
+            actionbars = {
+                type = "toggle",
+                name = "Action Bars",
+                desc = "Apply skin to Action Bars",
+                get = function() return self.db.blizzard.actionbars end,
+                set = function(_, value) 
+                    self.db.blizzard.actionbars = value
+                    self:UpdateSkin("actionbars")
+                end,
+                disabled = function() return not self.db.blizzard.enabled end,
+                order = 4
+            },
+            bags = {
+                type = "toggle",
+                name = "Bags",
+                desc = "Apply skin to Bags",
+                get = function() return self.db.blizzard.bags end,
+                set = function(_, value) 
+                    self.db.blizzard.bags = value
+                    self:UpdateSkin("bags")
+                end,
+                disabled = function() return not self.db.blizzard.enabled end,
+                order = 5
+            },
+            addonSkinsHeader = {
+                type = "header",
+                name = "Addon Skins",
+                order = 20
+            },
+            addonSkinsEnabled = {
+                type = "toggle",
+                name = "Enable Addon Skins",
+                desc = "Enable or disable skinning for supported addons",
+                get = function() return self.db.addons.enabled end,
+                set = function(_, value) 
+                    self.db.addons.enabled = value
+                    self:UpdateAddonSkins()
+                end,
+                order = 21
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("skins", Skins:GetConfig())
+
 -- Set up module defaults
 local defaults = {
     enabled = true,

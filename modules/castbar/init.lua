@@ -9,6 +9,81 @@ VUI.Castbar = VUI.Castbar or {}
 local Castbar = VUI.Castbar
 local ModuleAPI = VUI.ModuleAPI
 
+-- Get configuration options for main UI integration
+function Castbar:GetConfig()
+    local config = {
+        name = "Castbar",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Castbar",
+                desc = "Enable or disable the Castbar module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            playerCastbar = {
+                type = "toggle",
+                name = "Player Castbar",
+                desc = "Show castbar for your character",
+                get = function() return self.db.units.player.enabled end,
+                set = function(_, value) 
+                    self.db.units.player.enabled = value
+                    self:UpdatePlayerCastbar()
+                end,
+                order = 2
+            },
+            targetCastbar = {
+                type = "toggle",
+                name = "Target Castbar",
+                desc = "Show castbar for your target",
+                get = function() return self.db.units.target.enabled end,
+                set = function(_, value) 
+                    self.db.units.target.enabled = value
+                    self:UpdateTargetCastbar()
+                end,
+                order = 3
+            },
+            focusCastbar = {
+                type = "toggle",
+                name = "Focus Castbar",
+                desc = "Show castbar for your focus target",
+                get = function() return self.db.units.focus.enabled end,
+                set = function(_, value) 
+                    self.db.units.focus.enabled = value
+                    self:UpdateFocusCastbar()
+                end,
+                order = 4
+            },
+            configButton = {
+                type = "execute",
+                name = "Advanced Settings",
+                desc = "Open detailed configuration panel",
+                func = function()
+                    -- This would open a detailed config panel
+                    if self.ShowAdvancedOptions then
+                        self:ShowAdvancedOptions()
+                    end
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+ModuleAPI:RegisterModuleConfig("castbar", Castbar:GetConfig())
+
 -- Default castbar settings
 local defaults = {
     enabled = true,

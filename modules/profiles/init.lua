@@ -4,6 +4,83 @@ local _, VUI = ...
 -- Create the module using the module API
 local Profiles = VUI.ModuleAPI:CreateModule("profiles")
 
+-- Get configuration options for main UI integration
+function Profiles:GetConfig()
+    local config = {
+        name = "Profiles",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Profiles",
+                desc = "Enable or disable the Profiles module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            autoSave = {
+                type = "toggle",
+                name = "Auto-Save Profiles",
+                desc = "Automatically save profile changes periodically",
+                get = function() return self.db.autoSave end,
+                set = function(_, value) 
+                    self.db.autoSave = value
+                    self:UpdateAutoSave()
+                end,
+                order = 2
+            },
+            saveFrequency = {
+                type = "range",
+                name = "Save Frequency",
+                desc = "How often to automatically save profiles (in minutes)",
+                min = 1,
+                max = 60,
+                step = 1,
+                get = function() return self.db.saveFrequency / 60 end, -- Convert seconds to minutes
+                set = function(_, value) 
+                    self.db.saveFrequency = value * 60 -- Convert minutes to seconds
+                    self:UpdateAutoSave()
+                end,
+                disabled = function() return not self.db.autoSave end,
+                order = 3
+            },
+            backupCount = {
+                type = "range",
+                name = "Backup Count",
+                desc = "Number of profile backups to keep",
+                min = 1,
+                max = 10,
+                step = 1,
+                get = function() return self.db.backupCount end,
+                set = function(_, value) 
+                    self.db.backupCount = value
+                    self:CleanupBackups()
+                end,
+                order = 4
+            },
+            importExport = {
+                type = "execute",
+                name = "Import/Export Profile",
+                desc = "Open the profile import/export interface",
+                func = function() self:ShowImportExportFrame() end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("profiles", Profiles:GetConfig())
+
 -- Set up module defaults
 local defaults = {
     enabled = true,

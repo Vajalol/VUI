@@ -4,6 +4,96 @@ local _, VUI = ...
 -- Create the module using the module API
 local Automation = VUI.ModuleAPI:CreateModule("automation")
 
+-- Get configuration options for main UI integration
+function Automation:GetConfig()
+    local config = {
+        name = "Automation",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Automation",
+                desc = "Enable or disable the Automation module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            vendorHeader = {
+                type = "header",
+                name = "Vendor Automation",
+                order = 10
+            },
+            autoSell = {
+                type = "toggle",
+                name = "Auto Sell Junk",
+                desc = "Automatically sell junk items when visiting a vendor",
+                get = function() return self.db.vendor.autoSell end,
+                set = function(_, value) 
+                    self.db.vendor.autoSell = value 
+                end,
+                order = 11
+            },
+            autoRepair = {
+                type = "toggle",
+                name = "Auto Repair",
+                desc = "Automatically repair equipment when visiting a vendor",
+                get = function() return self.db.vendor.autoRepair end,
+                set = function(_, value) 
+                    self.db.vendor.autoRepair = value 
+                end,
+                order = 12
+            },
+            useGuildRepair = {
+                type = "toggle",
+                name = "Use Guild Repairs",
+                desc = "Use guild funds for repairs when possible",
+                get = function() return self.db.vendor.useGuildRepair end,
+                set = function(_, value) 
+                    self.db.vendor.useGuildRepair = value 
+                end,
+                order = 13
+            },
+            questHeader = {
+                type = "header",
+                name = "Quest Automation",
+                order = 20
+            },
+            autoAcceptQuests = {
+                type = "toggle",
+                name = "Auto Accept Quests",
+                desc = "Automatically accept quests",
+                get = function() return self.db.quest.autoAccept end,
+                set = function(_, value) 
+                    self.db.quest.autoAccept = value 
+                end,
+                order = 21
+            },
+            autoTurnIn = {
+                type = "toggle",
+                name = "Auto Turn In Quests",
+                desc = "Automatically turn in completed quests",
+                get = function() return self.db.quest.autoTurnIn end,
+                set = function(_, value) 
+                    self.db.quest.autoTurnIn = value 
+                end,
+                order = 22
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("automation", Automation:GetConfig())
+
 -- Set up module defaults
 local defaults = {
     enabled = true,

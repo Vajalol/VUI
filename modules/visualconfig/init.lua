@@ -4,6 +4,80 @@ local _, VUI = ...
 -- Create the module using the module API
 local VisualConfig = VUI.ModuleAPI:CreateModule("visualconfig")
 
+-- Get configuration options for main UI integration
+function VisualConfig:GetConfig()
+    local config = {
+        name = "Visual Configuration",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Visual Configuration",
+                desc = "Enable or disable the Visual Configuration module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            showModuleIcons = {
+                type = "toggle",
+                name = "Show Module Icons",
+                desc = "Show icons in the module list",
+                get = function() return self.db.general.showModuleIcons end,
+                set = function(_, value) 
+                    self.db.general.showModuleIcons = value
+                    self:UpdateUI()
+                end,
+                order = 2
+            },
+            enablePreview = {
+                type = "toggle",
+                name = "Enable Preview",
+                desc = "Show previews when changing settings",
+                get = function() return self.db.general.enablePreview end,
+                set = function(_, value) 
+                    self.db.general.enablePreview = value
+                    self:UpdateUI()
+                end,
+                order = 3
+            },
+            animateChanges = {
+                type = "toggle",
+                name = "Animate Changes",
+                desc = "Animate UI changes for a smoother experience",
+                get = function() return self.db.general.animateChanges end,
+                set = function(_, value) 
+                    self.db.general.animateChanges = value
+                    self:UpdateAnimationSettings()
+                end,
+                order = 4
+            },
+            layoutEditor = {
+                type = "toggle",
+                name = "Enable Layout Editor",
+                desc = "Enable the advanced layout editor for UI customization",
+                get = function() return self.db.layoutEditor.enabled end,
+                set = function(_, value) 
+                    self.db.layoutEditor.enabled = value
+                    self:UpdateLayoutEditor()
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("visualconfig", VisualConfig:GetConfig())
+
 -- Set up module defaults
 local defaults = {
     enabled = true,

@@ -1,5 +1,22 @@
 # VUI Changelog
 
+## Version 0.2.0 (2025-04-27)
+- Major update to the configuration system
+- Added GetConfig implementation across all 21 modules
+- Ensured full UI integration for all addon modules
+- Improved module API with standardized configuration options
+- Enhanced module registration system
+- Updated core configuration panel
+- Reorganized module categories for better usability
+- Added comprehensive documentation
+- Standardized all module settings interfaces
+- Improved theme application across all modules
+- Fixed multiple UI inconsistencies
+- Enhanced user experience with better configuration options
+- Unified all module controls into the central panel
+- Added all modules to the interface categories
+- Comprehensive code review and optimization
+
 ## Version 0.1.0 (2025-04-26)
 - Initial beta release
 - Implemented four theme options: Thunder Storm, Phoenix Flame, Arcane Mystic, and Fel Energy

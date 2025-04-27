@@ -10,6 +10,86 @@ local Tooltip = {
     author = "VortexQ8",
 }
 
+-- Get configuration options for main UI integration
+function Tooltip:GetConfig()
+    local config = {
+        name = "Tooltip",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Tooltip",
+                desc = "Enable or disable the Tooltip module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            classColoredBorder = {
+                type = "toggle",
+                name = "Class Colored Border",
+                desc = "Color tooltip border by class when displaying player information",
+                get = function() return self.db.general.classColoredBorder end,
+                set = function(_, value) 
+                    self.db.general.classColoredBorder = value
+                    self:UpdateTooltipSettings()
+                end,
+                order = 2
+            },
+            scale = {
+                type = "range",
+                name = "Tooltip Scale",
+                desc = "Size of tooltips",
+                min = 0.5,
+                max = 2.0,
+                step = 0.05,
+                get = function() return self.db.general.scale end,
+                set = function(_, value) 
+                    self.db.general.scale = value
+                    self:UpdateTooltipSettings()
+                end,
+                order = 3
+            },
+            alpha = {
+                type = "range",
+                name = "Tooltip Opacity",
+                desc = "Opacity of tooltips",
+                min = 0.1,
+                max = 1.0,
+                step = 0.05,
+                get = function() return self.db.general.alpha end,
+                set = function(_, value) 
+                    self.db.general.alpha = value
+                    self:UpdateTooltipSettings()
+                end,
+                order = 4
+            },
+            anchorToCursor = {
+                type = "toggle",
+                name = "Anchor to Cursor",
+                desc = "Attach tooltips to the cursor",
+                get = function() return self.db.general.anchorToCursor end,
+                set = function(_, value) 
+                    self.db.general.anchorToCursor = value
+                    self:UpdateTooltipSettings()
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("tooltip", Tooltip:GetConfig())
+
 -- Default settings
 local defaults = {
     enabled = true,

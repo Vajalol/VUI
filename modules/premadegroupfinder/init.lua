@@ -4,6 +4,82 @@ local _, VUI = ...
 -- Create the module using the module API
 local PGF = VUI.ModuleAPI:CreateModule("premadegroupfinder")
 
+-- Get configuration options for main UI integration
+function PGF:GetConfig()
+    local config = {
+        name = "Premade Group Finder",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable Premade Group Finder",
+                desc = "Enable or disable the Premade Group Finder module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            autoRefresh = {
+                type = "toggle",
+                name = "Auto-Refresh",
+                desc = "Automatically refresh the group listing",
+                get = function() return self.db.filters.autoRefresh end,
+                set = function(_, value) 
+                    self.db.filters.autoRefresh = value
+                    self:UpdateRefreshTimer()
+                end,
+                order = 2
+            },
+            refreshInterval = {
+                type = "range",
+                name = "Refresh Interval",
+                desc = "How often to refresh the group listing (in seconds)",
+                min = 10,
+                max = 300,
+                step = 5,
+                get = function() return self.db.filters.refreshInterval end,
+                set = function(_, value) 
+                    self.db.filters.refreshInterval = value
+                    self:UpdateRefreshTimer()
+                end,
+                order = 3
+            },
+            enhancedTooltip = {
+                type = "toggle",
+                name = "Enhanced Tooltips",
+                desc = "Show additional information in tooltips",
+                get = function() return self.db.appearance.enhancedTooltip end,
+                set = function(_, value) 
+                    self.db.appearance.enhancedTooltip = value
+                end,
+                order = 4
+            },
+            compactList = {
+                type = "toggle",
+                name = "Compact List",
+                desc = "Show a more compact group listing",
+                get = function() return self.db.appearance.compactList end,
+                set = function(_, value) 
+                    self.db.appearance.compactList = value
+                    self:UpdateListDisplay()
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("premadegroupfinder", PGF:GetConfig())
+
 -- Set up module defaults
 local defaults = {
     enabled = true,

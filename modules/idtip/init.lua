@@ -7,8 +7,87 @@ VUI.idtip = {}
 -- Default settings
 VUI.idtip.defaults = {
     enabled = true,
-    -- Module-specific defaults will go here
+    showSpellID = true,
+    showItemID = true,
+    showCurrencyID = true,
+    showAchievementID = true,
+    showQuestID = true,
+    showTalentID = true,
+    showCovenantID = true,
+    showTraitID = true,
+    showEnhancedTooltip = true,
+    colorCodedIDs = true
 }
+
+-- Get configuration options for main UI integration
+function VUI.idtip:GetConfig()
+    local config = {
+        name = "idTip",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable idTip",
+                desc = "Enable or disable the idTip module",
+                get = function() return VUI.db.profile.modules.idtip.enabled end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.idtip.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            showSpellID = {
+                type = "toggle",
+                name = "Show Spell IDs",
+                desc = "Show spell IDs in tooltips",
+                get = function() return VUI.db.profile.modules.idtip.showSpellID end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.idtip.showSpellID = value
+                end,
+                order = 2
+            },
+            showItemID = {
+                type = "toggle",
+                name = "Show Item IDs",
+                desc = "Show item IDs in tooltips",
+                get = function() return VUI.db.profile.modules.idtip.showItemID end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.idtip.showItemID = value
+                end,
+                order = 3
+            },
+            colorCodedIDs = {
+                type = "toggle",
+                name = "Color-Coded IDs",
+                desc = "Show IDs with theme-based color coding",
+                get = function() return VUI.db.profile.modules.idtip.colorCodedIDs end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.idtip.colorCodedIDs = value
+                end,
+                order = 4
+            },
+            showEnhancedTooltip = {
+                type = "toggle",
+                name = "Enhanced Tooltips",
+                desc = "Show additional information in tooltips",
+                get = function() return VUI.db.profile.modules.idtip.showEnhancedTooltip end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.idtip.showEnhancedTooltip = value
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("idtip", VUI.idtip:GetConfig())
 
 -- Initialize module
 function VUI.idtip:Initialize()
