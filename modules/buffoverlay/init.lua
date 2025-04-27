@@ -4,6 +4,89 @@ local _, VUI = ...
 local BuffOverlay = {}
 VUI:RegisterModule("buffoverlay", BuffOverlay)
 
+-- Get configuration options for main UI integration
+function BuffOverlay:GetConfig()
+    local config = {
+        name = "BuffOverlay",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable BuffOverlay",
+                desc = "Enable or disable the BuffOverlay module",
+                get = function() return VUI.db.profile.modules.buffoverlay.enabled end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.buffoverlay.enabled = value
+                    if value then
+                        self:SetupFrames()
+                        self:UpdateAllUnits()
+                    else
+                        self:HideAllFrames()
+                    end
+                end,
+                order = 1
+            },
+            size = {
+                type = "range",
+                name = "Icon Size",
+                desc = "Size of buff and debuff icons",
+                min = 16,
+                max = 64,
+                step = 2,
+                get = function() return VUI.db.profile.modules.buffoverlay.size end,
+                set = function(_, value)
+                    VUI.db.profile.modules.buffoverlay.size = value
+                    self:SetupFrames()
+                    self:UpdateAllUnits()
+                end,
+                order = 2
+            },
+            spacing = {
+                type = "range",
+                name = "Icon Spacing",
+                desc = "Space between buff and debuff icons",
+                min = 0,
+                max = 20,
+                step = 1,
+                get = function() return VUI.db.profile.modules.buffoverlay.spacing end,
+                set = function(_, value)
+                    VUI.db.profile.modules.buffoverlay.spacing = value
+                    self:SetupFrames()
+                    self:UpdateAllUnits()
+                end,
+                order = 3
+            },
+            showTooltip = {
+                type = "toggle",
+                name = "Show Tooltips",
+                desc = "Show tooltips when hovering over buff/debuff icons",
+                get = function() return VUI.db.profile.modules.buffoverlay.showTooltip end,
+                set = function(_, value)
+                    VUI.db.profile.modules.buffoverlay.showTooltip = value
+                end,
+                order = 4
+            },
+            configButton = {
+                type = "execute",
+                name = "Advanced Settings",
+                desc = "Open detailed configuration panel",
+                func = function()
+                    -- Show the position anchor
+                    if self.anchor then
+                        self.anchor:Show()
+                    end
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("buffoverlay", BuffOverlay:GetConfig())
+
 -- Performance optimization variables
 local lastUpdate = 0
 local updateInterval = 0.1  -- Update interval in seconds (will be adjusted dynamically)

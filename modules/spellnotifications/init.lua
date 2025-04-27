@@ -116,5 +116,82 @@ function SN:StandardErrorMessages()
     }
 end
 
+-- Get configuration options for main UI integration
+function SN:GetConfig()
+    local config = {
+        name = "SpellNotifications",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable SpellNotifications",
+                desc = "Enable or disable the SpellNotifications module",
+                get = function() return self:GetSettings().enabled end,
+                set = function(_, value) 
+                    self:GetSettings().enabled = value
+                end,
+                order = 1
+            },
+            enableSounds = {
+                type = "toggle",
+                name = "Enable Sounds",
+                desc = "Enable or disable notification sounds",
+                get = function() return self:GetSettings().enableSounds end,
+                set = function(_, value) 
+                    self:GetSettings().enableSounds = value
+                end,
+                order = 2
+            },
+            soundChannel = {
+                type = "select",
+                name = "Sound Channel",
+                desc = "Select which sound channel to use for notifications",
+                values = {
+                    ["Master"] = "Master",
+                    ["SFX"] = "Sound Effects",
+                    ["Music"] = "Music",
+                    ["Ambience"] = "Ambience"
+                },
+                get = function() return self:GetSettings().soundChannel end,
+                set = function(_, value) 
+                    self:GetSettings().soundChannel = value
+                end,
+                order = 3
+            },
+            textSize = {
+                type = "select",
+                name = "Text Size",
+                desc = "Size of notification text",
+                values = {
+                    ["SMALL"] = "Small",
+                    ["BIG"] = "Big"
+                },
+                get = function() return self:GetSettings().textSize end,
+                set = function(_, value) 
+                    self:GetSettings().textSize = value
+                end,
+                order = 4
+            },
+            configButton = {
+                type = "execute",
+                name = "Advanced Settings",
+                desc = "Open detailed configuration panel",
+                func = function()
+                    -- This would open the detailed config panel
+                    if self.CreateConfigOptions then
+                        -- Implementation would depend on how you're handling detailed configs
+                    end
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("spellnotifications", SN:GetConfig())
+
 -- Initialize the module when VUI loads
 VUI:RegisterModule("SpellNotifications", SN)

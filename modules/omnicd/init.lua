@@ -20,6 +20,89 @@ VUI.omnicd.defaults = {
     }
 }
 
+-- Get configuration options for main UI integration
+function VUI.omnicd:GetConfig()
+    local config = {
+        name = "OmniCD",
+        type = "group",
+        args = {
+            enabled = {
+                type = "toggle",
+                name = "Enable OmniCD",
+                desc = "Enable or disable the OmniCD module",
+                get = function() return self.db.enabled end,
+                set = function(_, value) 
+                    self.db.enabled = value
+                    if value then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+                order = 1
+            },
+            animations = {
+                type = "toggle",
+                name = "Show Animations",
+                desc = "Enable or disable cooldown animations",
+                get = function() return self.db.animations end,
+                set = function(_, value) 
+                    self.db.animations = value
+                    if value then
+                        self:EnableAnimations()
+                    else
+                        self:DisableAnimations()
+                    end
+                end,
+                order = 2
+            },
+            iconSize = {
+                type = "range",
+                name = "Icon Size",
+                desc = "Size of cooldown icons",
+                min = 16,
+                max = 64,
+                step = 1,
+                get = function() return self.db.iconSize end,
+                set = function(_, value)
+                    self.db.iconSize = value
+                    self:UpdateDisplay()
+                end,
+                order = 3
+            },
+            showNames = {
+                type = "toggle",
+                name = "Show Names",
+                desc = "Show spell names under icons",
+                get = function() return self.db.showNames end,
+                set = function(_, value)
+                    self.db.showNames = value
+                    self:UpdateDisplay()
+                end,
+                order = 4
+            },
+            configButton = {
+                type = "execute",
+                name = "Advanced Settings",
+                desc = "Open detailed configuration panel",
+                func = function()
+                    -- This would open a detailed config panel
+                    -- For now we'll just toggle the anchor visibility
+                    if self.anchor then
+                        self.anchor:SetShown(not self.anchor:IsShown())
+                    end
+                end,
+                order = 5
+            }
+        }
+    }
+    
+    return config
+end
+
+-- Register module config with the VUI ModuleAPI
+VUI.ModuleAPI:RegisterModuleConfig("omnicd", VUI.omnicd:GetConfig())
+
 -- Initialize module
 function VUI.omnicd:Initialize()
     -- Initialize settings
