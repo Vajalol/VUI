@@ -22,6 +22,8 @@ VUI.omnicc = {}
 VUI.omnicd = {}
 VUI.idtip = {}
 VUI.premadegroupfinder = {}
+VUI.detailsskin = {}
+VUI.spellnotifications = {}
 
 -- Enhanced UI modules (from Phoenix UI)
 VUI.bags = {}
@@ -48,6 +50,8 @@ VUI.modules = {
     "omnicd",
     "idtip",
     "premadegroupfinder",
+    "spellnotifications",
+    "detailsskin",
     
     -- Enhanced UI modules (from Phoenix UI)
     "bags",

@@ -62,4 +62,7 @@
     
     <!-- SpellNotifications Module -->
     <Include file="spellnotifications\load.xml"/>
+    
+    <!-- DetailsSkin Module -->
+    <Include file="detailsskin\load.xml"/>
 </Ui>

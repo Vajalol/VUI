@@ -37,7 +37,7 @@ VUI (Version 0.2.0) is a comprehensive UI enhancement suite for World of Warcraf
 - **Combat Optimization**: Reduced processing during combat for maximum performance
 
 ### Comprehensive Module Integration
-- **21 Integrated Modules**: All fully compatible with the theme system
+- **22 Integrated Modules**: All fully compatible with the theme system
 - **Standardized API**: Consistent behavior across all modules
 - **Inter-Module Communication**: Modules share information efficiently
 - **Global Settings**: Some settings apply across multiple modules for consistency
@@ -196,6 +196,13 @@ VUI (Version 0.2.0) is a comprehensive UI enhancement suite for World of Warcraf
     - Combat data
     - Event tracking
 
+22. **DetailsSkin**
+    - Complete skinning for Details! Damage Meter
+    - Theme-integrated textures and borders
+    - Opacity and transparency controls
+    - Custom font integration
+    - Enhanced visual appearance matching VUI themes
+
 ## Installation Guide
 
 ### Basic Installation
@@ -260,7 +267,7 @@ VUI can be configured through the in-game configuration panel, accessible by typ
 Organized into three categories:
 
 #### Core Addons
-- BuffOverlay, TrufiGCD, MoveAny, Auctionator, AngryKeystones, OmniCC, OmniCD, idTip, PremadeGroupFinder, SpellNotifications
+- BuffOverlay, TrufiGCD, MoveAny, Auctionator, AngryKeystones, OmniCC, OmniCD, idTip, PremadeGroupFinder, SpellNotifications, DetailsSkin
 - Each module has:
   - Enable/disable toggle
   - Quick settings panel
@@ -349,6 +356,13 @@ Each theme controls these elements:
 - **Visual Display**: Position, size, and style options
 - **Announcement Options**: Chat and raid warning integration
 - **Planning Tools**: Pre-plan cooldown rotations
+
+### DetailsSkin Configuration
+- **Skin Style Selection**: Choose between different visual styles
+- **Opacity Settings**: Fine-tune transparency for different UI elements
+- **Font Customization**: Select fonts and sizes for data text
+- **Bar Configuration**: Adjust height, spacing, and texture of data bars
+- **Border Controls**: Customize the appearance of window borders to match your theme
 
 ## Performance Optimization Tips
 

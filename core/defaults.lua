@@ -274,6 +274,74 @@ VUI.defaults = {
                 coloredText = true,
                 iconDisplay = true,
             },
+            
+            -- DetailsSkin Module
+            detailsskin = {
+                enabled = true,
+                skinStyle = "ElvUI",
+                saveOriginal = true,
+                backgroundOpacity = 0.7,
+                rowOpacity = 0.3,
+                menuOpacity = 0.9,
+                borderOpacity = 1.0,
+                statusBarOpacity = 0.8,
+                customBorder = true,
+                customBarTexture = true,
+                barTexture = "VUI_Smooth",
+                customFonts = true,
+                rowFont = "Expressway",
+                fontSize = 10,
+                fixedHeight = true,
+                rowHeight = 16,
+                customSpacing = true,
+                rowSpacing = 1
+            },
+            
+            -- SpellNotifications Module
+            spellnotifications = {
+                enabled = true,
+                enableSounds = true,
+                filterErrors = true,
+                soundChannel = "Master",
+                textSize = "BIG",
+                
+                -- Player events
+                playerInterrupts = true,
+                playerInterruptsSound = "bell",
+                
+                playerDispels = true,
+                playerDispelsSound = "ding",
+                
+                playerStolen = true,
+                playerStolenSound = "cling",
+                
+                playerMisses = true,
+                playerMissesSound = "buzz",
+                
+                playerCrits = true,
+                playerCritsSound = "laser",
+                playerCritsMinHit = 5000,
+                playerCritsHealthPct = 20,
+                
+                playerHeals = true,
+                playerHealsSound = "pulse",
+                playerHealsMinHit = 5000,
+                playerHealsHealthPct = 20,
+                
+                -- Pet events
+                petInterrupts = true,
+                petInterruptsSound = "bell",
+                
+                petDispels = true,
+                petDispelsSound = "ding",
+                
+                petMisses = true,
+                petMissesSound = "buzz",
+                
+                petCrits = true,
+                petCritsSound = "laser",
+                petCritsMinHit = 3000
+            },
         }
     },
     char = {}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="24" viewBox="0 0 256 24">
+  <defs>
+    <linearGradient id="felTitle" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0A1A0A" stop-opacity="0.95" />
+      <stop offset="50%" stop-color="#1AFF1A" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#0A1A0A" stop-opacity="0.95" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="24" fill="url(#felTitle)" />
+  <rect x="0" y="23" width="256" height="1" fill="#1AFF1A" fill-opacity="0.8" />
+</svg>

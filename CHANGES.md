@@ -16,6 +16,10 @@
 - Unified all module controls into the central panel
 - Added all modules to the interface categories
 - Comprehensive code review and optimization
+- Added new DetailsSkin module for Details! meter integration
+- Created theme-specific textures for Details! integration
+- Added theme color matching for all Details! windows
+- Implemented full theme support in Details! with custom highlights
 
 ## Version 0.1.0 (2025-04-26)
 - Initial beta release
