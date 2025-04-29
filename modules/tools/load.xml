@@ -1,0 +1,14 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <!-- Core files -->
+    <Script file="init.lua"/>
+    <Script file="core.lua"/>
+    
+    <!-- Individual tools will be loaded here -->
+    <!-- <Script file="tools/instanceReset.lua"/> -->
+    <!-- <Script file="tools/itemTracker.lua"/> -->
+    <!-- <Script file="tools/goldTracker.lua"/> -->
+    
+    <!-- UI files -->
+    <!-- <Script file="ui.lua"/> -->
+</Ui>

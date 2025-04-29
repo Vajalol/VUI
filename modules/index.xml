@@ -68,4 +68,7 @@
     
     <!-- MSBT (MikScrollingBattleText) Module -->
     <Include file="msbt\load.xml"/>
+    
+    <!-- Tools Module -->
+    <Include file="tools\load.xml"/>
 </Ui>
