@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="arcaneBorderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D459FF;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#9D0DE6;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#6A0099;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Arcane Mystic themed border for TrufiGCD -->
+  <rect x="2" y="2" width="60" height="60" rx="4" ry="4" 
+        fill="none" stroke="url(#arcaneBorderGradient)" stroke-width="2" />
+  
+  <!-- Optional corner accents with arcane rune style -->
+  <path d="M2,12 L2,6 Q2,2 6,2 L12,2" stroke="url(#arcaneBorderGradient)" stroke-width="3" fill="none" />
+  <path d="M52,2 L58,2 Q62,2 62,6 L62,12" stroke="url(#arcaneBorderGradient)" stroke-width="3" fill="none" />
+  <path d="M62,52 L62,58 Q62,62 58,62 L52,62" stroke="url(#arcaneBorderGradient)" stroke-width="3" fill="none" />
+  <path d="M12,62 L6,62 Q2,62 2,58 L2,52" stroke="url(#arcaneBorderGradient)" stroke-width="3" fill="none" />
+  
+  <!-- Arcane rune corner accents -->
+  <circle cx="8" cy="8" r="3" stroke="#D459FF" stroke-width="1" fill="none" />
+  <circle cx="56" cy="8" r="3" stroke="#D459FF" stroke-width="1" fill="none" />
+  <circle cx="8" cy="56" r="3" stroke="#D459FF" stroke-width="1" fill="none" />
+  <circle cx="56" cy="56" r="3" stroke="#D459FF" stroke-width="1" fill="none" />
+  
+  <!-- Additional arcane symbols -->
+  <path d="M8,8 L12,4 L4,4 L8,8" stroke="#D459FF" stroke-width="1" fill="none" />
+  <path d="M56,8 L52,4 L60,4 L56,8" stroke="#D459FF" stroke-width="1" fill="none" />
+  <path d="M8,56 L12,60 L4,60 L8,56" stroke="#D459FF" stroke-width="1" fill="none" />
+  <path d="M56,56 L52,60 L60,60 L56,56" stroke="#D459FF" stroke-width="1" fill="none" />
+</svg>

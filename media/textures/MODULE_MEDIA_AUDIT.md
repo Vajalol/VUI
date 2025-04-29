@@ -1,0 +1,107 @@
+# VUI Module Media Audit
+
+This document tracks the status of media files required by each module in the VUI addon suite.
+
+## Core Media Files
+- [x] Vortex icon (standard and theme variants)
+- [x] Theme textures for all four themes
+- [x] Common textures shared across modules
+
+## BuffOverlay Module
+- [x] Healer icon (plus.svg)
+- [x] Theme-specific flame overlay textures
+- [x] Theme-specific lightning overlay textures
+- [x] Theme-specific arcane overlay textures
+- [x] Theme-specific fel overlay textures
+
+## TrufiGCD Module
+- [x] Spell border textures
+- [ ] Class icon textures
+- [x] Animation textures (flash effect)
+
+## MoveAny Module
+- [ ] Frame textures
+- [ ] Handle textures
+- [ ] Grid textures
+
+## Auctionator Module
+- [ ] Button textures
+- [ ] Search icon textures
+- [ ] List header textures
+
+## AngryKeystones Module
+- [ ] Timer textures
+- [ ] Objective textures
+- [ ] Progress bar textures
+
+## OmniCC Module
+- [x] Cooldown swipe textures
+- [x] Cooldown flash textures
+- [x] Cooldown finish textures
+
+## OmniCD Module
+- [x] Theme-specific cooldown textures
+- [x] Class icon textures
+- [x] Status bar textures
+
+## idTip Module
+- [ ] Tooltip border textures
+- [ ] Background textures
+
+## Premade Group Finder Module
+- [ ] Button textures
+- [ ] Filter icon textures
+- [ ] List header textures
+
+## SpellNotifications Module
+- [x] Theme-specific notification textures
+- [x] Theme-specific glow textures
+- [ ] Sound notification file
+
+## DetailsSkin Module
+- [x] Theme-specific window textures
+- [x] Theme-specific button textures
+- [x] Theme-specific bar textures
+
+## MSBT Module
+- [ ] Font files
+- [ ] Animation path textures
+- [ ] Sound files
+
+## Nameplates Module
+- [x] Theme-specific border textures
+- [x] Theme-specific glow textures
+- [x] Threat indicator textures
+- [ ] Cast bar textures
+- [ ] Health bar textures
+
+## Unitframes Module
+- [x] Theme-specific border glow textures
+- [x] Theme-specific portrait highlight textures
+- [ ] Power bar textures
+- [ ] Status icon textures
+
+## Enhanced Player Frame (EPF) Module
+- [ ] Theme-specific frame textures
+- [ ] Theme-specific border textures
+- [ ] HUD element textures
+
+## Tools Module
+- [ ] Position of Power border textures
+- [ ] Mouse trail textures
+- [ ] Buff tracker textures
+
+## ActionBars Module
+- [ ] Button textures
+- [ ] Macro icon textures
+- [ ] Cooldown textures
+
+## CastBar Module
+- [x] Theme-specific cast bar textures
+- [x] Theme-specific cast bar background textures
+- [x] Cast success/fail textures
+
+## Tooltip Module
+- [ ] Border textures
+- [ ] Background textures
+- [ ] Item quality highlight textures

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="notificationGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#3EBEFF;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#0D9DE6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0D9DE6;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Main circular glow -->
+  <circle cx="64" cy="64" r="56" fill="url(#notificationGradient)" />
+  
+  <!-- Lightning bolts -->
+  <path d="M64,20 L58,50 L70,52 L56,92" stroke="#3EBEFF" stroke-width="4" fill="none" stroke-linecap="round" />
+  <path d="M40,40 L35,60 L45,58 L30,80" stroke="#3EBEFF" stroke-width="3" fill="none" stroke-linecap="round" />
+  <path d="M88,40 L82,60 L94,58 L76,80" stroke="#3EBEFF" stroke-width="3" fill="none" stroke-linecap="round" />
+</svg>

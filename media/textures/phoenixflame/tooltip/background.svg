@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Phoenix Flame themed tooltip background texture -->
+  <defs>
+    <linearGradient id="phoenixBackgroundGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#331A0F;stop-opacity:0.95" />
+      <stop offset="50%" style="stop-color:#1A0A05;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#331A0F;stop-opacity:0.95" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main background with rounded corners -->
+  <rect x="0" y="0" width="256" height="256" rx="10" ry="10" fill="url(#phoenixBackgroundGradient)" />
+  
+  <!-- Subtle inner ember glow -->
+  <rect x="2" y="2" width="252" height="252" rx="9" ry="9" 
+        fill="none" stroke="#E64D0D" stroke-opacity="0.1" stroke-width="1" />
+  
+  <!-- Subtle top light gradient -->
+  <path d="M 10,0 H 246 C 252,0 256,4 256,10 C 256,6 252,2 246,2 H 10 C 4,2 0,6 0,10 C 0,4 4,0 10,0 Z" 
+        fill="#FFA31A" fill-opacity="0.05" />
+        
+  <!-- Subtle ember/flame patterns in the background -->
+  <path d="M 128,225 C 120,215 135,210 125,200 C 135,210 125,215 140,200" 
+        fill="none" stroke="#E64D0D" stroke-width="0.5" stroke-opacity="0.2" />
+  <path d="M 40,160 C 35,150 50,145 40,135 C 50,145 40,150 55,135" 
+        fill="none" stroke="#E64D0D" stroke-width="0.5" stroke-opacity="0.2" />
+  <path d="M 216,160 C 211,150 226,145 216,135 C 226,145 216,150 231,135" 
+        fill="none" stroke="#E64D0D" stroke-width="0.5" stroke-opacity="0.2" />
+</svg>

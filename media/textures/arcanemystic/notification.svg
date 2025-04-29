@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="notificationGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#D459FF;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#9D0DE6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9D0DE6;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Main circular glow -->
+  <circle cx="64" cy="64" r="56" fill="url(#notificationGradient)" />
+  
+  <!-- Arcane runes and symbols -->
+  <circle cx="64" cy="64" r="40" stroke="#D459FF" stroke-width="2" fill="none" />
+  <circle cx="64" cy="64" r="30" stroke="#D459FF" stroke-width="1" fill="none" />
+  
+  <!-- Arcane symbol in the center -->
+  <path d="M64,30 L74,60 L50,45 L78,45 L54,60 L64,30" stroke="#D459FF" stroke-width="2" fill="#D459FF" fill-opacity="0.5" />
+  
+  <!-- Additional rune circles -->
+  <circle cx="64" cy="64" r="20" stroke="#D459FF" stroke-width="1" fill="none" />
+  <circle cx="44" cy="64" r="5" stroke="#D459FF" stroke-width="1" fill="#D459FF" fill-opacity="0.7" />
+  <circle cx="84" cy="64" r="5" stroke="#D459FF" stroke-width="1" fill="#D459FF" fill-opacity="0.7" />
+  <circle cx="64" cy="44" r="5" stroke="#D459FF" stroke-width="1" fill="#D459FF" fill-opacity="0.7" />
+  <circle cx="64" cy="84" r="5" stroke="#D459FF" stroke-width="1" fill="#D459FF" fill-opacity="0.7" />
+</svg>

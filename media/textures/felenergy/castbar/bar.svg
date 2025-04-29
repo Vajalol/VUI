@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="32" viewBox="0 0 256 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy themed cast bar texture -->
+  <defs>
+    <linearGradient id="felBarGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#00AA00;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#006600;stop-opacity:0.9" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Cast bar base with rounded corners -->
+  <rect x="2" y="2" width="252" height="28" rx="6" ry="6" fill="url(#felBarGradient)" />
+  
+  <!-- Subtle top highlight -->
+  <path d="M 8,2 H 248 C 251,2 254,5 254,8 C 254,6 251,4 248,4 H 8 C 5,4 2,6 2,8 C 2,5 5,2 8,2 Z" 
+        fill="#FFFFFF" fill-opacity="0.4" />
+  
+  <!-- Subtle bottom shadow -->
+  <path d="M 8,30 H 248 C 251,30 254,27 254,24 C 254,26 251,28 248,28 H 8 C 5,28 2,26 2,24 C 2,27 5,30 8,30 Z" 
+        fill="#000000" fill-opacity="0.3" />
+        
+  <!-- Fel corruption tendril effects -->
+  <path d="M 30,2 C 25,8 35,12 30,16 C 35,20 25,24 30,30" 
+        fill="none" stroke="#1AFF1A" stroke-width="1" stroke-opacity="0.6" />
+  <path d="M 90,2 C 85,8 95,12 90,16 C 95,20 85,24 90,30" 
+        fill="none" stroke="#1AFF1A" stroke-width="1" stroke-opacity="0.6" />
+  <path d="M 150,2 C 145,8 155,12 150,16 C 155,20 145,24 150,30" 
+        fill="none" stroke="#1AFF1A" stroke-width="1" stroke-opacity="0.6" />
+  <path d="M 210,2 C 205,8 215,12 210,16 C 215,20 205,24 210,30" 
+        fill="none" stroke="#1AFF1A" stroke-width="1" stroke-opacity="0.6" />
+</svg>

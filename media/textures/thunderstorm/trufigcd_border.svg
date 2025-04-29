@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="thunderBorderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3EBEFF;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#0D9DE6;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#004080;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Thunder Storm themed border for TrufiGCD -->
+  <rect x="2" y="2" width="60" height="60" rx="4" ry="4" 
+        fill="none" stroke="url(#thunderBorderGradient)" stroke-width="2" />
+  
+  <!-- Optional corner accents with lightning style -->
+  <path d="M2,12 L2,6 Q2,2 6,2 L12,2" stroke="url(#thunderBorderGradient)" stroke-width="3" fill="none" />
+  <path d="M52,2 L58,2 Q62,2 62,6 L62,12" stroke="url(#thunderBorderGradient)" stroke-width="3" fill="none" />
+  <path d="M62,52 L62,58 Q62,62 58,62 L52,62" stroke="url(#thunderBorderGradient)" stroke-width="3" fill="none" />
+  <path d="M12,62 L6,62 Q2,62 2,58 L2,52" stroke="url(#thunderBorderGradient)" stroke-width="3" fill="none" />
+  
+  <!-- Lightning bolt corner accents -->
+  <path d="M10,2 L8,10 L12,11 L6,20" stroke="#3EBEFF" stroke-width="1" fill="none" />
+  <path d="M54,2 L56,10 L52,11 L58,20" stroke="#3EBEFF" stroke-width="1" fill="none" />
+  <path d="M10,62 L8,54 L12,53 L6,44" stroke="#3EBEFF" stroke-width="1" fill="none" />
+  <path d="M54,62 L56,54 L52,53 L58,44" stroke="#3EBEFF" stroke-width="1" fill="none" />
+</svg>

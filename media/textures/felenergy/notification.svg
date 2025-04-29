@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="notificationGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#00AA00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00AA00;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Main circular glow -->
+  <circle cx="64" cy="64" r="56" fill="url(#notificationGradient)" />
+  
+  <!-- Fel energy tendrils -->
+  <path d="M64,30 
+           C80,40 90,50 85,65 
+           C95,70 85,85 75,80 
+           C65,90 55,85 60,75 
+           C45,75 40,60 55,65 
+           C50,50 60,35 64,30 Z" 
+        fill="#1AFF1A" fill-opacity="0.6" />
+  
+  <!-- Fel corruption lines -->
+  <path d="M40,40 C30,50 35,60 25,65" stroke="#1AFF1A" stroke-width="2" fill="none" />
+  <path d="M88,40 C98,50 95,65 105,70" stroke="#1AFF1A" stroke-width="2" fill="none" />
+  <path d="M50,90 C40,95 30,85 25,95" stroke="#1AFF1A" stroke-width="2" fill="none" />
+  <path d="M78,90 C88,95 95,85 105,95" stroke="#1AFF1A" stroke-width="2" fill="none" />
+</svg>

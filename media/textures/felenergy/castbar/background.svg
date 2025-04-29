@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="32" viewBox="0 0 256 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy themed cast bar background -->
+  <defs>
+    <linearGradient id="felBackgroundGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F330F;stop-opacity:0.95" />
+      <stop offset="50%" style="stop-color:#0A1A0A;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#0F330F;stop-opacity:0.95" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Cast bar background with rounded corners -->
+  <rect x="0" y="0" width="256" height="32" rx="8" ry="8" fill="url(#felBackgroundGradient)" />
+  
+  <!-- Subtle fel inner glow -->
+  <rect x="1" y="1" width="254" height="30" rx="7" ry="7" 
+        fill="none" stroke="#00AA00" stroke-opacity="0.15" stroke-width="1" />
+  
+  <!-- Subtle top highlight -->
+  <path d="M 8,0 H 248 C 252,0 256,4 256,8 C 256,4 252,1 248,1 H 8 C 4,1 0,4 0,8 C 0,4 4,0 8,0 Z" 
+        fill="#1AFF1A" fill-opacity="0.1" />
+        
+  <!-- Subtle fel corruption patterns in background -->
+  <path d="M 40,0 C 35,10 45,16 35,32" 
+        fill="none" stroke="#00AA00" stroke-width="0.5" stroke-opacity="0.2" />
+  <path d="M 216,0 C 221,10 211,16 221,32" 
+        fill="none" stroke="#00AA00" stroke-width="0.5" stroke-opacity="0.2" />
+</svg>
