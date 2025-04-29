@@ -16,4 +16,7 @@
     <Script file="animations.lua"/>
     <Script file="effects.lua"/>
     <Script file="customizations.lua"/>
+    
+    <!-- WhiiskeyZ profile import -->
+    <Script file="whiiskeyz_import.lua"/>
 </Ui>

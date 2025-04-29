@@ -10,13 +10,21 @@ function Plater:Initialize()
     -- Setup internal structures
     self:SetupInternals()
     
+    -- Import WhiiskeyZ profile from wago.io/whiiskeyzplater
+    if not VUI.db.char.whiiskeyzProfileImported then
+        C_Timer.After(2, function() 
+            self:ImportWhiiskeyZProfile()
+            VUI.db.char.whiiskeyzProfileImported = true
+        end)
+    end
+    
     -- Initialize all components
     self:InitializeComponents()
     
     -- Register events
     self:RegisterEvents()
     
-    VUI:Print("VUI Plater nameplates initialized (inspired by WhiiskeyZ profile)")
+    VUI:Print("VUI Plater nameplates initialized with exact WhiiskeyZ profile from wago.io/whiiskeyzplater")
 end
 
 -- Setup internal structures
