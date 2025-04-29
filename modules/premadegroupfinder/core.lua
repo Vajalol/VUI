@@ -254,7 +254,7 @@ function PGF:CreateFilterUI()
     rolesText:SetFont(fontPath, fontSize, "")
     
     -- Tank
-    self.tankCheckbox = self:CreateCheckButton("VUIPGFTankCheckbox", self.filterFrame, "Tank")
+    self.tankCheckbox = self:CreateCheckButton("VUIPGFTankCheckbox", self.filterFrame, "Tank", "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\tank.svg")
     self.tankCheckbox:SetPoint("LEFT", rolesText, "RIGHT", 5, 0)
     self.tankCheckbox:SetChecked(self.settings.filters.tankOnly)
     self.tankCheckbox:SetScript("OnClick", function(cb)
@@ -264,7 +264,7 @@ function PGF:CreateFilterUI()
     end)
     
     -- Healer
-    self.healerCheckbox = self:CreateCheckButton("VUIPGFHealerCheckbox", self.filterFrame, "Healer")
+    self.healerCheckbox = self:CreateCheckButton("VUIPGFHealerCheckbox", self.filterFrame, "Healer", "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\healer.svg")
     self.healerCheckbox:SetPoint("LEFT", self.tankCheckbox, "RIGHT", 60, 0)
     self.healerCheckbox:SetChecked(self.settings.filters.healerOnly)
     self.healerCheckbox:SetScript("OnClick", function(cb)
@@ -274,7 +274,7 @@ function PGF:CreateFilterUI()
     end)
     
     -- DPS
-    self.dpsCheckbox = self:CreateCheckButton("VUIPGFDPSCheckbox", self.filterFrame, "DPS")
+    self.dpsCheckbox = self:CreateCheckButton("VUIPGFDPSCheckbox", self.filterFrame, "DPS", "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\dps.svg")
     self.dpsCheckbox:SetPoint("LEFT", self.healerCheckbox, "RIGHT", 60, 0)
     self.dpsCheckbox:SetChecked(self.settings.filters.dpsOnly)
     self.dpsCheckbox:SetScript("OnClick", function(cb)
@@ -284,7 +284,7 @@ function PGF:CreateFilterUI()
     end)
     
     -- Voice chat
-    self.voiceChatCheckbox = self:CreateCheckButton("VUIPGFVoiceChatCheckbox", self.filterFrame, "Voice Chat")
+    self.voiceChatCheckbox = self:CreateCheckButton("VUIPGFVoiceChatCheckbox", self.filterFrame, "Voice Chat", "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\voicechat.svg")
     self.voiceChatCheckbox:SetPoint("LEFT", self.dpsCheckbox, "RIGHT", 60, 0)
     self.voiceChatCheckbox:SetChecked(self.settings.filters.voiceChat)
     self.voiceChatCheckbox:SetScript("OnClick", function(cb)
@@ -294,7 +294,7 @@ function PGF:CreateFilterUI()
     end)
     
     -- Create refresh button
-    self.refreshButton = self:CreateButton("VUIPGFRefreshButton", self.filterFrame, "Refresh")
+    self.refreshButton = self:CreateButton("VUIPGFRefreshButton", self.filterFrame, "Refresh", "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\refresh.svg")
     self.refreshButton:SetSize(80, 20)
     self.refreshButton:SetPoint("TOPRIGHT", self.filterFrame, "TOPRIGHT", -15, -15)
     self.refreshButton:SetScript("OnClick", function()
@@ -302,7 +302,7 @@ function PGF:CreateFilterUI()
     end)
     
     -- Create reset filters button
-    self.resetFiltersButton = self:CreateButton("VUIPGFResetFiltersButton", self.filterFrame, "Reset Filters")
+    self.resetFiltersButton = self:CreateButton("VUIPGFResetFiltersButton", self.filterFrame, "Reset Filters", "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\filter.svg")
     self.resetFiltersButton:SetSize(100, 20)
     self.resetFiltersButton:SetPoint("RIGHT", self.refreshButton, "LEFT", -10, 0)
     self.resetFiltersButton:SetScript("OnClick", function()
@@ -338,16 +338,16 @@ function PGF:CreateQuickSearchButtons()
     -- Create the quick search buttons
     local buttonWidth = 100
     local quickSearches = {
-        { text = "M+ Dungeons", categoryID = 2, filters = 4 },
-        { text = "Raid", categoryID = 2, filters = 2 },
-        { text = "Rated PvP", categoryID = 4, filters = 0 },
-        { text = "Questing", categoryID = 1, filters = 0 },
-        { text = "Favorites", categoryID = nil, filters = nil, isFavorites = true }
+        { text = "M+ Dungeons", categoryID = 2, filters = 4, icon = "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\mythicplus.svg" },
+        { text = "Raid", categoryID = 2, filters = 2, icon = "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\raid.svg" },
+        { text = "Rated PvP", categoryID = 4, filters = 0, icon = "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\pvp.svg" },
+        { text = "Questing", categoryID = 1, filters = 0, icon = "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\questing.svg" },
+        { text = "Favorites", categoryID = nil, filters = nil, isFavorites = true, icon = "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\favorites.svg" }
     }
     
     local prevButton
     for i, search in ipairs(quickSearches) do
-        local button = self:CreateButton("VUIPGFQuickSearch"..i, self.quickSearchFrame, search.text)
+        local button = self:CreateButton("VUIPGFQuickSearch"..i, self.quickSearchFrame, search.text, search.icon)
         button:SetSize(buttonWidth, 20)
         
         if i == 1 then
@@ -375,7 +375,7 @@ function PGF:HookSearchResult(button)
     if button.VUIHooked then return end
     
     -- Create favorite button
-    local favoriteButton = self:CreateButton("VUIPGFFavorite"..button:GetName(), button, "★")
+    local favoriteButton = self:CreateButton("VUIPGFFavorite"..button:GetName(), button, "", "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\favorite.svg")
     favoriteButton:SetSize(20, 20)
     favoriteButton:SetPoint("TOPRIGHT", button, "TOPRIGHT", -5, -5)
     favoriteButton:Hide() -- Initially hidden
@@ -391,7 +391,7 @@ function PGF:HookSearchResult(button)
     end)
     
     -- Create blacklist button
-    local blacklistButton = self:CreateButton("VUIPGFBlacklist"..button:GetName(), button, "✕")
+    local blacklistButton = self:CreateButton("VUIPGFBlacklist"..button:GetName(), button, "", "Interface\\AddOns\\VUI\\media\\icons\\premadegroupfinder\\blacklist.svg")
     blacklistButton:SetSize(20, 20)
     blacklistButton:SetPoint("TOPRIGHT", favoriteButton, "TOPLEFT", -2, 0)
     blacklistButton:Hide() -- Initially hidden
@@ -559,13 +559,18 @@ function PGF:EnhanceResultButton(button, resultID, info)
     if self.settings.advanced.markFavorites then
         button.VUIFavoriteButton:Show()
         
-        -- Update favorite button status
+        -- Update favorite button status with proper coloring
+        -- The icon is already set via the texture, no need to use text
         if info.activityID and self.favoriteActivities[info.activityID] then
-            button.VUIFavoriteButton:SetText("★")
-            button.VUIFavoriteButton:SetBackdropColor(1, 0.8, 0, 0.6)
+            -- For favorite status, use gold highlight
+            if button.VUIFavoriteButton.icon then
+                button.VUIFavoriteButton.icon:SetVertexColor(1, 0.84, 0, 1) -- Bright gold
+            end
         else
-            button.VUIFavoriteButton:SetText("☆")
-            button.VUIFavoriteButton:SetBackdropColor(0.3, 0.3, 0.3, 0.6)
+            -- For non-favorite status, use dimmed appearance
+            if button.VUIFavoriteButton.icon then
+                button.VUIFavoriteButton.icon:SetVertexColor(0.6, 0.6, 0.6, 0.7) -- Dimmed
+            end
         end
     else
         button.VUIFavoriteButton:Hide()

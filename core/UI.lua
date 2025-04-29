@@ -159,7 +159,7 @@ function VUI.UI:CreateFrame(name, parent, template)
 end
 
 -- Create a basic button with standardized appearance
-function VUI.UI:CreateButton(name, parent, text)
+function VUI.UI:CreateButton(name, parent, text, icon)
     parent = parent or UIParent
     
     local button = CreateFrame("Button", name, parent, "UIPanelButtonTemplate")
@@ -177,6 +177,20 @@ function VUI.UI:CreateButton(name, parent, text)
     if region and region:GetObjectType() == "FontString" then
         region:SetFont(fontName, VUI.db.profile.appearance.fontSize, "")
         region:SetTextColor(colors.text.r, colors.text.g, colors.text.b, colors.text.a)
+        
+        -- Adjust text position if icon is provided
+        if icon then
+            region:ClearAllPoints()
+            region:SetPoint("RIGHT", button, "RIGHT", -5, 0)
+        end
+    end
+    
+    -- Add icon if provided
+    if icon then
+        button.icon = button:CreateTexture(name.."Icon", "ARTWORK")
+        button.icon:SetSize(16, 16)
+        button.icon:SetPoint("LEFT", button, "LEFT", 5, 0)
+        button.icon:SetTexture(icon)
     end
     
     -- Add to tracking
@@ -202,7 +216,7 @@ function VUI.UI:CreateButton(name, parent, text)
 end
 
 -- Create a check button with standardized appearance
-function VUI.UI:CreateCheckButton(name, parent, text)
+function VUI.UI:CreateCheckButton(name, parent, text, icon)
     parent = parent or UIParent
     
     local checkButton = CreateFrame("CheckButton", name, parent, "UICheckButtonTemplate")
@@ -220,6 +234,19 @@ function VUI.UI:CreateCheckButton(name, parent, text)
         -- Apply color
         local colors = self:GetThemeColors()
         textObj:SetTextColor(colors.text.r, colors.text.g, colors.text.b, colors.text.a)
+        
+        -- Add spacing for icon if provided
+        if icon then
+            textObj:SetPoint("LEFT", checkButton, "RIGHT", 24, 0)
+        end
+    end
+    
+    -- Add icon if provided
+    if icon then
+        checkButton.icon = checkButton:CreateTexture(name.."Icon", "ARTWORK")
+        checkButton.icon:SetSize(16, 16)
+        checkButton.icon:SetPoint("LEFT", checkButton, "RIGHT", 4, 0)
+        checkButton.icon:SetTexture(icon)
     end
     
     -- Add to tracking

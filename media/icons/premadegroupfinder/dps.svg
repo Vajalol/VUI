@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>DPS Role Icon</title>
+    <g id="dps-role" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M16,2 C10.5,2 6,6.5 6,12 L6,22 C6,25.3 8.7,28 12,28 L20,28 C23.3,28 26,25.3 26,22 L26,12 C26,6.5 21.5,2 16,2 Z" id="shield-outline" stroke="#DDDDDD" stroke-width="2"></path>
+        <path d="M16,5 C12,5 9,8 9,12 L9,20 C9,22.2 10.8,24 13,24 L19,24 C21.2,24 23,22.2 23,20 L23,12 C23,8 20,5 16,5 Z" id="shield-fill" fill="#C23B29"></path>
+        <g id="swords" transform="translate(6.000000, 8.000000)" fill="#FFFFFF">
+            <path d="M13,1 L17,1 C17.6,1 18,1.4 18,2 L18,3 C18,3.6 17.6,4 17,4 L15,4 L15,6 L13,6 L13,4 L11,4 C10.4,4 10,3.6 10,3 L10,2 C10,1.4 10.4,1 11,1 L13,1 Z"></path>
+            <path d="M3,1 L7,1 C7.6,1 8,1.4 8,2 L8,3 C8,3.6 7.6,4 7,4 L5,4 L5,6 L3,6 L3,4 L1,4 C0.4,4 0,3.6 0,3 L0,2 C0,1.4 0.4,1 1,1 L3,1 Z"></path>
+            <path d="M13,7 L15,7 L18,14 L16,16 L10,16 L8,14 L11,7 L13,7 Z" id="blade1"></path>
+            <path d="M3,7 L5,7 L8,14 L6,16 L0,16 L-2,14 L1,7 L3,7 Z" id="blade2" transform="translate(3.000000, 11.500000) scale(-1, 1) translate(-3.000000, -11.500000)"></path>
+        </g>
+    </g>
+</svg>
