@@ -74,4 +74,7 @@
     
     <!-- Nameplates Module -->
     <Include file="nameplates\index.xml"/>
+    
+    <!-- Enhanced Player Frame Module -->
+    <Include file="epf\load.xml"/>
 </Ui>

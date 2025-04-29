@@ -502,8 +502,9 @@ function VUI:CreateEnhancedModulesSection()
         -- Create a module category system
         local categories = {
             { name = "Core Addons", modules = {"buffoverlay", "trufigcd", "moveany", "auctionator", "angrykeystone", "omnicc", "omnicd", "idtip", "premadegroupfinder", "spellnotifications", "msbt"} },
-            { name = "Interface Enhancements", modules = {"bags", "paperdoll", "actionbars"} },
-            { name = "Visual & Performance", modules = {"unitframes", "skins", "detailsskin"} }
+            { name = "Interface Enhancements", modules = {"bags", "paperdoll", "actionbars", "nameplates", "epf"} },
+            { name = "Visual & Performance", modules = {"unitframes", "skins", "detailsskin"} },
+            { name = "Tools", modules = {"tools"} }
         }
         
         -- Create scrollable frame for module content
@@ -695,7 +696,7 @@ function VUI:RecalculateModuleContentHeight(frame)
     local height = 10 -- Start with some padding
     
     -- Add height for each category header
-    for i = 1, 3 do
+    for i = 1, 4 do
         local header = frame["categoryHeader"..i]
         if header then
             height = height + 40 -- Header height
@@ -824,6 +825,12 @@ function VUI:ShowModuleConfig(moduleName, parentFrame)
             description = "Enhanced character panel with detailed stats and item information."
         elseif moduleName == "actionbars" then
             description = "Customizable action bars with enhanced visual features."
+        elseif moduleName == "nameplates" then
+            description = "Advanced nameplate customization with WhiiskeyZ and Maeraad profiles."
+        elseif moduleName == "epf" then
+            description = "Enhanced Player Frame with customizable health/power text and portrait options."
+        elseif moduleName == "tools" then
+            description = "WeakAura-inspired tools including Position of Power, Buff Checker, and Mouse Trail."
         else
             description = "Core module for VUI functionality."
         end

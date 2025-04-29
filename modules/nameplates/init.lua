@@ -697,6 +697,35 @@ function Nameplates:GetConfig()
                 end,
                 disabled = function() return not self.enabled end,
             },
+            profileHeader = {
+                order = 4,
+                type = "header",
+                name = "Plater Profiles",
+            },
+            whiiskeyzProfile = {
+                order = 5,
+                type = "execute",
+                name = "Import WhiiskeyZ Profile",
+                desc = "Import the exact WhiiskeyZ profile from wago.io/whiiskeyzplater",
+                func = function()
+                    VUI.db.char.whiiskeyzProfileImported = nil
+                    self.plater:ImportWhiiskeyZProfile()
+                    self:UpdateAll()
+                end,
+                disabled = function() return not self.enabled or self.settings.styling ~= "plater" end,
+            },
+            maeraadProfile = {
+                order = 6,
+                type = "execute",
+                name = "Import Maeraad Profile",
+                desc = "Import Maeraad's Plater profile",
+                func = function()
+                    VUI.db.char.maeraadProfileImported = nil
+                    self.plater:ImportMaeraadProfile()
+                    self:UpdateAll()
+                end,
+                disabled = function() return not self.enabled or self.settings.styling ~= "plater" end,
+            },
         },
     }
 end

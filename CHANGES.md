@@ -30,6 +30,12 @@
 - Created custom script support for advanced nameplate customization
 - Added theme integration to nameplate elements (health bars, cast bars, etc.)
 - Enhanced aura display with custom filtering and sorting options
+- Added support for multiple Plater profiles including WhiiskeyZ and Maeraad profiles
+- Integrated EPF-Enhanced (Enhanced Player Frame) module from Wago.io
+- Added comprehensive player frame customization with health/power text displays
+- Added portrait customization options including 3D model and class icon styles
+- Implemented custom theme integration for the player frame elements
+- Added advanced HUD elements customization for player frame
 
 ## Version 0.1.0 (2025-04-26)
 - Initial beta release
