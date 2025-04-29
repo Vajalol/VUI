@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Position of Power border texture (Fel Energy theme) -->
+  <defs>
+    <linearGradient id="felBorderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00AA00;stop-opacity:0.7" />
+      <stop offset="25%" style="stop-color:#1AFF1A;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#00AA00;stop-opacity:0.7" />
+      <stop offset="75%" style="stop-color:#1AFF1A;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#00AA00;stop-opacity:0.7" />
+    </linearGradient>
+    
+    <filter id="felGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feFlood flood-color="#00AA00" flood-opacity="0.5" result="glow" />
+      <feComposite in="glow" in2="blur" operator="in" result="softGlow" />
+      <feComposite in="SourceGraphic" in2="softGlow" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Outer square border -->
+  <rect x="6" y="6" width="116" height="116" rx="4" ry="4" 
+        fill="none" stroke="url(#felBorderGradient)" stroke-width="2" filter="url(#felGlow)" />
+  
+  <!-- Corner accents with Fel Energy styling -->
+  <path d="M 6,24 L 6,6 L 24,6" fill="none" stroke="url(#felBorderGradient)" stroke-width="3" filter="url(#felGlow)" />
+  <path d="M 104,6 L 122,6 L 122,24" fill="none" stroke="url(#felBorderGradient)" stroke-width="3" filter="url(#felGlow)" />
+  <path d="M 6,104 L 6,122 L 24,122" fill="none" stroke="url(#felBorderGradient)" stroke-width="3" filter="url(#felGlow)" />
+  <path d="M 104,122 L 122,122 L 122,104" fill="none" stroke="url(#felBorderGradient)" stroke-width="3" filter="url(#felGlow)" />
+  
+  <!-- Central highlight dot markers with Fel Energy glow -->
+  <circle cx="64" cy="6" r="2" fill="#1AFF1A" filter="url(#felGlow)" />
+  <circle cx="122" cy="64" r="2" fill="#1AFF1A" filter="url(#felGlow)" />
+  <circle cx="64" cy="122" r="2" fill="#1AFF1A" filter="url(#felGlow)" />
+  <circle cx="6" cy="64" r="2" fill="#1AFF1A" filter="url(#felGlow)" />
+  
+  <!-- Fel corruption corner indicators -->
+  <path d="M 16,16 C 14,14 18,14 20,12 C 18,14 14,14 16,16 Z" fill="#1AFF1A" opacity="0.8" />
+  <path d="M 16,16 C 14,18 18,18 20,20 C 18,18 14,18 16,16 Z" fill="#1AFF1A" opacity="0.4" />
+  
+  <path d="M 112,16 C 110,14 114,14 116,12 C 114,14 110,14 112,16 Z" fill="#1AFF1A" opacity="0.8" />
+  <path d="M 112,16 C 110,18 114,18 116,20 C 114,18 110,18 112,16 Z" fill="#1AFF1A" opacity="0.4" />
+  
+  <path d="M 16,112 C 14,110 18,110 20,108 C 18,110 14,110 16,112 Z" fill="#1AFF1A" opacity="0.8" />
+  <path d="M 16,112 C 14,114 18,114 20,116 C 18,114 14,114 16,112 Z" fill="#1AFF1A" opacity="0.4" />
+  
+  <path d="M 112,112 C 110,110 114,110 116,108 C 114,110 110,110 112,112 Z" fill="#1AFF1A" opacity="0.8" />
+  <path d="M 112,112 C 110,114 114,114 116,116 C 114,114 110,114 112,112 Z" fill="#1AFF1A" opacity="0.4" />
+  
+  <!-- Fel corruption flowing energy decorations -->
+  <path d="M 56,6 C 60,2 68,2 72,6" 
+        fill="none" stroke="#1AFF1A" stroke-width="0.7" stroke-opacity="0.5" />
+  <path d="M 122,56 C 126,60 126,68 122,72" 
+        fill="none" stroke="#1AFF1A" stroke-width="0.7" stroke-opacity="0.5" />
+  <path d="M 56,122 C 60,126 68,126 72,122" 
+        fill="none" stroke="#1AFF1A" stroke-width="0.7" stroke-opacity="0.5" />
+  <path d="M 6,56 C 2,60 2,68 6,72" 
+        fill="none" stroke="#1AFF1A" stroke-width="0.7" stroke-opacity="0.5" />
+  
+  <!-- Corrupting tendrils -->
+  <path d="M 64,6 C 60,0 68,0 64,6 M 122,64 C 128,60 128,68 122,64
+           M 64,122 C 68,128 60,128 64,122 M 6,64 C 0,68 0,60 6,64" 
+        fill="none" stroke="#1AFF1A" stroke-width="0.5" stroke-opacity="0.3" />
+</svg>

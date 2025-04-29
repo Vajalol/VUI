@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="128" viewBox="0 0 256 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Standard Enhanced Player Frame texture -->
+  <defs>
+    <linearGradient id="frameGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#222222;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#181818;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#111111;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <linearGradient id="highlightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0.0" />
+    </linearGradient>
+    
+    <filter id="frameGlow" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="1" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Main frame background with rounded corners -->
+  <rect x="8" y="8" width="240" height="112" rx="6" ry="6" fill="url(#frameGradient)" filter="url(#frameGlow)" />
+  
+  <!-- Portrait area circle cutout (indicated with a different color) -->
+  <circle cx="58" cy="64" r="42" fill="#333333" />
+  
+  <!-- Player info area (right of portrait) -->
+  <rect x="108" y="22" width="130" height="30" rx="4" ry="4" fill="#292929" />
+  
+  <!-- Health bar area -->
+  <rect x="108" y="60" width="130" height="20" rx="3" ry="3" fill="#444444" />
+  
+  <!-- Power bar area -->
+  <rect x="108" y="86" width="130" height="20" rx="3" ry="3" fill="#444444" />
+  
+  <!-- Top highlight for 3D effect -->
+  <path d="M 14,14 H 242 V 20 C 242,17 240,17 236,17 H 20 C 16,17 14,17 14,20 V 14 Z" 
+        fill="url(#highlightGradient)" />
+        
+  <!-- Bottom shadow for 3D effect -->
+  <path d="M 14,114 H 242 V 108 C 242,111 240,111 236,111 H 20 C 16,111 14,111 14,108 V 114 Z" 
+        fill="#000000" fill-opacity="0.3" />
+  
+  <!-- Frame edge (border) -->
+  <rect x="8" y="8" width="240" height="112" rx="6" ry="6" 
+        fill="none" stroke="#666666" stroke-width="1" />
+</svg>

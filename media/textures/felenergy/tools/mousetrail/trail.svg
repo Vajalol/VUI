@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy Mouse Trail Particle -->
+  <defs>
+    <radialGradient id="felGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#00AA00;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#0A1A0A;stop-opacity:0" />
+    </radialGradient>
+    
+    <filter id="felGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feFlood flood-color="#00AA00" flood-opacity="0.5" result="glow" />
+      <feComposite in="glow" in2="blur" operator="in" result="softGlow" />
+      <feComposite in="SourceGraphic" in2="softGlow" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Main fel particle -->
+  <circle cx="16" cy="16" r="8" fill="url(#felGradient)" filter="url(#felGlow)" />
+  
+  <!-- Fel corruption tendrils -->
+  <path d="M 16,8 C 12,10 20,12 16,16 C 20,20 12,22 16,24" 
+        stroke="#1AFF1A" stroke-width="0.8" stroke-opacity="0.8" fill="none" />
+  <path d="M 8,16 C 10,12 12,20 16,16 C 20,20 22,12 24,16" 
+        stroke="#1AFF1A" stroke-width="0.7" stroke-opacity="0.7" fill="none" />
+  
+  <!-- Fel energy splatter -->
+  <path d="M 14,11 L 15,10 M 17,10 L 18,11" stroke="#1AFF1A" stroke-width="0.5" stroke-opacity="0.7" />
+  <path d="M 11,14 L 10,15 M 10,17 L 11,18" stroke="#1AFF1A" stroke-width="0.5" stroke-opacity="0.7" />
+  <path d="M 14,21 L 15,22 M 17,22 L 18,21" stroke="#1AFF1A" stroke-width="0.5" stroke-opacity="0.7" />
+  <path d="M 21,14 L 22,15 M 22,17 L 21,18" stroke="#1AFF1A" stroke-width="0.5" stroke-opacity="0.7" />
+  
+  <!-- Core corruption effect -->
+  <circle cx="16" cy="16" r="2" fill="#1AFF1A" opacity="0.7" />
+  <path d="M 14,16 L 18,16 M 16,14 L 16,18" stroke="#1AFF1A" stroke-width="0.7" stroke-opacity="0.9" />
+</svg>

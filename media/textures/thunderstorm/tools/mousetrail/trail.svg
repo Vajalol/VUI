@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Thunder Storm Mouse Trail Particle -->
+  <defs>
+    <radialGradient id="thunderGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#73C2FB;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#0D9DE6;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#0A0A1A;stop-opacity:0" />
+    </radialGradient>
+    
+    <filter id="thunderGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feFlood flood-color="#0D9DE6" flood-opacity="0.5" result="glow" />
+      <feComposite in="glow" in2="blur" operator="in" result="softGlow" />
+      <feComposite in="SourceGraphic" in2="softGlow" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Main electric particle -->
+  <circle cx="16" cy="16" r="8" fill="url(#thunderGradient)" filter="url(#thunderGlow)" />
+  
+  <!-- Lightning bolt effects -->
+  <path d="M 16,8 L 14,14 L 18,16 L 16,24" stroke="#73C2FB" stroke-width="1" stroke-opacity="0.8" fill="none" />
+  <path d="M 8,16 L 14,14 L 16,18 L 24,16" stroke="#73C2FB" stroke-width="0.7" stroke-opacity="0.6" fill="none" />
+  
+  <!-- Static electricity dots -->
+  <circle cx="13" cy="11" r="0.8" fill="#73C2FB" opacity="0.7" />
+  <circle cx="19" cy="13" r="0.6" fill="#73C2FB" opacity="0.5" />
+  <circle cx="11" cy="17" r="0.5" fill="#73C2FB" opacity="0.6" />
+  <circle cx="21" cy="19" r="0.7" fill="#73C2FB" opacity="0.4" />
+  <circle cx="15" cy="21" r="0.5" fill="#73C2FB" opacity="0.5" />
+</svg>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Position of Power border texture (standard) -->
+  <defs>
+    <linearGradient id="borderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#DDDDDD;stop-opacity:0.5" />
+      <stop offset="25%" style="stop-color:#FFFFFF;stop-opacity:0.7" />
+      <stop offset="50%" style="stop-color:#DDDDDD;stop-opacity:0.5" />
+      <stop offset="75%" style="stop-color:#FFFFFF;stop-opacity:0.7" />
+      <stop offset="100%" style="stop-color:#DDDDDD;stop-opacity:0.5" />
+    </linearGradient>
+    
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Outer square border -->
+  <rect x="6" y="6" width="116" height="116" rx="4" ry="4" 
+        fill="none" stroke="url(#borderGradient)" stroke-width="2" filter="url(#glow)" />
+  
+  <!-- Corner accents -->
+  <path d="M 6,24 L 6,6 L 24,6" fill="none" stroke="url(#borderGradient)" stroke-width="3" filter="url(#glow)" />
+  <path d="M 104,6 L 122,6 L 122,24" fill="none" stroke="url(#borderGradient)" stroke-width="3" filter="url(#glow)" />
+  <path d="M 6,104 L 6,122 L 24,122" fill="none" stroke="url(#borderGradient)" stroke-width="3" filter="url(#glow)" />
+  <path d="M 104,122 L 122,122 L 122,104" fill="none" stroke="url(#borderGradient)" stroke-width="3" filter="url(#glow)" />
+  
+  <!-- Central highlight dot markers -->
+  <circle cx="64" cy="6" r="2" fill="#FFFFFF" />
+  <circle cx="122" cy="64" r="2" fill="#FFFFFF" />
+  <circle cx="64" cy="122" r="2" fill="#FFFFFF" />
+  <circle cx="6" cy="64" r="2" fill="#FFFFFF" />
+  
+  <!-- Light corner indicators -->
+  <circle cx="16" cy="16" r="1.5" fill="#FFFFFF" opacity="0.8" />
+  <circle cx="112" cy="16" r="1.5" fill="#FFFFFF" opacity="0.8" />
+  <circle cx="16" cy="112" r="1.5" fill="#FFFFFF" opacity="0.8" />
+  <circle cx="112" cy="112" r="1.5" fill="#FFFFFF" opacity="0.8" />
+</svg>

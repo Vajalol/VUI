@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="20" viewBox="0 0 256 20" xmlns="http://www.w3.org/2000/svg">
+  <!-- Standard Unitframe focus power bar texture -->
+  <defs>
+    <linearGradient id="focusGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9F4A;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#D7822E;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#BE6E1A;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <linearGradient id="focusHighlightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0.0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main power bar background -->
+  <rect x="0" y="0" width="256" height="20" rx="3" ry="3" fill="url(#focusGradient)" />
+  
+  <!-- Top highlight for 3D effect -->
+  <path d="M 3,3 H 253 V 7 C 253,5 251,5 249,5 H 7 C 5,5 3,5 3,7 V 3 Z" 
+        fill="url(#focusHighlightGradient)" />
+        
+  <!-- Bottom shadow for 3D effect -->
+  <path d="M 3,17 H 253 V 13 C 253,15 251,15 249,15 H 7 C 5,15 3,15 3,13 V 17 Z" 
+        fill="#000000" fill-opacity="0.2" />
+  
+  <!-- Subtle focus pattern (eye symbols) -->
+  <path d="M 32,10 m -5,0 a 5,3 0 1,0 10,0 a 5,3 0 1,0 -10,0
+           M 96,10 m -5,0 a 5,3 0 1,0 10,0 a 5,3 0 1,0 -10,0
+           M 160,10 m -5,0 a 5,3 0 1,0 10,0 a 5,3 0 1,0 -10,0
+           M 224,10 m -5,0 a 5,3 0 1,0 10,0 a 5,3 0 1,0 -10,0" 
+        fill="none" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.2" />
+  
+  <!-- Pupils -->
+  <circle cx="32" cy="10" r="1" fill="#FFFFFF" fill-opacity="0.2" />
+  <circle cx="96" cy="10" r="1" fill="#FFFFFF" fill-opacity="0.2" />
+  <circle cx="160" cy="10" r="1" fill="#FFFFFF" fill-opacity="0.2" />
+  <circle cx="224" cy="10" r="1" fill="#FFFFFF" fill-opacity="0.2" />
+</svg>

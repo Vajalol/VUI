@@ -16,7 +16,7 @@ This document tracks the status of media files required by each module in the VU
 
 ## TrufiGCD Module
 - [x] Spell border textures
-- [ ] Class icon textures
+- [x] Class icon textures
 - [x] Animation textures (flash effect)
 
 ## MoveAny Module
@@ -78,13 +78,13 @@ This document tracks the status of media files required by each module in the VU
 ## Unitframes Module
 - [x] Theme-specific border glow textures
 - [x] Theme-specific portrait highlight textures
-- [ ] Power bar textures
-- [ ] Status icon textures
+- [x] Power bar textures
+- [x] Status icon textures
 
 ## Enhanced Player Frame (EPF) Module
-- [ ] Theme-specific frame textures
-- [ ] Theme-specific border textures
-- [ ] HUD element textures
+- [x] Theme-specific frame textures
+- [x] Theme-specific border textures
+- [x] HUD element textures
 
 ## Tools Module
 - [ ] Position of Power border textures

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="20" viewBox="0 0 256 20" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy themed mana power bar texture -->
+  <defs>
+    <linearGradient id="felManaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A1A0A;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#081408;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#050A05;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <linearGradient id="felManaHighlightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A9DFF;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#1A64BE;stop-opacity:0.1" />
+    </linearGradient>
+    
+    <linearGradient id="felEnergyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#00AA00;stop-opacity:0.0" />
+    </linearGradient>
+    
+    <filter id="felManaGlow" x="-5%" y="-20%" width="110%" height="140%">
+      <feGaussianBlur stdDeviation="0.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Main power bar background -->
+  <rect x="0" y="0" width="256" height="20" rx="3" ry="3" fill="url(#felManaGradient)" filter="url(#felManaGlow)" />
+  
+  <!-- Top highlight for fel energy effect -->
+  <path d="M 3,3 H 253 V 7 C 253,5 251,5 249,5 H 7 C 5,5 3,5 3,7 V 3 Z" 
+        fill="url(#felManaHighlightGradient)" />
+        
+  <!-- Bottom shadow for 3D effect with fel energy -->
+  <path d="M 3,17 H 253 V 13 C 253,15 251,15 249,15 H 7 C 5,15 3,15 3,13 V 17 Z" 
+        fill="url(#felEnergyGradient)" />
+  
+  <!-- Fel corruption tendril patterns -->
+  <path d="M 32,8 C 30,6 34,6 36,4 C 34,6 30,6 32,8 Z M 96,8 C 94,6 98,6 100,4 C 98,6 94,6 96,8 Z
+           M 160,8 C 158,6 162,6 164,4 C 162,6 158,6 160,8 Z M 224,8 C 222,6 226,6 228,4 C 226,6 222,6 224,8 Z"
+        fill="#4A9DFF" fill-opacity="0.3" />
+  
+  <path d="M 32,12 C 34,14 30,14 28,16 C 30,14 34,14 32,12 Z M 96,12 C 98,14 94,14 92,16 C 94,14 98,14 96,12 Z
+           M 160,12 C 162,14 158,14 156,16 C 158,14 162,14 160,12 Z M 224,12 C 226,14 222,14 220,16 C 222,14 226,14 224,12 Z"
+        fill="#4A9DFF" fill-opacity="0.3" />
+  
+  <!-- Subtle corruption texture with mana color -->
+  <path d="M 0,10 C 16,14 32,6 48,10 C 64,14 80,6 96,10 C 112,14 128,6 144,10 
+           C 160,14 176,6 192,10 C 208,14 224,6 240,10 C 256,14"
+        stroke="#2E7CD7" stroke-width="0.5" stroke-opacity="0.3" fill="none" />
+</svg>

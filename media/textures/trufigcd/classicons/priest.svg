@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Priest class icon -->
+  <defs>
+    <linearGradient id="priestGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="black" stroke="url(#priestGradient)" stroke-width="2" />
+  
+  <!-- Priest class symbol (holy symbol) -->
+  <path d="M32,14 L32,50 M22,32 L42,32" stroke="url(#priestGradient)" stroke-width="6" stroke-linecap="round" />
+  
+  <!-- Circle of faith -->
+  <circle cx="32" cy="32" r="12" stroke="url(#priestGradient)" stroke-width="2" fill="none" />
+</svg>

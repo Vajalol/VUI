@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shaman class icon -->
+  <defs>
+    <linearGradient id="shamanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0070DE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#004D99;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="black" stroke="url(#shamanGradient)" stroke-width="2" />
+  
+  <!-- Shaman class symbol (totem) -->
+  <path d="M24,18 L40,18 L36,42 L28,42 Z" fill="url(#shamanGradient)" />
+  
+  <!-- Elemental symbols -->
+  <path d="M24,46 L40,46" stroke="url(#shamanGradient)" stroke-width="4" stroke-linecap="round" />
+  
+  <path d="M26,14 C 26,14 20,12 18,8
+           M38,14 C 38,14 44,12 46,8" 
+        stroke="url(#shamanGradient)" stroke-width="2" fill="none" />
+</svg>
