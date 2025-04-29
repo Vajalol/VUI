@@ -366,7 +366,7 @@ function Hooks:SetupIndicators(unitFrame)
             
             unitFrame.VUIThreatIndicator.texture = unitFrame.VUIThreatIndicator:CreateTexture(nil, "OVERLAY")
             unitFrame.VUIThreatIndicator.texture:SetAllPoints(unitFrame.VUIThreatIndicator)
-            unitFrame.VUIThreatIndicator.texture:SetTexture("Interface\\AddOns\\VUI\\media\\border.tga")
+            unitFrame.VUIThreatIndicator.texture:SetTexture("Interface\\AddOns\\VUI\\media\\nameplates\\border.svg")
             unitFrame.VUIThreatIndicator.texture:SetVertexColor(1, 0, 0, 0)
         elseif Nameplates.settings.threatWarningMode == "icon" then
             unitFrame.VUIThreatIndicator = unitFrame:CreateTexture(nil, "OVERLAY")
@@ -377,7 +377,7 @@ function Hooks:SetupIndicators(unitFrame)
         elseif Nameplates.settings.threatWarningMode == "glow" then
             unitFrame.VUIThreatIndicator = unitFrame:CreateTexture(nil, "OVERLAY")
             unitFrame.VUIThreatIndicator:SetAllPoints(unitFrame)
-            unitFrame.VUIThreatIndicator:SetTexture("Interface\\AddOns\\VUI\\media\\glow.tga")
+            unitFrame.VUIThreatIndicator:SetTexture("Interface\\AddOns\\VUI\\media\\nameplates\\glow.svg")
             unitFrame.VUIThreatIndicator:SetBlendMode("ADD")
             unitFrame.VUIThreatIndicator:SetVertexColor(1, 0, 0, 0)
         else
@@ -395,7 +395,7 @@ function Hooks:SetupIndicators(unitFrame)
     if Nameplates.settings.showExecuteIndicator and not unitFrame.VUIExecuteIndicator then
         unitFrame.VUIExecuteIndicator = unitFrame:CreateTexture(nil, "OVERLAY")
         unitFrame.VUIExecuteIndicator:SetAllPoints(unitFrame.healthBar)
-        unitFrame.VUIExecuteIndicator:SetTexture("Interface\\AddOns\\VUI\\media\\execute.tga")
+        unitFrame.VUIExecuteIndicator:SetTexture("Interface\\AddOns\\VUI\\media\\nameplates\\execute.svg")
         unitFrame.VUIExecuteIndicator:SetBlendMode("ADD")
         unitFrame.VUIExecuteIndicator:SetVertexColor(1, 0, 0, 0.3)
         unitFrame.VUIExecuteIndicator:Hide()
