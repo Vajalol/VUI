@@ -23,6 +23,8 @@
 - Created a dedicated nameplates module with comprehensive configuration options
 - Added new Tools module with WeakAura-inspired utilities
 - Created Position of Power, Buff Checker, and Mouse Trail tools
+- Enhanced Position of Power with custom SVG borders and sound notifications
+- Added Harrier's Cry buff tracking to the Position of Power module
 - Fixed code organization by moving nameplate functionality from Chat to Nameplates module
 - Enhanced nameplates with class color, health text, and other customization options
 - Implemented VUI Plater - advanced nameplates based on WhiiskeyZ Plater profile
@@ -36,6 +38,9 @@
 - Added portrait customization options including 3D model and class icon styles
 - Implemented custom theme integration for the player frame elements
 - Added advanced HUD elements customization for player frame
+- Created high-quality SVG textures for all EPF module components
+- Implemented comprehensive player frame customization
+- Improved EPF configuration with detailed options for all features
 
 ## Version 0.1.0 (2025-04-26)
 - Initial beta release

@@ -6,6 +6,7 @@ local EPF = {
     enabled = true, -- Enabled by default
     settings = {},
     version = "1.0.0",
+    moduleInitList = {}, -- List of initialization functions for submodules
 }
 
 -- Initialize the EPF module
@@ -32,6 +33,13 @@ function EPF:Initialize()
     -- Initialize EPF features
     if self.enabled then
         self:Enable()
+    end
+    
+    -- Initialize submodules
+    for _, initFunc in pairs(self.moduleInitList) do
+        if type(initFunc) == "function" then
+            initFunc()
+        end
     end
 end
 
@@ -371,6 +379,17 @@ function EPF:UpdatePowerText(powerBar)
     powerBar.valueText:SetText(text)
 end
 
+-- Format a numeric value for display
+function EPF:FormatValue(value)
+    if value >= 1000000 then
+        return string.format("%.1fm", value / 1000000)
+    elseif value >= 1000 then
+        return string.format("%.1fk", value / 1000)
+    else
+        return value
+    end
+end
+
 -- Set up portrait display
 function EPF:SetupPortrait()
     local portrait = PlayerPortrait
@@ -470,195 +489,117 @@ function EPF:SetupHUD()
         PlayerPVPIcon:SetShown(self.settings.showPvPIcon)
     end
     
-    -- Set up group icons
+    -- Set up leader icon
     if PlayerLeaderIcon then
         PlayerLeaderIcon:SetShown(self.settings.showLeaderIcon)
     end
     
+    -- Set up loot master icon
     if PlayerMasterIcon then
         PlayerMasterIcon:SetShown(self.settings.showLootIcon)
     end
 end
 
--- Set up auras (buffs and debuffs)
+-- Set up auras (buffs/debuffs)
 function EPF:SetupAuras()
-    if not self.settings.showAuras then
-        -- Hide buff frames if they exist
-        if BuffFrame then
-            BuffFrame:Hide()
+    -- Set up player auras
+    if self.settings.showAuras then
+        -- Resize and position auras
+        local size = self.settings.auraSize
+        local perRow = self.settings.aurasPerRow
+        
+        -- Get buff and debuff frames
+        local buffFrame = BuffFrame
+        local debuffFrame = DebuffFrame
+        
+        if buffFrame then
+            -- Modify buff display as needed
+            hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
+                -- Customize buff layout
+                if not self.enabled then return end
+                
+                -- Apply size and layout changes
+                local numBuffs = BUFF_MAX_DISPLAY
+                for i = 1, numBuffs do
+                    local button = _G["BuffButton" .. i]
+                    if button and button:IsShown() then
+                        button:SetScale(size / 32) -- Default size is 32, so scale accordingly
+                    end
+                end
+            end)
         end
-        return
-    end
-    
-    -- Show buff frames
-    if BuffFrame then
-        BuffFrame:Show()
-    end
-    
-    -- Customize buff display
-    local size = self.settings.auraSize
-    local perRow = self.settings.aurasPerRow
-    
-    -- Apply settings to buff frames
-    if BUFF_ACTUAL_DISPLAY and size and perRow then
-        for i = 1, BUFF_ACTUAL_DISPLAY do
-            local buffName = "BuffButton" .. i
-            local button = _G[buffName]
-            
-            if button then
-                button:SetSize(size, size)
+        
+        if debuffFrame then
+            -- Modify debuff display as needed
+            hooksecurefunc("DebuffButton_UpdateAnchors", function()
+                -- Customize debuff layout
+                if not self.enabled then return end
                 
-                -- Set position based on index and perRow
-                local index = i - 1
-                local row = math.floor(index / perRow)
-                local col = index % perRow
-                
-                button:ClearAllPoints()
-                if i == 1 then
-                    -- First buff
-                    button:SetPoint("TOPRIGHT", MinimapCluster, "TOPLEFT", -15, -15)
-                else
-                    if col == 0 then
-                        -- New row
-                        local prevRow = "BuffButton" .. (i - perRow)
-                        button:SetPoint("TOPRIGHT", _G[prevRow], "BOTTOMRIGHT", 0, -5)
-                    else
-                        -- Same row, next column
-                        local prev = "BuffButton" .. (i - 1)
-                        button:SetPoint("TOPRIGHT", _G[prev], "TOPLEFT", -5, 0)
+                -- Apply size and layout changes
+                local numDebuffs = DEBUFF_MAX_DISPLAY
+                for i = 1, numDebuffs do
+                    local button = _G["DebuffButton" .. i]
+                    if button and button:IsShown() then
+                        button:SetScale(size / 32) -- Default size is 32, so scale accordingly
                     end
                 end
-                
-                -- Set up cooldown text
-                local cooldown = _G[buffName .. "Cooldown"]
-                if cooldown then
-                    if self.settings.showCooldownText then
-                        if not cooldown.text then
-                            cooldown.text = cooldown:CreateFontString(nil, "OVERLAY")
-                            cooldown.text:SetFont(STANDARD_TEXT_FONT, size/3, "OUTLINE")
-                            cooldown.text:SetPoint("CENTER", cooldown, "CENTER", 0, 0)
-                        end
-                        cooldown.text:Show()
-                    elseif cooldown.text then
-                        cooldown.text:Hide()
-                    end
-                end
-            end
+            end)
         end
     end
     
-    -- Hook buff updates if not already hooked
-    if not self.buffUpdateHooked then
-        hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
-            self:SetupAuras()
-        end)
-        self.buffUpdateHooked = true
+    -- Apply cooldown text
+    if self.settings.showCooldownText then
+        -- Ensure OmniCC or similar cooldown text is enabled for auras
+    else
+        -- Disable cooldown text for auras
     end
 end
 
--- Set up custom position for player frame
+-- Set up custom position
 function EPF:SetupCustomPosition()
-    if not PlayerFrame or not self.settings.customPosition then return end
+    if not self.settings.customPosition or not PlayerFrame then return end
     
-    -- Make frame movable
-    PlayerFrame:SetMovable(true)
-    PlayerFrame:SetUserPlaced(true)
-    
-    -- Set position if stored values exist
+    -- This would typically use saved coordinates
     if self.settings.position then
+        local pos = self.settings.position
         PlayerFrame:ClearAllPoints()
-        PlayerFrame:SetPoint(
-            self.settings.position.point,
-            self.settings.position.relativeTo,
-            self.settings.position.relativePoint,
-            self.settings.position.x,
-            self.settings.position.y
-        )
-    end
-    
-    -- Create drag functionality if it doesn't exist
-    if not self.dragFrame then
-        self.dragFrame = CreateFrame("Frame", nil, PlayerFrame)
-        self.dragFrame:SetAllPoints(PlayerFrame)
-        self.dragFrame:SetFrameStrata("HIGH")
-        self.dragFrame:EnableMouse(false)
-        self.dragFrame:Hide()
-        
-        self.dragFrame.text = self.dragFrame:CreateFontString(nil, "OVERLAY")
-        self.dragFrame.text:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
-        self.dragFrame.text:SetPoint("CENTER", self.dragFrame, "CENTER", 0, 0)
-        self.dragFrame.text:SetText("Left-click and drag to move")
-        
-        self.dragFrame:SetScript("OnMouseDown", function(self, button)
-            if button == "LeftButton" then
-                PlayerFrame:StartMoving()
-            end
-        end)
-        
-        self.dragFrame:SetScript("OnMouseUp", function(self, button)
-            if button == "LeftButton" then
-                PlayerFrame:StopMovingOrSizing()
-                
-                -- Store position
-                local point, relativeTo, relativePoint, x, y = PlayerFrame:GetPoint()
-                EPF.settings.position = {
-                    point = point,
-                    relativeTo = relativeTo and relativeTo:GetName() or "UIParent",
-                    relativePoint = relativePoint,
-                    x = x,
-                    y = y
-                }
-            end
-        end)
+        PlayerFrame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.x, pos.y)
+        PlayerFrame:SetUserPlaced(true)
     end
 end
 
--- Register event hooks
+-- Save custom position
+function EPF:SaveCustomPosition()
+    if not PlayerFrame then return end
+    
+    local point, _, relativePoint, x, y = PlayerFrame:GetPoint()
+    self.settings.position = {
+        point = point,
+        relativePoint = relativePoint,
+        x = x,
+        y = y
+    }
+end
+
+-- Register hooks
 function EPF:RegisterHooks()
-    -- Create an event frame if it doesn't exist
-    if not self.eventFrame then
-        self.eventFrame = CreateFrame("Frame")
-        self.eventFrame:SetScript("OnEvent", function(_, event, ...)
-            if EPF[event] then
-                EPF[event](EPF, ...)
-            end
-        end)
-    end
-    
-    -- Register required events
-    self.eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self.eventFrame:RegisterEvent("UNIT_PORTRAIT_UPDATE")
-    self.eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
-    self.eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-    self.eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
-    self.eventFrame:RegisterEvent("PLAYER_XP_UPDATE")
-    self.eventFrame:RegisterEvent("UPDATE_FACTION")
-    
-    -- Hook frame handlers if not already hooked
-    if not self.frameHooksRegistered then
-        -- Hook PlayerFrame_UpdateStatus
-        hooksecurefunc("PlayerFrame_UpdateStatus", function()
-            if EPF.enabled then
-                EPF:SetupPlayerFrame()
+    -- Hook Player and Pet Frame handlers
+    if not self.hooked then
+        -- Hook player frame updates
+        hooksecurefunc("PlayerFrame_Update", function()
+            if self.enabled then
+                self:SetupPlayerFrame()
             end
         end)
         
-        -- Hook PlayerFrame_UpdateRolesAssigned
-        hooksecurefunc("PlayerFrame_UpdateRolesAssigned", function()
-            if EPF.enabled then
-                EPF:SetupPlayerFrame()
-            end
-        end)
-        
-        self.frameHooksRegistered = true
+        self.hooked = true
     end
 end
 
--- Unregister event hooks
+-- Unregister hooks
 function EPF:UnregisterHooks()
-    if self.eventFrame then
-        self.eventFrame:UnregisterAllEvents()
-    end
+    -- Nothing to unregister specifically since we're using hooksecurefunc
+    -- which doesn't allow unhooking. We just check self.enabled in our hooks.
 end
 
 -- Restore default player frame
@@ -673,120 +614,56 @@ function EPF:RestoreDefaultPlayerFrame()
         PlayerFrame:SetAlpha(self.originalAlpha)
     end
     
-    -- Reset position
-    if self.settings.customPosition then
-        PlayerFrame:ClearAllPoints()
-        PlayerFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", -19, -4)
-    end
+    -- Restore default position
+    PlayerFrame:ClearAllPoints()
+    PlayerFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", -19, -4)
     
     -- Reset health bar
     if PlayerFrameHealthBar then
         PlayerFrameHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-        PlayerFrameHealthBar:SetHeight(12)
         if PlayerFrameHealthBar.valueText then
             PlayerFrameHealthBar.valueText:Hide()
         end
         if PlayerFrameHealthBar.background then
-            PlayerFrameHealthBar.background:Hide()
+            PlayerFrameHealthBar.background:SetColorTexture(0, 0, 0, 0.5)
         end
     end
     
     -- Reset power bar
     if PlayerFrameManaBar then
         PlayerFrameManaBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-        PlayerFrameManaBar:SetHeight(12)
         if PlayerFrameManaBar.valueText then
             PlayerFrameManaBar.valueText:Hide()
         end
         if PlayerFrameManaBar.background then
-            PlayerFrameManaBar.background:Hide()
+            PlayerFrameManaBar.background:SetColorTexture(0, 0, 0, 0.5)
         end
     end
     
-    -- Reset portrait
+    -- Restore portrait
     if PlayerPortrait3D and PlayerPortrait2D then
         PlayerPortrait3D:Show()
         PlayerPortrait2D:Hide()
     end
     
-    if self.portraitBg then
-        self.portraitBg:Hide()
+    -- Show HUD elements
+    if MainMenuExpBar then
+        MainMenuExpBar:Show()
     end
-    
-    -- Reset HUD elements
     if PlayerRestIcon then
         PlayerRestIcon:Show()
     end
-    
     if PlayerPVPIcon then
         PlayerPVPIcon:Show()
     end
     
-    if PlayerLeaderIcon then
-        PlayerLeaderIcon:Show()
-    end
-    
-    if PlayerMasterIcon then
-        PlayerMasterIcon:Show()
-    end
-    
-    -- Reset buff frames
-    if BuffFrame then
-        BuffFrame:Show()
-    end
-    
-    -- Hide drag frame
-    if self.dragFrame then
-        self.dragFrame:Hide()
+    -- Reset portrait background
+    if self.portraitBg then
+        self.portraitBg:Hide()
     end
 end
 
--- Format values for display (e.g., 1.2k for 1200)
-function EPF:FormatValue(value)
-    if not value then return "" end
-    
-    if value >= 1000000 then
-        return string.format("%.1fm", value / 1000000)
-    elseif value >= 1000 then
-        return string.format("%.1fk", value / 1000)
-    else
-        return tostring(value)
-    end
-end
-
--- Event handlers
-function EPF:PLAYER_ENTERING_WORLD()
-    self:SetupPlayerFrame()
-end
-
-function EPF:UNIT_PORTRAIT_UPDATE(unit)
-    if unit == "player" then
-        self:SetupPortrait()
-    end
-end
-
-function EPF:PLAYER_REGEN_DISABLED()
-    -- Combat started, update frame with combat-specific features
-    if self.enabled then
-        -- Apply combat-specific settings
-    end
-end
-
-function EPF:PLAYER_REGEN_ENABLED()
-    -- Combat ended, return to normal state
-    if self.enabled then
-        -- Apply non-combat settings
-    end
-end
-
-function EPF:PLAYER_LEVEL_UP(level)
-    -- Update for level up
-    if self.enabled then
-        self:SetupPlayerFrame()
-    end
-end
-
--- Get the module's config options for the UI
+-- Get the module configuration for AceConfig
 function EPF:GetConfig()
     return {
         order = 27, -- Position in the modules list
@@ -814,323 +691,346 @@ function EPF:GetConfig()
                     else
                         self:Disable()
                     end
-                end,
+                end
             },
-            generalHeader = {
+            general = {
                 order = 2,
-                type = "header",
+                type = "group",
                 name = "General Settings",
+                inline = true,
+                args = {
+                    frameScale = {
+                        order = 1,
+                        type = "range",
+                        name = "Frame Scale",
+                        desc = "Adjust the size of the player frame",
+                        min = 0.5,
+                        max = 2.0,
+                        step = 0.1,
+                    },
+                    frameAlpha = {
+                        order = 2,
+                        type = "range",
+                        name = "Frame Alpha",
+                        desc = "Adjust the transparency of the player frame",
+                        min = 0.1,
+                        max = 1.0,
+                        step = 0.1,
+                    },
+                    useThemeColors = {
+                        order = 3,
+                        type = "toggle",
+                        name = "Use Theme Colors",
+                        desc = "Apply the current VUI theme colors to player frame elements",
+                    },
+                },
             },
-            frameScale = {
+            healthBar = {
                 order = 3,
-                type = "range",
-                name = "Frame Scale",
-                desc = "Adjust the overall scale of the player frame",
-                min = 0.5,
-                max = 2.0,
-                step = 0.05,
-                disabled = function() return not self.enabled end,
+                type = "group",
+                name = "Health Bar",
+                inline = true,
+                args = {
+                    healthBarHeight = {
+                        order = 1,
+                        type = "range",
+                        name = "Height",
+                        desc = "Adjust the height of the health bar",
+                        min = 10,
+                        max = 50,
+                        step = 1,
+                    },
+                    healthBarTexture = {
+                        order = 2,
+                        type = "select",
+                        name = "Texture",
+                        desc = "Choose the texture for the health bar",
+                        values = function() 
+                            return VUI.Media:HashTable("statusbar") or {VUI_Smooth = "VUI Smooth"} 
+                        end,
+                    },
+                    classColoredHealthBar = {
+                        order = 3,
+                        type = "toggle",
+                        name = "Class Color",
+                        desc = "Color the health bar based on player class",
+                    },
+                },
             },
-            frameAlpha = {
+            healthText = {
                 order = 4,
-                type = "range",
-                name = "Frame Alpha",
-                desc = "Adjust the transparency of the player frame",
-                min = 0.1,
-                max = 1.0,
-                step = 0.05,
-                disabled = function() return not self.enabled end,
+                type = "group",
+                name = "Health Text",
+                inline = true,
+                args = {
+                    healthFormat = {
+                        order = 1,
+                        type = "select",
+                        name = "Format",
+                        desc = "Choose how health value is displayed",
+                        values = {
+                            ["percent"] = "Percentage only",
+                            ["value"] = "Current value only",
+                            ["both"] = "Current value and percentage",
+                            ["deficit"] = "Health deficit (when not full)",
+                        },
+                    },
+                    healthFontSize = {
+                        order = 2,
+                        type = "range",
+                        name = "Font Size",
+                        desc = "Adjust the size of the health text",
+                        min = 8,
+                        max = 20,
+                        step = 1,
+                    },
+                    healthFontOutline = {
+                        order = 3,
+                        type = "select",
+                        name = "Font Outline",
+                        desc = "Choose the outline style for health text",
+                        values = {
+                            [""] = "None",
+                            ["OUTLINE"] = "Outline",
+                            ["THICKOUTLINE"] = "Thick Outline",
+                        },
+                    },
+                },
             },
-            customPosition = {
+            powerBar = {
                 order = 5,
-                type = "toggle",
-                name = "Enable Custom Position",
-                desc = "Allow the player frame to be moved to a custom position",
-                disabled = function() return not self.enabled end,
-                set = function(_, value)
-                    self.settings.customPosition = value
-                    if value then
-                        self:SetupCustomPosition()
-                        if self.dragFrame then
-                            self.dragFrame:EnableMouse(true)
-                            self.dragFrame:Show()
-                        end
-                    else
-                        self:RestoreDefaultPlayerFrame()
-                        self:SetupPlayerFrame()
-                        if self.dragFrame then
-                            self.dragFrame:EnableMouse(false)
-                            self.dragFrame:Hide()
-                        end
-                    end
-                end,
+                type = "group",
+                name = "Power Bar",
+                inline = true,
+                args = {
+                    powerBarHeight = {
+                        order = 1,
+                        type = "range",
+                        name = "Height",
+                        desc = "Adjust the height of the power bar",
+                        min = 5,
+                        max = 30,
+                        step = 1,
+                    },
+                    powerBarTexture = {
+                        order = 2,
+                        type = "select",
+                        name = "Texture",
+                        desc = "Choose the texture for the power bar",
+                        values = function() 
+                            return VUI.Media:HashTable("statusbar") or {VUI_Smooth = "VUI Smooth"} 
+                        end,
+                    },
+                },
             },
-            useThemeColors = {
+            powerText = {
                 order = 6,
-                type = "toggle",
-                name = "Use Theme Colors",
-                desc = "Apply the current VUI theme colors to the player frame",
-                disabled = function() return not self.enabled end,
-                set = function(_, value)
-                    self.settings.useThemeColors = value
-                    if value then
-                        self:ApplyTheme()
-                    else
-                        -- Reset to default colors
-                        self:SetupPlayerFrame()
-                    end
-                end,
-            },
-            healthHeader = {
-                order = 10,
-                type = "header",
-                name = "Health Bar Settings",
-            },
-            healthBarTexture = {
-                order = 11,
-                type = "select",
-                name = "Health Bar Texture",
-                desc = "Choose the texture used for the health bar",
-                values = function() return VUI.Media:GetStatusBarTextureTable() end,
-                disabled = function() return not self.enabled end,
-            },
-            healthBarHeight = {
-                order = 12,
-                type = "range",
-                name = "Health Bar Height",
-                desc = "Adjust the height of the health bar",
-                min = 6,
-                max = 50,
-                step = 1,
-                disabled = function() return not self.enabled end,
-            },
-            classColoredHealthBar = {
-                order = 13,
-                type = "toggle",
-                name = "Class Colored Health Bar",
-                desc = "Color the health bar based on your class",
-                disabled = function() return not self.enabled end,
-            },
-            healthFormat = {
-                order = 14,
-                type = "select",
-                name = "Health Text Format",
-                desc = "Choose how health values are displayed",
-                values = {
-                    none = "No Text",
-                    value = "Current Value",
-                    percent = "Percentage",
-                    both = "Value and Percentage",
-                    deficit = "Deficit When Not Full",
+                type = "group",
+                name = "Power Text",
+                inline = true,
+                args = {
+                    powerFormat = {
+                        order = 1,
+                        type = "select",
+                        name = "Format",
+                        desc = "Choose how power value is displayed",
+                        values = {
+                            ["percent"] = "Percentage only",
+                            ["value"] = "Current value only",
+                            ["both"] = "Current value and percentage",
+                            ["deficit"] = "Power deficit (when not full)",
+                        },
+                    },
+                    powerFontSize = {
+                        order = 2,
+                        type = "range",
+                        name = "Font Size",
+                        desc = "Adjust the size of the power text",
+                        min = 8,
+                        max = 16,
+                        step = 1,
+                    },
+                    powerFontOutline = {
+                        order = 3,
+                        type = "select",
+                        name = "Font Outline",
+                        desc = "Choose the outline style for power text",
+                        values = {
+                            [""] = "None",
+                            ["OUTLINE"] = "Outline",
+                            ["THICKOUTLINE"] = "Thick Outline",
+                        },
+                    },
                 },
-                disabled = function() return not self.enabled end,
             },
-            healthFontSize = {
-                order = 15,
-                type = "range",
-                name = "Health Font Size",
-                desc = "Adjust the size of the health text",
-                min = 6,
-                max = 20,
-                step = 1,
-                disabled = function() return not self.enabled or self.settings.healthFormat == "none" end,
-            },
-            healthFontOutline = {
-                order = 16,
-                type = "select",
-                name = "Health Font Outline",
-                desc = "Choose the outline style for health text",
-                values = {
-                    NONE = "None",
-                    OUTLINE = "Outline",
-                    THICKOUTLINE = "Thick Outline",
-                    MONOCHROME = "Monochrome",
+            portrait = {
+                order = 7,
+                type = "group",
+                name = "Portrait",
+                inline = true,
+                args = {
+                    portraitStyle = {
+                        order = 1,
+                        type = "select",
+                        name = "Style",
+                        desc = "Choose how the portrait is displayed",
+                        values = {
+                            ["3D"] = "3D Model",
+                            ["2D"] = "2D Class Icon",
+                            ["none"] = "Hide Portrait",
+                        },
+                    },
+                    portraitBackgroundStyle = {
+                        order = 2,
+                        type = "select",
+                        name = "Background",
+                        desc = "Choose the portrait background style",
+                        values = {
+                            ["solid"] = "Solid Color",
+                            ["class"] = "Class Color",
+                            ["none"] = "No Background",
+                        },
+                    },
                 },
-                disabled = function() return not self.enabled or self.settings.healthFormat == "none" end,
             },
-            powerHeader = {
-                order = 20,
-                type = "header",
-                name = "Power Bar Settings",
-            },
-            powerBarTexture = {
-                order = 21,
-                type = "select",
-                name = "Power Bar Texture",
-                desc = "Choose the texture used for the power bar",
-                values = function() return VUI.Media:GetStatusBarTextureTable() end,
-                disabled = function() return not self.enabled end,
-            },
-            powerBarHeight = {
-                order = 22,
-                type = "range",
-                name = "Power Bar Height",
-                desc = "Adjust the height of the power bar",
-                min = 6,
-                max = 30,
-                step = 1,
-                disabled = function() return not self.enabled end,
-            },
-            powerFormat = {
-                order = 23,
-                type = "select",
-                name = "Power Text Format",
-                desc = "Choose how power values are displayed",
-                values = {
-                    none = "No Text",
-                    value = "Current Value",
-                    percent = "Percentage",
-                    both = "Value and Percentage",
-                    deficit = "Deficit When Not Full",
-                },
-                disabled = function() return not self.enabled end,
-            },
-            powerFontSize = {
-                order = 24,
-                type = "range",
-                name = "Power Font Size",
-                desc = "Adjust the size of the power text",
-                min = 6,
-                max = 20,
-                step = 1,
-                disabled = function() return not self.enabled or self.settings.powerFormat == "none" end,
-            },
-            powerFontOutline = {
-                order = 25,
-                type = "select",
-                name = "Power Font Outline",
-                desc = "Choose the outline style for power text",
-                values = {
-                    NONE = "None",
-                    OUTLINE = "Outline",
-                    THICKOUTLINE = "Thick Outline",
-                    MONOCHROME = "Monochrome",
-                },
-                disabled = function() return not self.enabled or self.settings.powerFormat == "none" end,
-            },
-            portraitHeader = {
-                order = 30,
-                type = "header",
-                name = "Portrait Settings",
-            },
-            portraitStyle = {
-                order = 31,
-                type = "select",
-                name = "Portrait Style",
-                desc = "Choose the style of portrait to display",
-                values = {
-                    ["3D"] = "3D Model",
-                    ["2D"] = "Class Icon",
-                    none = "No Portrait",
-                },
-                disabled = function() return not self.enabled end,
-            },
-            portraitBackgroundStyle = {
-                order = 32,
-                type = "select",
-                name = "Portrait Background",
-                desc = "Choose the background style for the portrait",
-                values = {
-                    none = "No Background",
-                    solid = "Solid Color",
-                    class = "Class Color",
-                },
-                disabled = function() return not self.enabled or self.settings.portraitStyle == "none" end,
-            },
-            elementsHeader = {
-                order = 40,
-                type = "header",
+            hudElements = {
+                order = 8,
+                type = "group",
                 name = "HUD Elements",
+                inline = true,
+                args = {
+                    showCastingBar = {
+                        order = 1,
+                        type = "toggle",
+                        name = "Show Casting Bar",
+                        desc = "Show or hide the player casting bar",
+                    },
+                    showXpBar = {
+                        order = 2,
+                        type = "toggle",
+                        name = "Show XP Bar",
+                        desc = "Show or hide the experience bar",
+                    },
+                    showRestingIcon = {
+                        order = 3,
+                        type = "toggle",
+                        name = "Show Resting Icon",
+                        desc = "Show or hide the resting state icon",
+                    },
+                    showPvPIcon = {
+                        order = 4,
+                        type = "toggle",
+                        name = "Show PvP Icon",
+                        desc = "Show or hide the PvP status icon",
+                    },
+                    showLeaderIcon = {
+                        order = 5,
+                        type = "toggle",
+                        name = "Show Leader Icon",
+                        desc = "Show or hide the group leader icon",
+                    },
+                    showLootIcon = {
+                        order = 6,
+                        type = "toggle",
+                        name = "Show Loot Master Icon",
+                        desc = "Show or hide the loot master icon",
+                    },
+                },
             },
-            showCastingBar = {
-                order = 41,
-                type = "toggle",
-                name = "Show Casting Bar",
-                desc = "Show the player casting bar",
-                disabled = function() return not self.enabled end,
+            auras = {
+                order = 9,
+                type = "group",
+                name = "Auras (Buffs/Debuffs)",
+                inline = true,
+                args = {
+                    showAuras = {
+                        order = 1,
+                        type = "toggle",
+                        name = "Show Auras",
+                        desc = "Show or hide player buffs and debuffs",
+                    },
+                    auraSize = {
+                        order = 2,
+                        type = "range",
+                        name = "Aura Size",
+                        desc = "Adjust the size of buff and debuff icons",
+                        min = 16,
+                        max = 40,
+                        step = 2,
+                        disabled = function() return not self.settings.showAuras end,
+                    },
+                    aurasPerRow = {
+                        order = 3,
+                        type = "range",
+                        name = "Auras Per Row",
+                        desc = "Set the number of auras displayed per row",
+                        min = 4,
+                        max = 16,
+                        step = 1,
+                        disabled = function() return not self.settings.showAuras end,
+                    },
+                    showCooldownText = {
+                        order = 4,
+                        type = "toggle",
+                        name = "Show Cooldown Text",
+                        desc = "Show countdown numbers on buff/debuff icons",
+                        disabled = function() return not self.settings.showAuras end,
+                    },
+                },
             },
-            showXpBar = {
-                order = 42,
-                type = "toggle",
-                name = "Show XP Bar",
-                desc = "Show the experience/reputation bar",
-                disabled = function() return not self.enabled end,
+            positioning = {
+                order = 10,
+                type = "group",
+                name = "Positioning",
+                inline = true,
+                args = {
+                    customPosition = {
+                        order = 1,
+                        type = "toggle",
+                        name = "Custom Position",
+                        desc = "Enable custom positioning of the player frame",
+                    },
+                    savePosition = {
+                        order = 2,
+                        type = "execute",
+                        name = "Save Current Position",
+                        desc = "Save the current player frame position",
+                        func = function() self:SaveCustomPosition() end,
+                        disabled = function() return not self.settings.customPosition end,
+                    },
+                    resetPosition = {
+                        order = 3,
+                        type = "execute",
+                        name = "Reset Position",
+                        desc = "Reset player frame to default position",
+                        func = function()
+                            self.settings.position = nil
+                            self:RestoreDefaultPlayerFrame()
+                            
+                            -- Re-apply settings if enabled
+                            if self.enabled then
+                                self:SetupPlayerFrame()
+                            end
+                        end,
+                        disabled = function() return not self.settings.customPosition end,
+                    },
+                },
             },
-            showRestingIcon = {
-                order = 43,
-                type = "toggle",
-                name = "Show Resting Icon",
-                desc = "Show the resting status icon",
-                disabled = function() return not self.enabled end,
-            },
-            showPvPIcon = {
-                order = 44,
-                type = "toggle",
-                name = "Show PvP Icon",
-                desc = "Show the PvP status icon",
-                disabled = function() return not self.enabled end,
-            },
-            showLeaderIcon = {
-                order = 45,
-                type = "toggle",
-                name = "Show Leader Icon",
-                desc = "Show the group leader icon",
-                disabled = function() return not self.enabled end,
-            },
-            showLootIcon = {
-                order = 46,
-                type = "toggle",
-                name = "Show Loot Icon",
-                desc = "Show the master looter icon",
-                disabled = function() return not self.enabled end,
-            },
-            aurasHeader = {
-                order = 50,
-                type = "header",
-                name = "Buff/Debuff Settings",
-            },
-            showAuras = {
-                order = 51,
-                type = "toggle",
-                name = "Show Buffs & Debuffs",
-                desc = "Show player buffs and debuffs",
-                disabled = function() return not self.enabled end,
-            },
-            auraSize = {
-                order = 52,
-                type = "range",
-                name = "Aura Size",
-                desc = "Adjust the size of buff and debuff icons",
-                min = 16,
-                max = 40,
-                step = 1,
-                disabled = function() return not self.enabled or not self.settings.showAuras end,
-            },
-            aurasPerRow = {
-                order = 53,
-                type = "range",
-                name = "Auras Per Row",
-                desc = "Number of auras to display per row",
-                min = 4,
-                max = 16,
-                step = 1,
-                disabled = function() return not self.enabled or not self.settings.showAuras end,
-            },
-            showCooldownText = {
-                order = 54,
-                type = "toggle",
-                name = "Show Cooldown Text",
-                desc = "Show the remaining duration text on buffs and debuffs",
-                disabled = function() return not self.enabled or not self.settings.showAuras end,
-            },
-            resetButton = {
-                order = 100,
+
+            resetModule = {
+                order = 1000,
                 type = "execute",
-                name = "Reset All Settings",
+                width = "full",
+                name = "Reset Module Settings",
                 desc = "Reset all Enhanced Player Frame settings to defaults",
                 func = function()
-                    -- Reset to defaults
+                    -- Disable first
+                    self:Disable()
+                    
+                    -- Reset settings
                     self.settings = {}
+                    
+                    -- Initialize defaults
                     self:InitializeDefaults()
                     
                     -- Apply changes
@@ -1148,50 +1048,61 @@ end
 function EPF:GetWidget()
     return {
         type = "group",
-        name = self.name,
-        order = 25,
+        name = "Enhanced Player Frame",
         args = {
-            enabled = {
+            desc = {
                 order = 1,
+                type = "description",
+                name = "Configure the player frame appearance and functionality",
+                fontSize = "medium",
+            },
+            enabled = {
+                order = 2,
                 type = "toggle",
-                name = "Enable",
+                name = "Enable Enhanced Player Frame",
                 width = "full",
                 get = function() return self.enabled end,
-                set = function(_, val)
-                    if val then
+                set = function(_, value)
+                    if value then
                         self:Enable()
                     else
                         self:Disable()
                     end
                 end,
             },
-            configbutton = {
+            frameScale = {
                 order = 3,
-                type = "execute",
-                name = "Settings",
-                func = function()
-                    VUI:OpenModuleConfig(self.name)
+                type = "range",
+                name = "Frame Scale",
+                desc = "Adjust the size of the player frame",
+                min = 0.5,
+                max = 2.0,
+                step = 0.1,
+                get = function() return self.settings.frameScale end,
+                set = function(_, value)
+                    self.settings.frameScale = value
+                    if self.enabled then
+                        self:SetupPlayerFrame()
+                    end
                 end,
                 disabled = function() return not self.enabled end,
+            },
+            spacer = {
+                order = 4,
+                type = "description",
+                name = " ",
+            },
+            fullConfigButton = {
+                order = 5,
+                type = "execute",
+                name = "Open Full Configuration",
+                func = function()
+                    VUI:OpenConfig("modules", "epf")
+                end,
             },
         },
     }
 end
 
--- Get the module's display name for the UI
-function EPF:GetDisplayName()
-    return "Enhanced Player Frame"
-end
-
--- Get the module's description for the UI
-function EPF:GetDescription()
-    return "Comprehensive player frame enhancement with health/power text, portraits, and more"
-end
-
--- Get the module's category for organization in the UI
-function EPF:GetCategory()
-    return "Tools"
-end
-
--- Register the module with VUI
+-- Register this module with VUI
 VUI:RegisterModule("epf", EPF)

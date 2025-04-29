@@ -26,7 +26,7 @@ local activeBuffs = {}
 local isFrameMovable = false
 local sounds = {
     none = "",
-    Harrier = "Interface\\AddOns\\VUI\\media\\sounds\\harrier.ogg",
+    Harrier = "Interface\\AddOns\\VUI\\media\\tools\\sounds\\harrier.ogg",
 }
 
 -- List of buffs to track
@@ -261,7 +261,7 @@ local function CreateOrUpdateBuffIcon(buffInfo, index)
         icon.border = icon:CreateTexture(nil, "OVERLAY")
         icon.border:SetPoint("TOPLEFT", icon, "TOPLEFT", -1, 1)
         icon.border:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1, -1)
-        icon.border:SetTexture("Interface\\Buttons\\WHITE8x8")
+        icon.border:SetTexture("Interface\\AddOns\\VUI\\media\\tools\\borders\\pop_icon_border.svg")
         icon.border:SetVertexColor(1, 1, 1, 0.3)
         
         -- Cooldown
