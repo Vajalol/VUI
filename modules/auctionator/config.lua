@@ -150,6 +150,62 @@ end
 
 -- Create the Appearance tab
 function Auctionator:CreateAppearanceTab(container)
+    -- Theme integration group
+    local themeGroup = AceGUI:Create("InlineGroup")
+    themeGroup:SetTitle("VUI Theme Integration")
+    themeGroup:SetLayout("Flow")
+    themeGroup:SetFullWidth(true)
+    container:AddChild(themeGroup)
+    
+    -- Use VUI theme toggle
+    local themeToggle = AceGUI:Create("CheckBox")
+    themeToggle:SetLabel("Use VUI Theme")
+    themeToggle:SetWidth(300)
+    themeToggle:SetValue(VUI.db.profile.modules.auctionator.useVUITheme)
+    themeToggle:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.auctionator.useVUITheme = value
+        
+        -- Apply theme changes immediately if Auctionator is visible
+        if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+            self.ThemeIntegration:ApplyTheme()
+        end
+    end)
+    themeGroup:AddChild(themeToggle)
+    
+    -- Theme selector dropdown (only enabled if useVUITheme is true)
+    local themeDropdown = AceGUI:Create("Dropdown")
+    themeDropdown:SetLabel("Theme")
+    themeDropdown:SetWidth(300)
+    themeDropdown:SetList({
+        ["phoenixflame"] = "Phoenix Flame",
+        ["thunderstorm"] = "Thunder Storm",
+        ["arcanemystic"] = "Arcane Mystic",
+        ["felenergy"] = "Fel Energy"
+    })
+    themeDropdown:SetValue(VUI.db.profile.appearance.theme or "thunderstorm")
+    themeDropdown:SetDisabled(not VUI.db.profile.modules.auctionator.useVUITheme)
+    themeDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+        -- This changes the global VUI theme, not just for Auctionator
+        VUI.db.profile.appearance.theme = value
+        
+        -- Apply theme changes
+        if VUI.ApplyTheme then
+            VUI:ApplyTheme(value)
+        end
+    end)
+    themeGroup:AddChild(themeDropdown)
+    
+    -- Update the dropdown enabled state when the theme toggle changes
+    themeToggle:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.auctionator.useVUITheme = value
+        themeDropdown:SetDisabled(not value)
+        
+        -- Apply theme changes immediately if Auctionator is visible
+        if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+            self.ThemeIntegration:ApplyTheme()
+        end
+    end)
+    
     -- Appearance group
     local appearanceGroup = AceGUI:Create("InlineGroup")
     appearanceGroup:SetTitle("Visual Options")

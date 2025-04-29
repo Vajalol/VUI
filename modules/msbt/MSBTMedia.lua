@@ -28,9 +28,15 @@ local string_len = string.len
 
 -- The default sound files to use.
 local DEFAULT_SOUND_FILES = {
-        ["MSBT Low Health"]             = "Interface\\Addons\\VUI\\modules\\msbt\\Sounds\\LowHealth.ogg",
-        ["MSBT Low Mana"]               = "Interface\\Addons\\VUI\\modules\\msbt\\Sounds\\LowMana.ogg",
-        ["MSBT Cooldown"]               = "Interface\\Addons\\VUI\\modules\\msbt\\Sounds\\Cooldown.ogg",
+        ["MSBT Low Health"]             = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\LowHealth.ogg",
+        ["MSBT Low Mana"]               = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\LowMana.ogg",
+        ["MSBT Cooldown"]               = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Cooldown.ogg",
+        ["MSBT Crit"]                   = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Crit.ogg",
+        ["MSBT Proc"]                   = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Proc.ogg",
+        ["MSBT Dodge"]                  = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Dodge.ogg",
+        ["MSBT Parry"]                  = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Parry.ogg",
+        ["MSBT Block"]                  = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Block.ogg",
+        ["MSBT Heal"]                   = "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Heal.ogg",
 }
 
 -- Set the default font files to use to the locale specific fonts.

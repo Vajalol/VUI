@@ -72,6 +72,11 @@ VUI (Version 0.2.0) is a comprehensive UI enhancement suite for World of Warcraf
    - One-click posting
    - Purchase history
    - Market value analysis
+   - Theme-integrated UI elements
+   - Custom theme-specific logos and textures
+   - Customizable sorting options
+   - Advanced search functionality
+   - Favorite auction saving
 
 5. **Angry Keystones**
    - Mythic+ dungeon information
@@ -363,6 +368,13 @@ Each theme controls these elements:
 - **Font Customization**: Select fonts and sizes for data text
 - **Bar Configuration**: Adjust height, spacing, and texture of data bars
 - **Border Controls**: Customize the appearance of window borders to match your theme
+
+### Auctionator Configuration
+- **Theme Integration**: Enable theme-specific Auctionator appearance
+- **Search Options**: Configure search behavior and history management
+- **Selling Settings**: Default duration, stack size, and pricing strategy
+- **Custom Logos**: Apply theme-specific logo replacements
+- **Advanced UI Customization**: Control every aspect of the Auctionator interface
 
 ## Performance Optimization Tips
 

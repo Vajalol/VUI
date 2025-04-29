@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Arcane Mystic Theme Auctionator Logo -->
+  <defs>
+    <linearGradient id="arcane" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9D0DE6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B366FF;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="64" cy="64" r="60" fill="#1A0A2F" />
+  
+  <!-- Arcane Runes (simplified) -->
+  <circle cx="64" cy="64" r="45" fill="none" stroke="#5A1E99" stroke-width="1" stroke-dasharray="3,3" />
+  <circle cx="64" cy="64" r="50" fill="none" stroke="#5A1E99" stroke-width="1" stroke-dasharray="5,5" />
+  
+  <!-- Hammer Handle -->
+  <rect x="40" y="60" width="50" height="10" rx="2" fill="#663399" transform="rotate(-30, 40, 60)" />
+  
+  <!-- Hammer Head -->
+  <rect x="28" y="30" width="25" height="30" rx="3" fill="url(#arcane)" transform="rotate(-30, 28, 30)" filter="url(#glow)" />
+  
+  <!-- Arcane Stars -->
+  <path d="M55,40 L60,25 L65,40 L80,40 L68,50 L75,65 L60,55 L45,65 L52,50 L40,40 Z" fill="#B366FF" filter="url(#glow)" />
+  
+  <!-- Gold Coins -->
+  <circle cx="80" cy="85" r="12" fill="#B366FF" stroke="#9D0DE6" stroke-width="2" />
+  <circle cx="95" cy="75" r="10" fill="#B366FF" stroke="#9D0DE6" stroke-width="2" />
+  <circle cx="90" cy="90" r="8" fill="#B366FF" stroke="#9D0DE6" stroke-width="2" />
+  
+  <!-- Dollar Symbol -->
+  <text x="80" y="90" font-family="Arial" font-size="18" font-weight="bold" fill="#9D0DE6" text-anchor="middle">$</text>
+  
+  <!-- Border -->
+  <circle cx="64" cy="64" r="60" fill="none" stroke="url(#arcane)" stroke-width="3" />
+  
+  <!-- Text -->
+  <text x="64" y="115" font-family="Arial" font-size="14" font-weight="bold" fill="#B366FF" text-anchor="middle">VUI Auctionator</text>
+</svg>

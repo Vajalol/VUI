@@ -62,6 +62,7 @@ function MSBT:LoadCore()
     self:LoadLoot()
     self:LoadMain()
     self:LoadAnimationStyles()
+    self:LoadThemeIntegration()
     
     -- Initialize the core modules
     if MikSBT.Profiles.IsInitialized and MikSBT.Profiles:IsInitialized() and MikSBT.Main and MikSBT.Main.Init then
@@ -152,6 +153,15 @@ end
 
 function MSBT:LoadAnimationStyles()
     LoadAddOn("MSBTAnimationStyles.lua")
+end
+
+function MSBT:LoadThemeIntegration()
+    -- Load the VUI theme integration module
+    local path = "Interface\\AddOns\\VUI\\modules\\msbt\\ThemeIntegration.lua"
+    local success, result = pcall(dofile, path)
+    if not success then
+        LoadAddOn("ThemeIntegration.lua")
+    end
 end
 
 -- Configuration getter for the options panel

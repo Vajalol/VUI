@@ -47,6 +47,74 @@ local translations = {}
 
 
 -------------------------------------------------------------------------------
+-- Theme Support
+-------------------------------------------------------------------------------
+
+-- Theme support for VUI integration
+local function ApplyTheme()
+    local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Register theme-specific sounds
+    if currentTheme == "phoenixflame" then
+        mod.Media.RegisterSound("MSBT Low Health", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\LowHealth.ogg")
+        mod.Media.RegisterSound("MSBT Low Mana", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\LowMana.ogg")
+        mod.Media.RegisterSound("MSBT Cooldown", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\Cooldown.ogg")
+        mod.Media.RegisterSound("MSBT Crit", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\Crit.ogg")
+        mod.Media.RegisterSound("MSBT Proc", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\Proc.ogg")
+        mod.Media.RegisterSound("MSBT Dodge", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\Dodge.ogg")
+        mod.Media.RegisterSound("MSBT Parry", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\Parry.ogg")
+        mod.Media.RegisterSound("MSBT Block", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\Block.ogg")
+        mod.Media.RegisterSound("MSBT Heal", "Interface\\Addons\\VUI\\media\\sounds\\phoenixflame\\msbt\\Heal.ogg")
+    elseif currentTheme == "thunderstorm" then
+        mod.Media.RegisterSound("MSBT Low Health", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\LowHealth.ogg")
+        mod.Media.RegisterSound("MSBT Low Mana", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\LowMana.ogg")
+        mod.Media.RegisterSound("MSBT Cooldown", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\Cooldown.ogg")
+        mod.Media.RegisterSound("MSBT Crit", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\Crit.ogg")
+        mod.Media.RegisterSound("MSBT Proc", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\Proc.ogg")
+        mod.Media.RegisterSound("MSBT Dodge", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\Dodge.ogg")
+        mod.Media.RegisterSound("MSBT Parry", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\Parry.ogg")
+        mod.Media.RegisterSound("MSBT Block", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\Block.ogg")
+        mod.Media.RegisterSound("MSBT Heal", "Interface\\Addons\\VUI\\media\\sounds\\thunderstorm\\msbt\\Heal.ogg")
+    elseif currentTheme == "arcanemystic" then
+        mod.Media.RegisterSound("MSBT Low Health", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\LowHealth.ogg")
+        mod.Media.RegisterSound("MSBT Low Mana", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\LowMana.ogg")
+        mod.Media.RegisterSound("MSBT Cooldown", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\Cooldown.ogg")
+        mod.Media.RegisterSound("MSBT Crit", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\Crit.ogg")
+        mod.Media.RegisterSound("MSBT Proc", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\Proc.ogg")
+        mod.Media.RegisterSound("MSBT Dodge", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\Dodge.ogg")
+        mod.Media.RegisterSound("MSBT Parry", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\Parry.ogg")
+        mod.Media.RegisterSound("MSBT Block", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\Block.ogg")
+        mod.Media.RegisterSound("MSBT Heal", "Interface\\Addons\\VUI\\media\\sounds\\arcanemystic\\msbt\\Heal.ogg")
+    elseif currentTheme == "felenergy" then
+        mod.Media.RegisterSound("MSBT Low Health", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\LowHealth.ogg")
+        mod.Media.RegisterSound("MSBT Low Mana", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\LowMana.ogg")
+        mod.Media.RegisterSound("MSBT Cooldown", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\Cooldown.ogg")
+        mod.Media.RegisterSound("MSBT Crit", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\Crit.ogg")
+        mod.Media.RegisterSound("MSBT Proc", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\Proc.ogg")
+        mod.Media.RegisterSound("MSBT Dodge", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\Dodge.ogg")
+        mod.Media.RegisterSound("MSBT Parry", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\Parry.ogg")
+        mod.Media.RegisterSound("MSBT Block", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\Block.ogg")
+        mod.Media.RegisterSound("MSBT Heal", "Interface\\Addons\\VUI\\media\\sounds\\felenergy\\msbt\\Heal.ogg")
+    else
+        -- Fallback to default sounds
+        mod.Media.RegisterSound("MSBT Low Health", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\LowHealth.ogg")
+        mod.Media.RegisterSound("MSBT Low Mana", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\LowMana.ogg")
+        mod.Media.RegisterSound("MSBT Cooldown", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Cooldown.ogg")
+        mod.Media.RegisterSound("MSBT Crit", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Crit.ogg")
+        mod.Media.RegisterSound("MSBT Proc", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Proc.ogg")
+        mod.Media.RegisterSound("MSBT Dodge", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Dodge.ogg")
+        mod.Media.RegisterSound("MSBT Parry", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Parry.ogg")
+        mod.Media.RegisterSound("MSBT Block", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Block.ogg")
+        mod.Media.RegisterSound("MSBT Heal", "Interface\\Addons\\VUI\\media\\sounds\\msbt\\Heal.ogg")
+    end
+    
+    -- Apply theme textures as well
+    -- Animation paths and other theme-specific textures will be updated here
+end
+
+mod.ApplyTheme = ApplyTheme
+
+-------------------------------------------------------------------------------
 -- Utility Functions.
 -------------------------------------------------------------------------------
 

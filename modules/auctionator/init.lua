@@ -25,6 +25,21 @@ function Auctionator:GetConfig()
                 end,
                 order = 1
             },
+            useVUITheme = {
+                type = "toggle",
+                name = "Use VUI Theme",
+                desc = "Apply the current VUI theme to Auctionator's interface",
+                get = function() return VUI.db.profile.modules.auctionator.useVUITheme end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.useVUITheme = value
+                    
+                    -- Apply theme changes immediately if possible
+                    if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+                        self.ThemeIntegration:ApplyTheme()
+                    end
+                end,
+                order = 2
+            },
             autoscan = {
                 type = "toggle",
                 name = "Auto-Scan AH",
@@ -104,6 +119,41 @@ function Auctionator:Initialize()
     
     -- Initialize hooks
     self:SetupHooks()
+    
+    -- Set default theme options if not set
+    if VUI.db.profile.modules.auctionator.useVUITheme == nil then
+        VUI.db.profile.modules.auctionator.useVUITheme = true
+    end
+    
+    -- Load theme integration module
+    self:LoadThemeIntegration()
+    
+    -- Print initialization message
+    VUI:Print("|cff33bbff" .. self.name .. "|r: Module initialized")
+end
+
+-- Load the theme integration module
+function Auctionator:LoadThemeIntegration()
+    -- Check if theme integration file exists and load it
+    local loaded, reason = LoadAddOn("VUI_AuctionatorThemeIntegration")
+    if not loaded and reason ~= "ADDON_LOADED" then
+        -- Try to load the module directly
+        local status, error = pcall(function()
+            -- First try to load the file from our addon directory
+            local file = "Interface\\AddOns\\VUI\\modules\\auctionator\\ThemeIntegration.lua"
+            dofile(file)
+        end)
+        
+        if not status then
+            VUI:Debug("Failed to load Auctionator theme integration: " .. tostring(error))
+            return
+        end
+    end
+    
+    -- Initialize theme integration if available
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
 end
 
 -- Setup hooks into the auction house UI
@@ -135,6 +185,11 @@ function Auctionator:HookAuctionHouse()
                 -- Show our UI
                 if self.mainFrame then
                     self.mainFrame:Show()
+                    
+                    -- Apply theme when the frame becomes visible
+                    if self.ThemeIntegration and VUI.db.profile.modules.auctionator.useVUITheme then
+                        self.ThemeIntegration:ApplyThemeToAuctionUI()
+                    end
                 end
             else
                 -- Hide our UI
@@ -143,6 +198,25 @@ function Auctionator:HookAuctionHouse()
                 end
             end
         end)
+    end
+    
+    -- Register for theme change events
+    if not self.themeChangeRegistered then
+        VUI:RegisterCallback("ThemeChanged", function()
+            -- Update the logo if it exists
+            if self.logo then
+                local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
+                local logoTexturePath = "Interface\\Addons\\VUI\\media\\textures\\" .. currentTheme .. "\\auctionator\\Logo.tga"
+                self.logo:SetTexture(logoTexturePath)
+            end
+            
+            -- Apply theme to all UI elements if visible and theme integration is enabled
+            if self.mainFrame and self.mainFrame:IsShown() and 
+               self.ThemeIntegration and VUI.db.profile.modules.auctionator.useVUITheme then
+                self.ThemeIntegration:ApplyThemeToAuctionUI()
+            end
+        end)
+        self.themeChangeRegistered = true
     end
     
     self.hooked = true
@@ -171,6 +245,16 @@ function Auctionator:CreateAuctionHouseFrame()
     end)
     
     table.insert(AuctionHouseFrame.Tabs, tab)
+    
+    -- Add a logo to the interface
+    self.logo = self.mainFrame:CreateTexture("VUIAuctionatorLogo", "ARTWORK")
+    self.logo:SetSize(64, 64)
+    self.logo:SetPoint("TOPLEFT", self.mainFrame, "TOPLEFT", 20, -20)
+    
+    -- First try to use a theme-specific logo
+    local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
+    local logoTexturePath = "Interface\\Addons\\VUI\\media\\textures\\" .. currentTheme .. "\\auctionator\\Logo.tga"
+    self.logo:SetTexture(logoTexturePath)
     
     -- Setup UI components
     self:CreateSearchTab()
