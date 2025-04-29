@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Phoenix Flame themed MoveAny frame texture -->
+  <defs>
+    <linearGradient id="phoenixFrameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E64D0D;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#A73000;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#682000;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main frame with rounded corners -->
+  <rect x="4" y="4" width="248" height="248" rx="8" ry="8" 
+        fill="none" stroke="url(#phoenixFrameGradient)" stroke-width="2" />
+        
+  <!-- Corner flame-like embellishments -->
+  <path d="M 4,16 Q 8,4 16,4 Q 4,8 4,16 Z" fill="#FFA31A" fill-opacity="0.5" />
+  <path d="M 252,16 Q 248,4 240,4 Q 252,8 252,16 Z" fill="#FFA31A" fill-opacity="0.5" />
+  <path d="M 4,240 Q 8,252 16,252 Q 4,248 4,240 Z" fill="#FFA31A" fill-opacity="0.5" />
+  <path d="M 252,240 Q 248,252 240,252 Q 252,248 252,240 Z" fill="#FFA31A" fill-opacity="0.5" />
+  
+  <!-- Subtle inner frame -->
+  <rect x="12" y="12" width="232" height="232" rx="6" ry="6" 
+        fill="none" stroke="#3A1A05" stroke-width="1" stroke-opacity="0.4" />
+        
+  <!-- Dashed highlight for visibility during movement -->
+  <rect x="4" y="4" width="248" height="248" rx="8" ry="8" 
+        fill="none" stroke="#FFA31A" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="4,4" />
+</svg>

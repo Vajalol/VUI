@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy themed MoveAny handle texture -->
+  <defs>
+    <linearGradient id="felHandleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A1A0A;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#102810;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#0A1A0A;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <linearGradient id="felGripGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#00AA00;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#1AFF1A;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main handle -->
+  <rect x="4" y="4" width="56" height="56" rx="4" ry="4" 
+        fill="url(#felHandleGradient)" />
+        
+  <!-- Fel corruption tendril accents at corners -->
+  <path d="M 4,10 C 6,4 8,6 12,4 C 8,6 6,4 4,10 Z" 
+        fill="#00AA00" fill-opacity="0.7" />
+  <path d="M 60,10 C 58,4 56,6 52,4 C 56,6 58,4 60,10 Z" 
+        fill="#00AA00" fill-opacity="0.7" />
+  <path d="M 4,54 C 6,60 8,58 12,60 C 8,58 6,60 4,54 Z" 
+        fill="#00AA00" fill-opacity="0.7" />
+  <path d="M 60,54 C 58,60 56,58 52,60 C 56,58 58,60 60,54 Z" 
+        fill="#00AA00" fill-opacity="0.7" />
+        
+  <!-- Border highlight -->
+  <rect x="4" y="4" width="56" height="56" rx="4" ry="4" 
+        fill="none" stroke="#1AFF1A" stroke-width="1" stroke-opacity="0.4" />
+        
+  <!-- Grip lines with fel glow -->
+  <line x1="16" y1="20" x2="48" y2="20" stroke="url(#felGripGradient)" stroke-width="2" />
+  <line x1="16" y1="32" x2="48" y2="32" stroke="url(#felGripGradient)" stroke-width="2" />
+  <line x1="16" y1="44" x2="48" y2="44" stroke="url(#felGripGradient)" stroke-width="2" />
+  
+  <!-- Hover highlight -->
+  <rect x="4" y="4" width="56" height="56" rx="4" ry="4" 
+        fill="#1AFF1A" fill-opacity="0.1" class="handle-hover" />
+</svg>

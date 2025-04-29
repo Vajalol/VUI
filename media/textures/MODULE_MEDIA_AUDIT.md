@@ -20,9 +20,9 @@ This document tracks the status of media files required by each module in the VU
 - [x] Animation textures (flash effect)
 
 ## MoveAny Module
-- [ ] Frame textures
-- [ ] Handle textures
-- [ ] Grid textures
+- [x] Frame textures
+- [x] Handle textures
+- [x] Grid textures
 
 ## Auctionator Module
 - [ ] Button textures
@@ -45,8 +45,8 @@ This document tracks the status of media files required by each module in the VU
 - [x] Status bar textures
 
 ## idTip Module
-- [ ] Tooltip border textures
-- [ ] Background textures
+- [x] Tooltip border textures
+- [x] Background textures
 
 ## Premade Group Finder Module
 - [ ] Button textures
@@ -92,9 +92,9 @@ This document tracks the status of media files required by each module in the VU
 - [ ] Buff tracker textures
 
 ## ActionBars Module
-- [ ] Button textures
-- [ ] Macro icon textures
-- [ ] Cooldown textures
+- [x] Button textures
+- [x] Macro icon textures
+- [x] Cooldown textures
 
 ## CastBar Module
 - [x] Theme-specific cast bar textures
@@ -102,6 +102,6 @@ This document tracks the status of media files required by each module in the VU
 - [x] Cast success/fail textures
 
 ## Tooltip Module
-- [ ] Border textures
-- [ ] Background textures
-- [ ] Item quality highlight textures
+- [x] Border textures
+- [x] Background textures
+- [x] Item quality highlight textures

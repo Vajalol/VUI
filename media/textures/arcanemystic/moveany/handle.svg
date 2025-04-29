@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Arcane Mystic themed MoveAny handle texture -->
+  <defs>
+    <linearGradient id="arcaneHandleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A0A2F;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#281038;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#1A0A2F;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <linearGradient id="arcaneGripGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#D459FF;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#9D0DE6;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#D459FF;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main handle -->
+  <rect x="4" y="4" width="56" height="56" rx="4" ry="4" 
+        fill="url(#arcaneHandleGradient)" />
+        
+  <!-- Arcane rune accents at corners -->
+  <circle cx="8" cy="8" r="2" fill="#9D0DE6" fill-opacity="0.7" />
+  <circle cx="56" cy="8" r="2" fill="#9D0DE6" fill-opacity="0.7" />
+  <circle cx="8" cy="56" r="2" fill="#9D0DE6" fill-opacity="0.7" />
+  <circle cx="56" cy="56" r="2" fill="#9D0DE6" fill-opacity="0.7" />
+  
+  <!-- Cross patterns in runes -->
+  <path d="M 8,6 L 8,10 M 6,8 L 10,8" stroke="#D459FF" stroke-width="0.5" stroke-opacity="0.7" />
+  <path d="M 56,6 L 56,10 M 54,8 L 58,8" stroke="#D459FF" stroke-width="0.5" stroke-opacity="0.7" />
+  <path d="M 8,54 L 8,58 M 6,56 L 10,56" stroke="#D459FF" stroke-width="0.5" stroke-opacity="0.7" />
+  <path d="M 56,54 L 56,58 M 54,56 L 58,56" stroke="#D459FF" stroke-width="0.5" stroke-opacity="0.7" />
+        
+  <!-- Border highlight -->
+  <rect x="4" y="4" width="56" height="56" rx="4" ry="4" 
+        fill="none" stroke="#D459FF" stroke-width="1" stroke-opacity="0.4" />
+        
+  <!-- Grip lines with arcane glow -->
+  <line x1="16" y1="20" x2="48" y2="20" stroke="url(#arcaneGripGradient)" stroke-width="2" />
+  <line x1="16" y1="32" x2="48" y2="32" stroke="url(#arcaneGripGradient)" stroke-width="2" />
+  <line x1="16" y1="44" x2="48" y2="44" stroke="url(#arcaneGripGradient)" stroke-width="2" />
+  
+  <!-- Hover highlight -->
+  <rect x="4" y="4" width="56" height="56" rx="4" ry="4" 
+        fill="#D459FF" fill-opacity="0.1" class="handle-hover" />
+</svg>

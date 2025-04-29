@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy themed tooltip border texture -->
+  <defs>
+    <linearGradient id="felBorderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#00AA00;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#006600;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main border with rounded corners -->
+  <rect x="4" y="4" width="248" height="248" rx="8" ry="8" 
+        fill="none" stroke="url(#felBorderGradient)" stroke-width="4" />
+  
+  <!-- Subtle corner accents with fel corruption style -->
+  <path d="M 4,24 L 4,12 Q 4,4 12,4 L 24,4" 
+        stroke="url(#felBorderGradient)" stroke-width="2" fill="none" />
+  <path d="M 232,4 L 244,4 Q 252,4 252,12 L 252,24" 
+        stroke="url(#felBorderGradient)" stroke-width="2" fill="none" />
+  <path d="M 252,232 L 252,244 Q 252,252 244,252 L 232,252" 
+        stroke="url(#felBorderGradient)" stroke-width="2" fill="none" />
+  <path d="M 24,252 L 12,252 Q 4,252 4,244 L 4,232" 
+        stroke="url(#felBorderGradient)" stroke-width="2" fill="none" />
+        
+  <!-- Fel corruption tendril embellishments -->
+  <path d="M 12,12 C 4,20 16,24 8,30 C 16,24 12,20 24,16" 
+        stroke="#1AFF1A" stroke-width="1" fill="none" />
+  <path d="M 244,12 C 252,20 240,24 248,30 C 240,24 244,20 232,16" 
+        stroke="#1AFF1A" stroke-width="1" fill="none" />
+  <path d="M 244,244 C 252,236 240,232 248,226 C 240,232 244,236 232,240" 
+        stroke="#1AFF1A" stroke-width="1" fill="none" />
+  <path d="M 12,244 C 4,236 16,232 8,226 C 16,232 12,236 24,240" 
+        stroke="#1AFF1A" stroke-width="1" fill="none" />
+</svg>
