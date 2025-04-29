@@ -41,6 +41,10 @@
 - Created high-quality SVG textures for all EPF module components
 - Implemented comprehensive player frame customization
 - Improved EPF configuration with detailed options for all features
+- Created theme-specific unitframe border glow and portrait highlight SVG textures
+- Added theme-specific threat indicator SVGs for combat status visualization
+- Created nameplate border and glow textures for all themes
+- Enhanced visual consistency across all UI components
 
 ## Version 0.1.0 (2025-04-26)
 - Initial beta release
