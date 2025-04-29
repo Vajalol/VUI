@@ -49,9 +49,9 @@ This document tracks the status of media files required by each module in the VU
 - [x] Background textures
 
 ## Premade Group Finder Module
-- [ ] Button textures
+- [x] Button textures
 - [ ] Filter icon textures
-- [ ] List header textures
+- [x] Border textures
 
 ## SpellNotifications Module
 - [x] Theme-specific notification textures
@@ -65,15 +65,15 @@ This document tracks the status of media files required by each module in the VU
 
 ## MSBT Module
 - [ ] Font files
-- [ ] Animation path textures
+- [x] Animation path textures
 - [ ] Sound files
 
 ## Nameplates Module
 - [x] Theme-specific border textures
 - [x] Theme-specific glow textures
 - [x] Threat indicator textures
-- [ ] Cast bar textures
-- [ ] Health bar textures
+- [x] Cast bar textures
+- [x] Health bar textures
 
 ## Unitframes Module
 - [x] Theme-specific border glow textures

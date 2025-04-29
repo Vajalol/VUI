@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Thunder Storm themed PGFinder border texture -->
+  <defs>
+    <linearGradient id="thunderBgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A0A1A;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#080814;stop-opacity:0.85" />
+      <stop offset="100%" style="stop-color:#05050A;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <linearGradient id="thunderBorderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#73C2FB;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#0D9DE6;stop-opacity:0.85" />
+      <stop offset="100%" style="stop-color:#0072B5;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <filter id="thunderGlow" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur" />
+      <feOffset dx="0" dy="0" result="offsetBlur" />
+      <feComposite in="SourceAlpha" in2="offsetBlur" operator="out" result="innerGlow" />
+      <feFlood flood-color="#0D9DE6" flood-opacity="0.3" result="color" />
+      <feComposite in="color" in2="innerGlow" operator="in" result="glow" />
+      <feComposite in="glow" in2="SourceGraphic" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Outer frame border -->
+  <path d="M 16,4 H 240 C 248,4 252,8 252,16 
+           V 240 C 252,248 248,252 240,252 
+           H 16 C 8,252 4,248 4,240 
+           V 16 C 4,8 8,4 16,4 Z 
+           
+           M 24,16 H 232 C 240,16 240,16 240,24 
+           V 232 C 240,240 240,240 232,240 
+           H 24 C 16,240 16,240 16,232 
+           V 24 C 16,16 16,16 24,16 Z"
+        fill="url(#thunderBgGradient)" stroke="url(#thunderBorderGradient)" stroke-width="1" filter="url(#thunderGlow)" />
+  
+  <!-- Lightning corner embellishments -->
+  <path d="M 16,16 L 20,30 L 12,30 L 16,44" stroke="#73C2FB" stroke-width="1.5" stroke-opacity="0.8" fill="none" />
+  <path d="M 240,16 L 236,30 L 244,30 L 240,44" stroke="#73C2FB" stroke-width="1.5" stroke-opacity="0.8" fill="none" />
+  <path d="M 16,240 L 20,226 L 12,226 L 16,212" stroke="#73C2FB" stroke-width="1.5" stroke-opacity="0.8" fill="none" />
+  <path d="M 240,240 L 236,226 L 244,226 L 240,212" stroke="#73C2FB" stroke-width="1.5" stroke-opacity="0.8" fill="none" />
+  
+  <!-- Highlight for top edge -->
+  <path d="M 16,4 H 240 C 248,4 252,8 252,16 V 24 
+           C 252,16 248,12 240,12 H 16 C 8,12 4,16 4,24 
+           V 16 C 4,8 8,4 16,4 Z" 
+        fill="#73C2FB" fill-opacity="0.2" />
+</svg>

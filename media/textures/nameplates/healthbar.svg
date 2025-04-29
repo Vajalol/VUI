@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="32" viewBox="0 0 256 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Standard nameplate health bar texture -->
+  <defs>
+    <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#DDDDDD;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#BBBBBB;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <linearGradient id="highlightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0.0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main bar background - this will be colorized by the game based on unit type -->
+  <rect x="0" y="0" width="256" height="32" rx="4" ry="4" fill="url(#barGradient)" />
+  
+  <!-- Top highlight for 3D effect -->
+  <path d="M 4,4 H 252 V 12 C 252,8 250,8 248,8 H 8 C 6,8 4,8 4,12 V 4 Z" 
+        fill="url(#highlightGradient)" />
+        
+  <!-- Bottom shadow for 3D effect -->
+  <path d="M 4,28 H 252 V 20 C 252,24 250,24 248,24 H 8 C 6,24 4,24 4,20 V 28 Z" 
+        fill="#000000" fill-opacity="0.2" />
+  
+  <!-- Subtle texture pattern -->
+  <path d="M 0,8 H 256 M 0,16 H 256 M 0,24 H 256" 
+        stroke="#FFFFFF" stroke-width="0.5" stroke-opacity="0.1" />
+</svg>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy themed MSBT animation path texture -->
+  <defs>
+    <linearGradient id="felPathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:0.7" />
+      <stop offset="50%" style="stop-color:#00AA00;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#006600;stop-opacity:0.7" />
+    </linearGradient>
+    
+    <filter id="felGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Curved path for scrolling text to follow -->
+  <path d="M 10,128 C 50,80 100,60 128,60 S 206,80 246,128" 
+        fill="none" stroke="url(#felPathGradient)" stroke-width="2" stroke-dasharray="4,2" filter="url(#felGlow)" />
+  
+  <!-- Reverse curved path (bottom) -->
+  <path d="M 10,128 C 50,176 100,196 128,196 S 206,176 246,128" 
+        fill="none" stroke="url(#felPathGradient)" stroke-width="2" stroke-dasharray="4,2" filter="url(#felGlow)" />
+  
+  <!-- Corrupted zigzag path -->
+  <path d="M 10,128 C 30,90 50,160 90,110 C 110,180 150,80 190,110 C 210,70 230,150 246,128" 
+        fill="none" stroke="url(#felPathGradient)" stroke-width="2" stroke-dasharray="6,3" filter="url(#felGlow)" />
+  
+  <!-- Parabolic path (downward) -->
+  <path d="M 10,60 Q 128,196 246,60" 
+        fill="none" stroke="url(#felPathGradient)" stroke-width="2" stroke-dasharray="4,2" filter="url(#felGlow)" />
+  
+  <!-- Fel corruption tendril decorations -->
+  <path d="M 10,128 C 13,122 16,125 20,122 C 16,125 13,122 10,128 Z" 
+        fill="#00AA00" fill-opacity="0.6" />
+  <path d="M 246,128 C 243,122 240,125 236,122 C 240,125 243,122 246,128 Z" 
+        fill="#00AA00" fill-opacity="0.6" />
+  <path d="M 128,60 C 125,54 122,57 118,54 C 122,57 125,54 128,60 Z" 
+        fill="#00AA00" fill-opacity="0.6" />
+  <path d="M 128,196 C 131,190 134,193 138,190 C 134,193 131,190 128,196 Z" 
+        fill="#00AA00" fill-opacity="0.6" />
+</svg>
