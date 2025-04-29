@@ -1,6 +1,6 @@
 # VUI Changelog
 
-## Version 0.2.0 (2025-04-27)
+## Version 0.2.0 (2025-04-29)
 - Major update to the configuration system
 - Added GetConfig implementation across all 21 modules
 - Ensured full UI integration for all addon modules
@@ -20,6 +20,16 @@
 - Created theme-specific textures for Details! integration
 - Added theme color matching for all Details! windows
 - Implemented full theme support in Details! with custom highlights
+- Created a dedicated nameplates module with comprehensive configuration options
+- Added new Tools module with WeakAura-inspired utilities
+- Created Position of Power, Buff Checker, and Mouse Trail tools
+- Fixed code organization by moving nameplate functionality from Chat to Nameplates module
+- Enhanced nameplates with class color, health text, and other customization options
+- Implemented VUI Plater - advanced nameplates based on WhiiskeyZ Plater profile
+- Added health animations, target highlighting, cast bar enhancements to nameplates
+- Created custom script support for advanced nameplate customization
+- Added theme integration to nameplate elements (health bars, cast bars, etc.)
+- Enhanced aura display with custom filtering and sorting options
 
 ## Version 0.1.0 (2025-04-26)
 - Initial beta release

@@ -243,9 +243,6 @@ function Chat:ApplyChatSettings()
     if VUI.skins and VUI.skins.ApplySkin then
         VUI.skins:ApplySkin("blizzard", "chat")
     end
-    
-    -- Set up nameplates based on settings
-    self:SetupNameplates()
 end
 
 -- Hook chat events for history and class icon display
@@ -599,23 +596,6 @@ function Chat:RemoveChatHooks()
         VUITEXTCOPYFRAME:Hide()
     end
     
-    -- Restore nameplate defaults if needed
-    if C_NamePlate and C_NamePlate.SetNamePlateFriendlySize then
-        C_NamePlate.SetNamePlateFriendlySize(1.0, 1.0)
-        C_NamePlate.SetNamePlateEnemySize(1.0, 1.0)
-    end
-    SetCVar("nameplateMinAlpha", 1.0)
-    SetCVar("nameplateMaxAlpha", 1.0)
-    
-    -- Clean up nameplate hooks
-    if self.nameplateHooked then
-        if self.nameplateHookFrame then
-            self.nameplateHookFrame:UnregisterAllEvents()
-            self.nameplateHookFrame:SetScript("OnEvent", nil)
-        end
-        self.nameplateHooked = false
-    end
-    
     -- Notify user
     VUI:Print("Chat module disabled")
 end
@@ -747,66 +727,6 @@ function Chat:CreateConfigOptions(parent)
         self:ApplyChatSettings()
     end)
     chatSettingsGroup:AddChild(timestampFormatEdit)
-    
-    -- Nameplate Settings Group
-    local nameplateSettingsGroup = AceGUI:Create("InlineGroup")
-    nameplateSettingsGroup:SetTitle("Nameplate Settings")
-    nameplateSettingsGroup:SetLayout("Flow")
-    nameplateSettingsGroup:SetFullWidth(true)
-    parent:AddChild(nameplateSettingsGroup)
-    
-    -- Nameplate Style
-    local nameplateStylingDropdown = AceGUI:Create("Dropdown")
-    nameplateStylingDropdown:SetLabel("Nameplate Styling")
-    nameplateStylingDropdown:SetList({
-        ["default"] = "Default",
-        ["custom"] = "Custom"
-    })
-    nameplateStylingDropdown:SetValue(self.settings.nameplateStyling or "custom")
-    nameplateStylingDropdown:SetFullWidth(true)
-    nameplateStylingDropdown:SetCallback("OnValueChanged", function(_, _, value)
-        self.settings.nameplateStyling = value
-        self:SetupNameplates()
-    end)
-    nameplateSettingsGroup:AddChild(nameplateStylingDropdown)
-    
-    -- Friendly Nameplate Size
-    local friendlySizeSlider = AceGUI:Create("Slider")
-    friendlySizeSlider:SetLabel("Friendly Nameplate Size")
-    friendlySizeSlider:SetSliderValues(0.5, 1.5, 0.1)
-    friendlySizeSlider:SetValue(self.settings.nameplateFriendlySize or 1.0)
-    friendlySizeSlider:SetFullWidth(true)
-    friendlySizeSlider:SetCallback("OnValueChanged", function(_, _, value)
-        self.settings.nameplateFriendlySize = value
-        if self.settings.nameplateStyling == "custom" then
-            self:SetupNameplates()
-        end
-    end)
-    friendlySizeSlider:SetDisabled(self.settings.nameplateStyling == "default")
-    nameplateSettingsGroup:AddChild(friendlySizeSlider)
-    
-    -- Enemy Nameplate Size
-    local enemySizeSlider = AceGUI:Create("Slider")
-    enemySizeSlider:SetLabel("Enemy Nameplate Size")
-    enemySizeSlider:SetSliderValues(0.5, 1.5, 0.1)
-    enemySizeSlider:SetValue(self.settings.nameplateEnemySize or 1.0)
-    enemySizeSlider:SetFullWidth(true)
-    enemySizeSlider:SetCallback("OnValueChanged", function(_, _, value)
-        self.settings.nameplateEnemySize = value
-        if self.settings.nameplateStyling == "custom" then
-            self:SetupNameplates()
-        end
-    end)
-    enemySizeSlider:SetDisabled(self.settings.nameplateStyling == "default")
-    nameplateSettingsGroup:AddChild(enemySizeSlider)
-    
-    -- Update nameplate control states based on styling choice
-    nameplateStylingDropdown:SetCallback("OnValueChanged", function(_, _, value)
-        self.settings.nameplateStyling = value
-        friendlySizeSlider:SetDisabled(value == "default")
-        enemySizeSlider:SetDisabled(value == "default")
-        self:SetupNameplates()
-    end)
 end
 
 -- Register the module with VUI

@@ -105,11 +105,120 @@ VUI.defaults = {
                 saveHistory = true,        -- Save chat history between sessions
                 filterRaidSpam = true,     -- Filter out common raid spam messages
                 chatURLCopy = true,        -- Make URLs in chat clickable
-                nameplateStyling = "custom", -- Can be "default" or "custom"
-                nameplateFriendlySize = 1.0,
-                nameplateFriendlyAlpha = 1.0,
-                nameplateEnemySize = 1.0,
-                nameplateEnemyAlpha = 1.0,
+            },
+            
+            -- VUI Plater Module (Advanced Nameplates)
+            nameplates = {
+                enabled = true,
+                profileName = "VUI Plater",
+                styling = "plater",        -- Can be "default", "custom", or "plater"
+                useThemeColors = true,     -- Match colors to current VUI theme
+                
+                -- Plater styling options
+                platerVersion = "1.0.0",
+                plateHeight = 36,
+                plateWidth = 140,
+                castBarHeight = 10,
+                castBarIconSize = 16,
+                useCustomCastbar = true,
+                nameplateAlpha = 1.0,
+                
+                -- Global settings
+                friendlySize = 1.0,
+                enemySize = 1.0,
+                friendlyAlpha = 1.0,
+                enemyAlpha = 1.0,
+                
+                -- Health bar options
+                showClassColors = true,
+                healthBarTexture = "VUI_Smooth",
+                healthBarBorderType = "thin",    -- none, thin, thick, or gloss
+                
+                -- Text options
+                nameTextSize = 10,
+                nameTextFont = "VUI PT Sans Narrow",
+                nameTextOutline = "OUTLINE",
+                showHealthText = true,
+                healthTextSize = 10,
+                healthTextFont = "VUI PT Sans Narrow",
+                healthTextOutline = "OUTLINE",
+                healthFormat = "percent",  -- percent, value, both
+                
+                -- Cast bar options
+                showCastbars = true,
+                castBarTexture = "VUI_Smooth", 
+                castBarColor = {r = 0.4, g = 0.6, b = 0.8, a = 1.0},
+                nonInterruptibleColor = {r = 0.7, g = 0.3, b = 0.3, a = 1.0},
+                castBarTextSize = 8,
+                castBarTextFont = "VUI PT Sans Narrow",
+                showCastTarget = true,
+                castTargetPosition = "below", -- below, right
+                
+                -- Aura display options
+                showAuras = true,
+                maxAuras = 6,
+                filterAuras = true,
+                auraSize = 22,
+                auraSpacing = 1,
+                auraPosition = "top",      -- top, bottom, left, right
+                showAuraCooldown = true,
+                showAuraStacks = true,
+                auraSortMode = "duration", -- duration, name
+                showEnrageEffects = true,
+                prioritizeDebuffs = true,
+                
+                -- Aura filters
+                whitelistedAuras = {},     -- Priority auras always shown
+                blacklistedAuras = {},     -- Auras never shown
+                
+                -- Combat/threat indicators
+                showThreatIndicator = true,
+                threatWarningMode = "color", -- color, border, icon, glow
+                tankMode = true,           -- Different threat coloring for tanks
+                
+                -- Special indicators
+                showExecuteIndicator = true,
+                executeThreshold = 20,      -- Health percentage for execute indicator
+                showTargetHighlight = true,
+                targetHighlightColor = {r = 1.0, g = 1.0, b = 1.0, a = 0.2},
+                showFocusHighlight = true,
+                focusHighlightColor = {r = 0.0, g = 1.0, b = 0.0, a = 0.2},
+                showEliteIcon = true,
+                showTotems = true,
+                showRaidMarks = true,
+                
+                -- Visibility settings
+                hideNeutralNPCs = false,
+                hideFriendlyNPCs = false,
+                hideFriendlyPlayers = false,
+                hideInCombat = false,
+                
+                -- Utility settings
+                clickthrough = false,
+                stackingNameplates = true, -- Whether nameplates stack on top of each other or overlap
+                cvarsLoaded = false,       -- Internal tracking for CVars
+                
+                -- Script hooks settings
+                useCreateHook = true,      -- Create hook for plate initialization
+                useUpdateHook = true,      -- Update hook for regular updates
+                useAddedHook = true,       -- Added hook when plates appear
+                useRemovedHook = false,    -- Removed hook when plates disappear
+                useCreationHook = true,    -- Custom create hook for extensive customization
+                
+                -- Scripts and custom code
+                customScripts = {
+                    createPlate = "-- Custom create plate script\n-- Used for initial plate setup",
+                    updatePlate = "-- Custom update plate script\n-- Used for regular plate updates",
+                    plateAdded = "-- Custom plate added script\n-- Used when plate first appears"
+                },
+                
+                -- Special effects
+                useAnimations = true,
+                useGlow = true,
+                useShake = true,
+                
+                -- NPC colorization
+                npcColorOverrides = {}     -- Custom NPC colors by NPC ID
             },
             
             -- BuffOverlay Module

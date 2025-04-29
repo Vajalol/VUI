@@ -71,4 +71,7 @@
     
     <!-- Tools Module -->
     <Include file="tools\load.xml"/>
+    
+    <!-- Nameplates Module -->
+    <Include file="nameplates\index.xml"/>
 </Ui>
