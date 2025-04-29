@@ -14,7 +14,18 @@ local themeAwareModules = {
     "omnicc",
     "omnicd",
     "angrykeystone",
-    "premadegroupfinder"
+    "premadegroupfinder",
+    "detailsskin",
+    "msbt",
+    "spellnotifications",
+    "infoframe",
+    "tooltip",
+    "castbar",
+    "trufigcd",
+    "idtip",
+    "automation",
+    "visualconfig",
+    "profiles"
 }
 
 -- Apply the specified theme to all theme-aware modules
@@ -81,4 +92,36 @@ function VUI:InitializeThemeIntegration()
             VUI.ThemeIntegration:ApplyTheme(theme)
         end
     end
+    
+    -- Initialize theme callbacks
+    VUI.ThemeIntegration:InitializeCallbacks()
+end
+
+-- Callback system for theme changes
+VUI.ThemeIntegration.callbacks = {}
+
+-- Register a callback to be called when theme changes
+function VUI.ThemeIntegration:RegisterCallback(name, callback)
+    if type(callback) ~= "function" then
+        print("|cff1784d1VUI|r: Invalid callback function for " .. name)
+        return
+    end
+    
+    self.callbacks[name] = callback
+end
+
+-- Unregister a callback
+function VUI.ThemeIntegration:UnregisterCallback(name)
+    self.callbacks[name] = nil
+end
+
+-- Initialize callbacks system
+function VUI.ThemeIntegration:InitializeCallbacks()
+    -- Hook into theme change events
+    hooksecurefunc(VUI.ThemeIntegration, "ApplyTheme", function(self, theme)
+        -- Call all registered callbacks
+        for name, callback in pairs(self.callbacks) do
+            pcall(callback, theme, VUI.media.themes[theme] or {})
+        end
+    end)
 end

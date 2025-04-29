@@ -342,6 +342,34 @@ VUI.defaults = {
                 petCritsSound = "laser",
                 petCritsMinHit = 3000
             },
+            
+            -- MSBT (MikScrollingBattleText) Module
+            msbt = {
+                enabled = true,
+                useVUITheme = true,
+                enhancedFonts = true,
+                showAnimation = true,
+                soundsEnabled = true,
+                themeColoredText = true,
+                scrollAreas = {
+                    incoming = {
+                        enabled = true,
+                        useVUITheme = true
+                    },
+                    outgoing = {
+                        enabled = true,
+                        useVUITheme = true
+                    },
+                    notification = {
+                        enabled = true,
+                        useVUITheme = true
+                    },
+                    static = {
+                        enabled = true,
+                        useVUITheme = true
+                    }
+                }
+            },
         }
     },
     char = {}

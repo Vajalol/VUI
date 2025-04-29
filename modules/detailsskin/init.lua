@@ -60,6 +60,29 @@ function DetailsSkin:ApplySkin(instance)
     instance.row_info.alpha = settings.rowOpacity
     instance.row_info.fixed_texture_background_color = {0, 0, 0, 0}
     
+    -- Apply theme-specific row texture
+    instance.row_info.texture_background = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\row_texture"
+    
+    -- Apply theme-specific colors based on the theme
+    local themeColors = {
+        ["thunderstorm"] = {r = 0.05, g = 0.62, b = 0.9, a = 1}, -- Electric blue
+        ["phoenixflame"] = {r = 0.9, g = 0.3, b = 0.05, a = 1},  -- Fiery orange
+        ["arcanemystic"] = {r = 0.62, g = 0.05, b = 0.9, a = 1}, -- Violet purple
+        ["felenergy"] = {r = 0.1, g = 1.0, b = 0.1, a = 1}       -- Fel green
+    }
+    
+    -- Apply theme color to certain UI elements
+    if themeColors[theme] then
+        instance.row_info.fixed_texture_color = themeColors[theme]
+        
+        -- Only apply these if not using class colors
+        if not instance.row_info.texture_class_colors then
+            instance.row_info.texture_background_class_color = false
+            instance.row_info.textL_class_colors = false
+            instance.row_info.textR_class_colors = false
+        end
+    end
+    
     if settings.customFonts then
         instance.row_info.font_face = VUI.LSM:Fetch("font", settings.rowFont)
         instance.row_info.font_size = settings.fontSize
@@ -141,6 +164,62 @@ function DetailsSkin:OnThemeChanged(newTheme)
     
     -- Update all instances with the new theme
     self:ApplySkinToAllInstances()
+    
+    -- Update all plugin windows
+    self:ApplySkinToPlugins()
+end
+
+-- Apply skin to Details plugins
+function DetailsSkin:ApplySkinToPlugins()
+    if not Details then return end
+    local settings = VUI.db.profile.modules.detailsskin
+    if not settings.enabled then return end
+    
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Apply skin to all plugin frames
+    if Details.PluginCount and Details.PluginCount > 0 then
+        for i = 1, Details.PluginCount do
+            local plugin = Details.tabela_plugins[i]
+            if plugin and plugin.Frame then
+                local frame = plugin.Frame
+                
+                -- Apply border and background
+                if not frame.VUISkinned then
+                    -- Skip plugins that don't want to be skinned
+                    if not plugin.NoFrameSkinn then
+                        -- Apply theme backdrop
+                        frame:SetBackdrop({
+                            edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\border", 
+                            tileEdge = true,
+                            edgeSize = 12,
+                            bgFile = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background",
+                            insets = {left = 3, right = 3, top = 3, bottom = 3}
+                        })
+                        
+                        -- Apply theme colors
+                        local themeColors = {
+                            ["thunderstorm"] = {0.05, 0.62, 0.9, settings.borderOpacity}, -- Electric blue
+                            ["phoenixflame"] = {0.9, 0.3, 0.05, settings.borderOpacity},  -- Fiery orange
+                            ["arcanemystic"] = {0.62, 0.05, 0.9, settings.borderOpacity}, -- Violet purple
+                            ["felenergy"] = {0.1, 1.0, 0.1, settings.borderOpacity}       -- Fel green
+                        }
+                        
+                        frame:SetBackdropBorderColor(unpack(themeColors[theme] or {0.1, 0.1, 0.1, settings.borderOpacity}))
+                        frame:SetBackdropColor(0.1, 0.1, 0.1, settings.backgroundOpacity)
+                        
+                        -- Apply theme to title bar if it exists
+                        if frame.TitleBar then
+                            frame.TitleBar:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\titlebar")
+                        end
+                        
+                        -- Mark as skinned
+                        frame.VUISkinned = true
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- Initialize the module
@@ -165,15 +244,26 @@ function DetailsSkin:Initialize()
         end)
     end
     
+    -- Hook plugin frames creation
+    if Details.CreatePluginFrames then
+        hooksecurefunc(Details, "CreatePluginFrames", function(self, plugin)
+            C_Timer.After(0.5, function()
+                DetailsSkin:ApplySkinToPlugins()
+            end)
+        end)
+    end
+    
     -- Initial skin application with a slight delay to ensure Details is fully loaded
     C_Timer.After(1, function() 
         DetailsSkin:ApplySkinToAllInstances()
+        DetailsSkin:ApplySkinToPlugins()
     end)
     
-    -- Set a repeating timer to catch any newly created instances
+    -- Set a repeating timer to catch any newly created instances and plugins
     skinTimer = C_Timer.NewTicker(5, function()
         if not initialSkinComplete then
             DetailsSkin:ApplySkinToAllInstances()
+            DetailsSkin:ApplySkinToPlugins()
         end
     end, 6) -- Try for 30 seconds
     
@@ -218,6 +308,7 @@ function DetailsSkin:GetConfig()
                     settings.enabled = val
                     if val then
                         DetailsSkin:ApplySkinToAllInstances()
+                        DetailsSkin:ApplySkinToPlugins()
                     else
                         -- Restore original skins if disabled
                         if Details then
@@ -475,7 +566,10 @@ function DetailsSkin:GetConfig()
                 type = "execute",
                 name = "Apply Skin Now",
                 desc = "Apply skin settings to all Details! windows immediately",
-                func = function() DetailsSkin:ApplySkinToAllInstances() end,
+                func = function() 
+                    DetailsSkin:ApplySkinToAllInstances()
+                    DetailsSkin:ApplySkinToPlugins()
+                end,
                 width = "full",
                 order = 50
             }

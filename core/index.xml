@@ -20,6 +20,8 @@
     <!-- Integrations and dashboard -->
     <Script file="integration.lua"/>
     <Script file="theme_integration.lua"/>
+    <Script file="theme_helpers.lua"/>
+    <Script file="module_theme_integration.lua"/>
     <Script file="dashboard.lua"/>
     
     <!-- Core Features -->

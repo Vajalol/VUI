@@ -65,4 +65,7 @@
     
     <!-- DetailsSkin Module -->
     <Include file="detailsskin\load.xml"/>
+    
+    <!-- MSBT (MikScrollingBattleText) Module -->
+    <Include file="msbt\load.xml"/>
 </Ui>

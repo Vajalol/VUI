@@ -23,6 +23,7 @@ VUI.omnicd = {}
 VUI.idtip = {}
 VUI.premadegroupfinder = {}
 VUI.detailsskin = {}
+VUI.msbt = {}
 VUI.spellnotifications = {}
 
 -- Enhanced UI modules (from Phoenix UI)
@@ -52,6 +53,7 @@ VUI.modules = {
     "premadegroupfinder",
     "spellnotifications",
     "detailsskin",
+    "msbt",
     
     -- Enhanced UI modules (from Phoenix UI)
     "bags",
@@ -78,6 +80,12 @@ function VUI:Initialize()
     self:InitializeDB()
     self:LoadMedia()
     self:InitializeThemeIntegration()
+    
+    -- Initialize ThemeHelpers after theme integration but before modules
+    if self.ThemeHelpers then
+        self.ThemeHelpers:UpdateCurrentTheme()
+    end
+    
     self:InitializeModules()
     self:CreateConfigPanel()
     self:RegisterChatCommands()
@@ -91,6 +99,16 @@ function VUI:Initialize()
     -- Apply current theme
     local theme = self.db.profile.appearance.theme or "thunderstorm"
     self.ThemeIntegration:ApplyTheme(theme)
+    
+    -- Update all theme-based UI elements
+    if self.ThemeHelpers then
+        self.ThemeHelpers:UpdateAllThemes()
+    end
+    
+    -- Apply theme helpers to all modules
+    if self.ModuleThemeIntegration then
+        self.ModuleThemeIntegration:ApplyToAllModules()
+    end
     
     -- Print initialization message
     print("|cff1784d1VUI|r v" .. self.version .. " initialized. Type |cff1784d1/vui|r for options.")
