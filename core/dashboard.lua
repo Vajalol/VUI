@@ -179,7 +179,7 @@ function Dashboard:SetupFrame()
     local settingsButton = CreateFrame("Button", nil, header)
     settingsButton:SetPoint("RIGHT", closeButton, "LEFT", -5, 0)
     settingsButton:SetSize(24, 24)
-    settingsButton:SetNormalTexture("Interface\\AddOns\\VUI\\media\\Icons\\common\\settings.tga")
+    settingsButton:SetNormalTexture("Interface\\AddOns\\VUI\\media\\icons\\common\\settings.tga")
     settingsButton:GetNormalTexture():SetTexCoord(0.75, 1, 0, 0.25) -- Settings icon portion
     settingsButton:SetScript("OnClick", function() 
         InterfaceOptionsFrame_OpenToCategory("VUI")

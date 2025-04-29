@@ -16,16 +16,16 @@ LSM:Register("border", "VUI Simple", [[Interface\Addons\VUI\media\textures\commo
 --   FONT
 -- -----
 LSM:Register("font", "Default", STANDARD_TEXT_FONT, bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU))
-LSM:Register("font", "VUI", [[Interface\Addons\VUI\media\Fonts\Prototype.ttf]])
-LSM:Register("font", "Avant Garde", [[Interface\Addons\VUI\media\Fonts\AvantGarde.ttf]], bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU))
-LSM:Register("font", "Arial Bold", [[Interface\Addons\VUI\media\Fonts\Arial_Bold.ttf]])
-LSM:Register("font", "Doris P Bold", [[Interface\Addons\VUI\media\Fonts\DorisPBold.ttf]])
-LSM:Register("font", "Exo 2 Bold", [[Interface\Addons\VUI\media\Fonts\Exo2Bold.ttf]])
-LSM:Register("font", "Expressway", [[Interface\Addons\VUI\media\Fonts\Expressway.ttf]])
-LSM:Register("font", "Gotham Narrow Black", [[Interface\Addons\VUI\media\Fonts\GothamNarrow-Black.ttf]])
-LSM:Register("font", "Inter Bold", [[Interface\Addons\VUI\media\Fonts\InterBold.ttf]])
-LSM:Register("font", "MagistralTT Bold", [[Interface\Addons\VUI\media\Fonts\MagistralTTBold.ttf]])
-LSM:Register("font", "Myriad Web Bold", [[Interface\Addons\VUI\media\Fonts\MyriadWebBold.ttf]])
+LSM:Register("font", "VUI", [[Interface\Addons\VUI\media\fonts\Prototype.ttf]])
+LSM:Register("font", "Avant Garde", [[Interface\Addons\VUI\media\fonts\AvantGarde.ttf]], bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU))
+LSM:Register("font", "Arial Bold", [[Interface\Addons\VUI\media\fonts\Arial_Bold.ttf]])
+LSM:Register("font", "Doris P Bold", [[Interface\Addons\VUI\media\fonts\DorisPBold.ttf]])
+LSM:Register("font", "Exo 2 Bold", [[Interface\Addons\VUI\media\fonts\Exo2Bold.ttf]])
+LSM:Register("font", "Expressway", [[Interface\Addons\VUI\media\fonts\Expressway.ttf]])
+LSM:Register("font", "Gotham Narrow Black", [[Interface\Addons\VUI\media\fonts\GothamNarrow-Black.ttf]])
+LSM:Register("font", "Inter Bold", [[Interface\Addons\VUI\media\fonts\InterBold.ttf]])
+LSM:Register("font", "MagistralTT Bold", [[Interface\Addons\VUI\media\fonts\MagistralTTBold.ttf]])
+LSM:Register("font", "Myriad Web Bold", [[Interface\Addons\VUI\media\fonts\MyriadWebBold.ttf]])
 
 -- -----
 --   SOUND
