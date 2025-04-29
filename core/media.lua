@@ -213,9 +213,9 @@ function VUI:InitializeMedia()
         }
     }
     
-    -- Default fonts - using built-in WoW fonts to avoid file size issues
-    self.media.fonts.normal = "Fonts\\FRIZQT__.TTF"
-    self.media.fonts.bold = "Fonts\\ARIALN.TTF"
+    -- Default fonts - now using PT Sans Narrow as our standard font
+    self.media.fonts.normal = "Interface\\AddOns\\VUI\\media\\Fonts\\PTSansNarrow-Regular.ttf"
+    self.media.fonts.bold = "Interface\\AddOns\\VUI\\media\\Fonts\\PTSansNarrow-Bold.ttf"
     self.media.fonts.header = "Fonts\\MORPHEUS.TTF"
     
     -- External fonts included with the addon
@@ -223,6 +223,8 @@ function VUI:InitializeMedia()
     self.media.fonts.expressway = "Interface\\AddOns\\VUI\\media\\Fonts\\Expressway.ttf"
     self.media.fonts.inter = "Interface\\AddOns\\VUI\\media\\Fonts\\InterBold.ttf"
     self.media.fonts.prototype = "Interface\\AddOns\\VUI\\media\\Fonts\\Prototype.ttf"
+    self.media.fonts.ptsans = "Interface\\AddOns\\VUI\\media\\Fonts\\PTSansNarrow-Regular.ttf"
+    self.media.fonts.ptsansbold = "Interface\\AddOns\\VUI\\media\\Fonts\\PTSansNarrow-Bold.ttf"
     
     -- Load LibSharedMedia if available for more options
     if LibStub and LibStub:GetLibrary("LibSharedMedia-3.0", true) then
@@ -236,6 +238,8 @@ function VUI:InitializeMedia()
         LSM:Register("font", "VUI Expressway", self.media.fonts.expressway)
         LSM:Register("font", "VUI Inter", self.media.fonts.inter)
         LSM:Register("font", "VUI Prototype", self.media.fonts.prototype)
+        LSM:Register("font", "VUI PT Sans Narrow", self.media.fonts.ptsans)
+        LSM:Register("font", "VUI PT Sans Narrow Bold", self.media.fonts.ptsansbold)
         
         LSM:Register("statusbar", "VUI Smooth", self.media.statusbars.smooth)
         LSM:Register("statusbar", "VUI Flat", self.media.statusbars.flat)

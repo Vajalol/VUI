@@ -21,6 +21,7 @@
     <Script file="integration.lua"/>
     <Script file="theme_integration.lua"/>
     <Script file="theme_helpers.lua"/>
+    <Script file="font_integration.lua"/>
     <Script file="module_theme_integration.lua"/>
     <Script file="dashboard.lua"/>
     

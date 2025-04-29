@@ -22,7 +22,7 @@ VUI.defaults = {
         },
         appearance = {
             theme = "thunderstorm", -- Set Thunder Storm as the default theme
-            font = "Friz Quadrata TT",
+            font = "VUI PT Sans Narrow",
             fontSize = 12,
             border = "blizzard",
             backdropColor = {r = 0.04, g = 0.04, b = 0.1, a = 0.8}, -- Deep blue background for Thunder Storm
@@ -95,7 +95,7 @@ VUI.defaults = {
             chat = {
                 enabled = true,
                 fontSize = 12,
-                font = "Friz Quadrata TT",
+                font = "VUI PT Sans Narrow",
                 chatHistory = 500,         -- Store 500 lines of chat history
                 showCopyButton = true,     -- Show copy chat button
                 showClassIcons = true,     -- Show class icons in chat
@@ -289,7 +289,7 @@ VUI.defaults = {
                 customBarTexture = true,
                 barTexture = "VUI_Smooth",
                 customFonts = true,
-                rowFont = "Expressway",
+                rowFont = "VUI PT Sans Narrow",
                 fontSize = 10,
                 fixedHeight = true,
                 rowHeight = 16,

@@ -80,6 +80,7 @@ function VUI:Initialize()
     self:InitializeDB()
     self:LoadMedia()
     self:InitializeThemeIntegration()
+    self:InitializeFontIntegration()
     
     -- Initialize ThemeHelpers after theme integration but before modules
     if self.ThemeHelpers then
