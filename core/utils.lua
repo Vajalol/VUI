@@ -473,5 +473,68 @@ setmetatable(VUI.Utils, {__index = function(t, k)
     return function() end
 end})
 
+-- Convert a table to a string (safe serialization)
+function VUI.Utils:TableToString(tbl)
+    if type(tbl) ~= "table" then
+        return tostring(tbl)
+    end
+    
+    local str = "{"
+    
+    -- Serialize each key-value pair
+    local first = true
+    for k, v in pairs(tbl) do
+        if not first then
+            str = str .. ","
+        end
+        first = false
+        
+        -- Serialize key
+        if type(k) == "string" then
+            str = str .. string.format("[%q]", k)
+        else
+            str = str .. "[" .. tostring(k) .. "]"
+        end
+        
+        str = str .. "="
+        
+        -- Serialize value
+        if type(v) == "table" then
+            str = str .. self:TableToString(v)
+        elseif type(v) == "string" then
+            str = str .. string.format("%q", v)
+        else
+            str = str .. tostring(v)
+        end
+    end
+    
+    str = str .. "}"
+    return str
+end
+
+-- Convert a string to a table (safe deserialization)
+function VUI.Utils:StringToTable(str)
+    -- This is a basic implementation
+    -- In a real addon, we would use proper serialization libraries
+    local func, err = loadstring("return " .. str)
+    if not func then
+        error("Failed to deserialize: " .. (err or "unknown error"))
+        return nil
+    end
+    
+    -- Create a secure environment for execution
+    setfenv(func, {})
+    
+    -- Get the table
+    local success, result = pcall(func)
+    if not success then
+        error("Failed to execute deserialized data: " .. (result or "unknown error"))
+        return nil
+    end
+    
+    return result
+end
+
 -- Add some common aliases
 VUI.utils = VUI.Utils
+VUI.Util = VUI.Utils -- Add alias for compatibility with different naming conventions
