@@ -1,6 +1,14 @@
 # VUI Changelog
 
 ## Version 0.3.0 (2025-04-30)
+- Enhanced DetailsSkin module with comprehensive theme integration:
+  - Implemented theme-specific styling for all Details panels and windows
+  - Created consistent header/footer styling with theme-matching colors and textures
+  - Added theme-specific graph and bar textures with custom animations
+  - Implemented custom report formatting templates with theme-based aesthetics
+  - Created comprehensive configuration panel with visual customization options
+  - Added enhanced visualization for combat data with theme-specific styling
+  - Implemented intelligent theme adaptation with color harmony across all UI elements
 - Enhanced OmniCC/OmniCD modules with comprehensive theme integration:
   - Implemented theme-specific cooldown text styling with color transitions
   - Created priority-based cooldown group management system

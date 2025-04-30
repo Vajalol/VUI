@@ -82,10 +82,10 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 - [x] Create priority-based cooldown highlighting
 
 ### DetailsSkin Module
-- [ ] Finalize theme integration across all Detail panels
-- [ ] Implement consistent header/footer styling
-- [ ] Add theme-specific graph and bar textures
-- [ ] Create custom report formatting templates
+- [x] Finalize theme integration across all Detail panels
+- [x] Implement consistent header/footer styling
+- [x] Add theme-specific graph and bar textures
+- [x] Create custom report formatting templates
 
 ## User Interface Enhancements
 

@@ -1,3 +1,8 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="config.lua"/>
+    <Script file="lua/themes.lua"/>
+    <Script file="lua/panels.lua"/>
+    <Script file="lua/graphs.lua"/>
+    <Script file="lua/reports.lua"/>
     <Script file="init.lua"/>
 </Ui>
