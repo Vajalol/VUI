@@ -1,37 +1,34 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-  <!-- Phoenix Flame Theme Auctionator Logo -->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="64" viewBox="0 0 256 64">
+  <!-- Phoenix Flame Auctionator Logo -->
+  <style>
+    .logo-text { font-family: Arial, sans-serif; font-weight: bold; }
+    .flame-effect { filter: url(#flame-filter); }
+  </style>
+  
   <defs>
-    <linearGradient id="flame" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#E64D0D;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#FFA31A;stop-opacity:1" />
+    <linearGradient id="phoenixGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFA31A" />
+      <stop offset="100%" stop-color="#E64D0D" />
     </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="4" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    <filter id="flame-filter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="glow" />
+      <feBlend in="SourceGraphic" in2="glow" mode="normal" />
     </filter>
   </defs>
-
-  <!-- Background Circle -->
-  <circle cx="64" cy="64" r="60" fill="#1A0A05" />
   
-  <!-- Hammer Handle -->
-  <rect x="40" y="60" width="50" height="10" rx="2" fill="#8B4513" transform="rotate(-30, 40, 60)" />
-  
-  <!-- Hammer Head -->
-  <rect x="28" y="30" width="25" height="30" rx="3" fill="url(#flame)" transform="rotate(-30, 28, 30)" filter="url(#glow)" />
-  
-  <!-- Gold Coins -->
-  <circle cx="80" cy="85" r="12" fill="#FFA31A" stroke="#E64D0D" stroke-width="2" />
-  <circle cx="95" cy="75" r="10" fill="#FFA31A" stroke="#E64D0D" stroke-width="2" />
-  <circle cx="90" cy="90" r="8" fill="#FFA31A" stroke="#E64D0D" stroke-width="2" />
-  
-  <!-- Dollar Symbol -->
-  <text x="80" y="90" font-family="Arial" font-size="18" font-weight="bold" fill="#E64D0D" text-anchor="middle">$</text>
+  <!-- Background -->
+  <rect x="0" y="0" width="256" height="64" rx="8" fill="#1A0A05" />
   
   <!-- Border -->
-  <circle cx="64" cy="64" r="60" fill="none" stroke="url(#flame)" stroke-width="3" />
+  <rect x="2" y="2" width="252" height="60" rx="6" fill="none" stroke="#E64D0D" stroke-width="2" />
   
-  <!-- Text -->
-  <text x="64" y="115" font-family="Arial" font-size="14" font-weight="bold" fill="#FFA31A" text-anchor="middle">VUI Auctionator</text>
+  <!-- Gold Coin Icon -->
+  <circle cx="40" cy="32" r="24" fill="#1A0A05" stroke="#E64D0D" stroke-width="2" />
+  <circle cx="40" cy="32" r="20" fill="url(#phoenixGradient)" class="flame-effect" />
+  <path d="M40 20v24M30 32h20" stroke="#FFF" stroke-width="3" />
+  
+  <!-- Auctionator Text -->
+  <text x="75" y="40" class="logo-text" fill="#FFA31A" font-size="22" class="flame-effect">AUCTIONATOR</text>
 </svg>

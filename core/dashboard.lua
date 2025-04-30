@@ -789,6 +789,212 @@ function Dashboard:CreateQuickButtons()
     
     xOffset = xOffset + buttonWidth + spacing
     
+    -- Module manager button with dropdown
+    local moduleManagerButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    moduleManagerButton:SetSize(buttonWidth, buttonHeight)
+    moduleManagerButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    moduleManagerButton:SetText("Modules")
+    
+    -- Create module manager dropdown
+    local moduleDropdown = CreateFrame("Frame", "VUIDashboardModuleDropdown", self.panel, "BackdropTemplate")
+    moduleDropdown:SetSize(250, 300)
+    moduleDropdown:SetPoint("BOTTOMLEFT", moduleManagerButton, "TOPLEFT", 0, 5)
+    moduleDropdown:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile = true,
+        tileSize = 32,
+        edgeSize = 32,
+        insets = { left = 11, right = 12, top = 12, bottom = 11 }
+    })
+    moduleDropdown:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    
+    -- Add title
+    local title = moduleDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOP", moduleDropdown, "TOP", 0, -15)
+    title:SetText("Quick Module Manager")
+    
+    -- Create scroll frame for module list
+    local scrollFrame = CreateFrame("ScrollFrame", nil, moduleDropdown, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", moduleDropdown, "TOPLEFT", 15, -40)
+    scrollFrame:SetPoint("BOTTOMRIGHT", moduleDropdown, "BOTTOMRIGHT", -35, 15)
+    
+    local contentFrame = CreateFrame("Frame", nil, scrollFrame)
+    contentFrame:SetSize(scrollFrame:GetWidth(), 500) -- Height will be adjusted based on content
+    scrollFrame:SetScrollChild(contentFrame)
+    
+    -- Function to update the module list
+    function self:UpdateModuleList()
+        -- Clear existing content
+        for i = 1, contentFrame:GetNumChildren() do
+            local child = select(i, contentFrame:GetChildren())
+            child:Hide()
+            child:SetParent(nil)
+        end
+        
+        -- Get modules from VUI table
+        local modules = {}
+        for name, module in pairs(VUI) do
+            if type(module) == "table" and module.Initialize and type(name) == "string" and name ~= "Dashboard" then
+                table.insert(modules, {name = name, module = module})
+            end
+        end
+        
+        -- Sort modules alphabetically
+        table.sort(modules, function(a, b) return a.name < b.name end)
+        
+        -- Create toggles for each module
+        local toggleHeight = 30
+        local spacing = 5
+        local yOffset = 0
+        
+        for i, moduleInfo in ipairs(modules) do
+            local moduleName = moduleInfo.name
+            local moduleLower = moduleName:lower()
+            
+            -- Check if module is enabled
+            local isEnabled = VUI.db.profile.modules[moduleLower] and VUI.db.profile.modules[moduleLower].enabled
+            
+            -- Create toggle container
+            local toggleContainer = CreateFrame("Frame", nil, contentFrame, "BackdropTemplate")
+            toggleContainer:SetSize(contentFrame:GetWidth() - 20, toggleHeight)
+            toggleContainer:SetPoint("TOPLEFT", contentFrame, "TOPLEFT", 10, -yOffset)
+            
+            -- Module name
+            local nameText = toggleContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            nameText:SetPoint("LEFT", toggleContainer, "LEFT", 5, 0)
+            nameText:SetText(moduleName)
+            
+            -- Toggle checkbox
+            local checkbox = CreateFrame("CheckButton", nil, toggleContainer, "UICheckButtonTemplate")
+            checkbox:SetSize(24, 24)
+            checkbox:SetPoint("RIGHT", toggleContainer, "RIGHT", -5, 0)
+            checkbox:SetChecked(isEnabled)
+            
+            checkbox:SetScript("OnClick", function(self)
+                local isChecked = self:GetChecked()
+                
+                -- Update module status
+                if not VUI.db.profile.modules[moduleLower] then
+                    VUI.db.profile.modules[moduleLower] = {}
+                end
+                
+                VUI.db.profile.modules[moduleLower].enabled = isChecked
+                
+                -- Enable or disable module
+                if isChecked then
+                    if moduleInfo.module.Enable then moduleInfo.module:Enable() end
+                else
+                    if moduleInfo.module.Disable then moduleInfo.module:Disable() end
+                end
+                
+                -- Update dashboard UI
+                Dashboard:UpdateModuleStatus()
+            end)
+            
+            -- Config button
+            local configButton = CreateFrame("Button", nil, toggleContainer, "UIPanelButtonTemplate")
+            configButton:SetSize(50, 20)
+            configButton:SetPoint("RIGHT", checkbox, "LEFT", -5, 0)
+            configButton:SetText("Config")
+            configButton:SetScript("OnClick", function()
+                -- Try to open module-specific config
+                InterfaceOptionsFrame_OpenToCategory("VUI " .. moduleName)
+                if not InterfaceOptionsFrame:IsShown() then
+                    InterfaceOptionsFrame_OpenToCategory("VUI")
+                end
+                moduleDropdown:Hide()
+            end)
+            
+            -- Add separator line except for the last item
+            if i < #modules then
+                local separator = toggleContainer:CreateTexture(nil, "OVERLAY")
+                separator:SetHeight(1)
+                separator:SetPoint("BOTTOMLEFT", toggleContainer, "BOTTOMLEFT", 0, -2)
+                separator:SetPoint("BOTTOMRIGHT", toggleContainer, "BOTTOMRIGHT", 0, -2)
+                separator:SetColorTexture(0.3, 0.3, 0.3, 0.6)
+            end
+            
+            yOffset = yOffset + toggleHeight + spacing
+        end
+        
+        -- Update content frame height
+        contentFrame:SetHeight(math.max(yOffset, scrollFrame:GetHeight()))
+    end
+    
+    -- Initialize the module list
+    self:UpdateModuleList()
+    
+    -- Add close button
+    local closeButton = CreateFrame("Button", nil, moduleDropdown, "UIPanelCloseButton")
+    closeButton:SetPoint("TOPRIGHT", moduleDropdown, "TOPRIGHT", -5, -5)
+    closeButton:SetScript("OnClick", function() moduleDropdown:Hide() end)
+    
+    -- Quick actions section
+    local actionsTitle = moduleDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    actionsTitle:SetPoint("BOTTOM", moduleDropdown, "BOTTOM", 0, 40)
+    actionsTitle:SetText("Quick Actions")
+    
+    -- Enable All button
+    local enableAllBtn = CreateFrame("Button", nil, moduleDropdown, "UIPanelButtonTemplate")
+    enableAllBtn:SetSize(80, 22)
+    enableAllBtn:SetPoint("BOTTOMLEFT", moduleDropdown, "BOTTOMLEFT", 20, 15)
+    enableAllBtn:SetText("Enable All")
+    enableAllBtn:SetScript("OnClick", function()
+        for name, module in pairs(VUI) do
+            if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
+                local moduleName = name:lower()
+                if not VUI.db.profile.modules[moduleName] then
+                    VUI.db.profile.modules[moduleName] = {}
+                end
+                VUI.db.profile.modules[moduleName].enabled = true
+                if module.Enable then module:Enable() end
+            end
+        end
+        -- Update UI
+        self:UpdateModuleList()
+        Dashboard:UpdateModuleStatus()
+    end)
+    
+    -- Disable All button
+    local disableAllBtn = CreateFrame("Button", nil, moduleDropdown, "UIPanelButtonTemplate")
+    disableAllBtn:SetSize(80, 22)
+    disableAllBtn:SetPoint("BOTTOMRIGHT", moduleDropdown, "BOTTOMRIGHT", -20, 15)
+    disableAllBtn:SetText("Disable All")
+    disableAllBtn:SetScript("OnClick", function()
+        for name, module in pairs(VUI) do
+            if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
+                local moduleName = name:lower()
+                if VUI.db.profile.modules[moduleName] then
+                    VUI.db.profile.modules[moduleName].enabled = false
+                    if module.Disable then module:Disable() end
+                end
+            end
+        end
+        -- Update UI
+        self:UpdateModuleList()
+        Dashboard:UpdateModuleStatus()
+    end)
+    
+    -- Hide by default
+    moduleDropdown:Hide()
+    
+    -- Show dropdown when the module manager button is clicked
+    moduleManagerButton:SetScript("OnClick", function()
+        if moduleDropdown:IsShown() then
+            moduleDropdown:Hide()
+        else
+            -- Refresh module list
+            self:UpdateModuleList()
+            moduleDropdown:Show()
+        end
+    end)
+    
+    -- Store reference for later updates
+    self.moduleDropdown = moduleDropdown
+    
+    xOffset = xOffset + buttonWidth + spacing
+    
     -- Memory cleanup button
     local cleanupButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
     cleanupButton:SetSize(buttonWidth, buttonHeight)
@@ -801,28 +1007,309 @@ function Dashboard:CreateQuickButtons()
     
     xOffset = xOffset + buttonWidth + spacing
     
-    -- Toggle theme button
-    local themeButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
-    themeButton:SetSize(buttonWidth, buttonHeight)
-    themeButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
-    themeButton:SetText("Cycle Theme")
-    themeButton:SetScript("OnClick", function()
-        local currentTheme = VUI.db.profile.dashboard.theme
-        local themes = {"thunderstorm", "phoenixflame", "arcanemystic", "felenergy"}
-        local nextIndex = 1
-        
-        -- Find the current theme's index
-        for i, theme in ipairs(themes) do
-            if theme == currentTheme then
-                nextIndex = (i % #themes) + 1
-                break
+    -- Profile management button with dropdown
+    local profileButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    profileButton:SetSize(buttonWidth, buttonHeight)
+    profileButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    profileButton:SetText("Profiles")
+    
+    -- Create profile dropdown
+    local profileDropdown = CreateFrame("Frame", "VUIDashboardProfileDropdown", self.panel, "BackdropTemplate")
+    profileDropdown:SetSize(200, 240)
+    profileDropdown:SetPoint("BOTTOMLEFT", profileButton, "TOPLEFT", 0, 5)
+    profileDropdown:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile = true,
+        tileSize = 32,
+        edgeSize = 32,
+        insets = { left = 11, right = 12, top = 12, bottom = 11 }
+    })
+    profileDropdown:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    
+    -- Add title
+    local title = profileDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOP", profileDropdown, "TOP", 0, -15)
+    title:SetText("Profile Management")
+    
+    -- Current profile text
+    local currentProfileText = profileDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    currentProfileText:SetPoint("TOP", title, "BOTTOM", 0, -15)
+    currentProfileText:SetText("Current: " .. (VUI.db:GetCurrentProfile() or "Default"))
+    currentProfileText:SetTextColor(0.7, 0.7, 1)
+    
+    -- Add new profile section
+    local newProfileLabel = profileDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    newProfileLabel:SetPoint("TOPLEFT", profileDropdown, "TOPLEFT", 20, -60)
+    newProfileLabel:SetText("Create new profile:")
+    
+    local newProfileBox = CreateFrame("EditBox", "VUINewProfileBox", profileDropdown, "InputBoxTemplate")
+    newProfileBox:SetSize(120, 20)
+    newProfileBox:SetPoint("TOPLEFT", newProfileLabel, "BOTTOMLEFT", 5, -5)
+    newProfileBox:SetAutoFocus(false)
+    newProfileBox:SetMaxLetters(20)
+    
+    local createButton = CreateFrame("Button", nil, profileDropdown, "UIPanelButtonTemplate")
+    createButton:SetSize(80, 22)
+    createButton:SetPoint("TOPLEFT", newProfileBox, "BOTTOMLEFT", 0, -5)
+    createButton:SetText("Create")
+    createButton:SetScript("OnClick", function()
+        local profileName = newProfileBox:GetText()
+        if profileName and profileName ~= "" then
+            -- Create and switch to the new profile
+            VUI.db:SetProfile(profileName)
+            
+            -- Update the display
+            currentProfileText:SetText("Current: " .. (VUI.db:GetCurrentProfile() or "Default"))
+            VUI:Print("Created and switched to profile: " .. profileName)
+            newProfileBox:SetText("")
+            
+            -- Refresh dashboard to reflect the new profile settings
+            Dashboard:Refresh()
+            
+            -- Update available profiles list
+            self:UpdateProfileList(profileDropdown, currentProfileText)
+        end
+    end)
+    
+    -- Copy from section
+    local copyLabel = profileDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    copyLabel:SetPoint("TOPLEFT", profileDropdown, "TOPLEFT", 20, -130)
+    copyLabel:SetText("Copy from profile:")
+    
+    -- Add available profiles for copy/delete
+    local profileListFrame = CreateFrame("Frame", nil, profileDropdown)
+    profileListFrame:SetSize(160, 70)
+    profileListFrame:SetPoint("TOP", copyLabel, "BOTTOM", 0, -5)
+    
+    -- Function to update profile list
+    function self:UpdateProfileList(dropdown, currentText)
+        -- Clear existing list items
+        if profileListFrame.buttons then
+            for _, button in ipairs(profileListFrame.buttons) do
+                button:Hide()
+                button:SetParent(nil)
             end
         end
         
-        -- Set the next theme
-        VUI.db.profile.dashboard.theme = themes[nextIndex]
-        Dashboard:Refresh()
+        profileListFrame.buttons = {}
+        
+        -- Current profile name
+        local currentProfile = VUI.db:GetCurrentProfile()
+        currentText:SetText("Current: " .. (currentProfile or "Default"))
+        
+        -- Get profiles list
+        local profiles = VUI.db:GetProfiles()
+        table.sort(profiles)
+        
+        -- Create buttons for each profile
+        local buttonHeight = 22
+        local yOffset = 0
+        
+        for i, profile in ipairs(profiles) do
+            if profile ~= currentProfile then
+                -- Profile button
+                local profileButton = CreateFrame("Button", nil, profileListFrame, "UIPanelButtonTemplate")
+                profileButton:SetSize(100, 20)
+                profileButton:SetPoint("TOPLEFT", profileListFrame, "TOPLEFT", 0, -yOffset)
+                profileButton:SetText(profile)
+                
+                -- Copy button
+                local copyBtn = CreateFrame("Button", nil, profileListFrame, "UIPanelButtonTemplate")
+                copyBtn:SetSize(22, 20)
+                copyBtn:SetPoint("LEFT", profileButton, "RIGHT", 2, 0)
+                copyBtn:SetText("C")
+                copyBtn:SetScript("OnClick", function()
+                    VUI.db:CopyProfile(profile)
+                    VUI:Print("Copied settings from profile: " .. profile)
+                    Dashboard:Refresh()
+                end)
+                
+                -- Delete button
+                local deleteBtn = CreateFrame("Button", nil, profileListFrame, "UIPanelButtonTemplate")
+                deleteBtn:SetSize(22, 20)
+                deleteBtn:SetPoint("LEFT", copyBtn, "RIGHT", 2, 0)
+                deleteBtn:SetText("X")
+                deleteBtn:SetScript("OnClick", function()
+                    -- Confirm deletion
+                    StaticPopupDialogs["VUI_CONFIRM_DELETE_PROFILE"] = {
+                        text = "Are you sure you want to delete the profile '" .. profile .. "'?",
+                        button1 = "Yes",
+                        button2 = "No",
+                        OnAccept = function()
+                            VUI.db:DeleteProfile(profile)
+                            VUI:Print("Deleted profile: " .. profile)
+                            self:UpdateProfileList(dropdown, currentText)
+                        end,
+                        timeout = 0,
+                        whileDead = true,
+                        hideOnEscape = true,
+                        preferredIndex = 3,
+                    }
+                    StaticPopup_Show("VUI_CONFIRM_DELETE_PROFILE")
+                end)
+                
+                -- Add to buttons table
+                table.insert(profileListFrame.buttons, profileButton)
+                table.insert(profileListFrame.buttons, copyBtn)
+                table.insert(profileListFrame.buttons, deleteBtn)
+                
+                yOffset = yOffset + buttonHeight
+            end
+        end
+    end
+    
+    -- Initialize profile list
+    self:UpdateProfileList(profileDropdown, currentProfileText)
+    
+    -- Add close button
+    local closeButton = CreateFrame("Button", nil, profileDropdown, "UIPanelCloseButton")
+    closeButton:SetPoint("TOPRIGHT", profileDropdown, "TOPRIGHT", -5, -5)
+    closeButton:SetScript("OnClick", function() profileDropdown:Hide() end)
+    
+    -- Hide by default
+    profileDropdown:Hide()
+    
+    -- Show dropdown when the profile button is clicked
+    profileButton:SetScript("OnClick", function()
+        if profileDropdown:IsShown() then
+            profileDropdown:Hide()
+        else
+            -- Refresh available profiles list
+            self:UpdateProfileList(profileDropdown, currentProfileText)
+            profileDropdown:Show()
+        end
     end)
+    
+    -- Store reference for later updates
+    self.profileDropdown = profileDropdown
+    
+    xOffset = xOffset + buttonWidth + spacing
+    
+    -- Theme button with dropdown preview
+    local themeButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    themeButton:SetSize(buttonWidth, buttonHeight)
+    themeButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    themeButton:SetText("Themes")
+    
+    -- Create theme preview dropdown
+    local themeDropdown = CreateFrame("Frame", "VUIDashboardThemeDropdown", self.panel, "BackdropTemplate")
+    themeDropdown:SetSize(220, 260)
+    themeDropdown:SetPoint("BOTTOMLEFT", themeButton, "TOPLEFT", 0, 5)
+    themeDropdown:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile = true,
+        tileSize = 32,
+        edgeSize = 32,
+        insets = { left = 11, right = 12, top = 12, bottom = 11 }
+    })
+    themeDropdown:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    
+    -- Add title
+    local title = themeDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOP", themeDropdown, "TOP", 0, -15)
+    title:SetText("Theme Preview")
+    
+    -- Theme data
+    local themes = {
+        {id = "thunderstorm", name = "Thunder Storm", bg = {10/255, 10/255, 26/255}, accent = {13/255, 157/255, 230/255}},
+        {id = "phoenixflame", name = "Phoenix Flame", bg = {26/255, 10/255, 5/255}, accent = {230/255, 77/255, 13/255}},
+        {id = "arcanemystic", name = "Arcane Mystic", bg = {26/255, 10/255, 47/255}, accent = {157/255, 13/255, 230/255}},
+        {id = "felenergy", name = "Fel Energy", bg = {10/255, 26/255, 10/255}, accent = {26/255, 230/255, 13/255}}
+    }
+    
+    -- Create preview swatches for each theme
+    local swatchSize = 180
+    local swatchHeight = 40
+    local swatchSpacing = 10
+    local yOffset = -40
+    
+    for i, theme in ipairs(themes) do
+        -- Create container frame
+        local swatch = CreateFrame("Frame", nil, themeDropdown, "BackdropTemplate")
+        swatch:SetSize(swatchSize, swatchHeight)
+        swatch:SetPoint("TOP", themeDropdown, "TOP", 0, yOffset)
+        swatch:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8x8",
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            tile = false,
+            tileSize = 0,
+            edgeSize = 1,
+            insets = { left = 0, right = 0, top = 0, bottom = 0 }
+        })
+        swatch:SetBackdropColor(theme.bg[1], theme.bg[2], theme.bg[3], 0.8)
+        swatch:SetBackdropBorderColor(theme.accent[1], theme.accent[2], theme.accent[3], 0.8)
+        
+        -- Add theme name
+        local name = swatch:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        name:SetPoint("LEFT", swatch, "LEFT", 10, 0)
+        name:SetText(theme.name)
+        name:SetTextColor(1, 1, 1)
+        
+        -- Add select button
+        local selectButton = CreateFrame("Button", nil, swatch, "UIPanelButtonTemplate")
+        selectButton:SetSize(60, 20)
+        selectButton:SetPoint("RIGHT", swatch, "RIGHT", -5, 0)
+        selectButton:SetText("Select")
+        
+        -- Highlight current theme
+        if theme.id == VUI.db.profile.appearance.theme then
+            swatch:SetBackdropBorderColor(1, 1, 1, 1)
+            selectButton:SetText("Active")
+            selectButton:Disable()
+        end
+        
+        -- Set up the click handler
+        selectButton:SetScript("OnClick", function()
+            -- Set the theme globally
+            VUI.db.profile.appearance.theme = theme.id
+            
+            -- Apply theme to all modules that support it
+            VUI:ApplyTheme(theme.id)
+            
+            -- Update the dashboard UI
+            Dashboard:Refresh()
+            
+            -- Hide the dropdown
+            themeDropdown:Hide()
+        end)
+        
+        -- Add swatch hover effects
+        swatch:SetScript("OnEnter", function()
+            if theme.id ~= VUI.db.profile.appearance.theme then
+                swatch:SetBackdropBorderColor(1, 1, 1, 0.5)
+            end
+        end)
+        
+        swatch:SetScript("OnLeave", function()
+            if theme.id ~= VUI.db.profile.appearance.theme then
+                swatch:SetBackdropBorderColor(theme.accent[1], theme.accent[2], theme.accent[3], 0.8)
+            end
+        end)
+        
+        yOffset = yOffset - (swatchHeight + swatchSpacing)
+    end
+    
+    -- Add close button
+    local closeButton = CreateFrame("Button", nil, themeDropdown, "UIPanelCloseButton")
+    closeButton:SetPoint("TOPRIGHT", themeDropdown, "TOPRIGHT", -5, -5)
+    closeButton:SetScript("OnClick", function() themeDropdown:Hide() end)
+    
+    -- Hide by default
+    themeDropdown:Hide()
+    
+    -- Show dropdown when the theme button is clicked
+    themeButton:SetScript("OnClick", function()
+        if themeDropdown:IsShown() then
+            themeDropdown:Hide()
+        else
+            themeDropdown:Show()
+        end
+    end)
+    
+    -- Store reference for later updates
+    self.themeDropdown = themeDropdown
     
     -- Store reference
     self.quickButtons = quickButtons

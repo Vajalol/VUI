@@ -20,7 +20,7 @@ local MEDIA_TYPE_SOUND = LSM.MediaType.SOUND
 
 -- Register theme-specific Auctionator textures
 local function RegisterAuctionatorMedia()
-    -- Register logos for each theme
+    -- Register logos and icons for each theme
     local themes = {"phoenixflame", "thunderstorm", "arcanemystic", "felenergy"}
     
     for _, theme in ipairs(themes) do
@@ -30,10 +30,27 @@ local function RegisterAuctionatorMedia()
         
         -- Register with LSM
         LSM:Register(MEDIA_TYPE_BACKGROUND, logoName, logoPath)
+        
+        -- Register search icon
+        local searchIconPath = "Interface\\AddOns\\VUI\\media\\textures\\" .. theme .. "\\auctionator\\SearchIcon"
+        local searchIconName = "VUI:Auctionator:" .. theme .. ":SearchIcon"
+        LSM:Register(MEDIA_TYPE_BACKGROUND, searchIconName, searchIconPath)
     end
     
-    -- Register other Auctionator textures if needed
-    -- Example: LSM:Register(MEDIA_TYPE_STATUSBAR, "VUI:Auctionator:SellBar", "Interface\\AddOns\\VUI\\media\\textures\\auctionator\\SellBar")
+    -- Register additional assets for the Auctionator UI
+    -- Tab backgrounds
+    LSM:Register(MEDIA_TYPE_BACKGROUND, "VUI:Auctionator:TabBackground", "Interface\\AddOns\\VUI\\media\\textures\\shared\\tab_background")
+    
+    -- Button textures
+    LSM:Register(MEDIA_TYPE_BORDER, "VUI:Auctionator:ButtonBorder", "Interface\\AddOns\\VUI\\media\\textures\\shared\\button_border")
+    
+    -- Status bars for auction listings
+    LSM:Register(MEDIA_TYPE_STATUSBAR, "VUI:Auctionator:ListingBar", "Interface\\AddOns\\VUI\\media\\textures\\shared\\smooth_statusbar")
+    
+    -- Font for auction prices
+    if LSM:IsValid(MEDIA_TYPE_FONT, "Expressway") then
+        LSM:Register(MEDIA_TYPE_FONT, "VUI:Auctionator:PriceFont", LSM:Fetch(MEDIA_TYPE_FONT, "Expressway"))
+    end
 end
 
 -- Initialize

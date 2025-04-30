@@ -206,6 +206,59 @@ function Auctionator:CreateAppearanceTab(container)
         end
     end)
     
+    -- Enhanced Theme Options group
+    local enhancedThemeGroup = AceGUI:Create("InlineGroup")
+    enhancedThemeGroup:SetTitle("Enhanced Theme Options")
+    enhancedThemeGroup:SetLayout("Flow")
+    enhancedThemeGroup:SetFullWidth(true)
+    container:AddChild(enhancedThemeGroup)
+    
+    -- Show borders checkbox
+    local bordersCheckbox = AceGUI:Create("CheckBox")
+    bordersCheckbox:SetLabel("Show Enhanced Borders")
+    bordersCheckbox:SetWidth(300)
+    bordersCheckbox:SetValue(VUI.db.profile.modules.auctionator.showBorders == nil and true or VUI.db.profile.modules.auctionator.showBorders)
+    bordersCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.auctionator.showBorders = value
+        
+        -- Apply theme changes immediately if Auctionator is visible
+        if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+            self.ThemeIntegration:ApplyTheme()
+        end
+    end)
+    enhancedThemeGroup:AddChild(bordersCheckbox)
+    
+    -- Show themed icons checkbox
+    local iconsCheckbox = AceGUI:Create("CheckBox")
+    iconsCheckbox:SetLabel("Show Themed Icons")
+    iconsCheckbox:SetWidth(300)
+    iconsCheckbox:SetValue(VUI.db.profile.modules.auctionator.showIcons == nil and true or VUI.db.profile.modules.auctionator.showIcons)
+    iconsCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.auctionator.showIcons = value
+        
+        -- Apply theme changes immediately if Auctionator is visible
+        if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+            self.ThemeIntegration:ApplyTheme()
+        end
+    end)
+    enhancedThemeGroup:AddChild(iconsCheckbox)
+    
+    -- Background transparency slider
+    local bgAlphaSlider = AceGUI:Create("Slider")
+    bgAlphaSlider:SetLabel("Background Transparency")
+    bgAlphaSlider:SetWidth(300)
+    bgAlphaSlider:SetSliderValues(0, 1, 0.05)
+    bgAlphaSlider:SetValue(VUI.db.profile.modules.auctionator.bgAlpha or 0.85)
+    bgAlphaSlider:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.auctionator.bgAlpha = value
+        
+        -- Apply theme changes immediately if Auctionator is visible
+        if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+            self.ThemeIntegration:ApplyTheme()
+        end
+    end)
+    enhancedThemeGroup:AddChild(bgAlphaSlider)
+
     -- Appearance group
     local appearanceGroup = AceGUI:Create("InlineGroup")
     appearanceGroup:SetTitle("Visual Options")

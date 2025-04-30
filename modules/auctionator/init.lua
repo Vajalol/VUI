@@ -177,6 +177,9 @@ function Auctionator:HookAuctionHouse()
     -- Create our custom frame
     self:CreateAuctionHouseFrame()
     
+    -- Track frame references for theming
+    self:TrackFrameReferences()
+    
     -- Hook into the auction house tab system
     if AuctionHouseFrame and AuctionHouseFrame.SetDisplayMode then
         hooksecurefunc(AuctionHouseFrame, "SetDisplayMode", function(frame, displayMode)
@@ -220,6 +223,103 @@ function Auctionator:HookAuctionHouse()
     end
     
     self.hooked = true
+end
+
+-- Track and store references to important AH UI frames
+function Auctionator:TrackFrameReferences()
+    -- Set up a post-hook for the AH frame creation
+    hooksecurefunc("AuctionHouseFrame_OnLoad", function(frame)
+        if not frame then return end
+        
+        -- Store the main frame reference
+        self.mainFrame = frame
+        
+        -- Find and store header frame
+        self.headerFrame = frame.TitleContainer or frame:GetChildren()[1]
+        
+        -- Track tab buttons
+        self.tabButtons = {}
+        for i = 1, frame.numTabs or 0 do
+            local tab = _G["AuctionHouseFrameTab"..i]
+            if tab then
+                table.insert(self.tabButtons, tab)
+            end
+        end
+        
+        -- Track search UI
+        if frame.SearchTab then
+            self.searchTabFrame = frame.SearchTab
+            self.searchBox = frame.SearchTab.SearchBox
+            self.searchListFrame = frame.SearchTab.SearchList
+            self.searchResultsFrame = frame.SearchTab.ItemList
+            
+            -- Track category headers
+            self.categoryHeaders = {}
+            if frame.SearchTab.FilterButton then
+                table.insert(self.categoryHeaders, frame.SearchTab.FilterButton)
+            end
+            
+            -- Track column headers
+            self.columnHeaders = {}
+            if frame.SearchTab.ItemList then
+                for _, child in pairs({frame.SearchTab.ItemList:GetChildren()}) do
+                    if child:IsObjectType("Button") and child.text then
+                        table.insert(self.columnHeaders, child)
+                    end
+                end
+            end
+            
+            -- Track item rows
+            self.itemRows = {}
+            if frame.SearchTab.ItemList and frame.SearchTab.ItemList.ScrollFrame then
+                for _, child in pairs({frame.SearchTab.ItemList.ScrollFrame:GetChildren()}) do
+                    if child:IsObjectType("Button") or child:IsObjectType("Frame") then
+                        table.insert(self.itemRows, child)
+                    end
+                end
+            end
+        end
+        
+        -- Track sell UI
+        if frame.SellTab then
+            self.sellTabFrame = frame.SellTab
+            self.priceInput = frame.SellTab.PriceInput
+            self.quantityInput = frame.SellTab.QuantityInput
+            self.postButton = frame.SellTab.PostButton
+        end
+        
+        -- Track cancel UI
+        if frame.CancelTab then
+            self.cancelTabFrame = frame.CancelTab
+            self.cancelButton = frame.CancelTab.CancelButton
+        end
+        
+        -- Track more options UI
+        if frame.MoreTab then
+            self.moreTabFrame = frame.MoreTab
+        end
+        
+        -- Track scrollframes for custom scrollbar styling
+        self.scrollFrames = {}
+        local function FindScrollFrames(f)
+            if not f then return end
+            
+            if f:IsObjectType("ScrollFrame") then
+                table.insert(self.scrollFrames, f)
+            end
+            
+            for _, child in pairs({f:GetChildren()}) do
+                FindScrollFrames(child)
+            end
+        end
+        
+        FindScrollFrames(frame)
+        
+        -- Apply theme once all references are captured
+        if self.ThemeIntegration and self.ThemeIntegration.ApplyThemeToAuctionUI then
+            self.ThemeIntegration:ApplyThemeToAuctionUI()
+        end
+    end)
 end
 
 -- Create custom auction house UI frame

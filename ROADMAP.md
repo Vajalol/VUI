@@ -45,16 +45,17 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 - [x] Implement multi-notification support for overlapping events
 
 ### MSBT Module
-- [ ] Complete theme integration for all message types
-- [ ] Implement custom animation paths for different theme styles
+- [x] Complete theme integration for all message types
+- [x] Implement custom animation paths for different theme styles
 - [ ] Add advanced filtering options for combat text
-- [ ] Implement scroll area customization per theme
+- [x] Implement scroll area customization per theme
 
 ### Auctionator Module
-- [ ] Finish theme integration for all auction house panels
+- [x] Finish theme integration for all auction house panels
+- [x] Create theme-specific button and input styles 
+- [x] Add advanced theming configuration options
 - [ ] Implement custom price display formats
 - [ ] Add integrated material cost calculations
-- [ ] Create theme-specific button and input styles
 
 ### AngryKeystones Module
 - [ ] Complete theme integration for all elements
@@ -89,10 +90,10 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 ## User Interface Enhancements
 
 ### Dashboard Improvements
-- [ ] Create a unified dashboard for all VUI settings
-- [ ] Implement theme preview system
-- [ ] Add quick-access toggles for common options
-- [ ] Create profile management shortcuts
+- [x] Create a unified dashboard for all VUI settings
+- [x] Implement theme preview system
+- [x] Add quick-access toggles for common options
+- [x] Create profile management shortcuts
 
 ### Configuration UI
 - [ ] Implement a tabbed interface for better organization
@@ -152,12 +153,13 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 
 ### Version 0.3.0
 - [x] Complete SpellNotifications module with custom spell list
-- [ ] Finalize MSBT integration with all themes
-- [ ] Implement basic Dashboard improvements
+- [x] Finalize MSBT integration with all themes
+- [x] Implement basic Dashboard improvements
 - [ ] Add comprehensive error handling
 
 ### Version 0.4.0
-- [ ] Complete Auctionator and AngryKeystones integration
+- [x] Complete Auctionator integration with theme-specific assets
+- [ ] Complete AngryKeystones integration
 - [ ] Implement standardized module loading
 - [ ] Add enhanced profile management
 - [ ] Improve theme propagation system
