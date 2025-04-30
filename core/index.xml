@@ -16,6 +16,11 @@
     <!-- Module API and templates -->
     <Script file="module_template.lua"/>
     <Script file="module_api.lua"/>
+    <Script file="module_registry.lua"/>
+    <Script file="module_dashboard.lua"/>
+    <Script file="module_init_template.lua"/>
+    <Script file="module_config_template.lua"/>
+    <Script file="module_standardizer.lua"/>
     
     <!-- Integrations and dashboard -->
     <Script file="integration.lua"/>

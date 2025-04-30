@@ -1,13 +1,13 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
     <!-- Enhanced Bag Interface -->
-    <Script file="bags\core.lua"/>
+    <Include file="bags\index.xml"/>
     
     <!-- Enhanced Character Panel (Paperdoll) -->
-    <Script file="paperdoll\core.lua"/>
+    <Include file="paperdoll\index.xml"/>
     
     <!-- Enhanced Action Bars -->
-    <Script file="actionbars\core.lua"/>
+    <Include file="actionbars\index.xml"/>
     
     <!-- Enhanced Unit Frames -->
     <Include file="unitframes\index.xml"/>
@@ -61,20 +61,20 @@
     <Include file="skins\index.xml"/>
     
     <!-- SpellNotifications Module -->
-    <Include file="spellnotifications\load.xml"/>
+    <Include file="spellnotifications\index.xml"/>
     
     <!-- DetailsSkin Module -->
-    <Include file="detailsskin\load.xml"/>
+    <Include file="detailsskin\index.xml"/>
     
     <!-- MSBT (MikScrollingBattleText) Module -->
-    <Include file="msbt\load.xml"/>
+    <Include file="msbt\index.xml"/>
     
     <!-- Tools Module -->
-    <Include file="tools\load.xml"/>
+    <Include file="tools\index.xml"/>
     
     <!-- Nameplates Module -->
     <Include file="nameplates\index.xml"/>
     
     <!-- Enhanced Player Frame Module -->
-    <Include file="epf\load.xml"/>
+    <Include file="epf\index.xml"/>
 </Ui>

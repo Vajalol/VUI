@@ -210,7 +210,21 @@ function Dashboard:CreateModuleCards()
         end
     end
     
-    -- Add registered modules
+    -- Add modules from the registry if available
+    if VUI.ModuleRegistry and VUI.ModuleRegistry.modules then
+        for name, metadata in pairs(VUI.ModuleRegistry.modules) do
+            if not allModules[name] then
+                allModules[name] = {
+                    name = name,
+                    module = VUI[name],
+                    metadata = metadata,
+                    registered = true
+                }
+            end
+        end
+    end
+    
+    -- Add registered modules from old system (for backward compatibility)
     for name, options in pairs(registeredModules) do
         allModules[name] = {
             name = name,
@@ -735,6 +749,20 @@ function Dashboard:CreateQuickButtons()
     reloadButton:SetText("Reload UI")
     reloadButton:SetScript("OnClick", function()
         ReloadUI()
+    end)
+    
+    xOffset = xOffset + buttonWidth + spacing
+    
+    -- Module Dashboard button
+    local moduleButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    moduleButton:SetSize(buttonWidth, buttonHeight)
+    moduleButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    moduleButton:SetText("Modules")
+    moduleButton:SetScript("OnClick", function()
+        if VUI.ModuleDashboard then
+            self:Hide() -- Hide this dashboard
+            VUI.ModuleDashboard:Toggle() -- Show module dashboard
+        end
     end)
     
     xOffset = xOffset + buttonWidth + spacing
