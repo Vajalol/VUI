@@ -8,4 +8,8 @@
     <!-- Theme integration -->
     <Script file="MediaRegistration.lua"/>
     <Script file="ThemeIntegration.lua"/>
+    
+    <!-- Enhanced functionality -->
+    <Script file="ProgressEnhancement.lua"/>
+    <Script file="TimerEnhancement.lua"/>
 </Ui>

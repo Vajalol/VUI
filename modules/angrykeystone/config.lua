@@ -49,6 +49,23 @@ local L = {
     ["Sound Options"] = "Sound Options",
     ["Play Completion Sound"] = "Play Completion Sound",
     ["Play a sound when the dungeon is completed"] = "Play a sound when the dungeon is completed",
+    
+    -- Enhanced features
+    ["Enhanced Features"] = "Enhanced Features",
+    ["Enhanced Timer Display"] = "Enhanced Timer Display",
+    ["Show enhanced timer display with key upgrade prediction"] = "Show enhanced timer display with key upgrade prediction",
+    ["Show Key Level Upgrade"] = "Show Key Level Upgrade",
+    ["Show key level upgrade prediction based on timer"] = "Show key level upgrade prediction based on timer",
+    ["Show Chest Icons"] = "Show Chest Icons",
+    ["Show themed chest icons for timer thresholds"] = "Show themed chest icons for timer thresholds",
+    ["Enable Timer Pulse"] = "Enable Timer Pulse",
+    ["Enable pulsing animation when timer is low"] = "Enable pulsing animation when timer is low",
+    ["Enhanced Progress Tracker"] = "Enhanced Progress Tracker",
+    ["Show enhanced enemy forces progress tracker"] = "Show enhanced enemy forces progress tracker",
+    ["Show Pull Suggestions"] = "Show Pull Suggestions",
+    ["Show suggested enemy pulls to reach 100%"] = "Show suggested enemy pulls to reach 100%",
+    ["Show Enemy Details"] = "Show Enemy Details",
+    ["Show detailed information about important enemies"] = "Show detailed information about important enemies",
 }
 
 -- Get the full configuration options for AngryKeystones
@@ -288,6 +305,112 @@ function AngryKeystones:GetFullConfig()
                         order = 2
                     }
                 }
+            },
+            enhanced = {
+                type = "group",
+                name = L["Enhanced Features"],
+                order = 5,
+                args = {
+                    enhancedHeader = {
+                        type = "header",
+                        name = L["Enhanced Features"],
+                        order = 1
+                    },
+                    -- Timer enhancements
+                    timerEnhancementsHeader = {
+                        type = "header",
+                        name = L["Enhanced Timer Display"],
+                        order = 2
+                    },
+                    enableEnhancedTimer = {
+                        type = "toggle",
+                        name = L["Enhanced Timer Display"],
+                        desc = L["Show enhanced timer display with key upgrade prediction"],
+                        get = function() return VUI.db.profile.modules.angrykeystone.enableEnhancedTimer end,
+                        set = function(_, value) 
+                            VUI.db.profile.modules.angrykeystone.enableEnhancedTimer = value
+                            self:RefreshSettings()
+                        end,
+                        order = 3
+                    },
+                    showKeyLevelUpgrade = {
+                        type = "toggle",
+                        name = L["Show Key Level Upgrade"],
+                        desc = L["Show key level upgrade prediction based on timer"],
+                        get = function() return VUI.db.profile.modules.angrykeystone.showKeyLevelUpgrade end,
+                        set = function(_, value) 
+                            VUI.db.profile.modules.angrykeystone.showKeyLevelUpgrade = value
+                            self:RefreshSettings()
+                        end,
+                        order = 4,
+                        disabled = function() return not VUI.db.profile.modules.angrykeystone.enableEnhancedTimer end
+                    },
+                    showChestIcons = {
+                        type = "toggle",
+                        name = L["Show Chest Icons"],
+                        desc = L["Show themed chest icons for timer thresholds"],
+                        get = function() return VUI.db.profile.modules.angrykeystone.showChestIcons end,
+                        set = function(_, value) 
+                            VUI.db.profile.modules.angrykeystone.showChestIcons = value
+                            self:RefreshSettings()
+                        end,
+                        order = 5,
+                        disabled = function() return not VUI.db.profile.modules.angrykeystone.enableEnhancedTimer end
+                    },
+                    enableTimerPulse = {
+                        type = "toggle",
+                        name = L["Enable Timer Pulse"],
+                        desc = L["Enable pulsing animation when timer is low"],
+                        get = function() return VUI.db.profile.modules.angrykeystone.enableTimerPulse end,
+                        set = function(_, value) 
+                            VUI.db.profile.modules.angrykeystone.enableTimerPulse = value
+                            self:RefreshSettings()
+                        end,
+                        order = 6,
+                        disabled = function() return not VUI.db.profile.modules.angrykeystone.enableEnhancedTimer end
+                    },
+                    -- Progress tracker enhancements
+                    progressEnhancementsHeader = {
+                        type = "header",
+                        name = L["Enhanced Progress Tracker"],
+                        order = 7
+                    },
+                    enableEnhancedProgress = {
+                        type = "toggle",
+                        name = L["Enhanced Progress Tracker"],
+                        desc = L["Show enhanced enemy forces progress tracker"],
+                        get = function() return VUI.db.profile.modules.angrykeystone.enableEnhancedProgress end,
+                        set = function(_, value) 
+                            VUI.db.profile.modules.angrykeystone.enableEnhancedProgress = value
+                            self:RefreshSettings()
+                        end,
+                        order = 8
+                    },
+                    showPullSuggestions = {
+                        type = "toggle",
+                        name = L["Show Pull Suggestions"],
+                        desc = L["Show suggested enemy pulls to reach 100%"],
+                        get = function() return VUI.db.profile.modules.angrykeystone.showPullSuggestions end,
+                        set = function(_, value) 
+                            VUI.db.profile.modules.angrykeystone.showPullSuggestions = value
+                            self:RefreshSettings()
+                        end,
+                        order = 9,
+                        disabled = function() return not VUI.db.profile.modules.angrykeystone.enableEnhancedProgress end
+                    },
+                    showEnemyDetails = {
+                        type = "toggle",
+                        name = L["Show Enemy Details"],
+                        desc = L["Show detailed information about important enemies"],
+                        get = function() return VUI.db.profile.modules.angrykeystone.showEnemyDetails end,
+                        set = function(_, value) 
+                            VUI.db.profile.modules.angrykeystone.showEnemyDetails = value
+                            self:RefreshSettings()
+                        end,
+                        order = 10,
+                        disabled = function() return not VUI.db.profile.modules.angrykeystone.enableEnhancedProgress end
+                    }
+                }
             }
         }
     }
@@ -308,6 +431,35 @@ function AngryKeystones:InitializeConfig()
     
     if VUI.db.profile.modules.angrykeystone.progressFormat == nil then
         VUI.db.profile.modules.angrykeystone.progressFormat = "both"
+    end
+    
+    -- Set default values for enhanced features
+    if VUI.db.profile.modules.angrykeystone.enableEnhancedTimer == nil then
+        VUI.db.profile.modules.angrykeystone.enableEnhancedTimer = true
+    end
+    
+    if VUI.db.profile.modules.angrykeystone.showKeyLevelUpgrade == nil then
+        VUI.db.profile.modules.angrykeystone.showKeyLevelUpgrade = true
+    end
+    
+    if VUI.db.profile.modules.angrykeystone.showChestIcons == nil then
+        VUI.db.profile.modules.angrykeystone.showChestIcons = true
+    end
+    
+    if VUI.db.profile.modules.angrykeystone.enableTimerPulse == nil then
+        VUI.db.profile.modules.angrykeystone.enableTimerPulse = true
+    end
+    
+    if VUI.db.profile.modules.angrykeystone.enableEnhancedProgress == nil then
+        VUI.db.profile.modules.angrykeystone.enableEnhancedProgress = true
+    end
+    
+    if VUI.db.profile.modules.angrykeystone.showPullSuggestions == nil then
+        VUI.db.profile.modules.angrykeystone.showPullSuggestions = true
+    end
+    
+    if VUI.db.profile.modules.angrykeystone.showEnemyDetails == nil then
+        VUI.db.profile.modules.angrykeystone.showEnemyDetails = true
     end
     
     -- Debug message

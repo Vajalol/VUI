@@ -148,6 +148,9 @@ function VUI.angrykeystone:Initialize()
     -- Load theme integration module
     self:LoadThemeIntegration()
     
+    -- Load enhanced functionality modules
+    self:LoadEnhancements()
+    
     -- Print initialization message
     VUI:Print("AngryKeystones module initialized")
     
@@ -172,6 +175,35 @@ function VUI.angrykeystone:LoadThemeIntegration()
     
     if not status then
         VUI:Debug("Failed to load AngryKeystones theme integration: " .. tostring(error))
+    end
+end
+
+-- Load enhanced functionality modules
+function VUI.angrykeystone:LoadEnhancements()
+    -- Try to load the Progress Enhancement module
+    local status, error = pcall(function()
+        if VUI.angrykeystone.ProgressEnhancement then
+            VUI.angrykeystone.ProgressEnhancement:Initialize()
+            return true
+        end
+        return false
+    end)
+    
+    if not status then
+        VUI:Debug("Failed to load AngryKeystones progress enhancement: " .. tostring(error))
+    end
+    
+    -- Try to load the Timer Enhancement module
+    status, error = pcall(function()
+        if VUI.angrykeystone.TimerEnhancement then
+            VUI.angrykeystone.TimerEnhancement:Initialize()
+            return true
+        end
+        return false
+    end)
+    
+    if not status then
+        VUI:Debug("Failed to load AngryKeystones timer enhancement: " .. tostring(error))
     end
 end
 
