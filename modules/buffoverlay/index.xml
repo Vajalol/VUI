@@ -6,6 +6,5 @@
     <Script file="themes.lua"/>
     <Script file="sorting.lua"/>
     <Script file="buffoverlay.lua"/>
-    <Script file="buffoverlay_enhanced.lua"/>
     <Script file="core.lua"/>
 </Ui>
