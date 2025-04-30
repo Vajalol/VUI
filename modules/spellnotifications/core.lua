@@ -259,26 +259,46 @@ function module:COMBAT_LOG_EVENT_UNFILTERED(event)
         -- Check for successful interrupts
         if subevent == "SPELL_INTERRUPT" then
             notificationType = "interrupt"
-            ShowNotification(spellID, sourceGUID, notificationType)
+            -- Check if this is an important spell to notify
+            local isImportant, spellData = self:IsImportantSpell(spellID, "interrupt")
+            if isImportant or module.db.profile.notifyAllInterrupts then
+                ShowNotification(spellID, sourceGUID, notificationType)
+            end
         
         -- Check for successful dispels/purges
         elseif subevent == "SPELL_DISPEL" or subevent == "SPELL_STOLEN" then
             notificationType = "dispel"
-            ShowNotification(spellID, sourceGUID, notificationType)
+            -- Check if this is an important spell to notify
+            local isImportant, spellData = self:IsImportantSpell(spellID, "dispel")
+            if isImportant or module.db.profile.notifyAllDispels then
+                ShowNotification(spellID, sourceGUID, notificationType)
+            end
         
-        -- Check for important spell casts (could be expanded with a list of important spells)
+        -- Check for important spell casts
         elseif subevent == "SPELL_CAST_SUCCESS" then
-            -- For now, we'll just use the default notification for cast success
-            ShowNotification(spellID, sourceGUID)
+            -- Check if this is an important spell to notify
+            local isImportant, spellData = self:IsImportantSpell(spellID, "important")
+            if isImportant then
+                notificationType = "important"
+                ShowNotification(spellID, sourceGUID, notificationType)
+            end
         end
     end
     
     -- Process events where player is the target
     if destGUID == playerGUID then
-        -- Important debuffs applied to player (could be expanded with a list of important debuffs)
-        if subevent == "SPELL_AURA_APPLIED" and (bit.band(destFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0) then
-            notificationType = "important"
-            ShowNotification(spellID, sourceGUID, notificationType)
+        -- Important debuffs applied to player
+        if subevent == "SPELL_AURA_APPLIED" then
+            -- Check if this is an important spell to notify
+            local isImportant, spellData = self:IsImportantSpell(spellID, "important")
+            if isImportant or 
+              (bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0 and module.db.profile.notifyAllHostileDebuffs) then
+                notificationType = "important"
+                ShowNotification(spellID, sourceGUID, notificationType)
+            end
         end
     end
 end
+
+-- Make the ShowNotification function accessible to the module
+module.ShowNotification = ShowNotification

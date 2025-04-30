@@ -19,6 +19,10 @@ local defaults = {
         importantSound = true,
         showSpellIcon = true,
         showAnimations = true,
+        notifyAllInterrupts = true,      -- Notify for all interrupts regardless of spell list
+        notifyAllDispels = true,         -- Notify for all dispels regardless of spell list
+        notifyAllHostileDebuffs = false, -- Notify for all hostile debuffs (can be noisy)
+        customSpells = {},               -- Storage for custom important spells
         position = {
             point = "CENTER",
             x = 0,
@@ -85,10 +89,18 @@ local defaults = {
 function module:OnInitialize()
     self.db = VUI.db:RegisterNamespace("SpellNotifications", defaults)
     self:SetEnabledState(self.db.profile.enabled)
+    
+    -- Initialize the spell list
+    if self.InitializeSpellList then
+        self:InitializeSpellList()
+    end
 end
 
 function module:OnEnable()
     -- Will be implemented in core.lua
+    
+    -- Register slash command for the spell management UI
+    self:RegisterChatCommand("vuispells", function() self:OpenSpellManagementUI() end)
 end
 
 function module:OnDisable()
@@ -237,6 +249,54 @@ function module:GetConfig()
                 get = function() return self.db.profile.showAnimations end,
                 set = function(_, value)
                     self.db.profile.showAnimations = value
+                end,
+                width = "full"
+            },
+            spellsHeader = {
+                order = 10.5,
+                type = "header",
+                name = "Spell Notification Settings"
+            },
+            notifyAllInterrupts = {
+                order = 10.6,
+                type = "toggle",
+                name = "Notify All Interrupts",
+                desc = "Show notifications for all interrupts, not just those in the important spell list",
+                get = function() return self.db.profile.notifyAllInterrupts end,
+                set = function(_, value)
+                    self.db.profile.notifyAllInterrupts = value
+                end,
+                width = "full"
+            },
+            notifyAllDispels = {
+                order = 10.7,
+                type = "toggle",
+                name = "Notify All Dispels",
+                desc = "Show notifications for all dispels/purges, not just those in the important spell list",
+                get = function() return self.db.profile.notifyAllDispels end,
+                set = function(_, value)
+                    self.db.profile.notifyAllDispels = value
+                end,
+                width = "full"
+            },
+            notifyAllHostileDebuffs = {
+                order = 10.8,
+                type = "toggle",
+                name = "Notify All Hostile Debuffs",
+                desc = "Show notifications for all hostile debuffs applied to you (can be noisy in combat)",
+                get = function() return self.db.profile.notifyAllHostileDebuffs end,
+                set = function(_, value)
+                    self.db.profile.notifyAllHostileDebuffs = value
+                end,
+                width = "full"
+            },
+            openSpellManager = {
+                order = 10.9,
+                type = "execute",
+                name = "Manage Important Spells",
+                desc = "Open the spell management UI to customize which spells trigger notifications",
+                func = function()
+                    self:OpenSpellManagementUI()
                 end,
                 width = "full"
             },
