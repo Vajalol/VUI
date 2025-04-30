@@ -448,9 +448,8 @@ function module:CreateSpellManagementUI()
             -- Convert to string
             local exportString = ""
             if next(exportTable) then
-                -- We'll use a very simple encoding here
-                -- In a real addon, you might want to use AceSerializer
-                exportString = VUI.Util:TableToString(exportTable)
+                -- Use the core VUI.Utils functions for consistent serialization
+                exportString = VUI.Utils:TableToString(exportTable)
             end
             
             exportBox:SetText(exportString)
@@ -486,7 +485,7 @@ function module:CreateSpellManagementUI()
             
             -- Try to decode the string
             local success, importTable = pcall(function()
-                return VUI.Util:StringToTable(importString)
+                return VUI.Utils:StringToTable(importString)
             end)
             
             if not success or type(importTable) ~= "table" then

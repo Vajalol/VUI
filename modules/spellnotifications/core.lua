@@ -4,6 +4,17 @@ local module = VUI:GetModule("SpellNotifications")
 -- Use the frames table from init.lua
 local frames = module.frames
 
+-- For multi-notification support
+-- These values will be pulled from the module's settings
+-- but we define fallbacks here in case settings aren't loaded yet
+local function GetMaxNotifications()
+    return module.db and module.db.profile and module.db.profile.maxNotifications or 3
+end
+
+local function GetNotificationSpacing()
+    return module.db and module.db.profile and module.db.profile.notificationSpacing or 10
+end
+
 local function CreateNotificationFrame()
     local frame = CreateFrame("Frame", nil, UIParent)
     frame:SetSize(module.db.profile.size, module.db.profile.size)
@@ -44,9 +55,10 @@ local function CreateNotificationFrame()
     return frame
 end
 
-local function ApplyTheme(frame)
+-- Move the ApplyTheme function to the module so it can be called from RefreshConfig
+function module:ApplyTheme(frame)
     local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
-    local themeSettings = module.db.profile.theme[currentTheme]
+    local themeSettings = self.db.profile.theme[currentTheme]
     
     if themeSettings then
         -- Apply textures
@@ -65,13 +77,118 @@ local function ApplyTheme(frame)
     end
 end
 
+-- Helper function to arrange notification frames
+local function ArrangeNotificationFrames()
+    -- Only rearrange if we have multiple visible frames
+    local visibleFrames = {}
+    for _, frame in ipairs(frames) do
+        if frame:IsShown() then
+            table.insert(visibleFrames, frame)
+        end
+    end
+    
+    if #visibleFrames <= 1 then return end
+    
+    -- Sort frames by creation time (most recent first)
+    table.sort(visibleFrames, function(a, b)
+        return (a.creationTime or 0) > (b.creationTime or 0)
+    end)
+    
+    -- Get the anchor point information
+    local point = module.db.profile.position.point
+    local baseX = module.db.profile.position.x
+    local baseY = module.db.profile.position.y
+    
+    -- Prepare offsets based on anchor point
+    local xMultiplier, yMultiplier = 0, 0
+    
+    -- Determine offset direction based on anchor point
+    if point:find("LEFT") then
+        xMultiplier = 1 -- Move right for additional notifications
+    elseif point:find("RIGHT") then
+        xMultiplier = -1 -- Move left for additional notifications
+    end
+    
+    if point:find("TOP") then
+        yMultiplier = -1 -- Move down for additional notifications
+    elseif point:find("BOTTOM") then
+        yMultiplier = 1 -- Move up for additional notifications
+    end
+    
+    -- If centered horizontally or vertically, choose a direction
+    if xMultiplier == 0 then
+        if point == "CENTER" or point == "TOP" or point == "BOTTOM" then
+            xMultiplier = 1 -- Move right by default for centered points
+        end
+    end
+    
+    if yMultiplier == 0 then
+        if point == "CENTER" or point == "LEFT" or point == "RIGHT" then
+            yMultiplier = -1 -- Move down by default for centered points
+        end
+    end
+    
+    -- Position each frame
+    for i, frame in ipairs(visibleFrames) do
+        frame:ClearAllPoints()
+        if i == 1 then
+            -- First (newest) notification goes at the base position
+            frame:SetPoint(point, UIParent, point, baseX, baseY)
+        else
+            -- Calculate offset based on the frame's position in the stack
+            local spacing = GetNotificationSpacing()
+            local offsetX = baseX + (i-1) * (frame:GetWidth() + spacing) * xMultiplier
+            local offsetY = baseY + (i-1) * (frame:GetHeight() + spacing) * yMultiplier
+            frame:SetPoint(point, UIParent, point, offsetX, offsetY)
+        end
+    end
+end
+
 local function ShowNotification(spellID, sourceGUID, notificationType)
-    -- Basic implementation
-    local frame = frames[1]
+    -- Find an unused frame or create a new one if needed
+    local frame = nil
+    
+    -- First, look for a hidden frame we can reuse
+    for _, f in ipairs(frames) do
+        if not f:IsShown() then
+            frame = f
+            break
+        end
+    end
+    
+    -- If we don't have any hidden frames, but we have reached our max visible notifications
+    -- reuse the oldest visible frame
+    if not frame and #frames >= GetMaxNotifications() then
+        -- Find the oldest frame
+        local oldest = frames[1]
+        local oldestTime = oldest.creationTime or 0
+        
+        for i = 2, #frames do
+            if (frames[i].creationTime or 0) < oldestTime then
+                oldest = frames[i]
+                oldestTime = oldest.creationTime or 0
+            end
+        end
+        
+        -- Stop any running animations
+        if oldest.animGroup and oldest.animGroup:IsPlaying() then
+            oldest.animGroup:Stop()
+        end
+        if oldest.fadeGroup and oldest.fadeGroup:IsPlaying() then
+            oldest.fadeGroup:Stop()
+        end
+        
+        frame = oldest
+    end
+    
+    -- If we still don't have a frame, create a new one
     if not frame then
         frame = CreateNotificationFrame()
         table.insert(frames, frame)
     end
+    
+    -- Set a timestamp for this notification
+    frame.creationTime = GetTime()
     
     -- Set the spell icon if enabled
     if module.db.profile.showSpellIcon then
@@ -94,7 +211,7 @@ local function ShowNotification(spellID, sourceGUID, notificationType)
         frame.spellIcon:Hide()
     end
     
-    ApplyTheme(frame)
+    module:ApplyTheme(frame)
     
     -- Create animation if it doesn't exist
     if not frame.animGroup then
@@ -128,6 +245,9 @@ local function ShowNotification(spellID, sourceGUID, notificationType)
     -- Show the frame and start animations if enabled
     frame:Show()
     frame:SetAlpha(1)
+    
+    -- Arrange all visible notification frames
+    ArrangeNotificationFrames()
     
     -- Only play animations if enabled in settings
     if module.db.profile.showAnimations then
@@ -203,6 +323,8 @@ local function ShowNotification(spellID, sourceGUID, notificationType)
         -- Set up the callback to hide the frame when animation completes
         frame.fadeGroup:SetScript("OnFinished", function()
             frame:Hide()
+            -- Re-arrange the remaining notifications when one is hidden
+            ArrangeNotificationFrames()
         end)
     end
     
@@ -221,6 +343,8 @@ local function ShowNotification(spellID, sourceGUID, notificationType)
             frame:SetAlpha(0)
             C_Timer.After(0.1, function()
                 frame:Hide()
+                -- Re-arrange the remaining notifications when one is hidden
+                ArrangeNotificationFrames()
             end)
         end
     end)

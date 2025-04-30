@@ -22,7 +22,9 @@ local defaults = {
         notifyAllInterrupts = true,      -- Notify for all interrupts regardless of spell list
         notifyAllDispels = true,         -- Notify for all dispels regardless of spell list
         notifyAllHostileDebuffs = false, -- Notify for all hostile debuffs (can be noisy)
-        customSpells = {},               -- Storage for custom important spells
+        customSpells = {},               -- Storage for custom important spells (serialized)
+        maxNotifications = 3,            -- Maximum number of notifications visible at once
+        notificationSpacing = 10,        -- Spacing between notifications in pixels
         position = {
             point = "CENTER",
             x = 0,
@@ -93,6 +95,56 @@ function module:OnInitialize()
     -- Initialize the spell list
     if self.InitializeSpellList then
         self:InitializeSpellList()
+    end
+    
+    -- Register profile change callback
+    VUI.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
+    VUI.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
+    VUI.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
+end
+
+-- Handle profile changes
+function module:RefreshConfig()
+    -- Reinitialize spell list
+    if self.InitializeSpellList then
+        self:InitializeSpellList()
+    end
+    
+    -- Update frame settings if it exists
+    if self.frames and self.frames[1] then
+        -- Update size
+        self.frames[1]:SetSize(self.db.profile.size, self.db.profile.size)
+        self.frames[1].glow:SetSize(self.db.profile.size, self.db.profile.size)
+        
+        -- Update position
+        self.frames[1]:ClearAllPoints()
+        self.frames[1]:SetPoint(
+            self.db.profile.position.point,
+            UIParent,
+            self.db.profile.position.point,
+            self.db.profile.position.x,
+            self.db.profile.position.y
+        )
+        
+        -- Update visibility
+        if self.db.profile.showSpellIcon and self.frames[1].spellIcon then
+            self.frames[1].spellIcon:Show()
+        else
+            self.frames[1].spellIcon:Hide()
+        end
+        
+        -- Update theme
+        if self.ApplyTheme then
+            self:ApplyTheme(self.frames[1])
+        end
+    end
+    
+    -- Update enabled state
+    self:SetEnabledState(self.db.profile.enabled)
+    if self.db.profile.enabled then
+        self:Enable()
+    else
+        self:Disable()
     end
 end
 
@@ -289,6 +341,44 @@ function module:GetConfig()
                     self.db.profile.notifyAllHostileDebuffs = value
                 end,
                 width = "full"
+            },
+            multiNotificationHeader = {
+                order = 10.85,
+                type = "header",
+                name = "Multi-Notification Settings"
+            },
+            maxNotifications = {
+                order = 10.86,
+                type = "range",
+                name = "Maximum Notifications",
+                desc = "Set the maximum number of notifications visible at once",
+                min = 1,
+                max = 5,
+                step = 1,
+                get = function() return self.db.profile.maxNotifications end,
+                set = function(_, value)
+                    self.db.profile.maxNotifications = value
+                end,
+                width = "full"
+            },
+            notificationSpacing = {
+                order = 10.87,
+                type = "range",
+                name = "Notification Spacing",
+                desc = "Set the spacing between multiple notifications in pixels",
+                min = 0,
+                max = 50,
+                step = 1,
+                get = function() return self.db.profile.notificationSpacing end,
+                set = function(_, value)
+                    self.db.profile.notificationSpacing = value
+                end,
+                width = "full"
+            },
+            spellManagementHeader = {
+                order = 10.89,
+                type = "header",
+                name = "Spell Management"
             },
             openSpellManager = {
                 order = 10.9,
