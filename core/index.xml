@@ -21,6 +21,7 @@
     <Script file="integration.lua"/>
     <Script file="theme_integration.lua"/>
     <Script file="theme_helpers.lua"/>
+    <Script file="theme_editor.lua"/>
     <Script file="font_integration.lua"/>
     <Script file="module_theme_integration.lua"/>
     <Script file="dashboard.lua"/>
@@ -32,5 +33,10 @@
     <!-- Configuration -->
     <Script file="config.lua"/>
     <Script file="config_panel.lua"/>
+    <Script file="config_ui.lua"/>
     <Script file="settings.lua"/>
+    
+    <!-- Skinning System -->
+    <Script file="Skins.lua"/>
+    <Script file="BlizzardFrames.lua"/>
 </Ui>

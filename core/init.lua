@@ -127,6 +127,16 @@ function VUI:OnInitialize()
         self.Dashboard:Initialize()
     end
     
+    -- Initialize ConfigUI for improved settings organization
+    if self.ConfigUI then
+        self.ConfigUI:Initialize()
+    end
+    
+    -- Initialize ThemeEditor for customizing themes
+    if self.ThemeEditor then
+        self.ThemeEditor:Initialize()
+    end
+    
     -- Initialize Chat module (core feature)
     if self.Chat then
         self.Chat:Initialize()
@@ -260,15 +270,28 @@ function VUI:SlashCommand(input)
         elseif command == "version" then
             self:Print("Version: " .. self.version)
         elseif command == "config" or command == "options" then
-            -- Open main configuration panel
-            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
-            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+            -- Open main configuration panel with the new tabbed interface if available
+            if self.ConfigUI and self.ConfigUI.enabled then
+                InterfaceOptionsFrame_OpenToCategory(self.ConfigUI.panel)
+                InterfaceOptionsFrame_OpenToCategory(self.ConfigUI.panel)
+            else
+                -- Fallback to traditional panel
+                InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+                InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+            end
         elseif command == "dashboard" then
             -- Toggle dashboard
             if self.Dashboard then
                 self.Dashboard:Toggle()
             else
                 self:Print("Dashboard is not available.")
+            end
+        elseif command == "theme" or command == "themes" then
+            -- Open theme editor
+            if self.ThemeEditor then
+                self.ThemeEditor:Show()
+            else
+                self:Print("Theme Editor is not available.")
             end
         elseif command == "spells" or command == "spell" then
             -- Handle spell notifications subcommands
@@ -293,6 +316,7 @@ function VUI:SlashCommand(input)
             self:Print("  /vui - Opens the dashboard")
             self:Print("  /vui dashboard - Toggles the dashboard")
             self:Print("  /vui config - Opens the configuration panel")
+            self:Print("  /vui theme - Opens the theme editor")
             self:Print("  /vui profile - Opens the profile management panel")
             self:Print("  /vui spells - Opens the spell management UI")
             self:Print("  /vui spells list - Lists your custom spells")
@@ -350,8 +374,14 @@ function VUI:GameMenuFrame_OnShow()
         -- Config button click handler
         configButton:SetScript("OnClick", function()
             HideUIPanel(GameMenuFrame)
-            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
-            InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+            -- Use ConfigUI if available
+            if self.ConfigUI and self.ConfigUI.enabled then
+                InterfaceOptionsFrame_OpenToCategory(self.ConfigUI.panel)
+                InterfaceOptionsFrame_OpenToCategory(self.ConfigUI.panel)
+            else
+                InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+                InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+            end
         end)
     end
 end

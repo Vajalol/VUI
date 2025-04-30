@@ -69,6 +69,37 @@ VUI.defaults = {
             theme = "thunderstorm", -- Set Thunder Storm as default for dashboard too
         },
         
+        -- ConfigUI settings
+        configUI = {
+            enabled = true,
+            lastTab = "general",
+            showSearch = true,
+            showContextHelp = true,
+            showPreview = true,
+        },
+        
+        -- ThemeEditor settings
+        themeEditor = {
+            enabled = true,
+            lastColor = {r = 1, g = 1, b = 1, a = 1},
+            lastTexture = "smooth",
+            customThemes = {},
+            showPreview = true,
+            previewSize = "medium",
+            autoSave = true,
+            allowExport = true,
+            confirmOverwrite = true,
+            showTooltips = true,
+            useRGBSliders = true,
+            previewElements = {
+                frame = true,
+                button = true,
+                statusbar = true,
+                header = true,
+                text = true
+            }
+        },
+        
         -- Modules settings with their defaults
         modules = {
             -- Bags Module
