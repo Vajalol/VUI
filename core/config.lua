@@ -405,6 +405,7 @@ VUI.options = {
                         ["phoenixflame"] = "Phoenix Flame",
                         ["arcanemystic"] = "Arcane Mystic",
                         ["felenergy"] = "Fel Energy",
+                        ["classcolor"] = "Class Color",
                     },
                     get = function() return VUI.db.profile.appearance.theme end,
                     set = function(_, value)
@@ -436,6 +437,27 @@ VUI.options = {
                             -- Light theme colors
                             VUI.db.profile.appearance.backdropColor = {r = 0.8, g = 0.8, b = 0.8, a = 0.8}
                             VUI.db.profile.appearance.borderColor = {r = 0.5, g = 0.5, b = 0.5, a = 1}
+                        elseif value == "classcolor" then
+                            -- Apply Class Color theme
+                            local classColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+                            local darkClassColor = {
+                                r = classColor.r * 0.2,
+                                g = classColor.g * 0.2,
+                                b = classColor.b * 0.2,
+                                a = 0.8
+                            }
+                            VUI.db.profile.appearance.backdropColor = darkClassColor
+                            VUI.db.profile.appearance.borderColor = {
+                                r = classColor.r,
+                                g = classColor.g,
+                                b = classColor.b,
+                                a = 1
+                            }
+                            
+                            -- Enable additional class color settings
+                            VUI.db.profile.appearance.useClassColors = true
+                            VUI.db.profile.appearance.classColoredBorders = true
+                            VUI.db.profile.skins.useClassColors = true
                         end
                     end,
                 },

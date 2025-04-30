@@ -34,6 +34,27 @@ VUI.defaults = {
             compactMode = false, -- Use smaller UI elements
             enableAnimations = true, -- Use animated effects
         },
+        -- UI Skinning system
+        skins = {
+            enabled = true, -- Enable skinning by default
+            style = "default", -- Default skin style
+            useThemeColors = true, -- Use theme colors
+            useClassColors = false, -- Don't use class colors by default
+            skinBorders = true, -- Apply custom borders
+            skinBackdrops = true, -- Apply custom backdrops
+            skinButtons = true, -- Apply custom button styles
+            skinStatusBars = true, -- Apply custom statusbar styles
+            frameGroups = { -- Default frame groups to skin
+                ["CHARACTER"] = true,
+                ["SPELLBOOK"] = true,
+                ["TALENTS"] = true,
+                ["QUESTS"] = true,
+                ["SOCIAL"] = true,
+                ["MERCHANT"] = true,
+                ["SYSTEM"] = true,
+                ["MISC"] = true,
+            },
+        },
         
         -- Dashboard settings
         dashboard = {

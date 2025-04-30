@@ -36,38 +36,85 @@ local COLORS = {
 -- Get appropriate theme colors
 function VUI.UI:GetThemeColors()
     local theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    local colors = {}
     
     if theme == "thunderstorm" then
-        return {
+        colors = {
+            backdrop = {r = 0.04, g = 0.04, b = 0.1, a = 0.8}, -- Deep blue
+            border = {r = 0.05, g = 0.62, b = 0.9, a = 1}, -- Electric blue
+            highlight = {r = 0.1, g = 0.4, b = 0.6, a = 0.5},
+            text = {r = 1, g = 1, b = 1, a = 1},
+            header = {r = 0.2, g = 0.7, b = 1.0, a = 1},
+            accent = {r = 0.0, g = 0.5, b = 0.9, a = 1}
+        }
+    elseif theme == "phoenixflame" then
+        colors = {
+            backdrop = {r = 0.1, g = 0.04, b = 0.02, a = 0.8}, -- Dark red/brown
+            border = {r = 0.9, g = 0.3, b = 0.05, a = 1}, -- Fiery orange
+            highlight = {r = 1.0, g = 0.64, b = 0.1, a = 0.5},
+            text = {r = 1.0, g = 0.9, b = 0.8, a = 1},
+            header = {r = 1.0, g = 0.7, b = 0.2, a = 1},
+            accent = {r = 0.9, g = 0.4, b = 0.0, a = 1}
+        }
+    elseif theme == "arcanemystic" then
+        colors = {
+            backdrop = {r = 0.1, g = 0.04, b = 0.18, a = 0.8}, -- Deep purple
+            border = {r = 0.62, g = 0.05, b = 0.9, a = 1}, -- Bright violet
+            highlight = {r = 0.7, g = 0.3, b = 0.9, a = 0.5},
+            text = {r = 0.9, g = 0.8, b = 1.0, a = 1},
+            header = {r = 0.8, g = 0.5, b = 1.0, a = 1},
+            accent = {r = 0.6, g = 0.2, b = 0.9, a = 1}
+        }
+    elseif theme == "felenergy" then
+        colors = {
+            backdrop = {r = 0.04, g = 0.1, b = 0.04, a = 0.8}, -- Dark green
+            border = {r = 0.1, g = 1.0, b = 0.1, a = 1}, -- Fel green
+            highlight = {r = 0.3, g = 0.9, b = 0.3, a = 0.5},
+            text = {r = 0.8, g = 1.0, b = 0.8, a = 1},
+            header = {r = 0.5, g = 1.0, b = 0.5, a = 1},
+            accent = {r = 0.2, g = 0.8, b = 0.2, a = 1}
+        }
+    elseif theme == "classcolor" then
+        -- Get the player's class color
+        local classColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+        
+        -- Create a darker variant for backdrops
+        local darkR = classColor.r * 0.2
+        local darkG = classColor.g * 0.2
+        local darkB = classColor.b * 0.2
+        
+        -- Create a lighter variant for highlights
+        local lightR = min(classColor.r + 0.2, 1.0)
+        local lightG = min(classColor.g + 0.2, 1.0)
+        local lightB = min(classColor.b + 0.2, 1.0)
+        
+        colors = {
+            backdrop = {r = darkR, g = darkG, b = darkB, a = 0.8},
+            border = {r = classColor.r, g = classColor.g, b = classColor.b, a = 1},
+            highlight = {r = lightR, g = lightG, b = lightB, a = 0.5},
+            text = {r = 1, g = 1, b = 1, a = 1},
+            header = {r = lightR, g = lightG, b = lightB, a = 1},
+            accent = {r = classColor.r, g = classColor.g, b = classColor.b, a = 1}
+        }
+    else
+        -- Default colors
+        colors = {
             backdrop = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
             border = {r = 0.4, g = 0.4, b = 0.4, a = 1},
             highlight = {r = 0.3, g = 0.3, b = 0.3, a = 0.5},
-            text = {r = 1, g = 1, b = 1, a = 1}
+            text = {r = 1, g = 1, b = 1, a = 1},
+            header = {r = 1, g = 0.9, b = 0.8, a = 1},
+            accent = {r = 0.75, g = 0.61, b = 0, a = 1}
         }
-    elseif theme == "phoenixflame" then
-        return {
-            backdrop = {r = 0.1, g = 0.04, b = 0.02, a = 0.8},
-            border = {r = 0.9, g = 0.3, b = 0.05, a = 1},
-            highlight = {r = 1.0, g = 0.64, b = 0.1, a = 0.5},
-            text = {r = 1.0, g = 0.9, b = 0.8, a = 1}
-        }
-    elseif theme == "arcanemystic" then
-        return {
-            backdrop = {r = 0.1, g = 0.04, b = 0.18, a = 0.8},
-            border = {r = 0.62, g = 0.05, b = 0.9, a = 1},
-            highlight = {r = 0.7, g = 0.3, b = 0.9, a = 0.5},
-            text = {r = 0.9, g = 0.8, b = 1.0, a = 1}
-        }
-    elseif theme == "felenergy" then
-        return {
-            backdrop = {r = 0.04, g = 0.1, b = 0.04, a = 0.8},
-            border = {r = 0.1, g = 1.0, b = 0.1, a = 1},
-            highlight = {r = 0.3, g = 0.9, b = 0.3, a = 0.5},
-            text = {r = 0.8, g = 1.0, b = 0.8, a = 1}
-        }
-    else
-        return COLORS
     end
+    
+    -- Override with class color if option is enabled but not using the class theme
+    if VUI.db.profile.appearance.classColoredBorders and theme ~= "classcolor" then
+        local classColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+        colors.border = {r = classColor.r, g = classColor.g, b = classColor.b, a = 1}
+    end
+    
+    return colors
 end
 
 -- Get theme texture path
