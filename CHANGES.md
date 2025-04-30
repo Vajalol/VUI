@@ -1,5 +1,19 @@
 # VUI Changelog
 
+## Version 0.3.0 (2025-04-30)
+- Enhanced AngryKeystones module with specialized features:
+  - Added ChestTimerNotifications system with theme-specific sounds and visual alerts
+  - Implemented ProgressTracker with refined percentage calculations and detailed tooltips
+  - Created EnhancedTimers with millisecond precision and theme-specific animations
+  - Added MediaRegistration system for SVG-to-TGA texture conversion support
+- Added theme-specific SVG assets for all AngryKeystones UI elements including:
+  - Timer bars with theme-matched glows and patterns
+  - Progress tracking bars with enhanced visualization
+  - Objective bars with theme-specific styling and effects
+- Implemented comprehensive configuration options for all AngryKeystones features
+- Added integration with VUI notification system for M+ timer events
+- Enhanced theme integration for all AngryKeystones UI components
+
 ## Version 0.2.0 (2025-04-29)
 - Major update to the configuration system
 - Added GetConfig implementation across all 21 modules

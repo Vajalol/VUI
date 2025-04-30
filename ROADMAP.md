@@ -58,10 +58,10 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 - [ ] Add integrated material cost calculations
 
 ### AngryKeystones Module
-- [ ] Complete theme integration for all elements
-- [ ] Add enhanced timer displays with theme-specific visuals
-- [ ] Implement completion percentage refinements
-- [ ] Create better chest timer notifications
+- [x] Complete theme integration for all elements
+- [x] Add enhanced timer displays with theme-specific visuals
+- [x] Implement completion percentage refinements
+- [x] Create better chest timer notifications
 
 ### PGFinder Module
 - [ ] Finalize theme integration for all finder panels
@@ -159,7 +159,7 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 
 ### Version 0.4.0
 - [x] Complete Auctionator integration with theme-specific assets
-- [ ] Complete AngryKeystones integration
+- [x] Complete AngryKeystones integration with enhanced features
 - [ ] Implement standardized module loading
 - [ ] Add enhanced profile management
 - [ ] Improve theme propagation system
