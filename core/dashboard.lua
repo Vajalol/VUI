@@ -893,16 +893,26 @@ function Dashboard:CreateQuickButtons()
             child:SetParent(nil)
         end
         
-        -- Get modules from VUI table
+        -- Get modules using ModuleHelper if available
         local modules = {}
-        for name, module in pairs(VUI) do
-            if type(module) == "table" and module.Initialize and type(name) == "string" and name ~= "Dashboard" then
-                table.insert(modules, {name = name, module = module})
-            end
-        end
         
-        -- Sort modules alphabetically
-        table.sort(modules, function(a, b) return a.name < b.name end)
+        if VUI.ModuleHelper then
+            -- Use the helper to get all modules
+            local moduleList = VUI.ModuleHelper:GetAllModules()
+            for _, moduleInfo in ipairs(moduleList) do
+                table.insert(modules, {name = moduleInfo.name, module = moduleInfo.module})
+            end
+        else
+            -- Fallback: Get modules from VUI table
+            for name, module in pairs(VUI) do
+                if type(module) == "table" and module.Initialize and type(name) == "string" and name ~= "Dashboard" then
+                    table.insert(modules, {name = name, module = module})
+                end
+            end
+            
+            -- Sort modules alphabetically
+            table.sort(modules, function(a, b) return a.name < b.name end)
+        end
         
         -- Create toggles for each module
         local toggleHeight = 30
@@ -935,18 +945,28 @@ function Dashboard:CreateQuickButtons()
             checkbox:SetScript("OnClick", function(self)
                 local isChecked = self:GetChecked()
                 
-                -- Update module status
-                if not VUI.db.profile.modules[moduleLower] then
-                    VUI.db.profile.modules[moduleLower] = {}
-                end
-                
-                VUI.db.profile.modules[moduleLower].enabled = isChecked
-                
-                -- Enable or disable module
-                if isChecked then
-                    if moduleInfo.module.Enable then moduleInfo.module:Enable() end
+                -- Use ModuleHelper if available
+                if VUI.ModuleHelper then
+                    if isChecked then
+                        VUI.ModuleHelper:EnableModule(moduleName)
+                    else
+                        VUI.ModuleHelper:DisableModule(moduleName)
+                    end
                 else
-                    if moduleInfo.module.Disable then moduleInfo.module:Disable() end
+                    -- Fallback to original code
+                    -- Update module status
+                    if not VUI.db.profile.modules[moduleLower] then
+                        VUI.db.profile.modules[moduleLower] = {}
+                    end
+                    
+                    VUI.db.profile.modules[moduleLower].enabled = isChecked
+                    
+                    -- Enable or disable module
+                    if isChecked then
+                        if moduleInfo.module.Enable then moduleInfo.module:Enable() end
+                    else
+                        if moduleInfo.module.Disable then moduleInfo.module:Disable() end
+                    end
                 end
                 
                 -- Update dashboard UI
@@ -1032,12 +1052,21 @@ function Dashboard:CreateQuickButtons()
     disableAllBtn:SetPoint("BOTTOMRIGHT", moduleDropdown, "BOTTOMRIGHT", -20, 15)
     disableAllBtn:SetText("Disable All")
     disableAllBtn:SetScript("OnClick", function()
-        for name, module in pairs(VUI) do
-            if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
-                local moduleName = name:lower()
-                if VUI.db.profile.modules[moduleName] then
-                    VUI.db.profile.modules[moduleName].enabled = false
-                    if module.Disable then module:Disable() end
+        -- Use ModuleHelper if available
+        if VUI.ModuleHelper then
+            local modules = VUI.ModuleHelper:GetAllModules()
+            for _, moduleInfo in ipairs(modules) do
+                VUI.ModuleHelper:DisableModule(moduleInfo.name)
+            end
+        else
+            -- Fallback to original code
+            for name, module in pairs(VUI) do
+                if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
+                    local moduleName = name:lower()
+                    if VUI.db.profile.modules[moduleName] then
+                        VUI.db.profile.modules[moduleName].enabled = false
+                        if module.Disable then module:Disable() end
+                    end
                 end
             end
         end

@@ -154,6 +154,27 @@ function VUI:ToggleConfig()
     end
 end
 
+-- Get module by name
+function VUI:GetModule(name)
+    -- Simple module lookup
+    if not name then return nil end
+    
+    -- Try exact match
+    if self[name] and type(self[name]) == "table" then
+        return self[name]
+    end
+    
+    -- Try case-insensitive match
+    local lowerName = name:lower()
+    for moduleName, module in pairs(self) do
+        if type(module) == "table" and type(moduleName) == "string" and moduleName:lower() == lowerName then
+            return module
+        end
+    end
+    
+    return nil
+end
+
 -- Initialize all modules
 function VUI:InitializeModules()
     for _, moduleName in ipairs(self.modules) do
