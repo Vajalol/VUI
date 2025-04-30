@@ -257,6 +257,9 @@ function BuffOverlay:Initialize()
     
     -- Register for theme changes
     VUI.RegisterCallback(self, "ThemeChanged", "ApplyTheme")
+    
+    -- Initialize the enhanced display system if enabled
+    self:InitializeEnhancedDisplay()
 end
 
 -- Apply theme to all buff frames
