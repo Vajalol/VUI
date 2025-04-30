@@ -4,4 +4,5 @@
     <Script file="config.lua"/>
     <Script file="trufigcd.lua"/>
     <Script file="core.lua"/>
+    <Script file="ThemeIntegration.lua"/>
 </Ui>

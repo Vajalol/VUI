@@ -21,6 +21,12 @@ function VUI.TrufiGCD:Initialize()
     -- Initialize tracked spells
     self:InitializeSpellList()
     
+    -- Register theme hooks
+    self:RegisterThemeHooks()
+    
+    -- Apply current theme
+    self:ApplyTheme()
+    
     -- Log initialization
     VUI:Print("TrufiGCD module initialized")
 end
@@ -67,6 +73,22 @@ function VUI.TrufiGCD:CreateGCDFrame()
             self.frameBorder:Hide()
         end
     end)
+    
+    -- Create container with background for the frame (for theme coloring)
+    self.container = CreateFrame("Frame", nil, self.frame)
+    self.container:SetPoint("TOPLEFT", self.frame, "TOPLEFT", -4, 4)
+    self.container:SetPoint("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT", 4, -4)
+    
+    -- Add background for container
+    self.container.background = self.container:CreateTexture(nil, "BACKGROUND")
+    self.container.background:SetAllPoints()
+    self.container.background:SetColorTexture(0, 0, 0, 0.3)
+    
+    -- Add border for container
+    self.container.border = self.container:CreateTexture(nil, "BORDER")
+    self.container.border:SetPoint("TOPLEFT", self.container, "TOPLEFT", -1, 1)
+    self.container.border:SetPoint("BOTTOMRIGHT", self.container, "BOTTOMRIGHT", 1, -1)
+    self.container.border:SetColorTexture(0, 0, 0, 0.8)
     
     -- Create border for when in config mode
     self.frameBorder = CreateFrame("Frame", nil, self.frame)
@@ -136,6 +158,11 @@ function VUI.TrufiGCD:CreateIconFrame(index)
     
     -- Set position based on orientation and direction
     self:PositionIconFrame(frame, index)
+    
+    -- Background texture (for theme coloring)
+    frame.background = frame:CreateTexture(nil, "BACKGROUND")
+    frame.background:SetAllPoints()
+    frame.background:SetColorTexture(0, 0, 0, 0.3)
     
     -- Icon texture
     frame.icon = frame:CreateTexture(nil, "ARTWORK")

@@ -55,27 +55,7 @@ local function CreateNotificationFrame()
     return frame
 end
 
--- Move the ApplyTheme function to the module so it can be called from RefreshConfig
-function module:ApplyTheme(frame)
-    local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
-    local themeSettings = self.db.profile.theme[currentTheme]
-    
-    if themeSettings then
-        -- Apply textures
-        frame.texture:SetTexture(themeSettings.texture)
-        frame.glow:SetTexture(themeSettings.glow)
-        frame.border:SetTexture(themeSettings.border or "Interface\\AddOns\\VUI\\media\\textures\\" .. currentTheme .. "\\border")
-        
-        -- Apply colors
-        if themeSettings.color then
-            frame.texture:SetVertexColor(unpack(themeSettings.color))
-            frame.border:SetVertexColor(unpack(themeSettings.color))
-        end
-        
-        -- Store theme-specific sound file in the frame for later use
-        frame.themeSoundFile = themeSettings.sound
-    end
-end
+-- Theme integration is now managed in ThemeIntegration.lua
 
 -- Helper function to arrange notification frames
 local function ArrangeNotificationFrames()
@@ -269,36 +249,8 @@ local function ShowNotification(spellID, sourceGUID, notificationType)
         end
         
         if playSound then
-            -- Get the current theme
-            local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
-            local themeSettings = module.db.profile.theme[currentTheme]
-            
-            -- Default to general sound file
-            local soundFile = module.db.profile.soundFile
-            
-            if themeSettings and themeSettings.sounds then
-                -- Use theme-specific notification type sound if available
-                if notificationType and themeSettings.sounds[notificationType] then
-                    soundFile = themeSettings.sounds[notificationType]
-                elseif themeSettings.sounds.default then
-                    -- Fall back to theme-specific default sound
-                    soundFile = themeSettings.sounds.default
-                elseif themeSettings.sound then
-                    -- Fall back to theme general sound
-                    soundFile = themeSettings.sound
-                end
-            else
-                -- Fall back to general notification type sounds if theme-specific not available
-                if notificationType then
-                    if notificationType == "interrupt" then
-                        soundFile = "Interface\\AddOns\\VUI\\media\\sounds\\spellnotifications\\interrupt.ogg"
-                    elseif notificationType == "dispel" then
-                        soundFile = "Interface\\AddOns\\VUI\\media\\sounds\\spellnotifications\\dispel.ogg"
-                    elseif notificationType == "important" then
-                        soundFile = "Interface\\AddOns\\VUI\\media\\sounds\\spellnotifications\\important.ogg"
-                    end
-                end
-            end
+            -- Get theme-specific sound file for this notification type
+            local soundFile = module:GetThemeSoundFile(notificationType)
             
             -- Note: WoW API doesn't support direct volume control in PlaySoundFile
             -- Volume control would require custom sound handling which is beyond

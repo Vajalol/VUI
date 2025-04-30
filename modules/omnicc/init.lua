@@ -114,6 +114,11 @@ VUI.ModuleAPI:RegisterModuleConfig("omnicc", VUI.omnicc:GetConfig())
 function VUI.omnicc:Initialize()
     -- Initialize module components
     self:SetupHooks()
+    
+    -- Initialize theme integration
+    if self.ThemeIntegration then
+        self.ThemeIntegration:Initialize()
+    end
 
     -- Print initialization message
     VUI:Print("OmniCC module initialized")

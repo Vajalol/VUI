@@ -2,5 +2,6 @@
 ..\FrameXML\UI.xsd">
     <Script file="init.lua"/>
     <Script file="config.lua"/>
+    <Script file="ThemeIntegration.lua"/>
     <Script file="core.lua"/>
 </Ui>

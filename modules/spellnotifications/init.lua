@@ -241,6 +241,9 @@ function module:OnEnable()
     
     -- We already registered our slash commands in OnInitialize
     -- No need to re-register them here
+    
+    -- Register theme hooks
+    self:RegisterThemeHooks()
 end
 
 function module:OnDisable()

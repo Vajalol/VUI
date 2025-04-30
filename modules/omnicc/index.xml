@@ -2,7 +2,7 @@
 ..\FrameXML\UI.xsd">
     <Script file="init.lua"/>
     <Script file="config.lua"/>
-    <Script file="themes.lua"/>
+    <Script file="ThemeIntegration.lua"/>
     <Script file="animations.lua"/>
     <Script file="groups.lua"/>
     <Script file="core.lua"/>

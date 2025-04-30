@@ -259,6 +259,12 @@ function VUI.omnicd:Initialize()
     -- Initialize module components
     self:SetupModule()
     self:SetupHooks()
+    
+    -- Initialize theme integration
+    if self.ThemeIntegration then
+        self.ThemeIntegration:Initialize()
+    end
+    
     self:InitializeAnimations()
 
     -- Print initialization message
@@ -267,6 +273,11 @@ function VUI.omnicd:Initialize()
     -- Register for theme changes
     VUI.EventManager:RegisterCallback("VUI_THEME_CHANGED", function(themeName)
         self:UpdateThemeAnimations()
+        
+        -- Update all UI elements with new theme
+        if self.ThemeIntegration then
+            self.ThemeIntegration:UpdateAllUIElements()
+        end
     end)
     
     -- Set up performance monitor

@@ -3,6 +3,9 @@
     <!-- Core files -->
     <Script file="init.lua"/>
     
+    <!-- Theme Integration -->
+    <Script file="ThemeIntegration.lua"/>
+    
     <!-- Plater Implementation -->
     <Include file="plater\load.xml"/>
     

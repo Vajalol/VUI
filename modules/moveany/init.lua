@@ -95,6 +95,11 @@ function MoveAny:Initialize()
     -- Register default frames
     self:RegisterDefaultFrames()
     
+    -- Initialize theme integration
+    if self.ThemeIntegration then
+        self.ThemeIntegration:Initialize()
+    end
+    
     -- Register events
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -230,12 +235,22 @@ function MoveAny:CreateAnchor(frame, name)
     
     -- Create visible border
     local border = anchor:CreateTexture(nil, "OVERLAY")
-    border:SetTexture(1, 0.5, 0, 0.4)
+    -- Let ThemeIntegration handle styling if available
+    if self.ThemeIntegration then
+        self.ThemeIntegration:ApplyThemeColors(border, "border")
+    else
+        border:SetTexture(1, 0.5, 0, 0.4) -- Fallback if ThemeIntegration not available
+    end
     border:SetAllPoints()
     
     -- Create label
     local label = anchor:CreateFontString(nil, "OVERLAY")
-    label:SetFont(VUI:GetFont(VUI.db.profile.appearance.font), 10, "OUTLINE")
+    if self.ThemeIntegration then
+        label:SetFont(self.ThemeIntegration:GetThemeFont("label"), 10, "OUTLINE")
+        self.ThemeIntegration:ApplyThemeColors(label, "text")
+    else
+        label:SetFont(VUI:GetFont(VUI.db.profile.appearance.font), 10, "OUTLINE")
+    end
     label:SetText(name)
     label:SetPoint("TOP", anchor, "TOP", 0, 12)
     
@@ -565,6 +580,11 @@ function MoveAny:UpdateSettings()
             anchor:SetScript("OnEnter", nil)
             anchor:SetScript("OnLeave", nil)
         end
+    end
+    
+    -- Update theme-related elements if ThemeIntegration exists
+    if self.ThemeIntegration then
+        self.ThemeIntegration:UpdateAllUIElements()
     end
     
     -- Update lock state

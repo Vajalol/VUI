@@ -4,4 +4,5 @@
     <Script file="spelllist.lua"/>
     <Script file="core.lua"/>
     <Script file="spelllistui.lua"/>
+    <Script file="ThemeIntegration.lua"/>
 </Ui>

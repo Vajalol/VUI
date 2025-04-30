@@ -23,7 +23,12 @@ function Nameplates:Initialize()
     -- Make this module accessible globally within VUI
     VUI.nameplates = self
     
-    -- Register for theme changes
+    -- Initialize theme integration
+    if self.ThemeIntegration then
+        self.ThemeIntegration:Initialize()
+    end
+    
+    -- Register for theme changes (legacy method, kept for compatibility)
     self:RegisterThemeCallbacks()
     
     -- Initialize nameplate hooks and features

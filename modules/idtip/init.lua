@@ -93,6 +93,11 @@ VUI.ModuleAPI:RegisterModuleConfig("idtip", VUI.idtip:GetConfig())
 function VUI.idtip:Initialize()
     -- Initialize module components
     self:SetupHooks()
+    
+    -- Initialize theme integration
+    if self.ThemeIntegration then
+        self.ThemeIntegration:Initialize()
+    end
 
     -- Print initialization message
     VUI:Print("idTip module initialized")

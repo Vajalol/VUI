@@ -556,9 +556,11 @@ function OmniCC:UpdateTimerTextFormat(timer)
     
     -- Get the font from theme or fallback
     local fontPath = DEFAULT_FONT_FACE
-    local theme = self:GetCurrentTheme()
-    if theme and theme.fonts and theme.fonts.regular then
-        fontPath = theme.fonts.regular
+    if self.ThemeIntegration then
+        local theme = self.ThemeIntegration:GetCurrentTheme()
+        if theme and theme.fonts and theme.fonts.regular then
+            fontPath = theme.fonts.regular
+        end
     end
     
     -- Set the font
