@@ -426,3 +426,24 @@ end
 
 -- Make the ShowNotification function accessible to the module
 module.ShowNotification = ShowNotification
+
+-- Function to test notifications with specific spell ID and type
+function module:TestNotification(spellID, spellType)
+    if not spellID then
+        print("|cFFFF0000No spell ID specified for testing.|r")
+        return
+    end
+
+    local spellName, _, spellIcon = GetSpellInfo(spellID)
+    if not spellName then
+        print("|cFFFF0000Invalid spell ID:|r " .. tostring(spellID))
+        return
+    end
+    
+    print("|cFF00FF00Testing notification for spell:|r " .. spellName .. " (ID: " .. spellID .. ")")
+    print("|cFF00FF00Type:|r " .. (spellType or "important"))
+    
+    -- Use the player's GUID as the source for test notifications
+    local playerGUID = UnitGUID("player")
+    ShowNotification(spellID, playerGUID, spellType or "important")
+end

@@ -1,9 +1,35 @@
 local addonName, VUI = ...
 local module = VUI:GetModule("SpellNotifications")
 
+-- Spell categories for better organization
+module.SpellCategories = {
+    ["interrupt"] = "Interrupts",
+    ["dispel"] = "Dispels",
+    ["important"] = "Important Abilities",
+    ["defensive"] = "Defensive Cooldowns",
+    ["offensive"] = "Offensive Cooldowns",
+    ["utility"] = "Utility Abilities",
+    ["cc"] = "Crowd Control",
+    ["healing"] = "Healing Abilities"
+}
+
+-- Role categories for filtering
+module.RoleCategories = {
+    ["ALL"] = "All Roles",
+    ["TANK"] = "Tank",
+    ["HEALER"] = "Healer",
+    ["DAMAGER"] = "Damage Dealer",
+    ["PVP"] = "PvP"
+}
+
 -- Important spells list
 -- This is a database of spells that will trigger special notifications
--- Format: [spellID] = { type = "interrupt|dispel|important", name = "Spell Name", priority = 1-3 }
+-- Format: [spellID] = { 
+--   type = "interrupt|dispel|important|defensive|offensive|utility|cc|healing", 
+--   name = "Spell Name", 
+--   priority = 1-3,
+--   roles = {"TANK", "HEALER", "DAMAGER", "PVP"} -- optional
+-- }
 -- Priority: 1 = Low, 2 = Medium, 3 = High
 module.ImportantSpells = {
     -- Interrupts (examples)
@@ -68,9 +94,15 @@ function module:InitializeSpellList()
 end
 
 -- Add a spell to the custom list
-function module:AddCustomSpell(spellID, spellType, priority)
+function module:AddCustomSpell(spellID, spellType, priority, roles, notes)
     -- Validate inputs
     if not spellID or not spellType then return false end
+    
+    -- Validate the spell type is valid
+    if not self.SpellCategories[spellType] then
+        print("|cFFFF0000Invalid spell type:|r", spellType)
+        return false
+    end
     
     -- Get spell info
     local spellName, _, spellIcon = GetSpellInfo(spellID)
@@ -82,13 +114,18 @@ function module:AddCustomSpell(spellID, spellType, priority)
     -- Determine player class for the spell
     local playerClass = select(2, UnitClass("player"))
     
+    -- Initialize roles if provided
+    local spellRoles = roles or {"ALL"}
+    
     -- Add to custom list
     self.CustomSpells[spellID] = {
         type = spellType,
         name = spellName,
         priority = priority or 2, -- default to medium priority
         class = playerClass,      -- associate with current player's class
-        custom = true             -- mark as custom added
+        custom = true,            -- mark as custom added
+        roles = spellRoles,       -- roles this spell is important for
+        notes = notes or ""       -- optional notes about this spell
     }
     
     -- Save to database
@@ -98,6 +135,7 @@ function module:AddCustomSpell(spellID, spellType, priority)
     self.db.profile.customSpells[spellID] = self.CustomSpells[spellID]
     
     print("|cFF00FF00Added spell to notifications:|r", spellName)
+    print("|cFF00FF00Category:|r", self.SpellCategories[spellType])
     return true
 end
 
@@ -165,7 +203,12 @@ function module:GetSpellsByType(spellType)
     -- Get all spells
     local allSpells = self:GetAllImportantSpells()
     
-    -- Filter by type
+    -- Filter by type (handle 'all' as a special case)
+    if spellType == "all" then
+        return allSpells
+    end
+    
+    -- Filter by specific type
     for id, data in pairs(allSpells) do
         if data.type == spellType then
             filteredSpells[id] = data
@@ -176,9 +219,9 @@ function module:GetSpellsByType(spellType)
 end
 
 -- Get spells for the current class
-function module:GetSpellsByClass()
+function module:GetSpellsByClass(class)
     local filteredSpells = {}
-    local playerClass = select(2, UnitClass("player"))
+    local playerClass = class or select(2, UnitClass("player"))
     
     -- Get all spells
     local allSpells = self:GetAllImportantSpells()
@@ -186,6 +229,88 @@ function module:GetSpellsByClass()
     -- Filter by class
     for id, data in pairs(allSpells) do
         if data.class == playerClass then
+            filteredSpells[id] = data
+        end
+    end
+    
+    return filteredSpells
+end
+
+-- Get spells for a specific role
+function module:GetSpellsByRole(role)
+    local filteredSpells = {}
+    
+    -- Get all spells
+    local allSpells = self:GetAllImportantSpells()
+    
+    -- If no role specified or "ALL", return all spells
+    if not role or role == "ALL" then
+        return allSpells
+    end
+    
+    -- Filter by role
+    for id, data in pairs(allSpells) do
+        -- Check if this spell has role information
+        if data.roles then
+            -- Check if the requested role is in the spell's roles
+            for _, spellRole in ipairs(data.roles) do
+                if spellRole == role or spellRole == "ALL" then
+                    filteredSpells[id] = data
+                    break
+                end
+            end
+        -- If no roles are defined, default to "ALL"
+        else
+            filteredSpells[id] = data
+        end
+    end
+    
+    return filteredSpells
+end
+
+-- Advanced filtering function for spells
+function module:FilterSpells(options)
+    local filteredSpells = {}
+    local allSpells = self:GetAllImportantSpells()
+    
+    -- Default options
+    options = options or {}
+    local spellType = options.type or "all"
+    local role = options.role or "ALL"
+    local class = options.class 
+    local minPriority = options.minPriority or 1
+    local maxPriority = options.maxPriority or 3
+    local nameFilter = options.nameFilter
+    local customOnly = options.customOnly or false
+    
+    for id, data in pairs(allSpells) do
+        local matchesType = (spellType == "all") or (data.type == spellType)
+        local matchesClass = not class or (data.class == class)
+        local matchesPriority = (data.priority >= minPriority) and (data.priority <= maxPriority)
+        local matchesCustom = not customOnly or data.custom
+        
+        -- Check role match
+        local matchesRole = (role == "ALL")
+        if not matchesRole and data.roles then
+            for _, spellRole in ipairs(data.roles) do
+                if spellRole == role or spellRole == "ALL" then
+                    matchesRole = true
+                    break
+                end
+            end
+        elseif not matchesRole and not data.roles then
+            -- If no roles specified, assume it matches all roles
+            matchesRole = true
+        end
+        
+        -- Check name match
+        local matchesName = true
+        if nameFilter and nameFilter ~= "" then
+            matchesName = string.find(string.lower(data.name), string.lower(nameFilter)) ~= nil
+        end
+        
+        -- Add to filtered list if all criteria match
+        if matchesType and matchesClass and matchesPriority and matchesRole and matchesName and matchesCustom then
             filteredSpells[id] = data
         end
     end

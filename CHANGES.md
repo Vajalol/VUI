@@ -1,6 +1,16 @@
 # VUI Changelog
 
 ## Version 0.3.0 (2025-04-30)
+- Enhanced SpellNotifications module with comprehensive feature updates:
+  - Implemented advanced spell filtering system with type, role, class, and priority categorization
+  - Added search functionality with support for spell names, IDs, and categories
+  - Created enhanced import/export system with support for roles and notes
+  - Implemented custom spell management UI with detailed spell information display
+  - Added dashboard Quick Tools section with direct Spell Management access
+  - Implemented in-game spell testing functionality from dashboard UI
+  - Added multi-notification support with configurable appearance and positioning
+  - Integrated with main `/vui` command structure for consistent interface
+  - Created comprehensive theme integration for notification visuals
 - Enhanced DetailsSkin module with comprehensive theme integration:
   - Implemented theme-specific styling for all Details panels and windows
   - Created consistent header/footer styling with theme-matching colors and textures

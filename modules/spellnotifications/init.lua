@@ -97,10 +97,98 @@ function module:OnInitialize()
         self:InitializeSpellList()
     end
     
+    -- We'll use the main /vui command with subcommands instead of registering our own commands
+    -- Integration with the main command handler will be done in core/slashcommands.lua
+    
     -- Register profile change callback
     VUI.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
     VUI.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
     VUI.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
+end
+
+-- Process chat commands (called from main slash command handler)
+function module:ProcessChatCommand(input)
+    local command, rest = self:GetArgs(input, 2)
+    
+    -- Handle different commands
+    if not command or command == "help" then
+        -- Show help message
+        print("|cFF00FF00VUI Spell Notifications Commands:|r")
+        print("  |cFFFFFF00/vui spells|r - Open the spell management UI")
+        print("  |cFFFFFF00/vui spells list|r - List your custom spells")
+        print("  |cFFFFFF00/vui spells add [spellID] [type] [priority]|r - Add a custom spell")
+        print("  |cFFFFFF00/vui spells remove [spellID]|r - Remove a custom spell")
+        print("  |cFFFFFF00/vui spells test [spellID] [type]|r - Test a spell notification")
+    elseif command == "list" then
+        -- List custom spells
+        local count = 0
+        print("|cFF00FF00Your Custom Spells:|r")
+        for id, data in pairs(self.CustomSpells) do
+            count = count + 1
+            -- Priority levels
+            local priorityText = "Medium"
+            if data.priority == 1 then
+                priorityText = "Low"
+            elseif data.priority == 3 then
+                priorityText = "High"
+            end
+            print(string.format("  %d. |cFFFFFF00%s|r (ID: |cFF00CCFF%d|r, Type: |cFF00CCFF%s|r, Priority: |cFF00CCFF%s|r)", 
+                count, data.name, id, data.type, priorityText))
+        end
+        if count == 0 then
+            print("  No custom spells found. Add some with |cFFFFFF00/vui spells add [spellID] [type] [priority]|r")
+        end
+    elseif command == "add" and rest then
+        -- Extract spell info
+        local spellID, spellType, priority = strsplit(" ", rest, 3)
+        spellID = tonumber(spellID)
+        priority = tonumber(priority) or 2
+        
+        if not spellID then
+            print("|cFFFF0000Invalid spell ID. Usage: /vui spells add [spellID] [type] [priority]|r")
+            return
+        end
+        
+        if not spellType or not self.SpellCategories[spellType] then
+            -- List valid spell types
+            print("|cFFFF0000Invalid spell type. Valid types:|r")
+            for key, name in pairs(self.SpellCategories) do
+                print("  |cFFFFFF00" .. key .. "|r - " .. name)
+            end
+            return
+        end
+        
+        -- Add the spell
+        self:AddCustomSpell(spellID, spellType, priority)
+    elseif command == "remove" and rest then
+        -- Extract spell ID
+        local spellID = tonumber(rest)
+        if not spellID then
+            print("|cFFFF0000Invalid spell ID. Usage: /vui spells remove [spellID]|r")
+            return
+        end
+        
+        -- Remove the spell
+        local success = self:RemoveCustomSpell(spellID)
+        if not success then
+            print("|cFFFF0000No custom spell found with ID:|r " .. spellID)
+        end
+    elseif command == "test" and rest then
+        -- Extract spell info
+        local spellID, spellType = strsplit(" ", rest, 2)
+        spellID = tonumber(spellID)
+        
+        if not spellID then
+            print("|cFFFF0000Invalid spell ID. Usage: /vui spells test [spellID] [type]|r")
+            return
+        end
+        
+        -- Test the notification
+        self:TestNotification(spellID, spellType)
+    else
+        -- Open the spell management UI by default
+        self:OpenSpellManagementUI()
+    end
 end
 
 -- Handle profile changes
@@ -151,8 +239,8 @@ end
 function module:OnEnable()
     -- Will be implemented in core.lua
     
-    -- Register slash command for the spell management UI
-    self:RegisterChatCommand("vuispells", function() self:OpenSpellManagementUI() end)
+    -- We already registered our slash commands in OnInitialize
+    -- No need to re-register them here
 end
 
 function module:OnDisable()

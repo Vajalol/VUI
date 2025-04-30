@@ -1007,6 +1007,128 @@ function Dashboard:CreateQuickButtons()
     
     xOffset = xOffset + buttonWidth + spacing
     
+    -- Quick Tools button with dropdown
+    local toolsButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
+    toolsButton:SetSize(buttonWidth, buttonHeight)
+    toolsButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
+    toolsButton:SetText("Tools")
+    
+    -- Create tools dropdown
+    local toolsDropdown = CreateFrame("Frame", "VUIDashboardToolsDropdown", self.panel, "BackdropTemplate")
+    toolsDropdown:SetSize(200, 240)
+    toolsDropdown:SetPoint("BOTTOMLEFT", toolsButton, "TOPLEFT", 0, 5)
+    toolsDropdown:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+        tile = true,
+        tileSize = 32,
+        edgeSize = 32,
+        insets = { left = 11, right = 12, top = 12, bottom = 11 }
+    })
+    toolsDropdown:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    
+    -- Add title
+    local title = toolsDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOP", toolsDropdown, "TOP", 0, -15)
+    title:SetText("Quick Tools")
+    
+    -- Spell Management button
+    local spellManagementButton = CreateFrame("Button", nil, toolsDropdown, "UIPanelButtonTemplate")
+    spellManagementButton:SetSize(160, 24)
+    spellManagementButton:SetPoint("TOP", title, "BOTTOM", 0, -20)
+    spellManagementButton:SetText("Spell Management")
+    spellManagementButton:SetScript("OnClick", function()
+        -- Get SpellNotifications module
+        local module = VUI:GetModule("SpellNotifications")
+        if module and module.OpenSpellManagementUI then
+            -- Close the dropdown
+            toolsDropdown:Hide()
+            -- Open the spell management UI
+            module:OpenSpellManagementUI()
+        else
+            VUI:Print("SpellNotifications module not available")
+        end
+    end)
+    
+    -- Test Notification section
+    local testNotificationLabel = toolsDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    testNotificationLabel:SetPoint("TOP", spellManagementButton, "BOTTOM", 0, -15)
+    testNotificationLabel:SetText("Test Spell Notification")
+    
+    -- Box to enter spell ID
+    local spellIDBox = CreateFrame("EditBox", nil, toolsDropdown, "InputBoxTemplate")
+    spellIDBox:SetSize(120, 20)
+    spellIDBox:SetPoint("TOP", testNotificationLabel, "BOTTOM", 0, -5)
+    spellIDBox:SetAutoFocus(false)
+    spellIDBox:SetText("Enter spell ID...")
+    spellIDBox:SetTextColor(0.7, 0.7, 0.7)
+    
+    -- Focus behavior
+    spellIDBox:SetScript("OnEditFocusGained", function(self)
+        if self:GetText() == "Enter spell ID..." then
+            self:SetText("")
+            self:SetTextColor(1, 1, 1)
+        end
+    end)
+    
+    spellIDBox:SetScript("OnEditFocusLost", function(self)
+        if self:GetText() == "" then
+            self:SetText("Enter spell ID...")
+            self:SetTextColor(0.7, 0.7, 0.7)
+        end
+    end)
+    
+    -- Test button
+    local testButton = CreateFrame("Button", nil, toolsDropdown, "UIPanelButtonTemplate")
+    testButton:SetSize(80, 22)
+    testButton:SetPoint("TOP", spellIDBox, "BOTTOM", 0, -5)
+    testButton:SetText("Test")
+    testButton:SetScript("OnClick", function()
+        local spellID = spellIDBox:GetText()
+        if spellID and spellID ~= "Enter spell ID..." then
+            spellID = tonumber(spellID)
+            if spellID then
+                -- Get SpellNotifications module
+                local module = VUI:GetModule("SpellNotifications")
+                if module and module.TestNotification then
+                    -- Close the dropdown
+                    toolsDropdown:Hide()
+                    -- Test notification
+                    module:TestNotification(spellID)
+                    VUI:Print("Testing notification for spell ID: " .. spellID)
+                else
+                    VUI:Print("SpellNotifications module not available")
+                end
+            else
+                VUI:Print("Please enter a valid spell ID")
+            end
+        else
+            VUI:Print("Please enter a spell ID to test")
+        end
+    end)
+    
+    -- Add close button
+    local closeButton = CreateFrame("Button", nil, toolsDropdown, "UIPanelCloseButton")
+    closeButton:SetPoint("TOPRIGHT", toolsDropdown, "TOPRIGHT", -5, -5)
+    closeButton:SetScript("OnClick", function() toolsDropdown:Hide() end)
+    
+    -- Hide by default
+    toolsDropdown:Hide()
+    
+    -- Show dropdown when the tools button is clicked
+    toolsButton:SetScript("OnClick", function()
+        if toolsDropdown:IsShown() then
+            toolsDropdown:Hide()
+        else
+            toolsDropdown:Show()
+        end
+    end)
+    
+    -- Store reference for later updates
+    self.toolsDropdown = toolsDropdown
+    
+    xOffset = xOffset + buttonWidth + spacing
+    
     -- Profile management button with dropdown
     local profileButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
     profileButton:SetSize(buttonWidth, buttonHeight)

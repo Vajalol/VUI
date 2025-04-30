@@ -270,6 +270,14 @@ function VUI:SlashCommand(input)
             else
                 self:Print("Dashboard is not available.")
             end
+        elseif command == "spells" or command == "spell" then
+            -- Handle spell notifications subcommands
+            local spellModule = self:GetModule("SpellNotifications")
+            if spellModule and spellModule.ProcessChatCommand then
+                spellModule:ProcessChatCommand(arg)
+            else
+                self:Print("Spell Notifications module is not available.")
+            end
         elseif command == "profile" or command == "profiles" then
             -- Open profiles section of the config panel
             InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
@@ -286,6 +294,11 @@ function VUI:SlashCommand(input)
             self:Print("  /vui dashboard - Toggles the dashboard")
             self:Print("  /vui config - Opens the configuration panel")
             self:Print("  /vui profile - Opens the profile management panel")
+            self:Print("  /vui spells - Opens the spell management UI")
+            self:Print("  /vui spells list - Lists your custom spells")
+            self:Print("  /vui spells add [spellID] [type] [priority] - Add a custom spell")
+            self:Print("  /vui spells remove [spellID] - Remove a custom spell")
+            self:Print("  /vui spells test [spellID] [type] - Test a spell notification")
             self:Print("  /vui enable <module> - Enables a module")
             self:Print("  /vui disable <module> - Disables a module")
             self:Print("  /vui toggle <module> - Toggles a module")
