@@ -64,10 +64,10 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 - [x] Create better chest timer notifications
 
 ### PGFinder Module
-- [ ] Finalize theme integration for all finder panels
-- [ ] Implement advanced filtering options
-- [ ] Add group rating visualization
-- [ ] Create integrated role requirement display
+- [x] Finalize theme integration for all finder panels
+- [x] Implement advanced filtering options
+- [x] Add group rating visualization
+- [x] Create integrated role requirement display
 
 ### BuffOverlay Module
 - [ ] Implement theme-specific buff frame styling
@@ -155,6 +155,7 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 - [x] Complete SpellNotifications module with custom spell list
 - [x] Finalize MSBT integration with all themes
 - [x] Implement basic Dashboard improvements
+- [x] Complete PGFinder module with advanced features
 - [ ] Add comprehensive error handling
 
 ### Version 0.4.0

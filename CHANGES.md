@@ -13,6 +13,15 @@
 - Implemented comprehensive configuration options for all AngryKeystones features
 - Added integration with VUI notification system for M+ timer events
 - Enhanced theme integration for all AngryKeystones UI components
+- Expanded PremadeGroupFinder module with advanced features:
+  - Implemented AdvancedFiltering with enhanced group filtering capabilities
+  - Created RatingVisualization system with theme-specific icons and color-coding
+  - Added RoleDisplay enhancement with improved role requirement display
+  - Implemented detailed score tooltips with success chance prediction
+  - Created theme-specific role icons for all four themes 
+  - Added comprehensive configuration options for all new PGF features
+  - Improved usability with advanced group filtering and advertisement detection
+  - Enhanced integration with Raider.IO for more accurate player scoring (when available)
 
 ## Version 0.2.0 (2025-04-29)
 - Major update to the configuration system

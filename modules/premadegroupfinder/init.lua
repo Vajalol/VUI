@@ -108,6 +108,34 @@ local defaults = {
         showRaiderIO = true,
         showPlayerInfo = true,
         markFavorites = true,
+        enhancedFiltering = true,
+        showScores = true,
+        enhancedRoleDisplay = true,
+        showPredictedSuccess = true,
+    },
+    ratingVisualization = {
+        enabled = true,
+        showScoreTooltips = true,
+        thresholds = {
+            exceptional = 2000,
+            high = 1500,
+            medium = 1000,
+            low = 500,
+        },
+        colors = {
+            exceptional = { r = 1.0, g = 0.5, b = 0.0 }, -- Orange
+            high = { r = 0.0, g = 1.0, b = 0.0 },        -- Green
+            medium = { r = 0.0, g = 0.7, b = 1.0 },      -- Blue
+            low = { r = 0.7, g = 0.7, b = 0.7 },         -- Gray
+        },
+    },
+    roleRequirements = {
+        enabled = true,
+        iconSize = 16,
+        iconsStyle = "theme",
+        colorIndicators = true,
+        showMissingRoles = true,
+        emphasisMyRole = true,
     },
     position = {"CENTER", 0, 0},
     scale = 1.0,
@@ -497,6 +525,36 @@ function PGF:Initialize()
     
     -- Create our filter data
     self:InitializeFilters()
+    
+    -- Initialize advanced features
+    self:InitializeAdvancedFeatures()
+end
+
+-- Initialize advanced PGF features
+function PGF:InitializeAdvancedFeatures()
+    -- Initialize AdvancedFiltering module
+    if self.settings.advanced.enhancedFiltering then
+        if self.AdvancedFiltering and self.AdvancedFiltering.Initialize then
+            self.AdvancedFiltering:Initialize()
+            VUI:Print("PGF Advanced Filtering enabled")
+        end
+    end
+    
+    -- Initialize RatingVisualization module
+    if self.settings.ratingVisualization and self.settings.ratingVisualization.enabled then
+        if self.RatingVisualization and self.RatingVisualization.Initialize then
+            self.RatingVisualization:Initialize()
+            VUI:Print("PGF Rating Visualization enabled")
+        end
+    end
+    
+    -- Initialize RoleDisplay module
+    if self.settings.roleRequirements and self.settings.roleRequirements.enabled then
+        if self.RoleDisplay and self.RoleDisplay.Initialize then
+            self.RoleDisplay:Initialize()
+            VUI:Print("PGF Enhanced Role Display enabled")
+        end
+    end
 end
 
 -- Enable module
