@@ -759,9 +759,14 @@ function Dashboard:CreateQuickButtons()
     moduleButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
     moduleButton:SetText("Modules")
     moduleButton:SetScript("OnClick", function()
-        if VUI.ModuleDashboard then
-            self:Hide() -- Hide this dashboard
-            VUI.ModuleDashboard:Toggle() -- Show module dashboard
+        -- Show module list using our simpler module helper
+        if VUI.ModuleHelper then
+            local modules = VUI.ModuleHelper:GetAllModules()
+            VUI:Print("Available modules:")
+            for _, module in ipairs(modules) do
+                local status = module.enabled and "|cFF00FF00Enabled|r" or "|cFFFF0000Disabled|r"
+                VUI:Print("  - " .. module.name .. ": " .. status)
+            end
         end
     end)
     
@@ -773,39 +778,67 @@ function Dashboard:CreateQuickButtons()
     toggleAllButton:SetPoint("LEFT", quickButtons, "LEFT", xOffset, 0)
     toggleAllButton:SetText("Toggle All")
     toggleAllButton:SetScript("OnClick", function()
-        -- Count enabled modules
-        local enabledCount = 0
-        local totalCount = 0
-        
-        for name, module in pairs(VUI) do
-            if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
-                totalCount = totalCount + 1
-                local moduleName = name:lower()
-                if VUI.db.profile.modules[moduleName] and VUI.db.profile.modules[moduleName].enabled then
+        -- Use ModuleHelper to toggle all modules
+        if VUI.ModuleHelper then
+            -- Get all modules
+            local modules = VUI.ModuleHelper:GetAllModules()
+            
+            -- Count enabled modules
+            local enabledCount = 0
+            local totalCount = #modules
+            
+            for _, module in ipairs(modules) do
+                if module.enabled then
                     enabledCount = enabledCount + 1
                 end
             end
-        end
-        
-        -- If more than half are enabled, disable all. Otherwise, enable all.
-        local enableAll = (enabledCount <= totalCount / 2)
-        
-        for name, module in pairs(VUI) do
-            if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
-                local moduleName = name:lower()
-                
+            
+            -- If more than half are enabled, disable all. Otherwise, enable all.
+            local enableAll = (enabledCount <= totalCount / 2)
+            
+            -- Toggle all modules
+            for _, moduleInfo in ipairs(modules) do
                 if enableAll then
-                    -- Enable module
-                    if not VUI.db.profile.modules[moduleName] then
-                        VUI.db.profile.modules[moduleName] = {}
-                    end
-                    VUI.db.profile.modules[moduleName].enabled = true
-                    if module.Enable then module:Enable() end
+                    VUI.ModuleHelper:EnableModule(moduleInfo.name)
                 else
-                    -- Disable module
-                    if VUI.db.profile.modules[moduleName] then
-                        VUI.db.profile.modules[moduleName].enabled = false
-                        if module.Disable then module:Disable() end
+                    VUI.ModuleHelper:DisableModule(moduleInfo.name)
+                end
+            end
+        else
+            -- Fallback to original method
+            local enabledCount = 0
+            local totalCount = 0
+            
+            for name, module in pairs(VUI) do
+                if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
+                    totalCount = totalCount + 1
+                    local moduleName = name:lower()
+                    if VUI.db.profile.modules[moduleName] and VUI.db.profile.modules[moduleName].enabled then
+                        enabledCount = enabledCount + 1
+                    end
+                end
+            end
+            
+            -- If more than half are enabled, disable all. Otherwise, enable all.
+            local enableAll = (enabledCount <= totalCount / 2)
+            
+            for name, module in pairs(VUI) do
+                if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
+                    local moduleName = name:lower()
+                    
+                    if enableAll then
+                        -- Enable module
+                        if not VUI.db.profile.modules[moduleName] then
+                            VUI.db.profile.modules[moduleName] = {}
+                        end
+                        VUI.db.profile.modules[moduleName].enabled = true
+                        if module.Enable then module:Enable() end
+                    else
+                        -- Disable module
+                        if VUI.db.profile.modules[moduleName] then
+                            VUI.db.profile.modules[moduleName].enabled = false
+                            if module.Disable then module:Disable() end
+                        end
                     end
                 end
             end
@@ -969,14 +1002,23 @@ function Dashboard:CreateQuickButtons()
     enableAllBtn:SetPoint("BOTTOMLEFT", moduleDropdown, "BOTTOMLEFT", 20, 15)
     enableAllBtn:SetText("Enable All")
     enableAllBtn:SetScript("OnClick", function()
-        for name, module in pairs(VUI) do
-            if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
-                local moduleName = name:lower()
-                if not VUI.db.profile.modules[moduleName] then
-                    VUI.db.profile.modules[moduleName] = {}
+        -- Use ModuleHelper if available
+        if VUI.ModuleHelper then
+            local modules = VUI.ModuleHelper:GetAllModules()
+            for _, moduleInfo in ipairs(modules) do
+                VUI.ModuleHelper:EnableModule(moduleInfo.name)
+            end
+        else
+            -- Fallback to original code
+            for name, module in pairs(VUI) do
+                if type(module) == "table" and module.Initialize and name ~= "Dashboard" and type(name) == "string" then
+                    local moduleName = name:lower()
+                    if not VUI.db.profile.modules[moduleName] then
+                        VUI.db.profile.modules[moduleName] = {}
+                    end
+                    VUI.db.profile.modules[moduleName].enabled = true
+                    if module.Enable then module:Enable() end
                 end
-                VUI.db.profile.modules[moduleName].enabled = true
-                if module.Enable then module:Enable() end
             end
         end
         -- Update UI
