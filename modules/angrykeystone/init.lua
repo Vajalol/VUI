@@ -17,7 +17,8 @@ VUI.angrykeystone.defaults = {
     announceProgress = false,
     showForces = true,
     showPercentage = true,
-    customStyle = "thunderstorm"
+    useVUITheme = true, -- Use VUI theme by default
+    customStyle = "thunderstorm" -- Fallback if not using VUI theme
 }
 
 -- Get configuration options for main UI integration
@@ -89,6 +90,41 @@ function VUI.angrykeystone:GetConfig()
                     self:RefreshSettings()
                 end,
                 order = 5
+            },
+            useVUITheme = {
+                type = "toggle",
+                name = "Use VUI Theme",
+                desc = "Apply the current VUI theme to AngryKeystones interface",
+                get = function() return VUI.db.profile.modules.angrykeystone.useVUITheme end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.angrykeystone.useVUITheme = value
+                    
+                    -- Apply theme changes immediately if possible
+                    if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+                        self.ThemeIntegration:ApplyTheme()
+                    end
+                    
+                    self:RefreshSettings()
+                end,
+                order = 6
+            },
+            customStyle = {
+                type = "select",
+                name = "Custom Style",
+                desc = "Choose a custom style if not using VUI theme",
+                disabled = function() return VUI.db.profile.modules.angrykeystone.useVUITheme end,
+                values = {
+                    ["thunderstorm"] = "Thunder Storm",
+                    ["phoenixflame"] = "Phoenix Flame",
+                    ["arcanemystic"] = "Arcane Mystic",
+                    ["felenergy"] = "Fel Energy"
+                },
+                get = function() return VUI.db.profile.modules.angrykeystone.customStyle end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.angrykeystone.customStyle = value
+                    self:RefreshSettings()
+                end,
+                order = 7
             }
         }
     }
@@ -103,13 +139,39 @@ VUI.ModuleAPI:RegisterModuleConfig("angrykeystone", VUI.angrykeystone:GetConfig(
 function VUI.angrykeystone:Initialize()
     -- Initialize module components
     self:SetupHooks()
-
+    
+    -- Set default theme options if not set
+    if VUI.db.profile.modules.angrykeystone.useVUITheme == nil then
+        VUI.db.profile.modules.angrykeystone.useVUITheme = true
+    end
+    
+    -- Load theme integration module
+    self:LoadThemeIntegration()
+    
     -- Print initialization message
     VUI:Print("AngryKeystones module initialized")
     
     -- Enable if set in profile
     if VUI.db.profile.modules.angrykeystone.enabled then
         self:Enable()
+    end
+end
+
+-- Load the theme integration module
+function VUI.angrykeystone:LoadThemeIntegration()
+    -- Try to load the module directly
+    local status, error = pcall(function()
+        -- Load the ThemeIntegration file
+        if VUI.angrykeystone.ThemeIntegration then
+            -- Initialize theme integration
+            VUI.angrykeystone.ThemeIntegration:Initialize()
+            return true
+        end
+        return false
+    end)
+    
+    if not status then
+        VUI:Debug("Failed to load AngryKeystones theme integration: " .. tostring(error))
     end
 end
 
@@ -141,10 +203,40 @@ end
 -- Apply hooks
 function VUI.angrykeystone:ApplyHooks()
     if not self.enabled then return end
+    
     -- Apply the hooks defined in SetupHooks
+    
+    -- Apply theme integration if enabled
+    if VUI.db.profile.modules.angrykeystone.useVUITheme and self.ThemeIntegration then
+        self.ThemeIntegration:ApplyTheme()
+        
+        -- Register for theme change events if not already registered
+        if not self.themeChangeRegistered then
+            VUI:RegisterCallback("ThemeChanged", function()
+                if self.enabled and VUI.db.profile.modules.angrykeystone.useVUITheme then
+                    self.ThemeIntegration:ApplyTheme()
+                end
+            end)
+            self.themeChangeRegistered = true
+        end
+    end
 end
 
 -- Remove hooks
 function VUI.angrykeystone:RemoveHooks()
     -- Remove any applied hooks
+    
+    -- We keep theme change registration, but it will be ignored if module is disabled
+end
+
+-- Refresh settings based on configuration changes
+function VUI.angrykeystone:RefreshSettings()
+    if not self.enabled then return end
+    
+    -- Apply theme changes if needed
+    if VUI.db.profile.modules.angrykeystone.useVUITheme and self.ThemeIntegration then
+        self.ThemeIntegration:ApplyTheme()
+    end
+    
+    -- Additional setting refreshes would go here
 end

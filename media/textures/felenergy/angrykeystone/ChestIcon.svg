@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy Theme Chest Icon -->
+  <defs>
+    <linearGradient id="fel" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#99FF66;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <radialGradient id="corruption" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#99FF66;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1AFF1A;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Chest Base -->
+  <rect x="12" y="24" width="40" height="30" rx="2" fill="#0A1A0A" />
+  
+  <!-- Chest Top -->
+  <path d="M10,24 L54,24 L50,14 L14,14 Z" fill="#1A2A1A" />
+  
+  <!-- Chest Front Panel -->
+  <rect x="16" y="28" width="32" height="22" rx="1" fill="#2A3A2A" />
+  
+  <!-- Lock -->
+  <rect x="28" y="22" width="8" height="10" rx="2" fill="#3A4A3A" />
+  <circle cx="32" cy="36" r="4" fill="url(#fel)" filter="url(#glow)" />
+  
+  <!-- Chest Trim -->
+  <rect x="12" y="24" width="40" height="3" fill="url(#fel)" />
+  <rect x="16" y="28" width="32" height="2" fill="url(#fel)" />
+  <rect x="16" y="48" width="32" height="2" fill="url(#fel)" />
+  
+  <!-- Fel Effects -->
+  <circle cx="32" cy="36" r="14" fill="url(#corruption)" opacity="0.3" filter="url(#glow)" />
+  
+  <!-- Corruption Tendrils -->
+  <path d="M24,30 C22,28 20,32 22,34 C24,36 22,38 20,36" stroke="url(#fel)" stroke-width="1" fill="none" filter="url(#glow)" />
+  <path d="M40,30 C42,28 44,32 42,34 C40,36 42,38 44,36" stroke="url(#fel)" stroke-width="1" fill="none" filter="url(#glow)" />
+  <path d="M28,44 C26,46 28,48 30,46 C32,44 34,46 32,48" stroke="url(#fel)" stroke-width="1" fill="none" filter="url(#glow)" />
+  <path d="M36,44 C38,46 36,48 34,46 C32,44 30,46 32,48" stroke="url(#fel)" stroke-width="1" fill="none" filter="url(#glow)" />
+  
+  <!-- Fel Skull -->
+  <path d="M30,36 C30,34 34,34 34,36 C34,38 33,40 32,41 C31,40 30,38 30,36 Z" fill="url(#fel)" opacity="0.5" filter="url(#glow)" />
+  <circle cx="31" cy="35" r="0.8" fill="#0A1A0A" />
+  <circle cx="33" cy="35" r="0.8" fill="#0A1A0A" />
+</svg>

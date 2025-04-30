@@ -21,6 +21,13 @@
 - Added high-quality SVG media for Auctionator UI elements
 - Implemented dynamic theme color application to all Auctionator UI elements (buttons, frames, listings)
 - Added theme toggle options in Auctionator settings
+- Implemented AngryKeystones module with comprehensive theme integration
+- Created theme-specific ChestIcon.svg, ProgressBar.svg, and TimerBar.svg assets for all themes
+- Added theme-specific completion sounds for Mythic+ dungeons
+- Implemented dynamic coloring of timer bars based on remaining time percentage
+- Added configurable options for enemy forces display, timer format, and death counter
+- Created comprehensive configuration interface with tabbed categories for display, appearance, timer, and sound options
+- Added theme toggle to apply VUI theme or use custom style settings
 - Added new DetailsSkin module for Details! meter integration
 - Created theme-specific textures for Details! integration
 - Added theme color matching for all Details! windows

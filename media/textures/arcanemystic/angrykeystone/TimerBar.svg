@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="32" viewBox="0 0 256 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Arcane Mystic Theme Timer Bar -->
+  <defs>
+    <linearGradient id="timerGood" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" style="stop-color:#26FF80;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#80FF80;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#26FF80;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="timerWarning" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" style="stop-color:#FFA31A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA31A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="timerDanger" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" style="stop-color:#E64D0D;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FF6347;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E64D0D;stop-opacity:1" />
+    </linearGradient>
+    <filter id="timerGlow" x="-10%" y="-30%" width="120%" height="160%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Base Bar - Good Timer -->
+  <rect x="0" y="0" width="256" height="32" rx="4" fill="#1A0A2F" />
+  <rect x="2" y="2" width="252" height="28" rx="3" fill="url(#timerGood)" filter="url(#timerGlow)" />
+  
+  <!-- Time Marker Lines -->
+  <rect x="64" y="0" width="2" height="32" fill="#1A0A2F" fill-opacity="0.6" />
+  <rect x="128" y="0" width="2" height="32" fill="#1A0A2F" fill-opacity="0.6" />
+  <rect x="192" y="0" width="2" height="32" fill="#1A0A2F" fill-opacity="0.6" />
+  
+  <!-- Arcane Rune Effects -->
+  <!-- Runes at markers -->
+  <circle cx="64" cy="16" r="10" fill="#CC99FF" fill-opacity="0.1" />
+  <circle cx="64" cy="16" r="8" fill="none" stroke="#CC99FF" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="2,2" />
+  
+  <circle cx="128" cy="16" r="10" fill="#CC99FF" fill-opacity="0.1" />
+  <circle cx="128" cy="16" r="8" fill="none" stroke="#CC99FF" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="2,2" />
+  
+  <circle cx="192" cy="16" r="10" fill="#CC99FF" fill-opacity="0.1" />
+  <circle cx="192" cy="16" r="8" fill="none" stroke="#CC99FF" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="2,2" />
+  
+  <!-- Arcane Symbols -->
+  <path d="M30,12 L34,12 L34,20 L30,20 Z" stroke="#CC99FF" stroke-width="1" stroke-opacity="0.6" fill="none" />
+  <path d="M94,12 L98,12 L98,20 L94,20 Z" stroke="#CC99FF" stroke-width="1" stroke-opacity="0.6" fill="none" />
+  <path d="M158,12 L162,12 L162,20 L158,20 Z" stroke="#CC99FF" stroke-width="1" stroke-opacity="0.6" fill="none" />
+  <path d="M222,12 L226,12 L226,20 L222,20 Z" stroke="#CC99FF" stroke-width="1" stroke-opacity="0.6" fill="none" />
+  
+  <!-- Arcane Particles -->
+  <circle cx="48" cy="10" r="1" fill="#CC99FF" fill-opacity="0.8" />
+  <circle cx="52" cy="22" r="1" fill="#CC99FF" fill-opacity="0.8" />
+  <circle cx="112" cy="10" r="1" fill="#CC99FF" fill-opacity="0.8" />
+  <circle cx="116" cy="22" r="1" fill="#CC99FF" fill-opacity="0.8" />
+  <circle cx="176" cy="10" r="1" fill="#CC99FF" fill-opacity="0.8" />
+  <circle cx="180" cy="22" r="1" fill="#CC99FF" fill-opacity="0.8" />
+  <circle cx="240" cy="10" r="1" fill="#CC99FF" fill-opacity="0.8" />
+  <circle cx="244" cy="22" r="1" fill="#CC99FF" fill-opacity="0.8" />
+  
+  <!-- Border -->
+  <rect x="0" y="0" width="256" height="32" rx="4" stroke="#9D0DE6" stroke-width="1" fill="none" />
+</svg>

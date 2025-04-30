@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="32" viewBox="0 0 256 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fel Energy Theme Progress Bar -->
+  <defs>
+    <linearGradient id="felGradient" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" style="stop-color:#1AFF1A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#99FF66;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1AFF1A;stop-opacity:1" />
+    </linearGradient>
+    <filter id="felGlow" x="-10%" y="-30%" width="120%" height="160%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Base Bar -->
+  <rect x="0" y="0" width="256" height="32" rx="4" fill="#0A1A0A" />
+  
+  <!-- Progress Fill -->
+  <rect x="2" y="2" width="252" height="28" rx="3" fill="url(#felGradient)" filter="url(#felGlow)" />
+  
+  <!-- Fel Corruption Effects -->
+  <path d="M16,16 C20,10 24,22 28,16 C32,10 36,22 40,16 C44,10 48,22 52,16 C56,10 60,22 64,16 C68,10 72,22 76,16 C80,10 84,22 88,16 C92,10 96,22 100,16 C104,10 108,22 112,16 C116,10 120,22 124,16 C128,10 132,22 136,16 C140,10 144,22 148,16 C152,10 156,22 160,16 C164,10 168,22 172,16 C176,10 180,22 184,16 C188,10 192,22 196,16 C200,10 204,22 208,16 C212,10 216,22 220,16 C224,10 228,22 232,16 C236,10 240,22 244,16" 
+        stroke="#99FF66" stroke-width="1" stroke-opacity="0.4" fill="none" />
+  
+  <!-- Fel Corruption Spots -->
+  <circle cx="32" cy="10" r="3" fill="#1AFF1A" fill-opacity="0.2" />
+  <circle cx="32" cy="10" r="1.5" fill="#1AFF1A" fill-opacity="0.4" />
+  
+  <circle cx="96" cy="10" r="3" fill="#1AFF1A" fill-opacity="0.2" />
+  <circle cx="96" cy="10" r="1.5" fill="#1AFF1A" fill-opacity="0.4" />
+  
+  <circle cx="160" cy="10" r="3" fill="#1AFF1A" fill-opacity="0.2" />
+  <circle cx="160" cy="10" r="1.5" fill="#1AFF1A" fill-opacity="0.4" />
+  
+  <circle cx="224" cy="10" r="3" fill="#1AFF1A" fill-opacity="0.2" />
+  <circle cx="224" cy="10" r="1.5" fill="#1AFF1A" fill-opacity="0.4" />
+  
+  <circle cx="64" cy="22" r="3" fill="#1AFF1A" fill-opacity="0.2" />
+  <circle cx="64" cy="22" r="1.5" fill="#1AFF1A" fill-opacity="0.4" />
+  
+  <circle cx="128" cy="22" r="3" fill="#1AFF1A" fill-opacity="0.2" />
+  <circle cx="128" cy="22" r="1.5" fill="#1AFF1A" fill-opacity="0.4" />
+  
+  <circle cx="192" cy="22" r="3" fill="#1AFF1A" fill-opacity="0.2" />
+  <circle cx="192" cy="22" r="1.5" fill="#1AFF1A" fill-opacity="0.4" />
+  
+  <!-- Border -->
+  <rect x="0" y="0" width="256" height="32" rx="4" stroke="#1AFF1A" stroke-width="1" fill="none" />
+</svg>

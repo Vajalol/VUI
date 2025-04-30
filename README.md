@@ -80,10 +80,14 @@ VUI (Version 0.2.0) is a comprehensive UI enhancement suite for World of Warcraf
 
 5. **Angry Keystones**
    - Mythic+ dungeon information
-   - Timer optimization
-   - Affix details
-   - Enemy forces counter
-   - Route planning
+   - Timer optimization with theme-colored progress indicators
+   - Detailed affix information and schedule
+   - Enhanced enemy forces counter with percentage and count display
+   - Chest timer with visual countdown and theme integration
+   - Death counter with time penalty tracking
+   - Theme-specific completion sounds for dungeon completion
+   - Comprehensive configuration with display, appearance, timer, and sound options
+   - VUI theme integration with theme-specific textures and effects
 
 6. **OmniCC**
    - Enhanced cooldown count and visualization
@@ -375,6 +379,17 @@ Each theme controls these elements:
 - **Selling Settings**: Default duration, stack size, and pricing strategy
 - **Custom Logos**: Apply theme-specific logo replacements
 - **Advanced UI Customization**: Control every aspect of the Auctionator interface
+
+### AngryKeystones Configuration
+- **Display Options**: Configure objective tracker, enemy forces counter, and keystone info display
+- **Appearance Settings**: Choose between VUI theme integration or custom style
+- **Timer Format**: Select between different timer display formats (MM:SS, MMSS, Full Time)
+- **Progress Display**: Configure how enemy forces progress is shown (percentage, count, or both)
+- **Sound Options**: Enable/disable theme-specific dungeon completion sounds
+- **Theme Integration**: Enjoy theme-colored timer bars that change color based on remaining time
+- **Enemy Forces Display**: Track your progress with theme-matching progress bars
+- **Chest Timers**: Visual countdown with theme-specific chest icons
+- **Schedule Display**: View upcoming affixes with theme-matching borders
 
 ## Performance Optimization Tips
 
