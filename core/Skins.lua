@@ -129,6 +129,11 @@ function VUI.Skins:Initialize()
     VUI.db.RegisterCallback(self, "OnProfileChanged", "UpdateSkins")
     VUI.db.RegisterCallback(self, "OnProfileCopied", "UpdateSkins")
     VUI.db.RegisterCallback(self, "OnProfileReset", "UpdateSkins")
+    
+    -- Register BlizzardFrames skins if available
+    if self.BlizzardFrames and self.BlizzardFrames.RegisterSkins then
+        self.BlizzardFrames:RegisterSkins()
+    end
 end
 
 -- Set up skinning options
@@ -355,15 +360,21 @@ function VUI.Skins:ApplyAllSkins()
     
     VUI:Print("Applying skins to Blizzard UI frames")
     
-    -- Apply skins to individual frame groups based on settings
-    for group, enabled in pairs(VUI.db.profile.skins.frameGroups) do
-        if enabled then
-            self:ApplySkinGroup(group)
+    -- Use the BlizzardFrames module if available
+    if self.BlizzardFrames and self.BlizzardFrames.RegisterSkins then
+        -- BlizzardFrames module will handle frame skinning directly
+        self.BlizzardFrames:RegisterSkins()
+    else
+        -- Apply skins to individual frame groups based on settings
+        for group, enabled in pairs(VUI.db.profile.skins.frameGroups) do
+            if enabled then
+                self:ApplySkinGroup(group)
+            end
         end
+        
+        -- Hook into frame creation for frames created later
+        self:HookFrameCreation()
     end
-    
-    -- Hook into frame creation for frames created later
-    self:HookFrameCreation()
 end
 
 -- Apply skin to a group of frames
