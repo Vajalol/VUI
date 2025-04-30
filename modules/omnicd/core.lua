@@ -12,7 +12,10 @@ function OmniCD:SetupModule()
     -- Initialize the cooldown tracking frame
     self:CreateAnchor()
     self:SetupHooks()
-    self:DefineClassSpells()
+    
+    -- Initialize new systems
+    self:InitializeCooldowns()
+    self:UpdateAllUIWithTheme()
     
     -- Create frames to display cooldowns
     self:CreateCooldownDisplay()

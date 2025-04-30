@@ -17,7 +17,21 @@ VUI.omnicd.defaults = {
     spellFilters = {},
     performance = {
         disableAnimationsInCombat = false
-    }
+    },
+    -- New theme-related settings
+    honorTheme = true,
+    effectBrightness = 1.0,
+    playReadySound = true,
+    
+    -- New cooldown group settings
+    enableGroups = true,
+    showCooldownText = true,
+    showCooldownSpiral = true,
+    showCooldownBars = true,
+    cooldownBarWidth = 80,
+    cooldownTextSize = 12,
+    prioritizeInterrupts = true,
+    highlightImportantCooldowns = true
 }
 
 -- Get configuration options for main UI integration
@@ -41,45 +55,179 @@ function VUI.omnicd:GetConfig()
                 end,
                 order = 1
             },
-            animations = {
-                type = "toggle",
-                name = "Show Animations",
-                desc = "Enable or disable cooldown animations",
-                get = function() return self.db.animations end,
-                set = function(_, value) 
-                    self.db.animations = value
-                    if value then
-                        self:EnableAnimations()
-                    else
-                        self:DisableAnimations()
-                    end
-                end,
-                order = 2
+            generalGroup = {
+                type = "group",
+                name = "General",
+                desc = "General settings",
+                inline = true,
+                order = 2,
+                args = {
+                    animations = {
+                        type = "toggle",
+                        name = "Show Animations",
+                        desc = "Enable or disable cooldown animations",
+                        get = function() return self.db.animations end,
+                        set = function(_, value) 
+                            self.db.animations = value
+                            if value then
+                                self:EnableAnimations()
+                            else
+                                self:DisableAnimations()
+                            end
+                        end,
+                        order = 1
+                    },
+                    iconSize = {
+                        type = "range",
+                        name = "Icon Size",
+                        desc = "Size of cooldown icons",
+                        min = 16,
+                        max = 64,
+                        step = 1,
+                        get = function() return self.db.iconSize end,
+                        set = function(_, value)
+                            self.db.iconSize = value
+                            self:UpdateDisplay()
+                        end,
+                        order = 2
+                    },
+                    showNames = {
+                        type = "toggle",
+                        name = "Show Names",
+                        desc = "Show spell names under icons",
+                        get = function() return self.db.showNames end,
+                        set = function(_, value)
+                            self.db.showNames = value
+                            self:UpdateDisplay()
+                        end,
+                        order = 3
+                    },
+                    maxIcons = {
+                        type = "range",
+                        name = "Maximum Icons",
+                        desc = "Maximum number of cooldown icons to display",
+                        min = 5,
+                        max = 20,
+                        step = 1,
+                        get = function() return self.db.maxIcons end,
+                        set = function(_, value)
+                            self.db.maxIcons = value
+                            self:UpdateDisplay()
+                        end,
+                        order = 4
+                    }
+                }
             },
-            iconSize = {
-                type = "range",
-                name = "Icon Size",
-                desc = "Size of cooldown icons",
-                min = 16,
-                max = 64,
-                step = 1,
-                get = function() return self.db.iconSize end,
-                set = function(_, value)
-                    self.db.iconSize = value
-                    self:UpdateDisplay()
-                end,
-                order = 3
+            themeGroup = {
+                type = "group",
+                name = "Theme Settings",
+                desc = "Theme-specific settings",
+                inline = true,
+                order = 3,
+                args = {
+                    honorTheme = {
+                        type = "toggle",
+                        name = "Honor VUI Theme",
+                        desc = "Apply the current VUI theme to cooldown displays",
+                        get = function() return self.db.honorTheme end,
+                        set = function(_, value)
+                            self.db.honorTheme = value
+                            self:UpdateAllUIWithTheme()
+                        end,
+                        order = 1
+                    },
+                    effectBrightness = {
+                        type = "range",
+                        name = "Effect Brightness",
+                        desc = "Brightness of cooldown effects",
+                        min = 0.1,
+                        max = 2.0,
+                        step = 0.1,
+                        get = function() return self.db.effectBrightness end,
+                        set = function(_, value)
+                            self.db.effectBrightness = value
+                            self:UpdateAllUIWithTheme()
+                        end,
+                        order = 2
+                    },
+                    playReadySound = {
+                        type = "toggle",
+                        name = "Play Ready Sound",
+                        desc = "Play a sound when a cooldown is ready",
+                        get = function() return self.db.playReadySound end,
+                        set = function(_, value)
+                            self.db.playReadySound = value
+                        end,
+                        order = 3
+                    }
+                }
             },
-            showNames = {
-                type = "toggle",
-                name = "Show Names",
-                desc = "Show spell names under icons",
-                get = function() return self.db.showNames end,
-                set = function(_, value)
-                    self.db.showNames = value
-                    self:UpdateDisplay()
-                end,
-                order = 4
+            cooldownGroup = {
+                type = "group",
+                name = "Cooldown Groups",
+                desc = "Cooldown grouping settings",
+                inline = true,
+                order = 4,
+                args = {
+                    enableGroups = {
+                        type = "toggle",
+                        name = "Enable Groups",
+                        desc = "Organize cooldowns into priority groups",
+                        get = function() return self.db.enableGroups end,
+                        set = function(_, value)
+                            self.db.enableGroups = value
+                            self:UpdateCooldownIconsByGroups()
+                        end,
+                        order = 1
+                    },
+                    showCooldownText = {
+                        type = "toggle",
+                        name = "Show Cooldown Text",
+                        desc = "Show countdown text on cooldowns",
+                        get = function() return self.db.showCooldownText end,
+                        set = function(_, value)
+                            self.db.showCooldownText = value
+                            self:UpdateDisplay()
+                        end,
+                        order = 2
+                    },
+                    showCooldownBars = {
+                        type = "toggle",
+                        name = "Show Cooldown Bars",
+                        desc = "Show progress bars for cooldowns",
+                        get = function() return self.db.showCooldownBars end,
+                        set = function(_, value)
+                            self.db.showCooldownBars = value
+                            self:UpdateDisplay()
+                        end,
+                        order = 3
+                    },
+                    cooldownBarWidth = {
+                        type = "range",
+                        name = "Bar Width",
+                        desc = "Width of cooldown progress bars",
+                        min = 40,
+                        max = 150,
+                        step = 5,
+                        get = function() return self.db.cooldownBarWidth end,
+                        set = function(_, value)
+                            self.db.cooldownBarWidth = value
+                            self:UpdateDisplay()
+                        end,
+                        order = 4
+                    },
+                    prioritizeInterrupts = {
+                        type = "toggle",
+                        name = "Prioritize Interrupts",
+                        desc = "Give higher priority to interrupt cooldowns",
+                        get = function() return self.db.prioritizeInterrupts end,
+                        set = function(_, value)
+                            self.db.prioritizeInterrupts = value
+                            self:UpdateCooldownIconsByGroups()
+                        end,
+                        order = 5
+                    }
+                }
             },
             configButton = {
                 type = "execute",

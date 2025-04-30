@@ -70,16 +70,16 @@ This roadmap outlines the comprehensive development plan for the VUI addon suite
 - [x] Create integrated role requirement display
 
 ### BuffOverlay Module
-- [ ] Implement theme-specific buff frame styling
-- [ ] Add custom buff/debuff categorization
-- [ ] Create priority-based sorting system
-- [ ] Implement enhanced timer displays
+- [x] Implement theme-specific buff frame styling
+- [x] Add custom buff/debuff categorization
+- [x] Create priority-based sorting system
+- [x] Implement enhanced timer displays
 
 ### OmniCC/OmniCD Integration
-- [ ] Complete theme styling for cooldown displays
-- [ ] Implement enhanced cooldown group management
-- [ ] Add theme-specific cooldown animations
-- [ ] Create priority-based cooldown highlighting
+- [x] Complete theme styling for cooldown displays
+- [x] Implement enhanced cooldown group management
+- [x] Add theme-specific cooldown animations
+- [x] Create priority-based cooldown highlighting
 
 ### DetailsSkin Module
 - [ ] Finalize theme integration across all Detail panels

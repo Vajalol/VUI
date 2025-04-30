@@ -1,6 +1,23 @@
 # VUI Changelog
 
 ## Version 0.3.0 (2025-04-30)
+- Enhanced OmniCC/OmniCD modules with comprehensive theme integration:
+  - Implemented theme-specific cooldown text styling with color transitions
+  - Created priority-based cooldown group management system
+  - Added advanced animation effects with theme-specific visuals
+  - Implemented customizable cooldown displays with group-based configuration
+  - Created comprehensive theme-based finish animations (pulse, shine, flare, sparkle)
+  - Added sound effects for cooldown completion with theme-specific audio
+  - Implemented intelligent cooldown organization by spell type and priority
+  - Created tabbed configuration interface with advanced theming options
+  - Added cooldown activation/completion animation system
+- Added cooldown group classification system:
+  - Created predefined groups for Interrupts, Defensive, Offensive, and Utility cooldowns
+  - Implemented priority-based cooldown display with configurable ordering
+  - Added class-specific cooldown tracking with comprehensive spell database
+  - Created theme-specific status bars for cooldown progress visualization
+  - Added customizable position and grow direction for cooldown groups
+  - Implemented comprehensive configuration with group-specific settings
 - Enhanced AngryKeystones module with specialized features:
   - Added ChestTimerNotifications system with theme-specific sounds and visual alerts
   - Implemented ProgressTracker with refined percentage calculations and detailed tooltips
@@ -22,6 +39,11 @@
   - Added comprehensive configuration options for all new PGF features
   - Improved usability with advanced group filtering and advertisement detection
   - Enhanced integration with Raider.IO for more accurate player scoring (when available)
+- Enhanced BuffOverlay module with comprehensive theme integration:
+  - Implemented theme-specific buff frame styling across all four themes
+  - Added custom buff/debuff categorization system with priority levels
+  - Created priority-based sorting system for important buffs/debuffs
+  - Implemented enhanced timer displays with theme-specific visuals
 
 ## Version 0.2.0 (2025-04-29)
 - Major update to the configuration system

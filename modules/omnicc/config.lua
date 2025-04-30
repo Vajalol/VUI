@@ -21,7 +21,9 @@ function OmniCC:CreateConfigPanel()
         {text = "General", value = "general"},
         {text = "Text", value = "text"},
         {text = "Rules", value = "rules"},
-        {text = "Finish Effects", value = "effects"}
+        {text = "Finish Effects", value = "effects"},
+        {text = "Themes", value = "themes"},
+        {text = "Groups", value = "groups"}
     })
     tabs:SetCallback("OnGroupSelected", function(container, event, group)
         container:ReleaseChildren()
@@ -33,6 +35,10 @@ function OmniCC:CreateConfigPanel()
             self:CreateRulesTab(container)
         elseif group == "effects" then
             self:CreateEffectsTab(container)
+        elseif group == "themes" then
+            self:CreateThemesTab(container)
+        elseif group == "groups" then
+            self:CreateGroupsTab(container)
         end
     end)
     tabs:SelectTab("general")
@@ -552,4 +558,276 @@ function OmniCC:GetOptions()
             }
         }
     }
+end
+
+-- Create the Themes tab
+function OmniCC:CreateThemesTab(container)
+    -- Theme description
+    local descLabel = AceGUI:Create("Label")
+    descLabel:SetText("Theme settings control the appearance of cooldown text and effects based on the active VUI theme.")
+    descLabel:SetFullWidth(true)
+    container:AddChild(descLabel)
+    
+    -- Current theme display
+    local currentTheme = VUI.db.profile.theme or "thunderstorm"
+    local themeLabel = AceGUI:Create("Label")
+    themeLabel:SetText("Current Theme: " .. currentTheme:gsub("^%l", string.upper))
+    themeLabel:SetFontObject(GameFontHighlight)
+    themeLabel:SetFullWidth(true)
+    container:AddChild(themeLabel)
+    
+    -- Note: Theme selection is managed through the VUI Dashboard
+    local noteLabel = AceGUI:Create("Label")
+    noteLabel:SetText("Note: Theme selection is managed through the VUI Dashboard.")
+    noteLabel:SetFullWidth(true)
+    container:AddChild(noteLabel)
+    
+    -- Preview Header
+    local previewHeader = AceGUI:Create("Heading")
+    previewHeader:SetText("Theme Preview")
+    previewHeader:SetFullWidth(true)
+    container:AddChild(previewHeader)
+    
+    -- Theme preview group
+    local previewGroup = AceGUI:Create("InlineGroup")
+    previewGroup:SetLayout("Flow")
+    previewGroup:SetFullWidth(true)
+    previewGroup:SetHeight(150)
+    container:AddChild(previewGroup)
+    
+    -- Create preview frames for each duration type
+    local durationTypes = {
+        {name = "Days", time = 172800, text = "2d"},
+        {name = "Hours", time = 7200, text = "2h"},
+        {name = "Minutes", time = 300, text = "5m"},
+        {name = "Seconds", time = 45, text = "45s"},
+        {name = "Low Time", time = 3, text = "3.0"}
+    }
+    
+    for i, durationType in ipairs(durationTypes) do
+        local preview = AceGUI:Create("SimpleGroup")
+        preview:SetWidth(80)
+        preview:SetHeight(100)
+        preview:SetLayout("Flow")
+        
+        local label = AceGUI:Create("Label")
+        label:SetText(durationType.name)
+        label:SetWidth(80)
+        preview:AddChild(label)
+        
+        local frame = AceGUI:Create("Frame")
+        frame:SetWidth(50)
+        frame:SetHeight(50)
+        frame.frame:SetBackdrop({
+            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true, tileSize = 16, edgeSize = 16,
+            insets = { left = 4, right = 4, top = 4, bottom = 4 }
+        })
+        frame.frame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
+        
+        -- Create text display
+        local textDisplay = frame.frame:CreateFontString(nil, "OVERLAY")
+        textDisplay:SetPoint("CENTER", frame.frame, "CENTER", 0, 0)
+        
+        -- Apply theme colors for this duration type
+        local theme = self:GetCurrentTheme()
+        if theme and theme.colors then
+            local colorKey
+            if durationType.time >= 86400 then
+                colorKey = "days"
+            elseif durationType.time >= 3600 then
+                colorKey = "hours"
+            elseif durationType.time >= 60 then
+                colorKey = "minutes"
+            elseif durationType.time >= 10 then
+                colorKey = "seconds"
+            else
+                colorKey = "milliseconds"
+            end
+            
+            local color = theme.colors[colorKey]
+            if color then
+                textDisplay:SetTextColor(color.r, color.g, color.b, color.a or 1.0)
+            end
+        end
+        
+        -- Set font and text
+        local fontPath = theme and theme.fonts and theme.fonts.regular or DEFAULT_FONT_FACE
+        textDisplay:SetFont(fontPath, 16, "OUTLINE")
+        textDisplay:SetText(durationType.text)
+        
+        preview:AddChild(frame)
+        previewGroup:AddChild(preview)
+    end
+    
+    -- Advanced theme options group
+    local advancedGroup = AceGUI:Create("InlineGroup")
+    advancedGroup:SetTitle("Advanced Theme Options")
+    advancedGroup:SetLayout("Flow")
+    advancedGroup:SetFullWidth(true)
+    container:AddChild(advancedGroup)
+    
+    -- Theme honor checkbox
+    local honorThemeCheckbox = AceGUI:Create("CheckBox")
+    honorThemeCheckbox:SetLabel("Honor VUI Theme Settings")
+    honorThemeCheckbox:SetWidth(200)
+    honorThemeCheckbox:SetValue(VUI.db.profile.modules.omnicc.honorTheme or true)
+    honorThemeCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.omnicc.honorTheme = value
+        
+        -- Refresh all cooldowns
+        self:RefreshSettings()
+    end)
+    advancedGroup:AddChild(honorThemeCheckbox)
+    
+    -- Effect brightness slider
+    local brightnessSlider = AceGUI:Create("Slider")
+    brightnessSlider:SetLabel("Effect Brightness")
+    brightnessSlider:SetWidth(300)
+    brightnessSlider:SetSliderValues(0.1, 2.0, 0.1)
+    brightnessSlider:SetValue(VUI.db.profile.modules.omnicc.effectBrightness or 1.0)
+    brightnessSlider:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.omnicc.effectBrightness = value
+    end)
+    advancedGroup:AddChild(brightnessSlider)
+    
+    -- Theme animation preview button
+    local previewButton = AceGUI:Create("Button")
+    previewButton:SetText("Preview Finish Effect")
+    previewButton:SetWidth(150)
+    previewButton:SetCallback("OnClick", function()
+        -- Create a temporary frame for the preview
+        local previewFrame = CreateFrame("Frame", nil, UIParent)
+        previewFrame:SetSize(64, 64)
+        previewFrame:SetPoint("CENTER", 0, 0)
+        
+        -- Show the finish effect
+        self:PlayFinishAnimation(previewFrame)
+        
+        -- Clean up after 2 seconds
+        C_Timer.After(2, function()
+            previewFrame:Hide()
+            previewFrame = nil
+        end)
+    end)
+    advancedGroup:AddChild(previewButton)
+end
+
+-- Create the Groups tab
+function OmniCC:CreateGroupsTab(container)
+    -- Groups description
+    local descLabel = AceGUI:Create("Label")
+    descLabel:SetText("Cooldown groups allow you to create priority-based styling for different types of abilities.")
+    descLabel:SetFullWidth(true)
+    container:AddChild(descLabel)
+    
+    -- Groups configuration container
+    local groupsContainer = AceGUI:Create("SimpleGroup")
+    groupsContainer:SetLayout("Flow")
+    groupsContainer:SetFullWidth(true)
+    container:AddChild(groupsContainer)
+    
+    -- Get all groups sorted by priority
+    local groups = self:GetAllGroups()
+    
+    -- Display each group in the list
+    for i, group in ipairs(groups) do
+        local groupFrame = AceGUI:Create("InlineGroup")
+        groupFrame:SetTitle(group.name)
+        groupFrame:SetLayout("Flow")
+        groupFrame:SetFullWidth(true)
+        
+        -- Left column for settings
+        local leftCol = AceGUI:Create("SimpleGroup")
+        leftCol:SetLayout("Flow")
+        leftCol:SetWidth(250)
+        
+        -- Priority slider
+        local prioritySlider = AceGUI:Create("Slider")
+        prioritySlider:SetLabel("Priority")
+        prioritySlider:SetWidth(230)
+        prioritySlider:SetSliderValues(1, 100, 1)
+        prioritySlider:SetValue(group.priority or 50)
+        prioritySlider:SetCallback("OnValueChanged", function(widget, event, value)
+            group.priority = value
+            
+            -- Update groups when priority changes
+            self:UpdateGroupPriorities()
+        end)
+        leftCol:AddChild(prioritySlider)
+        
+        -- Scale slider
+        local scaleSlider = AceGUI:Create("Slider")
+        scaleSlider:SetLabel("Text Scale")
+        scaleSlider:SetWidth(230)
+        scaleSlider:SetSliderValues(0.5, 2.0, 0.1)
+        scaleSlider:SetValue(group.scale or 1.0)
+        scaleSlider:SetCallback("OnValueChanged", function(widget, event, value)
+            group.scale = value
+            
+            -- Refresh settings when scale changes
+            self:RefreshSettings()
+        end)
+        leftCol:AddChild(scaleSlider)
+        
+        groupFrame:AddChild(leftCol)
+        
+        -- Right column for color and rules
+        local rightCol = AceGUI:Create("SimpleGroup")
+        rightCol:SetLayout("Flow")
+        rightCol:SetWidth(250)
+        
+        -- Text color picker
+        local colorPicker = AceGUI:Create("ColorPicker")
+        colorPicker:SetLabel("Text Color")
+        colorPicker:SetWidth(230)
+        
+        -- Set initial color from group
+        if group.textColor then
+            colorPicker:SetColor(
+                group.textColor.r or 1,
+                group.textColor.g or 1,
+                group.textColor.b or 1,
+                group.textColor.a or 1
+            )
+        else
+            colorPicker:SetColor(1, 1, 1, 1)
+        end
+        
+        colorPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a)
+            group.textColor = {r = r, g = g, b = b, a = a}
+            
+            -- Refresh settings when color changes
+            self:RefreshSettings()
+        end)
+        rightCol:AddChild(colorPicker)
+        
+        -- Edit rules button
+        local editRulesButton = AceGUI:Create("Button")
+        editRulesButton:SetText("Edit Rules")
+        editRulesButton:SetWidth(230)
+        editRulesButton:SetCallback("OnClick", function()
+            -- Here we would open a dialog to edit the group rules
+            -- For now, we'll just print a message
+            VUI:Print("Group rules editing not yet implemented")
+        end)
+        rightCol:AddChild(editRulesButton)
+        
+        groupFrame:AddChild(rightCol)
+        
+        -- Add the group frame to the container
+        groupsContainer:AddChild(groupFrame)
+    end
+    
+    -- Add new group button
+    local addGroupButton = AceGUI:Create("Button")
+    addGroupButton:SetText("Add New Group")
+    addGroupButton:SetWidth(150)
+    addGroupButton:SetCallback("OnClick", function()
+        -- Here we would open a dialog to create a new group
+        -- For now, we'll just print a message
+        VUI:Print("Group creation not yet implemented")
+    end)
+    container:AddChild(addGroupButton)
 end

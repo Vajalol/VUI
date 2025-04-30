@@ -18,6 +18,9 @@ function OmniCC:SetupModule()
     
     -- Create main update frame
     self:CreateUpdateFrame()
+    
+    -- Initialize animations
+    self:InitializeAnimations()
 end
 
 -- Create update frame to handle cooldown timers
@@ -46,6 +49,11 @@ function OmniCC:HookCooldowns()
         if enable and enable ~= 0 then
             self:ProcessCooldown(cooldown, start, duration)
         end
+    end)
+    
+    -- Listen for theme changes
+    VUI.EventManager:RegisterCallback("VUI_THEME_CHANGED", function(themeName)
+        self:UpdateAllCooldownThemes()
     end)
 end
 
@@ -508,5 +516,120 @@ function OmniCC:Initialize()
     if self.db.enabled then
         self:SetupModule()
         VUI:Print("OmniCC module initialized")
+    end
+end
+
+-- Update themes for all cooldowns
+function OmniCC:UpdateAllCooldownThemes()
+    if not self.activeCooldowns then return end
+    
+    for cooldown, timer in pairs(self.activeCooldowns) do
+        if timer.text and timer.text:IsShown() then
+            -- Update timer text format with theme colors
+            self:UpdateTimerTextFormat(timer)
+            
+            -- Calculate remaining time to update the text color
+            local remaining = timer.start + timer.duration - GetTime()
+            if remaining > 0 then
+                -- Get the spell ID if possible
+                local spellID = self:GetSpellIDFromCooldown(cooldown)
+                
+                -- Apply group styling and theme colors
+                self:UpdateCooldownTextByGroup(cooldown, timer.text, remaining, spellID)
+            end
+        end
+    end
+end
+
+-- Update the text formatting for a timer with theme settings
+function OmniCC:UpdateTimerTextFormat(timer)
+    if not timer or not timer.text then return end
+    
+    -- Get the cooldown size
+    local size = timer.cooldown:GetWidth() or 36
+    
+    -- Determine text size based on cooldown size
+    local textSize = math.max(self.db.minFontSize, size * self.db.fontScale)
+    if self.db.uniformTextSize then
+        textSize = self.db.fontSize
+    end
+    
+    -- Get the font from theme or fallback
+    local fontPath = DEFAULT_FONT_FACE
+    local theme = self:GetCurrentTheme()
+    if theme and theme.fonts and theme.fonts.regular then
+        fontPath = theme.fonts.regular
+    end
+    
+    -- Set the font
+    timer.text:SetFont(fontPath, textSize, self.db.fontOutline)
+end
+
+-- Try to get spell ID from cooldown frame
+function OmniCC:GetSpellIDFromCooldown(cooldown)
+    if not cooldown then return nil end
+    
+    -- Check if parent is an action button
+    local parent = cooldown:GetParent()
+    if parent and parent.action then
+        local actionType, id = GetActionInfo(parent.action)
+        if actionType == "spell" then
+            return id
+        end
+    end
+    
+    -- Try other methods depending on the type of frame
+    -- This can be expanded based on specific addon support
+    
+    return nil
+end
+
+-- Refresh all cooldown settings
+function OmniCC:RefreshSettings()
+    -- Update all active cooldowns
+    if self.activeCooldowns then
+        for cooldown, timer in pairs(self.activeCooldowns) do
+            -- Update timer text format
+            self:UpdateTimerTextFormat(timer)
+            
+            -- Update timer display
+            local remaining = timer.start + timer.duration - GetTime()
+            if remaining > 0 then
+                local spellID = self:GetSpellIDFromCooldown(cooldown)
+                self:UpdateCooldownTextByGroup(cooldown, timer.text, remaining, spellID)
+            end
+        end
+    end
+    
+    -- Update animation settings
+    if self.db.enableEffects then
+        self:InitializeAnimations()
+    end
+end
+
+-- Check if a frame name is blacklisted
+function OmniCC:IsBlacklisted(frameName)
+    if not frameName or frameName == "" then return false end
+    
+    for _, pattern in ipairs(self.db.blacklist) do
+        if frameName:match(pattern) then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Start tracking cooldowns
+function OmniCC:StartTracking()
+    if not self.updateFrame:IsShown() then
+        self.updateFrame:Show()
+    end
+end
+
+-- Stop tracking cooldowns
+function OmniCC:StopTracking()
+    if self.updateFrame:IsShown() then
+        self.updateFrame:Hide()
     end
 end
