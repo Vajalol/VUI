@@ -112,10 +112,13 @@ VUI (Version 0.2.0) is a comprehensive UI enhancement suite for World of Warcraf
 
 9. **Premade Group Finder**
    - Enhanced group finder functionality
-   - Advanced filtering
-   - Auto-refresh
-   - Score visualization
+   - Advanced filtering with theme-matched UI
+   - Auto-refresh with custom intervals
+   - Theme-based score visualization
    - Group history tracking
+   - Theme-specific icons and UI elements
+   - Dynamic rating colors based on active theme
+   - Enhanced tooltips with detailed group information
 
 10. **SpellNotifications**
     - Advanced combat notifications
@@ -390,6 +393,17 @@ Each theme controls these elements:
 - **Enemy Forces Display**: Track your progress with theme-matching progress bars
 - **Chest Timers**: Visual countdown with theme-specific chest icons
 - **Schedule Display**: View upcoming affixes with theme-matching borders
+
+### Premade Group Finder Configuration
+- **Filter Options**: Set up advanced filtering for groups with theme-matched UI elements
+- **Appearance Settings**: Control how group listings are displayed, including compact mode
+- **Auto-Refresh**: Configure custom refresh intervals for automatic group list updates
+- **Favorite Activities**: Save and quickly access your favorite Mythic+, raid, or PvP activities
+- **Theme Integration**: Enjoy theme-specific icons for roles, activity types, and group status
+- **Score Visualization**: See player and group ratings with theme-specific color grading
+- **Enhanced Tooltips**: View detailed information about groups and players on mouseover
+- **Quick Search**: Use pre-configured filters with theme-matching buttons for fast access
+- **Position & Scale**: Customize the position and scale of the Premade Group Finder frame
 
 ## Performance Optimization Tips
 

@@ -26,6 +26,12 @@
 - Added theme-specific completion sounds for Mythic+ dungeons
 - Implemented dynamic coloring of timer bars based on remaining time percentage
 - Added configurable options for enemy forces display, timer format, and death counter
+- Enhanced Premade Group Finder (PGFinder) with comprehensive theme integration
+- Created theme-specific SVG icons for all UI elements (tank, healer, dps, etc.) across all themes
+- Implemented dynamic theme-based color rating for group score visualization
+- Added enhanced filtering UI with theme-matched styling for all themes
+- Created SVG templates for consistent icon styling across all four themes
+- Improved visual consistency of PGFinder UI components with main theme
 - Created comprehensive configuration interface with tabbed categories for display, appearance, timer, and sound options
 - Added theme toggle to apply VUI theme or use custom style settings
 - Added new DetailsSkin module for Details! meter integration

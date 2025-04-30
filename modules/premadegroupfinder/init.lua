@@ -641,5 +641,39 @@ function PGF:RefreshList()
     end
 end
 
+-- Initialize module theme assets
+function PGF:InitializeTheme()
+    -- Initialize theme-specific media assets
+    self:InitializeMedia()
+    
+    -- Apply theme to elements
+    self:ThemeIntegrationInit()
+end
+
+-- Enable module
+function PGF:OnEnable()
+    if self.enabled then return end
+    
+    self.enabled = true
+    self:SetupHooks()
+    self:SetupAutoRefresh()
+    self:InitializeTheme()
+    
+    -- Show enabled message
+    VUI:Print("Premade Group Finder module enabled")
+end
+
+-- Disable module
+function PGF:OnDisable()
+    if not self.enabled then return end
+    
+    self.enabled = false
+    self:DisableHooks()
+    self:CancelAutoRefresh()
+    
+    -- Show disabled message
+    VUI:Print("Premade Group Finder module disabled")
+end
+
 -- Register the module with VUI
 VUI.premadegroupfinder = PGF

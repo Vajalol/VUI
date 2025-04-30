@@ -1049,6 +1049,12 @@ function PGF:ApplyTheme()
     
     if not themeData then return end
     
+    -- Apply theme-specific assets and colors from ThemeIntegration.lua if available
+    if self.ApplyThemeToElements then
+        self:ApplyThemeToElements()
+        return
+    end
+    
     -- Apply to our frames
     if self.dragHeader then
         self.dragHeader:SetBackdropColor(
