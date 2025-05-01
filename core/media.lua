@@ -2,6 +2,7 @@ local _, VUI = ...
 
 -- Enhanced Media Management System
 -- Provides better performance through texture caching, lazy loading, and memory management
+-- Now with texture atlas support for further optimization
 
 -- Media initialization
 function VUI:InitializeMedia()
@@ -14,6 +15,7 @@ function VUI:InitializeMedia()
         statusbars = {},
         sounds = {},
         icons = {},
+        atlasTextures = {}  -- Map of texture paths to atlas information
     }
     
     -- Create caches for loaded assets
@@ -28,7 +30,9 @@ function VUI:InitializeMedia()
         texturesLoaded = 0, -- Count of loaded textures
         cacheMisses = 0,    -- Count of cache misses
         cacheHits = 0,      -- Count of cache hits
-        memoryUsage = 0     -- Estimated memory usage
+        memoryUsage = 0,    -- Estimated memory usage
+        atlasTexturesSaved = 0,  -- Count of textures saved by atlas system
+        atlasMemoryReduction = 0 -- Estimated memory saved by atlas system
     }
     
     -- Create lazy loading queue for media assets
@@ -588,6 +592,31 @@ end
 function VUI:GetTextureCached(texturePath, priority)
     if not texturePath then return nil end
     
+    -- Check if this texture is available in an atlas
+    if self.media.atlasTextures and self.media.atlasTextures[texturePath] then
+        local atlasInfo = self.media.atlasTextures[texturePath]
+        local atlasPath = self.Atlas:GetAtlasFile(atlasInfo.atlas)
+        local coords = self.Atlas:GetTextureCoordinates(atlasInfo.atlas, atlasInfo.key)
+        
+        if atlasPath and coords then
+            -- Ensure atlas is loaded
+            self.Atlas:PreloadAtlas(atlasInfo.atlas)
+            
+            -- Add to stats
+            self.mediaStats.cacheHits = self.mediaStats.cacheHits + 1
+            
+            -- Create a table containing atlas info
+            return {
+                isAtlas = true,
+                path = atlasPath,
+                coords = coords,
+                originalPath = texturePath
+            }
+        end
+    end
+    
+    -- If not in atlas, continue with normal texture handling
+    
     -- Check if texture is in cache
     if self.mediaCache.textures[texturePath] then
         self.mediaStats.cacheHits = self.mediaStats.cacheHits + 1
@@ -636,6 +665,27 @@ end
 function VUI:LoadTexture(texturePath)
     if not texturePath then return nil end
     
+    -- Check if this is an atlas texture first
+    if self.media.atlasTextures and self.media.atlasTextures[texturePath] then
+        local atlasInfo = self.media.atlasTextures[texturePath]
+        local atlasPath = self.Atlas:GetAtlasFile(atlasInfo.atlas)
+        local coords = self.Atlas:GetTextureCoordinates(atlasInfo.atlas, atlasInfo.key)
+        
+        if atlasPath and coords then
+            -- Ensure atlas is loaded
+            self.Atlas:PreloadAtlas(atlasInfo.atlas)
+            
+            -- Create a table containing atlas info
+            return {
+                isAtlas = true,
+                path = atlasPath,
+                coords = coords,
+                originalPath = texturePath
+            }
+        end
+    end
+    
+    -- Regular texture loading
     -- Estimate texture size for memory tracking (very approximate)
     local memoryEstimate = 0.1 -- MB, very rough estimate
     self.mediaStats.memoryUsage = self.mediaStats.memoryUsage + memoryEstimate
@@ -765,7 +815,7 @@ end
 
 -- Get media usage statistics
 function VUI:GetMediaStats()
-    return {
+    local stats = {
         texturesLoaded = self.mediaStats.texturesLoaded,
         cacheMisses = self.mediaStats.cacheMisses,
         cacheHits = self.mediaStats.cacheHits,
@@ -774,6 +824,16 @@ function VUI:GetMediaStats()
         cacheSize = self:TableCount(self.mediaCache.textures),
         queueSize = #self.mediaQueue
     }
+    
+    -- Add atlas stats if Atlas system is initialized
+    if self.Atlas and self.Atlas.GetStats then
+        local atlasStats = self.Atlas:GetStats()
+        stats.atlasTexturesSaved = atlasStats.texturesSaved
+        stats.atlasMemoryReduction = atlasStats.memoryReduction
+        stats.atlasesLoaded = atlasStats.atlasesLoaded
+    end
+    
+    return stats
 end
 
 -- Preload essential textures for the current theme

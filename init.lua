@@ -81,6 +81,12 @@ end
 function VUI:Initialize()
     self:InitializeDB()
     self:LoadMedia()
+    
+    -- Initialize the Atlas system (for texture optimization)
+    if self.Atlas and self.Atlas.Initialize then
+        self.Atlas:Initialize()
+    end
+    
     self:InitializeThemeIntegration()
     self:InitializeFontIntegration()
     

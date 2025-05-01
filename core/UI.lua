@@ -128,6 +128,86 @@ function VUI.UI:GetCommonTexturePath(textureName)
     return COMMON_PATH .. textureName
 end
 
+-- Set a texture to a frame using atlas if available
+function VUI.UI:SetTexture(frame, texturePath, useAtlas)
+    if not frame or not texturePath then return end
+    
+    -- Default to using atlas if parameter not specified
+    if useAtlas == nil then useAtlas = true end
+    
+    if useAtlas then
+        -- Try to get texture from atlas system
+        local textureInfo = VUI:GetTextureCached(texturePath)
+        
+        -- If texture is from atlas, apply it with coordinates
+        if textureInfo and textureInfo.isAtlas then
+            frame:SetTexture(textureInfo.path)
+            frame:SetTexCoord(
+                textureInfo.coords.left,
+                textureInfo.coords.right,
+                textureInfo.coords.top,
+                textureInfo.coords.bottom
+            )
+            return
+        end
+    end
+    
+    -- Fall back to regular texture if not in atlas or atlas disabled
+    frame:SetTexture(texturePath)
+    frame:SetTexCoord(0, 1, 0, 1) -- Reset texture coordinates to default
+end
+
+-- Set a background texture to a frame using atlas if available
+function VUI.UI:SetBackgroundTexture(frame, texturePath, useAtlas, tile)
+    if not frame or not texturePath then return end
+    
+    -- Default to using atlas if parameter not specified
+    if useAtlas == nil then useAtlas = true end
+    
+    if useAtlas then
+        -- Try to get texture from atlas system
+        local textureInfo = VUI:GetTextureCached(texturePath)
+        
+        -- If texture is from atlas, apply it with coordinates
+        if textureInfo and textureInfo.isAtlas then
+            frame:SetBackdrop({
+                bgFile = textureInfo.path,
+                tile = tile or false,
+                tileSize = 64
+            })
+            
+            -- We need a custom solution for setting TexCoords on backdrop
+            -- Create or reuse the overlay texture for this
+            if not frame._atlasOverlay then
+                frame._atlasOverlay = frame:CreateTexture(nil, "BACKGROUND")
+                frame._atlasOverlay:SetAllPoints(frame)
+                frame._atlasOverlay:SetDrawLayer("BACKGROUND", 1)
+            end
+            
+            frame._atlasOverlay:Show()
+            frame._atlasOverlay:SetTexture(textureInfo.path)
+            frame._atlasOverlay:SetTexCoord(
+                textureInfo.coords.left,
+                textureInfo.coords.right,
+                textureInfo.coords.top,
+                textureInfo.coords.bottom
+            )
+            return
+        end
+    end
+    
+    -- Fall back to regular texture if not in atlas or atlas disabled
+    if frame._atlasOverlay then
+        frame._atlasOverlay:Hide()
+    end
+    
+    frame:SetBackdrop({
+        bgFile = texturePath,
+        tile = tile or false,
+        tileSize = 64
+    })
+end
+
 -- Get class color
 function VUI.UI:GetClassColor(class)
     if not class then
