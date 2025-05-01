@@ -35,12 +35,12 @@ else
     echo "   Script not found. Skipping."
 fi
 
-# echo "4. Generating OmniCD atlas..."
-# if [ -f "tools/generate_omnicd_atlas.sh" ]; then
-#     bash tools/generate_omnicd_atlas.sh
-# else
-#     echo "   Script not found. Skipping."
-# fi
+echo "4. Generating OmniCD atlas..."
+if [ -f "tools/generate_omnicd_atlas.sh" ]; then
+    bash tools/generate_omnicd_atlas.sh
+else
+    echo "   Script not found. Skipping."
+fi
 
 echo ""
 echo "Atlas generation complete."

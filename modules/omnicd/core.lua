@@ -291,12 +291,93 @@ function OmniCD:CreateIconFrame(index)
     frame.cooldown:SetReverse(false)
     frame.cooldown:SetHideCountdownNumbers(true)
     
-    -- Border 
+    -- Get cached textures from atlas system
+    local borderTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\border.tga")
+    local iconFrameTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\icon-frame.tga")
+    local cooldownSwipeTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\cooldown-swipe.tga")
+    local readyPulseTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\ready-pulse.tga")
+    local highlightTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\highlight.tga")
+    
+    -- Border (using atlas texture)
     frame.border = frame:CreateTexture(nil, "OVERLAY")
     frame.border:SetPoint("TOPLEFT", frame, "TOPLEFT", -1, 1)
     frame.border:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 1, -1)
-    frame.border:SetTexture("Interface\\Buttons\\UI-Debuff-Overlays")
-    frame.border:SetTexCoord(0.296875, 0.5703125, 0, 0.515625)
+    
+    -- Apply the atlas texture and coordinates if available
+    if borderTexture and borderTexture.isAtlas then
+        frame.border:SetTexture(borderTexture.path)
+        frame.border:SetTexCoord(
+            borderTexture.coords.left,
+            borderTexture.coords.right,
+            borderTexture.coords.top,
+            borderTexture.coords.bottom
+        )
+    else
+        -- Fallback to original texture if atlas is not available
+        frame.border:SetTexture("Interface\\Buttons\\UI-Debuff-Overlays")
+        frame.border:SetTexCoord(0.296875, 0.5703125, 0, 0.515625)
+    end
+    
+    -- Icon frame overlay (new from atlas)
+    frame.iconFrame = frame:CreateTexture(nil, "OVERLAY", nil, 1)
+    frame.iconFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", -2, 2)
+    frame.iconFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 2, -2)
+    
+    if iconFrameTexture and iconFrameTexture.isAtlas then
+        frame.iconFrame:SetTexture(iconFrameTexture.path)
+        frame.iconFrame:SetTexCoord(
+            iconFrameTexture.coords.left,
+            iconFrameTexture.coords.right,
+            iconFrameTexture.coords.top,
+            iconFrameTexture.coords.bottom
+        )
+    end
+    
+    -- Cooldown swipe (custom for better theme integration)
+    frame.cooldownSwipe = frame:CreateTexture(nil, "OVERLAY", nil, 2)
+    frame.cooldownSwipe:SetAllPoints(frame)
+    frame.cooldownSwipe:SetAlpha(0) -- Hidden by default, shown during animation
+    
+    if cooldownSwipeTexture and cooldownSwipeTexture.isAtlas then
+        frame.cooldownSwipe:SetTexture(cooldownSwipeTexture.path)
+        frame.cooldownSwipe:SetTexCoord(
+            cooldownSwipeTexture.coords.left,
+            cooldownSwipeTexture.coords.right,
+            cooldownSwipeTexture.coords.top,
+            cooldownSwipeTexture.coords.bottom
+        )
+    end
+    
+    -- Ready pulse effect
+    frame.readyPulse = frame:CreateTexture(nil, "OVERLAY", nil, 3)
+    frame.readyPulse:SetPoint("TOPLEFT", frame, "TOPLEFT", -5, 5)
+    frame.readyPulse:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 5, -5)
+    frame.readyPulse:SetAlpha(0) -- Hidden until ready
+    
+    if readyPulseTexture and readyPulseTexture.isAtlas then
+        frame.readyPulse:SetTexture(readyPulseTexture.path)
+        frame.readyPulse:SetTexCoord(
+            readyPulseTexture.coords.left,
+            readyPulseTexture.coords.right,
+            readyPulseTexture.coords.top,
+            readyPulseTexture.coords.bottom
+        )
+    end
+    
+    -- Highlight effect
+    frame.highlight = frame:CreateTexture(nil, "OVERLAY", nil, 4)
+    frame.highlight:SetAllPoints(frame)
+    frame.highlight:SetAlpha(0) -- Hidden by default
+    
+    if highlightTexture and highlightTexture.isAtlas then
+        frame.highlight:SetTexture(highlightTexture.path)
+        frame.highlight:SetTexCoord(
+            highlightTexture.coords.left,
+            highlightTexture.coords.right,
+            highlightTexture.coords.top,
+            highlightTexture.coords.bottom
+        )
+    end
     
     -- Timer text
     frame.timer = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")

@@ -2,8 +2,9 @@
 local _, VUI = ...
 local OmniCD = VUI.omnicd
 local Media = VUI.Media
+local Atlas = VUI.Atlas
 
--- ThemeIntegration for OmniCD module
+-- ThemeIntegration for OmniCD module with Atlas texture support
 local ThemeIntegration = {}
 OmniCD.ThemeIntegration = ThemeIntegration
 
@@ -161,13 +162,19 @@ function ThemeIntegration:GetThemeTexture(textureName)
     local theme = self:GetCurrentTheme()
     local defaultTextures = self.themes[self.defaultTheme].textures
     
+    local texturePath
     if not theme.textures[textureName] then
         if defaultTextures[textureName] then
-            return defaultTextures[textureName]
+            texturePath = defaultTextures[textureName]
+        else
+            return nil
         end
-        return nil
+    else
+        texturePath = theme.textures[textureName]
     end
-    return theme.textures[textureName]
+    
+    -- Use Atlas texture system if available
+    return VUI:GetTextureCached(texturePath)
 end
 
 -- Get theme font by name

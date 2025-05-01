@@ -2,6 +2,7 @@
 local _, VUI = ...
 local OmniCD = VUI.omnicd
 local Media = VUI.Media
+local Atlas = VUI.Atlas  -- Add Atlas reference for texture atlas system
 
 -- Theme definitions
 OmniCD.themes = {
@@ -235,16 +236,89 @@ end
 function OmniCD:UpdateAllUIWithTheme()
     if not self.iconFrames then return end
     
+    -- Get cached textures from atlas system
+    local borderTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\border.tga")
+    local iconFrameTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\icon-frame.tga")
+    local cooldownSwipeTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\cooldown-swipe.tga")
+    local readyPulseTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\ready-pulse.tga")
+    local highlightTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\omnicd\\highlight.tga")
+    
     -- Update all icon frames with theme settings
     for _, frame in ipairs(self.iconFrames) do
-        -- Update icon border texture
+        -- Update icon border texture using atlas if available
         if frame.border then
-            frame.border:SetTexture(self:GetThemeTexture("icon_border"))
+            local themeTexture = self:GetThemeTexture("icon_border")
+            
+            if borderTexture and borderTexture.isAtlas then
+                frame.border:SetTexture(borderTexture.path)
+                frame.border:SetTexCoord(
+                    borderTexture.coords.left,
+                    borderTexture.coords.right,
+                    borderTexture.coords.top,
+                    borderTexture.coords.bottom
+                )
+            else
+                frame.border:SetTexture(themeTexture)
+            end
+            
             -- Color depends on state
             if frame.ready then
                 self:ApplyThemeColors(frame.border, "ready")
             else
                 self:ApplyThemeColors(frame.border, "border")
+            end
+        end
+        
+        -- Update icon frame if it exists
+        if frame.iconFrame then
+            if iconFrameTexture and iconFrameTexture.isAtlas then
+                frame.iconFrame:SetTexture(iconFrameTexture.path)
+                frame.iconFrame:SetTexCoord(
+                    iconFrameTexture.coords.left,
+                    iconFrameTexture.coords.right,
+                    iconFrameTexture.coords.top,
+                    iconFrameTexture.coords.bottom
+                )
+                self:ApplyThemeColors(frame.iconFrame, "border")
+            end
+        end
+        
+        -- Update cooldown swipe texture if it exists
+        if frame.cooldownSwipe then
+            if cooldownSwipeTexture and cooldownSwipeTexture.isAtlas then
+                frame.cooldownSwipe:SetTexture(cooldownSwipeTexture.path)
+                frame.cooldownSwipe:SetTexCoord(
+                    cooldownSwipeTexture.coords.left,
+                    cooldownSwipeTexture.coords.right,
+                    cooldownSwipeTexture.coords.top,
+                    cooldownSwipeTexture.coords.bottom
+                )
+            end
+        end
+        
+        -- Update ready pulse texture if it exists
+        if frame.readyPulse then
+            if readyPulseTexture and readyPulseTexture.isAtlas then
+                frame.readyPulse:SetTexture(readyPulseTexture.path)
+                frame.readyPulse:SetTexCoord(
+                    readyPulseTexture.coords.left,
+                    readyPulseTexture.coords.right,
+                    readyPulseTexture.coords.top,
+                    readyPulseTexture.coords.bottom
+                )
+            end
+        end
+        
+        -- Update highlight texture if it exists
+        if frame.highlight then
+            if highlightTexture and highlightTexture.isAtlas then
+                frame.highlight:SetTexture(highlightTexture.path)
+                frame.highlight:SetTexCoord(
+                    highlightTexture.coords.left,
+                    highlightTexture.coords.right,
+                    highlightTexture.coords.top,
+                    highlightTexture.coords.bottom
+                )
             end
         end
         

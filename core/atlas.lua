@@ -151,7 +151,16 @@ Atlas.coordinates.modules = {
         ["priority-icon"] = {left = 0.25, right = 0.5, top = 0.75, bottom = 1.0}
     },
     omnicd = {
-        ["border"] = {left = 0, right = 0.5, top = 0, bottom = 0.5}
+        ["logo"] = {left = 0, right = 0.5, top = 0, bottom = 0.5},
+        ["logo_transparent"] = {left = 0.5, right = 1.0, top = 0, bottom = 0.5},
+        ["background"] = {left = 0, right = 0.25, top = 0.5, bottom = 0.75},
+        ["border"] = {left = 0.25, right = 0.5, top = 0.5, bottom = 0.75},
+        ["icon-frame"] = {left = 0.5, right = 0.75, top = 0.5, bottom = 0.75},
+        ["header"] = {left = 0.75, right = 1.0, top = 0.5, bottom = 0.75},
+        ["cooldown-swipe"] = {left = 0, right = 0.25, top = 0.75, bottom = 1.0},
+        ["ready-pulse"] = {left = 0.25, right = 0.5, top = 0.75, bottom = 1.0},
+        ["highlight"] = {left = 0.5, right = 0.75, top = 0.75, bottom = 1.0},
+        ["statusbar"] = {left = 0.75, right = 1.0, top = 0.75, bottom = 1.0}
     },
     trufigcd = {
         ["logo"] = {left = 0, right = 0.5, top = 0, bottom = 0.5},
@@ -452,9 +461,46 @@ function Atlas:RegisterWithMediaSystem()
         atlas = "modules.buffoverlay",
         key = "priority-icon"
     }
+    -- Add module-specific textures for OmniCD
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\logo.tga"] = {
+        atlas = "modules.omnicd",
+        key = "logo"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\logo_transparent.tga"] = {
+        atlas = "modules.omnicd",
+        key = "logo_transparent"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\background.tga"] = {
+        atlas = "modules.omnicd",
+        key = "background"
+    }
     VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\border.tga"] = {
         atlas = "modules.omnicd",
         key = "border"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\icon-frame.tga"] = {
+        atlas = "modules.omnicd",
+        key = "icon-frame"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\header.tga"] = {
+        atlas = "modules.omnicd",
+        key = "header"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\cooldown-swipe.tga"] = {
+        atlas = "modules.omnicd",
+        key = "cooldown-swipe"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\ready-pulse.tga"] = {
+        atlas = "modules.omnicd",
+        key = "ready-pulse"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\highlight.tga"] = {
+        atlas = "modules.omnicd",
+        key = "highlight"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\statusbar.tga"] = {
+        atlas = "modules.omnicd",
+        key = "statusbar"
     }
     -- Add module-specific textures for TrufiGCD
     VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\logo.tga"] = {
