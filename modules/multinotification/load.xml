@@ -1,4 +1,10 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- Core module files -->
     <Script file="init.lua"/>
+    <Script file="frame_pool.lua"/>
     <Script file="ThemeIntegration.lua"/>
+    
+    <!-- Unified notification system components -->
+    <Script file="SpellEvents.lua"/>
+    <Script file="SpellManagementUI.lua"/>
 </Ui>

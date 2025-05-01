@@ -761,6 +761,126 @@ function MultiNotification:GetOptions()
                 end,
                 width = "full"
             },
+            spellGroup = {
+                order = 5,
+                type = "group",
+                name = "Spell Notifications",
+                desc = "Settings for spell notifications",
+                args = {
+                    enableSpellNotifications = {
+                        order = 1,
+                        type = "toggle",
+                        name = "Enable Spell Notifications",
+                        desc = "Enable or disable notifications for spells",
+                        get = function() return self.db.profile.spellSettings.enabled end,
+                        set = function(_, value)
+                            self.db.profile.spellSettings.enabled = value
+                        end,
+                        width = "full"
+                    },
+                    spellHeader = {
+                        order = 2,
+                        type = "header",
+                        name = "Spell Detection Options"
+                    },
+                    notifyAllInterrupts = {
+                        order = 3,
+                        type = "toggle",
+                        name = "Notify All Interrupts",
+                        desc = "Show notifications for all interrupts, not just those in the important spells list",
+                        get = function() return self.db.profile.spellSettings.notifyAllInterrupts end,
+                        set = function(_, value)
+                            self.db.profile.spellSettings.notifyAllInterrupts = value
+                        end,
+                        width = "full",
+                        disabled = function() return not self.db.profile.spellSettings.enabled end
+                    },
+                    notifyAllDispels = {
+                        order = 4,
+                        type = "toggle",
+                        name = "Notify All Dispels",
+                        desc = "Show notifications for all dispels, not just those in the important spells list",
+                        get = function() return self.db.profile.spellSettings.notifyAllDispels end,
+                        set = function(_, value)
+                            self.db.profile.spellSettings.notifyAllDispels = value
+                        end,
+                        width = "full",
+                        disabled = function() return not self.db.profile.spellSettings.enabled end
+                    },
+                    showSourceInfo = {
+                        order = 5,
+                        type = "toggle",
+                        name = "Show Source Info",
+                        desc = "Show the source of spells in notifications",
+                        get = function() return self.db.profile.spellSettings.showSourceInfo end,
+                        set = function(_, value)
+                            self.db.profile.spellSettings.showSourceInfo = value
+                        end,
+                        width = "full",
+                        disabled = function() return not self.db.profile.spellSettings.enabled end
+                    },
+                    displayTime = {
+                        order = 6,
+                        type = "range",
+                        name = "Display Time",
+                        desc = "How long spell notifications are shown (in seconds)",
+                        min = 1,
+                        max = 10,
+                        step = 0.5,
+                        get = function() return self.db.profile.spellSettings.displayTime end,
+                        set = function(_, value)
+                            self.db.profile.spellSettings.displayTime = value
+                        end,
+                        width = "full",
+                        disabled = function() return not self.db.profile.spellSettings.enabled end
+                    },
+                    spellManagementHeader = {
+                        order = 7,
+                        type = "header",
+                        name = "Spell Management"
+                    },
+                    spellManagementDesc = {
+                        order = 8,
+                        type = "description",
+                        name = "Manage important spells through the spell management UI.",
+                        width = "full"
+                    },
+                    openSpellManagement = {
+                        order = 9,
+                        type = "execute",
+                        name = "Open Spell Management",
+                        func = function()
+                            if self.OpenSpellManagementUI then
+                                self:OpenSpellManagementUI()
+                            else
+                                VUI:Print("Spell management UI is not available.")
+                            end
+                        end,
+                        width = "full",
+                        disabled = function() return not self.db.profile.spellSettings.enabled end
+                    },
+                    testSpellNotification = {
+                        order = 10,
+                        type = "execute",
+                        name = "Test Notification",
+                        func = function()
+                            -- Default to a common spell if possible
+                            local testSpellID = 31935 -- Avenger's Shield
+                            if select(2, UnitClass("player")) == "SHAMAN" then
+                                testSpellID = 57994 -- Wind Shear
+                            elseif select(2, UnitClass("player")) == "MAGE" then
+                                testSpellID = 2139 -- Counterspell
+                            elseif select(2, UnitClass("player")) == "WARRIOR" then
+                                testSpellID = 6552 -- Pummel
+                            end
+                            
+                            self:TestSpellNotification(testSpellID, "interrupt")
+                        end,
+                        width = "full",
+                        disabled = function() return not self.db.profile.spellSettings.enabled end
+                    }
+                }
+            },
             generalHeader = {
                 order = 10,
                 type = "header",

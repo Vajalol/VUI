@@ -60,9 +60,6 @@
     <!-- Skins Module -->
     <Include file="skins\index.xml"/>
     
-    <!-- SpellNotifications Module -->
-    <Include file="spellnotifications\index.xml"/>
-    
     <!-- DetailsSkin Module -->
     <Include file="detailsskin\index.xml"/>
     
@@ -78,6 +75,9 @@
     <!-- Enhanced Player Frame Module -->
     <Include file="epf\index.xml"/>
     
-    <!-- Multi-Notification Module -->
+    <!-- Multi-Notification Module (Unified Notification System) -->
     <Include file="multinotification\load.xml"/>
+    
+    <!-- SpellNotifications Module (Legacy - to be deprecated) -->
+    <Include file="spellnotifications\index.xml"/>
 </Ui>

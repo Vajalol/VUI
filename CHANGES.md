@@ -59,10 +59,13 @@ This document tracks significant changes to the VUI addon suite.
   - Added performance-aware animation system (disable animations on low FPS)
 
 ### Module Improvements
-- Integrated Multi-Notification system with:
-  - MSBT module for combat text
-  - SpellNotifications module for spell alerts
+- Unified Notification System:
+  - Consolidated SpellNotifications functionality into MultiNotification
+  - Created a single, centralized notification system for all addon components
+  - Eliminated duplicate code and improved consistency
+  - Integrated with MSBT module for combat text
   - Support for multiple notification types and priorities
+  - Enhanced spell detection with unified configuration
 
 ### Technical
 - Complete module standardization across all components
