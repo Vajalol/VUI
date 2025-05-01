@@ -4,6 +4,9 @@ local addonName, VUI = ...
 local moduleName = "bags"
 local module = VUI.ModuleAPI:CreateModule(moduleName)
 
+-- Export module to global VUI namespace
+VUI.bags = module
+
 -- Default settings
 local defaults = {
     enabled = true,
@@ -17,21 +20,12 @@ local defaults = {
     bagSlotOrder = {0, 1, 2, 3, 4}  -- Main bag (0) and additional bags 1-4
 }
 
--- Local variables
-local activeTheme = "thunderstorm"
-local themeColors = {}
-
 function module:OnInitialize()
     -- Initialize settings with defaults
     self.settings = VUI.ModuleAPI:InitializeModuleSettings(moduleName, defaults)
     
     -- Set enabled state based on settings
     self:SetEnabledState(self.settings.enabled)
-    
-    -- Get current theme colors
-    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
-    activeTheme = theme
-    themeColors = VUI.media.themes[theme] or {}
     
     -- Register for events
     self:RegisterEvent("ADDON_LOADED")
@@ -41,13 +35,21 @@ function module:OnInitialize()
     self:RegisterEvent("BANKFRAME_OPENED")
     self:RegisterEvent("BANKFRAME_CLOSED")
     
-    -- Register for theme changes
-    VUI.RegisterCallback(self, "ThemeChanged", "ApplyTheme")
+    -- Initialize ThemeIntegration module
+    -- ThemeIntegration will be loaded from ThemeIntegration.lua
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
 end
 
 function module:OnEnable()
     self:HookBagFunctions()
-    self:ApplyTheme(activeTheme)
+    
+    -- Apply theme via ThemeIntegration
+    if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+        self.ThemeIntegration:ApplyTheme()
+    end
+    
     self:UpdateAllBags()
 end
 
@@ -69,12 +71,14 @@ function module:BAG_UPDATE()
     self:UpdateAllBags()
 end
 
+-- Theme handling is now delegated to ThemeIntegration
 function module:ApplyTheme(theme)
-    activeTheme = theme or VUI.db.profile.appearance.theme or "thunderstorm"
-    themeColors = VUI.media.themes[activeTheme] or {}
-    
-    -- Update all bags with new theme
-    self:UpdateAllBags()
+    if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+        self.ThemeIntegration:ApplyTheme(theme)
+    else
+        -- Fallback if ThemeIntegration isn't available yet
+        self:UpdateAllBags()
+    end
 end
 
 -- Additional module functions will be in core.lua

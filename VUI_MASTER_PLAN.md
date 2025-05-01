@@ -72,7 +72,22 @@ VUI includes five comprehensive UI themes:
   - Configuration UI creation
 
 - **Phase 2: Module Integration (In Progress)**
-  - Module standardization
+  - Module standardization:
+    - MSBT Module ✓
+    - Auctionator Module ✓
+    - AngryKeystones Module ✓
+    - BuffOverlay Module enhancement ✓
+    - OmniCC/OmniCD Integration ✓
+    - DetailsSkin Module ✓
+    - Custom Important Spell List ✓
+    - TrufiGCD Module ✓
+    - SpellNotifications Module ✓
+    - PGFinder Module enhancement ✓
+    - MoveAny Module standardization ✓
+    - idTip Module standardization ✓
+    - nameplates Module standardization ✓
+    - tooltip Module standardization ✓
+    - Multi-Notification Support (pending)
   - Remove duplicate files
   - Ensure one-file-per-purpose structure
   - Merge enhanced functionality into core files
@@ -114,8 +129,11 @@ VUI includes five comprehensive UI themes:
 - Must use existing module names exactly as specified
 - Enhancing existing modules rather than creating new ones
 
-## Current Focus: Module Standardization
-Merging duplicate files and maintaining a one-file-per-purpose approach to improve code organization and reduce confusion.
+## Current Focus: Module Standardization and Theme Integration
+1. Standardizing all modules with consistent file structure and theme support
+2. Implementing ThemeIntegration.lua for each module to ensure unified theming across the addon suite
+3. Merging duplicate files and maintaining a one-file-per-purpose approach to improve code organization and reduce confusion
+4. Ensuring each module properly initializes its theme integration component
 
 ## Configuration Approach
 - Tabbed interface for better organization of settings

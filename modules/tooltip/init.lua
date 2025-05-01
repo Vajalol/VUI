@@ -93,6 +93,7 @@ VUI.ModuleAPI:RegisterModuleConfig("tooltip", Tooltip:GetConfig())
 -- Default settings
 local defaults = {
     enabled = true,
+    useThemeColors = true,
     
     -- General settings
     general = {
@@ -166,6 +167,22 @@ local config = {
                     VUI:DisableModule("tooltip")
                 end
             end,
+        },
+        useThemeColors = {
+            type = "toggle",
+            name = "Use Theme Colors",
+            desc = "Use colors from the active VUI theme for tooltip appearance",
+            order = 2,
+            get = function() return Tooltip.settings.useThemeColors end,
+            set = function(_, value) 
+                Tooltip.settings.useThemeColors = value
+                -- Apply theme if enabled
+                if value and Tooltip.ThemeIntegration and Tooltip.ThemeIntegration.ApplyTheme then
+                    Tooltip.ThemeIntegration:ApplyTheme(VUI.activeTheme)
+                end
+                Tooltip:UpdateSettings()
+            end,
+            disabled = function() return not Tooltip.enabled end,
         },
         generalHeader = {
             type = "header",
@@ -388,6 +405,37 @@ local config = {
         },
     }
 }
+
+-- Add the Enable function if it doesn't exist
+if not Tooltip.Enable then
+    function Tooltip:Enable()
+        self.enabled = true
+        
+        -- Initialize theme integration if available
+        if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+            self.ThemeIntegration:Initialize()
+        end
+        
+        -- Notify user
+        VUI:Print("Tooltip module enabled")
+    end
+end
+
+-- Add the Disable function if it doesn't exist
+if not Tooltip.Disable then
+    function Tooltip:Disable()
+        self.enabled = false
+        
+        -- Restore default tooltip behavior
+        if GameTooltip and GameTooltip.SetBackdropColor then
+            GameTooltip:SetBackdropColor(0, 0, 0, 0.8)
+            GameTooltip:SetBackdropBorderColor(1, 1, 1, 1)
+        end
+        
+        -- Notify user
+        VUI:Print("Tooltip module disabled")
+    end
+end
 
 -- Register module with VUI
 VUI:RegisterModule(Tooltip, defaults, config)

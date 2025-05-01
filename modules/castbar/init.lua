@@ -174,7 +174,11 @@ function Castbar:Initialize()
     
     -- Theme integration
     if self.settings.animations.themeIntegration then
-        self:ApplyThemeIntegration()
+        if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+            self.ThemeIntegration:Initialize()
+        else
+            self:ApplyThemeIntegration()
+        end
     end
     
     VUI:Print("Castbar module initialized")
@@ -193,6 +197,10 @@ end)
 
 VUI.EventManager:RegisterCallback("VUI_THEME_CHANGED", function(theme)
     if Castbar:IsEnabled() and Castbar.settings.animations.themeIntegration then
-        Castbar:ApplyThemeIntegration(theme)
+        if Castbar.ThemeIntegration and Castbar.ThemeIntegration.ApplyTheme then
+            Castbar.ThemeIntegration:ApplyTheme(theme)
+        else
+            Castbar:ApplyThemeIntegration(theme)
+        end
     end
 end)

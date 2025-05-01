@@ -490,6 +490,11 @@ function UnitFrames:Initialize()
     -- Set up configuration for each frame type
     self:SetupConfig()
     
+    -- Initialize ThemeIntegration module
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
+    
     -- Register for UI integration when the UI is loaded
     VUI.ModuleAPI:EnableModuleUI("unitframes", function(module)
         module:CreateFrames()

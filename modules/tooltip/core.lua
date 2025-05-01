@@ -222,12 +222,22 @@ function Tooltip:StyleTooltip(tooltip)
     
     tooltip:SetBackdrop(backdrop)
     
-    -- Apply colors
-    local bg = self.settings.general.backdropColor
-    tooltip:SetBackdropColor(bg.r, bg.g, bg.b, bg.a)
-    
-    local border = self.settings.general.borderColor
-    tooltip:SetBackdropBorderColor(border.r, border.g, border.b, border.a)
+    -- Apply colors based on theme settings or custom colors
+    if self.settings.useThemeColors and self.ThemeIntegration then
+        -- Use theme colors
+        local bgColor = self.ThemeIntegration:GetColor("background")
+        local borderColor = self.ThemeIntegration:GetColor("border")
+        
+        tooltip:SetBackdropColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a or 0.85)
+        tooltip:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a or 1.0)
+    else
+        -- Use custom colors
+        local bg = self.settings.general.backdropColor
+        tooltip:SetBackdropColor(bg.r, bg.g, bg.b, bg.a)
+        
+        local border = self.settings.general.borderColor
+        tooltip:SetBackdropBorderColor(border.r, border.g, border.b, border.a)
+    end
     
     -- Check if we're in combat and apply combat settings
     if InCombatLockdown() then
@@ -248,6 +258,18 @@ function Tooltip:UpdateTooltipStyle(tooltip)
         -- Apply style to the specified tooltip
         self:StyleTooltip(tooltip)
     end
+end
+
+-- Apply theme colors to all tooltips
+function Tooltip:StyleAllTooltips()
+    -- Only proceed if the module is enabled
+    if not self.enabled then return end
+    
+    -- Update tooltips that are currently shown
+    self:UpdateTooltipStyle()
+    
+    -- Make sure hooks are set up for newly shown tooltips
+    self:SetupTooltipHooks()
 end
 
 function Tooltip:ApplyCombatSettings(inCombat, tooltip)

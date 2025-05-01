@@ -74,6 +74,11 @@ function InfoFrame:Initialize()
     -- Register events
     self:RegisterEvents()
     
+    -- Initialize theme integration
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
+    
     VUI:Print("Info Frame module initialized")
 end
 
@@ -203,6 +208,11 @@ function InfoFrame:CreateInfoFrame()
         local border = self.settings.general.borderColor
         self.frame:SetBackdropBorderColor(border.r, border.g, border.b, border.a)
     end
+    
+    -- Store frame reference for theme integration
+    self.frame.bg = self.frame:CreateTexture(nil, "BACKGROUND")
+    self.frame.bg:SetAllPoints(self.frame)
+    self.frame.borderFrame = self.frame
     
     -- Create header (title)
     self.frame.header = self.frame:CreateFontString(nil, "OVERLAY")
@@ -359,6 +369,11 @@ function InfoFrame:CreatePlayerStatsFrame()
     
     -- Set border color (slightly visible)
     self.statsFrame:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.7)
+    
+    -- Store frame reference for theme integration
+    self.statsFrame.bg = self.statsFrame:CreateTexture(nil, "BACKGROUND")
+    self.statsFrame.bg:SetAllPoints(self.statsFrame)
+    self.statsFrame.borderFrame = self.statsFrame
     
     -- Create header
     self.statsFrame.header = self.statsFrame:CreateFontString(nil, "OVERLAY")
@@ -1084,6 +1099,15 @@ function InfoFrame:UpdateSettings()
     -- Update frame properties
     self.frame:SetScale(self.settings.general.scale)
     self.frame:SetAlpha(self.settings.general.alpha)
+    
+    -- Apply theme if theme integration is available and not using class colors
+    if not self.settings.general.classColored and self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+        -- Let the theme integration handle the styling
+        self.ThemeIntegration:ApplyTheme(VUI.db.profile.appearance.theme or "thunderstorm")
+        return
+    end
+    
+    -- Otherwise, use standard styling
     
     -- Update backdrop
     local bg = self.settings.general.backdropColor
