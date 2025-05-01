@@ -731,7 +731,12 @@ end
 function VisualConfig:ApplyTheme()
     if not self.enabled then return end
     
-    -- This function will be implemented in core.lua
+    -- Use ThemeIntegration if available, otherwise fall back to old method
+    if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+        self.ThemeIntegration:ApplyTheme()
+    else
+        -- This function will be implemented in core.lua
+    end
 end
 
 -- Remove enhancements from configuration UI
@@ -750,9 +755,14 @@ end
 function VisualConfig:OnPlayerEnteringWorld()
     if not self.enabled then return end
     
-    -- Apply theme if needed
-    if self.settings.general.useVUITheme then
-        self:ApplyTheme()
+    -- Initialize ThemeIntegration if available
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    else
+        -- Apply theme using legacy method if needed
+        if self.settings.general.useVUITheme then
+            self:ApplyTheme()
+        end
     end
     
     -- Restore window positions if needed
