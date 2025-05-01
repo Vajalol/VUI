@@ -11,13 +11,20 @@ function TrufiGCD:ApplyTheme()
     local theme = VUI.activeTheme
     local config = VUI.db.profile.modules.trufigcd
     
-    -- Apply border colors to GCD frames based on active theme
-    if self.frames then
-        for _, frame in ipairs(self.frames) do
+    -- Apply theme colors to icon frames
+    if self.iconFrames then
+        for _, frame in ipairs(self.iconFrames) do
+            -- Apply colors to standard borders
             if frame.border then
                 frame.border:SetVertexColor(theme.borderColor[1], theme.borderColor[2], theme.borderColor[3], config.borderAlpha or 0.8)
             end
             
+            -- Apply colors to atlas-based icon frames if available
+            if frame.iconFrame then
+                frame.iconFrame:SetVertexColor(theme.borderColor[1], theme.borderColor[2], theme.borderColor[3], config.borderAlpha or 0.8)
+            end
+            
+            -- Apply colors to background
             if frame.background then
                 frame.background:SetVertexColor(theme.backdropColor[1], theme.backdropColor[2], theme.backdropColor[3], config.bgAlpha or 0.5)
             end
@@ -33,6 +40,19 @@ function TrufiGCD:ApplyTheme()
         self.container.background:SetVertexColor(theme.backdropColor[1], theme.backdropColor[2], theme.backdropColor[3], config.containerBgAlpha or 0.3)
     end
     
+    -- Apply theme colors to config button if using atlas textures
+    if self.configButton then
+        local normal = self.configButton:GetNormalTexture()
+        if normal and normal.SetVertexColor then
+            normal:SetVertexColor(theme.borderColor[1], theme.borderColor[2], theme.borderColor[3], 1.0)
+        end
+        
+        local highlight = self.configButton:GetHighlightTexture()
+        if highlight and highlight.SetVertexColor then
+            highlight:SetVertexColor(theme.highlightColor[1], theme.highlightColor[2], theme.highlightColor[3], 1.0)
+        end
+    end
+    
     -- Apply theme colors to config panel elements if they exist
     if self.configPanel then
         if self.configPanel.border then
@@ -42,6 +62,11 @@ function TrufiGCD:ApplyTheme()
         if self.configPanel.background then
             self.configPanel.background:SetVertexColor(theme.backdropColor[1], theme.backdropColor[2], theme.backdropColor[3], 0.5)
         end
+    end
+    
+    -- Log theme application if in debug mode
+    if VUI.debug then
+        VUI:Debug("TrufiGCD: Theme applied - " .. theme.name)
     end
 end
 

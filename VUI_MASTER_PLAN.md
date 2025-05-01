@@ -166,13 +166,18 @@ VUI includes five comprehensive UI themes:
    - Atlas generator tools for development ✓
    - Media system integration ✓
    - Statistics tracking in Theme Editor ✓
-   - Actual atlas texture creation and mapping (Next)
-   - Module implementation of atlas textures (Next)
-2. Additional Performance Optimizations (Planned)
-   - Reducing memory footprint during combat
-   - Event handling optimization
-   - Frame pooling implementation
-   - Frame rate based throttling
+   - Module-specific atlas implementations:
+     - MultiNotification atlas implementation ✓
+     - BuffOverlay atlas implementation ✓ 
+     - TrufiGCD atlas implementation ✓
+     - OmniCD atlas implementation (Next)
+     - MoveAny atlas implementation (Next)
+   - Performance metrics documentation ✓
+2. Additional Performance Optimizations (In Progress)
+   - Frame pooling implementation ✓
+   - Reducing memory footprint during combat (In Progress)
+   - Event handling optimization (In Progress)
+   - Frame rate based throttling (Planned)
 3. Improving accessibility features (Planned)
    - Adding high contrast mode
    - Implementing UI scaling options

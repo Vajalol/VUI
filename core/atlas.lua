@@ -154,7 +154,14 @@ Atlas.coordinates.modules = {
         ["border"] = {left = 0, right = 0.5, top = 0, bottom = 0.5}
     },
     trufigcd = {
-        ["border"] = {left = 0, right = 0.5, top = 0, bottom = 0.5}
+        ["logo"] = {left = 0, right = 0.5, top = 0, bottom = 0.5},
+        ["logo_transparent"] = {left = 0.5, right = 1.0, top = 0, bottom = 0.5},
+        ["background"] = {left = 0, right = 0.25, top = 0.5, bottom = 0.75},
+        ["border"] = {left = 0.25, right = 0.5, top = 0.5, bottom = 0.75},
+        ["icon-frame"] = {left = 0.5, right = 0.75, top = 0.5, bottom = 0.75},
+        ["config-button"] = {left = 0.75, right = 0.875, top = 0.5, bottom = 0.625},
+        ["config-button-highlight"] = {left = 0.875, right = 1.0, top = 0.5, bottom = 0.625},
+        ["cooldown-swipe"] = {left = 0, right = 0.25, top = 0.75, bottom = 1.0}
     },
     multinotification = {
         ["notification-background"] = {left = 0, right = 0.25, top = 0, bottom = 0.25},
@@ -449,9 +456,38 @@ function Atlas:RegisterWithMediaSystem()
         atlas = "modules.omnicd",
         key = "border"
     }
+    -- Add module-specific textures for TrufiGCD
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\logo.tga"] = {
+        atlas = "modules.trufigcd",
+        key = "logo"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\logo_transparent.tga"] = {
+        atlas = "modules.trufigcd",
+        key = "logo_transparent"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\background.tga"] = {
+        atlas = "modules.trufigcd",
+        key = "background"
+    }
     VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\border.tga"] = {
         atlas = "modules.trufigcd",
         key = "border"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\icon-frame.tga"] = {
+        atlas = "modules.trufigcd",
+        key = "icon-frame"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\config-button.tga"] = {
+        atlas = "modules.trufigcd",
+        key = "config-button"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\config-button-highlight.tga"] = {
+        atlas = "modules.trufigcd",
+        key = "config-button-highlight"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\cooldown-swipe.tga"] = {
+        atlas = "modules.trufigcd",
+        key = "cooldown-swipe"
     }
     
     -- Add MultiNotification textures

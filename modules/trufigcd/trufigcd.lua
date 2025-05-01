@@ -6,6 +6,9 @@
 function VUI.TrufiGCD:Initialize()
     if not VUI.enabledModules.TrufiGCD then return end
     
+    -- Preload the atlas textures for optimization
+    self:PreloadAtlasTextures()
+    
     -- Create main frame for displaying GCD icons
     self:CreateGCDFrame()
     
@@ -28,7 +31,32 @@ function VUI.TrufiGCD:Initialize()
     self:ApplyTheme()
     
     -- Log initialization
-    VUI:Print("TrufiGCD module initialized")
+    VUI:Print("TrufiGCD module initialized with Atlas texture optimization")
+end
+
+-- Preload the atlas textures for better performance
+function VUI.TrufiGCD:PreloadAtlasTextures()
+    -- Preload the module's texture atlas if available
+    if VUI.Atlas and VUI.Atlas.PreloadAtlas then
+        VUI.Atlas:PreloadAtlas("modules.trufigcd")
+        
+        -- Log successful preload
+        if VUI.debug then
+            VUI:Debug("TrufiGCD atlas textures preloaded")
+            
+            -- Display memory stats if available
+            if VUI.Atlas.GetStats then
+                local stats = VUI.Atlas:GetStats()
+                VUI:Debug(string.format("Atlas Stats: Textures Saved: %d, Memory Reduction: %s",
+                    stats.texturesSaved, stats.memoryReduction))
+            end
+        end
+    else
+        -- Log error if atlas system is not available
+        if VUI.debug then
+            VUI:Debug("WARNING: Atlas system not available for TrufiGCD")
+        end
+    end
 end
 
 -- Create the main frame for GCD tracking
@@ -79,16 +107,40 @@ function VUI.TrufiGCD:CreateGCDFrame()
     self.container:SetPoint("TOPLEFT", self.frame, "TOPLEFT", -4, 4)
     self.container:SetPoint("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT", 4, -4)
     
-    -- Add background for container
+    -- Add background for container using atlas textures if available
     self.container.background = self.container:CreateTexture(nil, "BACKGROUND")
     self.container.background:SetAllPoints()
-    self.container.background:SetColorTexture(0, 0, 0, 0.3)
     
-    -- Add border for container
+    if VUI.GetTextureCached then
+        local backgroundTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\background.tga")
+        if backgroundTexture and backgroundTexture.isAtlas then
+            VUI.Atlas:ApplyTextureCoordinates(self.container.background, backgroundTexture)
+        else
+            -- Fallback
+            self.container.background:SetColorTexture(0, 0, 0, 0.3)
+        end
+    else
+        -- Fallback
+        self.container.background:SetColorTexture(0, 0, 0, 0.3)
+    end
+    
+    -- Add border for container using atlas textures if available
     self.container.border = self.container:CreateTexture(nil, "BORDER")
     self.container.border:SetPoint("TOPLEFT", self.container, "TOPLEFT", -1, 1)
     self.container.border:SetPoint("BOTTOMRIGHT", self.container, "BOTTOMRIGHT", 1, -1)
-    self.container.border:SetColorTexture(0, 0, 0, 0.8)
+    
+    if VUI.GetTextureCached then
+        local borderTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\border.tga")
+        if borderTexture and borderTexture.isAtlas then
+            VUI.Atlas:ApplyTextureCoordinates(self.container.border, borderTexture)
+        else
+            -- Fallback
+            self.container.border:SetColorTexture(0, 0, 0, 0.8)
+        end
+    else
+        -- Fallback
+        self.container.border:SetColorTexture(0, 0, 0, 0.8)
+    end
     
     -- Create border for when in config mode
     self.frameBorder = CreateFrame("Frame", nil, self.frame)
@@ -105,8 +157,34 @@ function VUI.TrufiGCD:CreateGCDFrame()
     self.configButton = CreateFrame("Button", nil, self.frame)
     self.configButton:SetSize(20, 20)
     self.configButton:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT", 5, 5)
-    self.configButton:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
-    self.configButton:SetHighlightTexture("Interface\\Buttons\\UI-OptionsButton", "ADD")
+    
+    -- Use atlas textures if available
+    if VUI.GetTextureCached then
+        local normalTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\config-button.tga")
+        local highlightTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\config-button-highlight.tga")
+        
+        if normalTexture and normalTexture.isAtlas then
+            local normal = self.configButton:CreateTexture(nil, "ARTWORK")
+            normal:SetAllPoints()
+            VUI.Atlas:ApplyTextureCoordinates(normal, normalTexture)
+            self.configButton:SetNormalTexture(normal)
+            
+            if highlightTexture and highlightTexture.isAtlas then
+                local highlight = self.configButton:CreateTexture(nil, "HIGHLIGHT")
+                highlight:SetAllPoints()
+                VUI.Atlas:ApplyTextureCoordinates(highlight, highlightTexture)
+                self.configButton:SetHighlightTexture(highlight)
+            end
+        else
+            -- Fallback to default textures if atlas is not available
+            self.configButton:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
+            self.configButton:SetHighlightTexture("Interface\\Buttons\\UI-OptionsButton", "ADD")
+        end
+    else
+        -- Fallback to default textures
+        self.configButton:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
+        self.configButton:SetHighlightTexture("Interface\\Buttons\\UI-OptionsButton", "ADD")
+    end
     self.configButton:SetScript("OnClick", function()
         VUI:ToggleConfig()
         -- Select TrufiGCD in the config panel
@@ -159,28 +237,64 @@ function VUI.TrufiGCD:CreateIconFrame(index)
     -- Set position based on orientation and direction
     self:PositionIconFrame(frame, index)
     
-    -- Background texture (for theme coloring)
+    -- Background texture (for theme coloring) with atlas support
     frame.background = frame:CreateTexture(nil, "BACKGROUND")
     frame.background:SetAllPoints()
-    frame.background:SetColorTexture(0, 0, 0, 0.3)
+    
+    if VUI.GetTextureCached then
+        local backgroundTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\background.tga")
+        if backgroundTexture and backgroundTexture.isAtlas then
+            VUI.Atlas:ApplyTextureCoordinates(frame.background, backgroundTexture)
+        else
+            -- Fallback
+            frame.background:SetColorTexture(0, 0, 0, 0.3)
+        end
+    else
+        -- Fallback
+        frame.background:SetColorTexture(0, 0, 0, 0.3)
+    end
     
     -- Icon texture
     frame.icon = frame:CreateTexture(nil, "ARTWORK")
     frame.icon:SetAllPoints()
     frame.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9) -- Trim the icon borders
     
-    -- Border
+    -- Icon frame (border) with atlas support
+    frame.iconFrame = frame:CreateTexture(nil, "OVERLAY")
+    frame.iconFrame:SetAllPoints()
+    
+    if VUI.GetTextureCached then
+        local iconFrameTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\icon-frame.tga")
+        if iconFrameTexture and iconFrameTexture.isAtlas then
+            VUI.Atlas:ApplyTextureCoordinates(frame.iconFrame, iconFrameTexture)
+        end
+    end
+    
+    -- Standard border as fallback/overlay
     frame.border = frame:CreateTexture(nil, "OVERLAY")
     frame.border:SetPoint("TOPLEFT", frame, "TOPLEFT", -1, 1)
     frame.border:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 1, -1)
     frame.border:SetColorTexture(0, 0, 0, 1)
     
-    -- Cooldown
+    -- Cooldown with atlas support
     frame.cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
     frame.cooldown:SetAllPoints()
     frame.cooldown:SetDrawEdge(false)
     frame.cooldown:SetDrawSwipe(true)
     frame.cooldown:SetReverse(false)
+    
+    -- Apply custom cooldown swipe texture if available
+    if VUI.GetTextureCached then
+        local cooldownSwipeTexture = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\cooldown-swipe.tga")
+        if cooldownSwipeTexture and cooldownSwipeTexture.isAtlas and frame.cooldown.SetSwipeTexture then
+            -- Not all WoW API versions support SetSwipeTexture, so we check first
+            local swipe = frame.cooldown:CreateTexture(nil, "OVERLAY")
+            VUI.Atlas:ApplyTextureCoordinates(swipe, cooldownSwipeTexture)
+            if frame.cooldown.SetSwipeTexture then
+                frame.cooldown:SetSwipeTexture(swipe:GetTexture())
+            end
+        end
+    end
     
     -- Spell name text
     if self.db.profile.showSpellName then

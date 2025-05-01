@@ -27,8 +27,15 @@ if [ -f "tools/generate_buffoverlay_atlas.sh" ]; then
 else
     echo "   Script not found. Skipping."
 fi
-#
-# echo "3. Generating OmniCD atlas..."
+
+echo "3. Generating TrufiGCD atlas..."
+if [ -f "tools/generate_trufigcd_atlas.sh" ]; then
+    bash tools/generate_trufigcd_atlas.sh
+else
+    echo "   Script not found. Skipping."
+fi
+
+# echo "4. Generating OmniCD atlas..."
 # if [ -f "tools/generate_omnicd_atlas.sh" ]; then
 #     bash tools/generate_omnicd_atlas.sh
 # else
