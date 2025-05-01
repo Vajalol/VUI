@@ -138,11 +138,17 @@ Atlas.coordinates.themes = {
     }
 }
 
--- Module-specific coordinates (example for buffoverlay)
+-- Module-specific coordinates 
 Atlas.coordinates.modules = {
     buffoverlay = {
         ["logo"] = {left = 0, right = 0.5, top = 0, bottom = 0.5},
-        ["logo_transparent"] = {left = 0.5, right = 1, top = 0, bottom = 0.5}
+        ["logo_transparent"] = {left = 0.5, right = 1.0, top = 0, bottom = 0.5},
+        ["background"] = {left = 0, right = 0.25, top = 0.5, bottom = 0.75},
+        ["border"] = {left = 0.25, right = 0.5, top = 0.5, bottom = 0.75},
+        ["glow"] = {left = 0.5, right = 0.75, top = 0.5, bottom = 0.75},
+        ["icon-frame"] = {left = 0.75, right = 1.0, top = 0.5, bottom = 0.75},
+        ["cooldown-swipe"] = {left = 0, right = 0.25, top = 0.75, bottom = 1.0},
+        ["priority-icon"] = {left = 0.25, right = 0.5, top = 0.75, bottom = 1.0}
     },
     omnicd = {
         ["border"] = {left = 0, right = 0.5, top = 0, bottom = 0.5}
