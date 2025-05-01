@@ -6,9 +6,9 @@ This document tracks significant changes to the VUI addon suite.
 
 ### Current Development Focus
 - Enhancing user experience features:
-  - Keybinding improvements for faster UI interaction
   - Enhanced tooltips with more detailed information
   - Context-sensitive UI elements
+  - Improved accessibility features
 - Performance optimization:
   - Reducing memory usage during combat
   - Optimizing texture handling for raid environments

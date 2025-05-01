@@ -160,9 +160,9 @@ VUI includes five comprehensive UI themes:
 
 ## Current Focus: Advanced Features
 1. Enhancing user experience features
-   - Implementing keybinding improvements
    - Adding mouseover tooltips with enhanced information
    - Developing context-sensitive UI elements
+   - Improving accessibility features
 2. Performance optimization
    - Reducing memory footprint during combat
    - Optimizing texture handling for raid environments
