@@ -101,13 +101,13 @@ function FramePool:CreateBuffFrame(index)
     frame.border:SetTexCoord(0.296875, 0.5703125, 0, 0.515625)
     frame.border:SetVertexColor(1, 0, 0, 1) -- Default red border
     
-    -- Glow overlay for theme effects
+    -- Glow overlay for theme effects using the atlas system
     frame.glow = frame:CreateTexture(nil, "OVERLAY")
     frame.glow:SetPoint("TOPLEFT", frame, "TOPLEFT", -3, 3)
     frame.glow:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 3, -3)
     
-    -- Use atlas texture if available
-    local glowTexture = "Interface\\AddOns\\VUI\\media\\textures\\common\\glow.tga"
+    -- Get texture from the module's atlas
+    local glowTexture = "Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\glow.tga"
     local atlasTextureInfo = VUI:GetTextureCached(glowTexture)
     
     if atlasTextureInfo and atlasTextureInfo.isAtlas then
@@ -119,20 +119,42 @@ function FramePool:CreateBuffFrame(index)
             atlasTextureInfo.coords.top,
             atlasTextureInfo.coords.bottom
         )
+        
+        -- Debug info
+        if VUI.debug then
+            VUI:Debug("BuffOverlay using atlas texture for glow")
+        end
     else
         -- Fallback to original texture
         frame.glow:SetTexture("Interface\\Buttons\\UI-Panel-Button-Glow")
         frame.glow:SetTexCoord(0, 1, 0, 1)
+        
+        -- Debug info
+        if VUI.debug then
+            VUI:Debug("BuffOverlay using fallback texture for glow")
+        end
     end
     
     frame.glow:SetBlendMode("ADD")
     frame.glow:SetAlpha(0)
     
-    -- Theme-specific overlay texture
+    -- Theme-specific overlay texture using the atlas system
     frame.themeOverlay = frame:CreateTexture(nil, "OVERLAY")
     frame.themeOverlay:SetAllPoints(frame.icon)
     frame.themeOverlay:SetBlendMode("ADD")
     frame.themeOverlay:SetAlpha(0)
+    
+    -- Pre-load the theme-specific overlays from the theme's atlas
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    local sparkTexture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\spark.tga"
+    local sparkTextureInfo = VUI:GetTextureCached(sparkTexture)
+    
+    if sparkTextureInfo and sparkTextureInfo.isAtlas then
+        -- Will be applied by ThemeIntegration when needed, just preload here
+        if VUI.debug then
+            VUI:Debug("BuffOverlay preloaded theme texture for " .. theme)
+        end
+    end
     
     -- Cooldown swipe
     frame.cooldown = CreateFrame("Cooldown", frame:GetName() .. "Cooldown", frame, "CooldownFrameTemplate")

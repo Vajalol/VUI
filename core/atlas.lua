@@ -412,7 +412,7 @@ function Atlas:RegisterWithMediaSystem()
         }
     end
     
-    -- Add module-specific textures
+    -- Add module-specific textures for BuffOverlay
     VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\logo.tga"] = {
         atlas = "modules.buffoverlay",
         key = "logo"
@@ -420,6 +420,30 @@ function Atlas:RegisterWithMediaSystem()
     VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\logo_transparent.tga"] = {
         atlas = "modules.buffoverlay",
         key = "logo_transparent"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\background.tga"] = {
+        atlas = "modules.buffoverlay",
+        key = "background"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\border.tga"] = {
+        atlas = "modules.buffoverlay",
+        key = "border"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\glow.tga"] = {
+        atlas = "modules.buffoverlay",
+        key = "glow"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\icon-frame.tga"] = {
+        atlas = "modules.buffoverlay",
+        key = "icon-frame"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\cooldown-swipe.tga"] = {
+        atlas = "modules.buffoverlay",
+        key = "cooldown-swipe"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\priority-icon.tga"] = {
+        atlas = "modules.buffoverlay",
+        key = "priority-icon"
     }
     VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\omnicd\\border.tga"] = {
         atlas = "modules.omnicd",

@@ -270,6 +270,39 @@ function BuffOverlay:Initialize()
     if self.FramePool and self.FramePool.Initialize then
         self.FramePool:Initialize()
     end
+    
+    -- Preload the atlas textures for BuffOverlay
+    self:PreloadAtlasTextures()
+    
+    -- Log initialization
+    if VUI.debug then
+        VUI:Debug("BuffOverlay module initialized with Atlas texture optimization")
+    end
+end
+
+-- Preload the atlas textures
+function BuffOverlay:PreloadAtlasTextures()
+    -- Preload the module's texture atlas
+    if VUI.Atlas and VUI.Atlas.PreloadAtlas then
+        VUI.Atlas:PreloadAtlas("modules.buffoverlay")
+        
+        -- Log successful preload
+        if VUI.debug then
+            VUI:Debug("BuffOverlay atlas textures preloaded")
+            
+            -- Display memory stats if available
+            if VUI.Atlas.GetStats then
+                local stats = VUI.Atlas:GetStats()
+                VUI:Debug(string.format("Atlas Stats: Textures Saved: %d, Memory Reduction: %s",
+                    stats.texturesSaved, stats.memoryReduction))
+            end
+        end
+    else
+        -- Log error if atlas system is not available
+        if VUI.debug then
+            VUI:Debug("WARNING: Atlas system not available for BuffOverlay")
+        end
+    end
 end
 
 -- Apply theme to all buff frames
@@ -412,15 +445,33 @@ function BuffOverlay:CreateBuffFrame(index)
     frame.border:SetTexCoord(0.296875, 0.5703125, 0, 0.515625)
     frame.border:SetVertexColor(1, 0, 0, 1) -- Default red border
     
-    -- Glow overlay for theme effects
+    -- Glow overlay for theme effects using atlas system
     frame.glow = frame:CreateTexture(nil, "OVERLAY")
     frame.glow:SetPoint("TOPLEFT", frame, "TOPLEFT", -3, 3)
     frame.glow:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 3, -3)
-    frame.glow:SetTexture("Interface\\Buttons\\UI-Panel-Button-Glow")
+    
+    -- Get glow texture from atlas
+    local glowTexture = "Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\glow.tga"
+    local atlasTextureInfo = VUI:GetTextureCached(glowTexture)
+    
+    if atlasTextureInfo and atlasTextureInfo.isAtlas then
+        -- Apply texture from atlas
+        frame.glow:SetTexture(atlasTextureInfo.path)
+        frame.glow:SetTexCoord(
+            atlasTextureInfo.coords.left,
+            atlasTextureInfo.coords.right,
+            atlasTextureInfo.coords.top,
+            atlasTextureInfo.coords.bottom
+        )
+    else
+        -- Fallback to original texture
+        frame.glow:SetTexture("Interface\\Buttons\\UI-Panel-Button-Glow")
+    end
+    
     frame.glow:SetBlendMode("ADD")
     frame.glow:SetAlpha(0)
     
-    -- Theme-specific overlay texture
+    -- Theme-specific overlay texture with atlas support
     frame.themeOverlay = frame:CreateTexture(nil, "OVERLAY")
     frame.themeOverlay:SetAllPoints(frame.icon)
     frame.themeOverlay:SetBlendMode("ADD")

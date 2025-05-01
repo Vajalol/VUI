@@ -89,10 +89,38 @@ function ThemeIntegration:ApplyThemeToBuffFrame(frame)
                 atlasTextureInfo.coords.top,
                 atlasTextureInfo.coords.bottom
             )
+            
+            -- Log atlas usage if debug mode
+            if VUI.debug then
+                VUI:Debug("BuffOverlay: Applied theme texture from atlas: " .. activeTheme)
+            end
         else
             -- Fallback to original texture if not in atlas
             frame.themeOverlay:SetTexture(themeData.effects.spark or "Interface\\AddOns\\VUI\\media\\textures\\shared\\glow.tga")
             frame.themeOverlay:SetTexCoord(0, 1, 0, 1) -- Reset texture coordinates
+            
+            -- Log fallback if debug mode
+            if VUI.debug then
+                VUI:Debug("BuffOverlay: Using fallback texture for theme: " .. activeTheme)
+            end
+        end
+    end
+    
+    -- Apply icon frame texture from the atlas if available
+    if frame.iconFrame then
+        local iconFrameTexture = "Interface\\AddOns\\VUI\\media\\textures\\buffoverlay\\icon-frame.tga"
+        local atlasTextureInfo = VUI:GetTextureCached(iconFrameTexture)
+        
+        if atlasTextureInfo and atlasTextureInfo.isAtlas then
+            -- Apply texture from atlas
+            frame.iconFrame:SetTexture(atlasTextureInfo.path)
+            frame.iconFrame:SetTexCoord(
+                atlasTextureInfo.coords.left,
+                atlasTextureInfo.coords.right,
+                atlasTextureInfo.coords.top,
+                atlasTextureInfo.coords.bottom
+            )
+            frame.iconFrame:SetVertexColor(colors.border.r, colors.border.g, colors.border.b)
         end
     end
     

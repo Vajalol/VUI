@@ -28,6 +28,11 @@ This document tracks significant changes to the VUI addon suite.
   - Created theme switching functionality with smooth transitions
 
 ### Performance Improvements
+- Enhanced Branding and Visuals:
+  - Created a custom Vortex-themed logo with author branding
+  - Updated TOC metadata with improved descriptions
+  - Integrated the new branding with the Thunder Storm theme colors (deep blue with electric blue accents)
+  - Added a high-quality icon for addon visibility in the addon list
 - Implemented Texture Atlas System:
   - Core framework for texture atlas management
   - Atlas texture mapping and coordinate system
@@ -36,6 +41,7 @@ This document tracks significant changes to the VUI addon suite.
   - Performance statistics tracking in Theme Editor
   - Module-specific atlas implementations:
     - MultiNotification atlas with optimized texture handling
+    - BuffOverlay atlas implementation with frame pooling integration
     - Intelligent texture loading with memory monitoring
     - Comprehensive documentation for continued module atlas implementation
 - Implemented Frame Pooling System:
