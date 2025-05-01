@@ -5,14 +5,19 @@ This document tracks significant changes to the VUI addon suite.
 ## v0.2.0 (In Development)
 
 ### Current Development Focus
-- Enhancing user experience features:
-  - Enhanced tooltips with more detailed information
-  - Context-sensitive UI elements
-  - Improved accessibility features
 - Performance optimization:
   - Reducing memory usage during combat
   - Optimizing texture handling for raid environments
   - Implementing smart event handlers
+  - Texture atlasing for improved loading times
+- Accessibility improvements:
+  - High contrast mode for better visibility
+  - UI scaling options for different display resolutions
+  - Colorblind-friendly theme variants
+- Context-sensitive UI elements:
+  - Situation-aware information panels (dungeon, raid, pvp)
+  - Combat state reactive frames
+  - Role-specific UI adaptations
 
 ### Major Features
 - Complete Theme Enhancement Phase
