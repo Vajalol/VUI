@@ -1,8 +1,9 @@
 ## Interface: 100205
-## Title: |cff1784d1VUI|r
-## Notes: A unified addon suite combining multiple popular addons with centralized configuration
+## Title: |cff0D9DE6V|cff0A0A1AUI|r - Vortex UI
+## Notes: A comprehensive WoW addon suite with advanced UI customization, modular notification system, and performance optimization
 ## Author: VortexQ8
 ## Version: 0.2.0
+## IconTexture: Interface\AddOns\VUI\generated-icon.png
 ## SavedVariables: VUIDB, VUICharacterDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0
 ## X-Website: https://github.com/VortexQ8/VUI

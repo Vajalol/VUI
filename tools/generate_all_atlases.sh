@@ -20,15 +20,13 @@ else
     echo "   Script not found. Skipping."
 fi
 
-# Template for additional module atlas generation
-# Uncomment and adapt as more modules get atlas support
-#
-# echo "2. Generating BuffOverlay atlas..."
-# if [ -f "tools/generate_buffoverlay_atlas.sh" ]; then
-#     bash tools/generate_buffoverlay_atlas.sh
-# else
-#     echo "   Script not found. Skipping."
-# fi
+# Additional module atlas generation
+echo "2. Generating BuffOverlay atlas..."
+if [ -f "tools/generate_buffoverlay_atlas.sh" ]; then
+    bash tools/generate_buffoverlay_atlas.sh
+else
+    echo "   Script not found. Skipping."
+fi
 #
 # echo "3. Generating OmniCD atlas..."
 # if [ -f "tools/generate_omnicd_atlas.sh" ]; then
