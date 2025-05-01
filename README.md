@@ -49,7 +49,7 @@ VUI includes multiple comprehensive UI themes:
 This project is currently in active development. 
 
 For our roadmap and completed features, please refer to:
-- [VUI_MASTER_PLAN.md](VUI_MASTER_PLAN.md) - Our comprehensive development roadmap with current status
+- [ROADMAP.md](ROADMAP.md) - Our comprehensive development roadmap with current status
 
 ## Contact
 
