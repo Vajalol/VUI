@@ -48,9 +48,8 @@ VUI includes multiple comprehensive UI themes:
 
 This project is currently in active development. 
 
-For our roadmap and completed features:
-- [ROADMAP.md](ROADMAP.md) - Structured overview of development phases and their status
-- [VUI_MASTER_PLAN.md](VUI_MASTER_PLAN.md) - Comprehensive and detailed development plan
+For our roadmap and completed features, please refer to:
+- [VUI_MASTER_PLAN.md](VUI_MASTER_PLAN.md) - Our comprehensive development roadmap with current status
 
 ## Contact
 

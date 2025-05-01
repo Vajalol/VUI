@@ -64,60 +64,171 @@ VUI includes five comprehensive UI themes:
 - Theme selection and customization
 - Custom spell importance settings
 
-## Implementation Roadmap
+# VUI Development Roadmap
 
-- **Phase 1: Core Framework (Completed)**
-  - Module system implementation
-  - Theme system development
-  - Configuration UI creation
+This section outlines the development phases, current status, and upcoming work for the VUI addon suite.
 
-- **Phase 2: Module Integration (Completed)**
-  - Module standardization:
-    - MSBT Module ✓
-    - Auctionator Module ✓
-    - AngryKeystones Module ✓
-    - BuffOverlay Module enhancement ✓
-    - OmniCC/OmniCD Integration ✓
-    - DetailsSkin Module ✓
-    - Custom Important Spell List ✓
-    - TrufiGCD Module ✓
-    - SpellNotifications Module ✓
-    - PGFinder Module enhancement ✓
-    - MoveAny Module standardization ✓
-    - idTip Module standardization ✓
-    - nameplates Module standardization ✓
-    - tooltip Module standardization ✓
-    - bags Module standardization ✓
-    - castbar Module standardization ✓
-    - actionbars Module standardization ✓
-    - unitframes Module standardization ✓
-    - infoframe Module standardization ✓
-    - Paperdoll Module standardization ✓
-    - EPF (Enhanced Profile Frames) Module standardization ✓
-    - Profiles Module standardization ✓
-    - Skins Module standardization ✓
-    - Tools Module standardization ✓
-    - VisualConfig Module standardization ✓
-    - Multi-Notification Support ✓
-  - Remove duplicate files ✓
-  - Ensure one-file-per-purpose structure ✓
-  - Merge enhanced functionality into core files ✓
+## Phase 1: Initial Setup (Completed) ✓
+- Core framework implementation ✓
+- Basic module integration ✓
+- Addon structure and file organization ✓
+- Initial package structure ✓
+- Base configuration system ✓
 
-- **Phase 3: Theme Enhancement (Completed)**
-  - Implement all themes across modules ✓
-  - Add custom theme editor ✓
-  - Improve media management ✓
-  - Enhance user experience with smooth transitions ✓
+## Phase 2: Module Standardization (Completed) ✓
+- Standardized configuration panels ✓
+- Module standardization:
+  - MSBT Module ✓
+  - Auctionator Module ✓
+  - AngryKeystones Module ✓
+  - BuffOverlay Module enhancement ✓
+  - OmniCC/OmniCD Integration ✓
+  - DetailsSkin Module ✓
+  - Custom Important Spell List ✓
+  - TrufiGCD Module ✓
+  - SpellNotifications Module ✓
+  - PGFinder Module enhancement ✓
+  - MoveAny Module standardization ✓
+  - idTip Module standardization ✓
+  - nameplates Module standardization ✓
+  - tooltip Module standardization ✓
+  - bags Module standardization ✓
+  - castbar Module standardization ✓
+  - actionbars Module standardization ✓
+  - unitframes Module standardization ✓
+  - infoframe Module standardization ✓
+  - Paperdoll Module standardization ✓
+  - EPF (Enhanced Profile Frames) Module standardization ✓
+  - Profiles Module standardization ✓
+  - Skins Module standardization ✓
+  - Tools Module standardization ✓
+  - VisualConfig Module standardization ✓
+  - Multi-Notification Support ✓
+- Unified logging system ✓
+- Common API for module interactions ✓
+- Theme foundation system ✓
+- Shared utility functions ✓
+- Module dependency management ✓
+- Remove duplicate files ✓
+- Ensure one-file-per-purpose structure ✓
+- Merge enhanced functionality into core files ✓
 
-- **Phase 4: Advanced Features (In Progress)**
-  - Multi-notification support ✓
-  - Enhanced user experience features
-  - Performance optimization
+## Phase 3: Theme Enhancement (Completed) ✓
+- Implementing all themes across modules with the standardized ThemeIntegration system ✓
+- Developing the custom theme editor for user-created themes ✓
+- Improving media management for better performance ✓
+  - Texture caching system implemented ✓
+  - Lazy loading for non-essential textures ✓ 
+  - Memory optimization through cache clearing ✓
+  - Preloading functionality for theme assets ✓
+  - Media Stats tab added to Theme Editor ✓
+- Enhancing user experience with smoother transitions and feedback ✓
+  - Comprehensive animation framework implemented ✓
+  - Fade, slide, scale, flash, glow, and shine effects added ✓
+  - Smooth transitions for theme changes ✓
+  - Animated dashboard modules and buttons ✓
+  - Performance-aware animations (FPS-based disabling) ✓
+- Theme-aware module integration ✓
+- Runtime theme switching system ✓
+- Theme element inheritance ✓
+- Comprehensive color schemes ✓
+- Visual consistency across all modules ✓
+- Integrating the Multi-Notification system with existing notification modules ✓
 
-- **Phase 5: Optimization**
-  - Performance improvements
-  - Memory usage reduction
-  - Combat frame rate optimization
+## Phase 4: Performance Optimization (In Progress) ⟳
+
+### Completed Optimizations ✓
+- Texture Atlas System Core Framework ✓
+  - Atlas framework implementation ✓
+  - Atlas texture mapping and coordinates system ✓
+  - UI integration helpers for atlas textures ✓
+  - Atlas generator tools for development ✓
+  - Media system integration ✓
+  - Statistics tracking in Theme Editor ✓
+  - Module-specific atlas implementations:
+    - MultiNotification atlas implementation ✓
+    - BuffOverlay atlas implementation ✓ 
+    - TrufiGCD atlas implementation ✓
+- Frame Pooling for Dynamic UI Elements ✓
+- Smart Event Registration ✓
+- Media Loading Optimization ✓
+- Memory Usage Monitoring ✓
+- Frame Creation Efficiency ✓
+- Performance metrics documentation ✓
+
+### In Progress Optimizations ⟳
+- OmniCD Texture Atlas Implementation ⟳
+- MoveAny Texture Atlas Implementation ⟳
+- Frame Throttling During Combat ⟳
+- Reducing memory footprint during combat ⟳
+- Event handling optimization ⟳
+- Atlas-Based Theme Switching Performance ⟳
+- Resource Cleanup During Idle ⟳
+
+### Planned Optimizations ☐
+- DetailsRedux Texture Atlas Implementation ☐
+- Global Font System Optimization ☐
+- Database Access Optimization ☐
+- Spell Detection Logic Enhancement ☐
+- Dynamic Module Loading ☐
+- Frame rate based throttling ☐
+
+## Phase 5: Accessibility Enhancements (Planned) ☐
+- High contrast mode ☐
+- UI scaling options ☐
+- Colorblind-friendly theme variants ☐
+- Keyboard navigation enhancement ☐
+- Audio feedback options ☐
+- Profile management improvements ☐
+
+## Phase 6: Context-Sensitive UI (Planned) ☐
+- Situation-aware information panels ☐
+- Combat state reactive frames ☐
+- Role-specific UI adaptations ☐
+- Specialization-based layouts ☐
+- Dungeon/Raid specific enhancements ☐
+- PvP-optimized interfaces ☐
+
+## Module-Specific Roadmap
+
+### MultiNotification
+- ✓ Core notification system
+- ✓ Spell event tracking
+- ✓ Theme integration
+- ✓ Texture atlas implementation
+- ✓ Frame pooling optimization
+- ⟳ Priority system enhancement
+- ⟳ Customizable positioning
+- ☐ Animation variations
+- ☐ Sound customization
+
+### BuffOverlay
+- ✓ Core buff tracking
+- ✓ Theme integration  
+- ✓ Texture atlas implementation
+- ✓ Frame pooling optimization
+- ⟳ Enhanced visibility options
+- ☐ Diminishing returns tracking
+- ☐ Buff group categorization
+- ☐ Special effects for important buffs
+
+### TrufiGCD
+- ✓ Core ability tracking
+- ✓ Theme integration
+- ✓ Texture atlas implementation
+- ⟳ Enhanced icon customization
+- ⟳ Advanced filtering options
+- ☐ Spell categorization
+- ☐ Timeline view option
+- ☐ Integration with Details damage meter
+
+### OmniCD
+- ✓ Core cooldown tracking
+- ✓ Theme integration
+- ⟳ Texture atlas implementation (in progress)
+- ☐ Enhanced party frame integration
+- ☐ Priority system
+- ☐ Specialized raid layouts
 
 ## Development Standards
 
@@ -141,51 +252,10 @@ VUI includes five comprehensive UI themes:
 - Must use existing module names exactly as specified
 - Enhancing existing modules rather than creating new ones
 
-## Previous Milestone: Theme Enhancement (Completed) ✓
-1. Implementing all themes across modules with the standardized ThemeIntegration system ✓
-2. Developing the custom theme editor for user-created themes ✓
-3. Improving media management for better performance ✓
-   - Texture caching system implemented ✓
-   - Lazy loading for non-essential textures ✓ 
-   - Memory optimization through cache clearing ✓
-   - Preloading functionality for theme assets ✓
-   - Media Stats tab added to Theme Editor ✓
-4. Enhancing user experience with smoother transitions and feedback ✓
-   - Comprehensive animation framework implemented ✓
-   - Fade, slide, scale, flash, glow, and shine effects added ✓
-   - Smooth transitions for theme changes ✓
-   - Animated dashboard modules and buttons ✓
-   - Performance-aware animations (FPS-based disabling) ✓
-5. Integrating the Multi-Notification system with existing notification modules ✓
-
-## Current Focus: Performance Optimization (In Progress)
-1. Texture Atlas System (In Progress)
-   - Atlas framework implementation ✓
-   - Atlas texture mapping and coordinates system ✓
-   - UI integration helpers for atlas textures ✓
-   - Atlas generator tools for development ✓
-   - Media system integration ✓
-   - Statistics tracking in Theme Editor ✓
-   - Module-specific atlas implementations:
-     - MultiNotification atlas implementation ✓
-     - BuffOverlay atlas implementation ✓ 
-     - TrufiGCD atlas implementation ✓
-     - OmniCD atlas implementation (Next)
-     - MoveAny atlas implementation (Next)
-   - Performance metrics documentation ✓
-2. Additional Performance Optimizations (In Progress)
-   - Frame pooling implementation ✓
-   - Reducing memory footprint during combat (In Progress)
-   - Event handling optimization (In Progress)
-   - Frame rate based throttling (Planned)
-3. Improving accessibility features (Planned)
-   - Adding high contrast mode
-   - Implementing UI scaling options
-   - Creating colorblind-friendly theme variants
-4. Developing context-sensitive UI elements (Planned)
-   - Situation-aware information panels (dungeon, raid, pvp)
-   - Combat state reactive frames
-   - Role-specific UI adaptations
+## Legend
+- ✓ Completed
+- ⟳ In Progress
+- ☐ Planned
 
 ## Configuration Approach
 - Tabbed interface for better organization of settings
