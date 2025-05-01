@@ -111,8 +111,8 @@ VUI includes five comprehensive UI themes:
 
 - **Phase 4: Advanced Features (In Progress)**
   - Multi-notification support ✓
-  - Custom important spell lists
   - Enhanced user experience features
+  - Performance optimization
 
 - **Phase 5: Optimization**
   - Performance improvements
@@ -159,15 +159,11 @@ VUI includes five comprehensive UI themes:
 5. Integrating the Multi-Notification system with existing notification modules ✓
 
 ## Current Focus: Advanced Features
-1. Extending the custom important spell lists system
-   - Adding spell category management
-   - Implementing spell priority levels
-   - Creating visual indicators for different spell types
-2. Enhancing user experience features
+1. Enhancing user experience features
    - Implementing keybinding improvements
    - Adding mouseover tooltips with enhanced information
    - Developing context-sensitive UI elements
-3. Performance optimization
+2. Performance optimization
    - Reducing memory footprint during combat
    - Optimizing texture handling for raid environments
    - Implementing smart event handling

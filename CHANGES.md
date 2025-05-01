@@ -4,6 +4,16 @@ This document tracks significant changes to the VUI addon suite.
 
 ## v0.2.0 (In Development)
 
+### Current Development Focus
+- Enhancing user experience features:
+  - Keybinding improvements for faster UI interaction
+  - Enhanced tooltips with more detailed information
+  - Context-sensitive UI elements
+- Performance optimization:
+  - Reducing memory usage during combat
+  - Optimizing texture handling for raid environments
+  - Implementing smart event handlers
+
 ### Major Features
 - Complete Theme Enhancement Phase
   - Implemented standardized ThemeIntegration system across all modules
