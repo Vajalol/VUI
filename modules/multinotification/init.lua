@@ -26,6 +26,15 @@ MultiNotification.defaults = {
         sharedCooldown = 1.0,
         useFramePooling = true,
     },
+    spellSettings = {
+        enabled = true,
+        notifyAllInterrupts = true,
+        notifyAllDispels = true,
+        showSourceInfo = true,
+        displayTime = 3,
+        importantSpells = {},
+        useFramePooling = true
+    },
     categorySettings = {
         interrupt = {
             enabled = true,
