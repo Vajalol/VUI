@@ -63,6 +63,10 @@ Atlas.files = {
         trufigcd = {
             path = "Interface\\AddOns\\VUI\\media\\textures\\atlas\\trufigcd.tga",
             size = {width = 512, height = 512}
+        },
+        multinotification = {
+            path = "Interface\\AddOns\\VUI\\media\\textures\\atlas\\modules\\multinotification.tga",
+            size = {width = 512, height = 512}
         }
     }
 }
@@ -145,6 +149,17 @@ Atlas.coordinates.modules = {
     },
     trufigcd = {
         ["border"] = {left = 0, right = 0.5, top = 0, bottom = 0.5}
+    },
+    multinotification = {
+        ["notification-background"] = {left = 0, right = 0.25, top = 0, bottom = 0.25},
+        ["notification-border"] = {left = 0.25, right = 0.5, top = 0, bottom = 0.25},
+        ["notification-glow"] = {left = 0.5, right = 0.75, top = 0, bottom = 0.25},
+        ["notification-icon-frame"] = {left = 0.75, right = 1.0, top = 0, bottom = 0.25},
+        ["spell-alert-frame"] = {left = 0, right = 0.25, top = 0.25, bottom = 0.5},
+        ["interrupt-icon"] = {left = 0.25, right = 0.375, top = 0.25, bottom = 0.375},
+        ["dispel-icon"] = {left = 0.375, right = 0.5, top = 0.25, bottom = 0.375},
+        ["important-icon"] = {left = 0.5, right = 0.625, top = 0.25, bottom = 0.375},
+        ["cooldown-spiral"] = {left = 0.625, right = 0.75, top = 0.25, bottom = 0.375}
     }
 }
 
@@ -407,6 +422,44 @@ function Atlas:RegisterWithMediaSystem()
     VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\trufigcd\\border.tga"] = {
         atlas = "modules.trufigcd",
         key = "border"
+    }
+    
+    -- Add MultiNotification textures
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\notification-background.tga"] = {
+        atlas = "modules.multinotification",
+        key = "notification-background"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\notification-border.tga"] = {
+        atlas = "modules.multinotification",
+        key = "notification-border"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\notification-glow.tga"] = {
+        atlas = "modules.multinotification",
+        key = "notification-glow"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\notification-icon-frame.tga"] = {
+        atlas = "modules.multinotification",
+        key = "notification-icon-frame"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\spell-alert-frame.tga"] = {
+        atlas = "modules.multinotification",
+        key = "spell-alert-frame"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\interrupt-icon.tga"] = {
+        atlas = "modules.multinotification",
+        key = "interrupt-icon"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\dispel-icon.tga"] = {
+        atlas = "modules.multinotification",
+        key = "dispel-icon"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\important-icon.tga"] = {
+        atlas = "modules.multinotification",
+        key = "important-icon"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\cooldown-spiral.tga"] = {
+        atlas = "modules.multinotification",
+        key = "cooldown-spiral"
     }
 end
 

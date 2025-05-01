@@ -258,6 +258,18 @@ function MultiNotification:OnInitialize()
         self:PreCreateNotificationFrames()
     end
     
+    -- Preload the MultiNotification atlas textures for performance optimization
+    if VUI.Atlas then
+        VUI.Atlas:PreloadAtlas("modules.multinotification")
+        
+        if VUI.debug then
+            VUI:Print("MultiNotification atlas textures preloaded")
+            local stats = VUI.Atlas:GetStats()
+            VUI:Print(string.format("Atlas texture stats: %d textures saved, %s memory reduction", 
+                stats.texturesSaved, stats.memoryReduction))
+        end
+    end
+    
     VUI:Print("MultiNotification module initialized")
 end
 
@@ -512,24 +524,78 @@ function MultiNotification:ConfigureNotificationFrame(frame, notificationType, i
         frame.text:Hide()
     end
     
-    -- Set visuals based on theme
-    frame.background:SetTexture(themeSettings.textures.background)
-    frame.background:SetVertexColor(unpack(themeSettings.colors.background))
-    
-    if categorySettings.showBorder then
-        frame.border:SetTexture(themeSettings.textures.border)
-        frame.border:SetVertexColor(unpack(themeSettings.colors.border))
-        frame.border:Show()
+    -- Set visuals based on theme, using atlas textures when available
+    if VUI.Atlas then
+        -- Use atlas textures for notification background
+        local bgAtlasInfo = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\multinotification\\notification-background.tga")
+        if bgAtlasInfo and bgAtlasInfo.isAtlas then
+            VUI.Atlas:ApplyTextureCoordinates(frame.background, bgAtlasInfo)
+            frame.background:SetVertexColor(unpack(themeSettings.colors.background))
+        else
+            -- Fallback to traditional texture
+            frame.background:SetTexture(themeSettings.textures.background)
+            frame.background:SetVertexColor(unpack(themeSettings.colors.background))
+        end
+        
+        if categorySettings.showBorder then
+            local borderAtlasInfo = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\multinotification\\notification-border.tga")
+            if borderAtlasInfo and borderAtlasInfo.isAtlas then
+                VUI.Atlas:ApplyTextureCoordinates(frame.border, borderAtlasInfo)
+                frame.border:SetVertexColor(unpack(themeSettings.colors.border))
+            else
+                frame.border:SetTexture(themeSettings.textures.border)
+                frame.border:SetVertexColor(unpack(themeSettings.colors.border))
+            end
+            frame.border:Show()
+        else
+            frame.border:Hide()
+        end
+        
+        if categorySettings.showGlow then
+            local glowAtlasInfo = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\multinotification\\notification-glow.tga")
+            if glowAtlasInfo and glowAtlasInfo.isAtlas then
+                VUI.Atlas:ApplyTextureCoordinates(frame.glow, glowAtlasInfo)
+                frame.glow:SetVertexColor(unpack(themeSettings.colors.glow))
+            else
+                frame.glow:SetTexture(themeSettings.textures.glow)
+                frame.glow:SetVertexColor(unpack(themeSettings.colors.glow))
+            end
+            frame.glow:Show()
+        else
+            frame.glow:Hide()
+        end
+        
+        -- Use atlas texture for cooldown spiral if available
+        local spiralAtlasInfo = VUI:GetTextureCached("Interface\\AddOns\\VUI\\media\\textures\\multinotification\\cooldown-spiral.tga")
+        if spiralAtlasInfo and spiralAtlasInfo.isAtlas then
+            frame.cooldown:SetSwipeTexture(spiralAtlasInfo.path)
+            frame.cooldown:SetTexCoord(
+                spiralAtlasInfo.coords.left,
+                spiralAtlasInfo.coords.right,
+                spiralAtlasInfo.coords.top,
+                spiralAtlasInfo.coords.bottom
+            )
+        end
     else
-        frame.border:Hide()
-    end
-    
-    if categorySettings.showGlow then
-        frame.glow:SetTexture(themeSettings.textures.glow)
-        frame.glow:SetVertexColor(unpack(themeSettings.colors.glow))
-        frame.glow:Show()
-    else
-        frame.glow:Hide()
+        -- Traditional textures (non-atlas fallback)
+        frame.background:SetTexture(themeSettings.textures.background)
+        frame.background:SetVertexColor(unpack(themeSettings.colors.background))
+        
+        if categorySettings.showBorder then
+            frame.border:SetTexture(themeSettings.textures.border)
+            frame.border:SetVertexColor(unpack(themeSettings.colors.border))
+            frame.border:Show()
+        else
+            frame.border:Hide()
+        end
+        
+        if categorySettings.showGlow then
+            frame.glow:SetTexture(themeSettings.textures.glow)
+            frame.glow:SetVertexColor(unpack(themeSettings.colors.glow))
+            frame.glow:Show()
+        else
+            frame.glow:Hide()
+        end
     end
     
     -- Set duration
