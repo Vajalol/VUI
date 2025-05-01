@@ -1,0 +1,4 @@
+-- Placeholder for buttons.tga atlas texture
+-- In actual implementation, this would be a TGA image file
+-- containing multiple button textures arranged in a specific layout
+-- as defined in Atlas.coordinates.buttons

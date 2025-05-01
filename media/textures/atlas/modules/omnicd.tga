@@ -1,0 +1,4 @@
+-- Placeholder for omnicd.tga atlas texture
+-- In actual implementation, this would be a TGA image file
+-- containing multiple OmniCD module textures arranged in a specific layout
+-- as defined in Atlas.coordinates.modules.omnicd

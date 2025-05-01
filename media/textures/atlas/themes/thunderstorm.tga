@@ -1,0 +1,4 @@
+-- Placeholder for thunderstorm.tga atlas texture
+-- In actual implementation, this would be a TGA image file
+-- containing multiple thunderstorm theme textures arranged in a specific layout
+-- as defined in Atlas.coordinates.themes.thunderstorm

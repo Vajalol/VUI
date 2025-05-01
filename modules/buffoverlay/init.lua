@@ -265,6 +265,11 @@ function BuffOverlay:Initialize()
     if self.ThemeIntegration and self.ThemeIntegration.Initialize then
         self.ThemeIntegration:Initialize()
     end
+    
+    -- Initialize the frame pool system
+    if self.FramePool and self.FramePool.Initialize then
+        self.FramePool:Initialize()
+    end
 end
 
 -- Apply theme to all buff frames
@@ -356,11 +361,35 @@ function BuffOverlay:SetupFrames()
     local scale = VUI.db.profile.modules.buffoverlay.scale
     self.container:SetScale(scale)
     
-    -- Create buff frames (pre-create a reasonable number for reuse)
-    for i = 1, 20 do
-        local frame = self:CreateBuffFrame(i)
-        frame:Hide()
-        table.insert(self.frames, frame)
+    -- Check if frame pooling is available and enabled
+    local useFramePooling = VUI.db.profile.modules.buffoverlay.useFramePooling
+    if useFramePooling == nil then
+        -- Default to enable if not explicitly set
+        useFramePooling = true
+        VUI.db.profile.modules.buffoverlay.useFramePooling = true
+    end
+    
+    if self.FramePool and useFramePooling then
+        -- Release all existing frames
+        self.FramePool:ReleaseAllFrames("buff")
+        
+        -- Don't pre-create frames here, the FramePool system handles this
+        -- in its Initialize method
+        
+        -- Log debug info
+        if VUI.debug then
+            local stats = self.FramePool:GetStats()
+            VUI:Print(string.format("BuffOverlay using FramePool system - Available frames: %d, Recycled: %d", 
+                #self.FramePool.pools.buff.inactive, stats.framesRecycled))
+        end
+    else
+        -- Fallback to legacy system for backward compatibility
+        -- Create buff frames (pre-create a reasonable number for reuse)
+        for i = 1, 20 do
+            local frame = self:CreateBuffFrame(i)
+            frame:Hide()
+            table.insert(self.frames, frame)
+        end
     end
 end
 
@@ -1076,15 +1105,29 @@ end
 function BuffOverlay:ScheduleDisplayUpdate(unit, cache)
     if not unit or not cache then return end
     
-    -- Hide all frames initially
-    for _, frame in pairs(self.frames) do
-        frame:Hide()
-    end
-    
     local config = VUI.db.profile.modules.buffoverlay
     local size = config.size
     local spacing = config.spacing
     local growthDirection = config.growthDirection
+    local activeFrames = {}
+    
+    -- Check if frame pooling is enabled
+    local useFramePooling = VUI.db.profile.modules.buffoverlay.useFramePooling
+    if useFramePooling == nil then
+        -- Default to enable if not explicitly set
+        useFramePooling = true
+        VUI.db.profile.modules.buffoverlay.useFramePooling = true
+    end
+    
+    -- Release all previously used frames if using frame pooling
+    if self.FramePool and useFramePooling then
+        self.FramePool:ReleaseAllFrames("buff")
+    else
+        -- Legacy method: Hide all frames initially
+        for _, frame in pairs(self.frames) do
+            frame:Hide()
+        end
+    end
     
     -- Convert cache to array for sorting
     local visibleAuras = {}
@@ -1123,11 +1166,41 @@ function BuffOverlay:ScheduleDisplayUpdate(unit, cache)
         end
     end)
     
+    -- Determine number of visible auras
+    local numVisible
+    local useFramePooling = VUI.db.profile.modules.buffoverlay.useFramePooling
+    if useFramePooling == nil then
+        useFramePooling = true
+        VUI.db.profile.modules.buffoverlay.useFramePooling = true
+    end
+    
+    if self.FramePool and useFramePooling then
+        -- When using frame pooling, we can display as many auras as needed
+        numVisible = math.min(#visibleAuras, 30) -- Still set a reasonable limit
+    else
+        -- Legacy system is limited by pre-created frames
+        numVisible = math.min(#visibleAuras, #self.frames)
+    end
+    
     -- Display auras with enhanced visuals
-    local numVisible = math.min(#visibleAuras, #self.frames)
     for i = 1, numVisible do
         local aura = visibleAuras[i]
-        local frame = self.frames[i]
+        local frame
+        
+        -- Get a frame from the frame pool if available and enabled
+        local useFramePooling = VUI.db.profile.modules.buffoverlay.useFramePooling
+        if useFramePooling == nil then
+            useFramePooling = true
+            VUI.db.profile.modules.buffoverlay.useFramePooling = true
+        end
+        
+        if self.FramePool and useFramePooling then
+            frame = self.FramePool:AcquireFrame("buff")
+            table.insert(activeFrames, frame)
+        else
+            -- Legacy system uses pre-created frames
+            frame = self.frames[i]
+        end
         
         -- Set position
         if i == 1 then
@@ -1153,11 +1226,38 @@ function BuffOverlay:ScheduleDisplayUpdate(unit, cache)
                 x, y = spacing, 0
             end
             
-            frame:SetPoint(anchor, self.frames[i-1], anchorTo, x, y)
+            -- Reference the previous frame in the appropriate collection
+            local previousFrame
+            local useFramePooling = VUI.db.profile.modules.buffoverlay.useFramePooling
+            if useFramePooling == nil then
+                useFramePooling = true
+                VUI.db.profile.modules.buffoverlay.useFramePooling = true
+            end
+            
+            if self.FramePool and useFramePooling then
+                previousFrame = activeFrames[i-1]
+            else
+                previousFrame = self.frames[i-1]
+            end
+            
+            frame:SetPoint(anchor, previousFrame, anchorTo, x, y)
         end
         
         -- Apply enhanced visuals
         self:EnhanceAuraVisual(frame, aura, config)
+    end
+    
+    -- Performance monitoring if debug mode is on
+    if VUI.debug and self.FramePool and useFramePooling then
+        local stats = self.FramePool:GetStats()
+        if stats.framesRecycled > 0 then
+            VUI:Print(string.format(
+                "BuffOverlay frame recycling: Showing %d auras, recycled %d frames (%.2f MB saved)", 
+                numVisible, 
+                stats.framesRecycled,
+                stats.memoryReduction
+            ))
+        end
     end
 end
 
@@ -1308,9 +1408,21 @@ function BuffOverlay:Enable()
 end
 
 function BuffOverlay:Disable()
-    -- Hide all frames
-    for _, frame in pairs(self.frames) do
-        frame:Hide()
+    -- Hide and release all frames
+    local useFramePooling = VUI.db.profile.modules.buffoverlay.useFramePooling
+    if useFramePooling == nil then
+        useFramePooling = true
+        VUI.db.profile.modules.buffoverlay.useFramePooling = true
+    end
+    
+    if self.FramePool and useFramePooling then
+        -- Using frame pooling system
+        self.FramePool:ReleaseAllFrames("buff")
+    else
+        -- Legacy system
+        for _, frame in pairs(self.frames) do
+            frame:Hide()
+        end
     end
     
     if self.container then
@@ -1373,10 +1485,21 @@ function BuffOverlay:UpdateSettings()
         self.container:SetScale(settings.scale)
     end
     
-    -- Update cooldown display
-    for _, frame in pairs(self.frames) do
-        if frame.cooldown then
-            frame.cooldown:SetHideCountdownNumbers(not settings.showTimer)
+    if self.FramePool then
+        -- Using frame pooling system
+        -- Update active frames in the pool
+        for _, frame in pairs(self.FramePool.pools.buff.active) do
+            if frame.cooldown then
+                frame.cooldown:SetHideCountdownNumbers(not settings.showTimer)
+            end
+        end
+    else
+        -- Legacy system
+        -- Update cooldown display for pre-created frames
+        for _, frame in pairs(self.frames) do
+            if frame.cooldown then
+                frame.cooldown:SetHideCountdownNumbers(not settings.showTimer)
+            end
         end
     end
     
@@ -1384,6 +1507,24 @@ function BuffOverlay:UpdateSettings()
     self:UpdateAuras("player")
     self:UpdateAuras("target")
     self:UpdateAuras("focus")
+    
+    -- Log frame pooling stats if debug mode is enabled
+    local useFramePooling = VUI.db.profile.modules.buffoverlay.useFramePooling
+    if useFramePooling == nil then
+        useFramePooling = true
+        VUI.db.profile.modules.buffoverlay.useFramePooling = true
+    end
+    
+    if VUI.debug and self.FramePool and useFramePooling then
+        local stats = self.FramePool:GetStats()
+        VUI:Print(string.format(
+            "BuffOverlay frame pooling stats - Created: %d, Active: %d, Recycled: %d, Memory saved: %.2f MB",
+            stats.framesCreated,
+            stats.activeFrames,
+            stats.framesRecycled,
+            stats.memoryReduction
+        ))
+    end
 end
 
 -- Get options for the config panel
@@ -1513,6 +1654,60 @@ function BuffOverlay:GetOptions()
                             VUI.db.profile.modules.buffoverlay.showStackCount = value
                             BuffOverlay:UpdateSettings()
                         end,
+                    },
+                }
+            },
+            performance = {
+                type = "group",
+                name = "Performance Options",
+                order = 3.5,
+                inline = true,
+                disabled = function() return not VUI:IsModuleEnabled("buffoverlay") end,
+                args = {
+                    useFramePooling = {
+                        type = "toggle",
+                        name = "Use Frame Pooling",
+                        desc = "Enable frame pooling system for improved performance and reduced memory usage",
+                        order = 1,
+                        width = "full",
+                        get = function() 
+                            if VUI.db.profile.modules.buffoverlay.useFramePooling == nil then
+                                VUI.db.profile.modules.buffoverlay.useFramePooling = true
+                            end
+                            return VUI.db.profile.modules.buffoverlay.useFramePooling 
+                        end,
+                        set = function(_, value)
+                            VUI.db.profile.modules.buffoverlay.useFramePooling = value
+                            -- Recreate frames with the new system
+                            BuffOverlay:SetupFrames()
+                            -- Force a full update
+                            BuffOverlay:UpdateSettings()
+                        end,
+                    },
+                    performanceHeader = {
+                        type = "header",
+                        name = "Performance Information",
+                        order = 2,
+                        hidden = function() return not VUI.debug end,
+                    },
+                    performanceInfo = {
+                        type = "description",
+                        name = function()
+                            if not BuffOverlay.FramePool then
+                                return "Frame pooling statistics unavailable."
+                            end
+                            
+                            local stats = BuffOverlay.FramePool:GetStats()
+                            return string.format(
+                                "Frame pooling statistics:\nFrames created: %d\nFrames recycled: %d\nActive frames: %d\nMemory saved: %.2f MB", 
+                                stats.framesCreated, 
+                                stats.framesRecycled,
+                                stats.activeFrames,
+                                stats.memoryReduction
+                            )
+                        end,
+                        order = 3,
+                        hidden = function() return not VUI.debug end,
                     },
                 }
             },

@@ -74,9 +74,26 @@ function ThemeIntegration:ApplyThemeToBuffFrame(frame)
         themeData = BuffOverlay.ThemeAssets.thunderstorm
     end
     
-    -- Set theme-specific textures
+    -- Set theme-specific textures using the atlas system
     if frame.themeOverlay then
-        frame.themeOverlay:SetTexture(themeData.effects.spark or "Interface\\AddOns\\VUI\\media\\textures\\shared\\glow.tga")
+        -- Get the texture from atlas if possible
+        local sparkTexture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. activeTheme .. "\\spark.tga"
+        local atlasTextureInfo = VUI:GetTextureCached(sparkTexture)
+        
+        if atlasTextureInfo and atlasTextureInfo.isAtlas then
+            -- Apply texture from atlas
+            frame.themeOverlay:SetTexture(atlasTextureInfo.path)
+            frame.themeOverlay:SetTexCoord(
+                atlasTextureInfo.coords.left,
+                atlasTextureInfo.coords.right,
+                atlasTextureInfo.coords.top,
+                atlasTextureInfo.coords.bottom
+            )
+        else
+            -- Fallback to original texture if not in atlas
+            frame.themeOverlay:SetTexture(themeData.effects.spark or "Interface\\AddOns\\VUI\\media\\textures\\shared\\glow.tga")
+            frame.themeOverlay:SetTexCoord(0, 1, 0, 1) -- Reset texture coordinates
+        end
     end
     
     -- Apply theme colors
@@ -86,6 +103,25 @@ function ThemeIntegration:ApplyThemeToBuffFrame(frame)
     end
     
     if frame.glow then
+        -- Apply glow from atlas
+        local glowTexture = "Interface\\AddOns\\VUI\\media\\textures\\common\\glow.tga"
+        local atlasTextureInfo = VUI:GetTextureCached(glowTexture)
+        
+        if atlasTextureInfo and atlasTextureInfo.isAtlas then
+            -- Apply texture from atlas
+            frame.glow:SetTexture(atlasTextureInfo.path)
+            frame.glow:SetTexCoord(
+                atlasTextureInfo.coords.left,
+                atlasTextureInfo.coords.right,
+                atlasTextureInfo.coords.top,
+                atlasTextureInfo.coords.bottom
+            )
+        else
+            -- Fallback to original texture
+            frame.glow:SetTexture("Interface\\AddOns\\VUI\\media\\textures\\glow.tga")
+            frame.glow:SetTexCoord(0, 1, 0, 1) -- Reset texture coordinates
+        end
+        
         frame.glow:SetVertexColor(colors.glow.r, colors.glow.g, colors.glow.b)
     end
     
@@ -120,22 +156,56 @@ function ThemeIntegration:StyleContainerFrame()
     
     -- Style container background if it exists
     if container.background then
-        container.background:SetColorTexture(
-            backgroundColor.r, 
-            backgroundColor.g, 
-            backgroundColor.b, 
-            backgroundColor.a or 0.5
-        )
+        -- Try to get background texture from atlas
+        local bgTexture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. activeTheme .. "\\background.tga"
+        local atlasTextureInfo = VUI:GetTextureCached(bgTexture)
+        
+        if atlasTextureInfo and atlasTextureInfo.isAtlas then
+            -- Apply texture from atlas
+            container.background:SetTexture(atlasTextureInfo.path)
+            container.background:SetTexCoord(
+                atlasTextureInfo.coords.left,
+                atlasTextureInfo.coords.right,
+                atlasTextureInfo.coords.top,
+                atlasTextureInfo.coords.bottom
+            )
+            container.background:SetVertexColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a or 0.5)
+        else
+            -- Fallback to color texture
+            container.background:SetColorTexture(
+                backgroundColor.r, 
+                backgroundColor.g, 
+                backgroundColor.b, 
+                backgroundColor.a or 0.5
+            )
+        end
     end
     
     -- Style container border if it exists
     if container.border then
-        container.border:SetColorTexture(
-            borderColor.r, 
-            borderColor.g, 
-            borderColor.b, 
-            borderColor.a or 0.8
-        )
+        -- Try to get border texture from atlas
+        local borderTexture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. activeTheme .. "\\border.tga"
+        local atlasTextureInfo = VUI:GetTextureCached(borderTexture)
+        
+        if atlasTextureInfo and atlasTextureInfo.isAtlas then
+            -- Apply texture from atlas
+            container.border:SetTexture(atlasTextureInfo.path)
+            container.border:SetTexCoord(
+                atlasTextureInfo.coords.left,
+                atlasTextureInfo.coords.right,
+                atlasTextureInfo.coords.top,
+                atlasTextureInfo.coords.bottom
+            )
+            container.border:SetVertexColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a or 0.8)
+        else
+            -- Fallback to color texture
+            container.border:SetColorTexture(
+                borderColor.r, 
+                borderColor.g, 
+                borderColor.b, 
+                borderColor.a or 0.8
+            )
+        end
     end
 end
 
@@ -148,24 +218,58 @@ function ThemeIntegration:StyleConfigPanel()
     local borderColor = self:GetColor("border")
     local textColor = self:GetColor("text")
     
-    -- Apply background color
+    -- Apply background using atlas if available
     if panel.bg then
-        panel.bg:SetColorTexture(
-            backgroundColor.r,
-            backgroundColor.g,
-            backgroundColor.b,
-            backgroundColor.a or 0.7
-        )
+        -- Try to get background texture from atlas
+        local bgTexture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. activeTheme .. "\\background.tga"
+        local atlasTextureInfo = VUI:GetTextureCached(bgTexture)
+        
+        if atlasTextureInfo and atlasTextureInfo.isAtlas then
+            -- Apply texture from atlas
+            panel.bg:SetTexture(atlasTextureInfo.path)
+            panel.bg:SetTexCoord(
+                atlasTextureInfo.coords.left,
+                atlasTextureInfo.coords.right,
+                atlasTextureInfo.coords.top,
+                atlasTextureInfo.coords.bottom
+            )
+            panel.bg:SetVertexColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a or 0.7)
+        else
+            -- Fallback to color texture
+            panel.bg:SetColorTexture(
+                backgroundColor.r,
+                backgroundColor.g,
+                backgroundColor.b,
+                backgroundColor.a or 0.7
+            )
+        end
     end
     
-    -- Apply border color
+    -- Apply border using atlas if available
     if panel.border then
-        panel.border:SetColorTexture(
-            borderColor.r,
-            borderColor.g,
-            borderColor.b,
-            borderColor.a or 0.8
-        )
+        -- Try to get border texture from atlas
+        local borderTexture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. activeTheme .. "\\border.tga"
+        local atlasTextureInfo = VUI:GetTextureCached(borderTexture)
+        
+        if atlasTextureInfo and atlasTextureInfo.isAtlas then
+            -- Apply texture from atlas
+            panel.border:SetTexture(atlasTextureInfo.path)
+            panel.border:SetTexCoord(
+                atlasTextureInfo.coords.left,
+                atlasTextureInfo.coords.right,
+                atlasTextureInfo.coords.top,
+                atlasTextureInfo.coords.bottom
+            )
+            panel.border:SetVertexColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a or 0.8)
+        else
+            -- Fallback to color texture
+            panel.border:SetColorTexture(
+                borderColor.r,
+                borderColor.g,
+                borderColor.b,
+                borderColor.a or 0.8
+            )
+        end
     end
     
     -- Apply text colors to all text elements
