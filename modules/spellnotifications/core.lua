@@ -125,46 +125,73 @@ local function ArrangeNotificationFrames()
 end
 
 local function ShowNotification(spellID, sourceGUID, notificationType)
-    -- Find an unused frame or create a new one if needed
-    local frame = nil
-    
-    -- First, look for a hidden frame we can reuse
-    for _, f in ipairs(frames) do
-        if not f:IsShown() then
-            frame = f
-            break
-        end
+    local useFramePooling = module.db.profile.useFramePooling
+    if useFramePooling == nil then
+        -- Default to enabled for frame pooling
+        useFramePooling = true
+        module.db.profile.useFramePooling = true
     end
     
-    -- If we don't have any hidden frames, but we have reached our max visible notifications
-    -- reuse the oldest visible frame
-    if not frame and #frames >= GetMaxNotifications() then
-        -- Find the oldest frame
-        local oldest = frames[1]
-        local oldestTime = oldest.creationTime or 0
+    local frame = nil
+    
+    -- Use frame pooling if it's available and enabled
+    if module.FramePool and useFramePooling then
+        -- Get a frame from the pool (it will create one if needed)
+        frame = module.FramePool:AcquireFrame("notification")
         
-        for i = 2, #frames do
-            if (frames[i].creationTime or 0) < oldestTime then
-                oldest = frames[i]
-                oldestTime = oldest.creationTime or 0
+        -- If in debug mode, log the frame pooling usage
+        if VUI.debug then
+            local stats = module.FramePool:GetStats()
+            if stats.framesRecycled % 10 == 0 and stats.framesRecycled > 0 then -- Only log every 10 recycles to avoid spam
+                VUI:Print(string.format(
+                    "SpellNotifications frame pool: %d frames recycled, saving ~%.2f MB", 
+                    stats.framesRecycled, 
+                    stats.memoryReduction
+                ))
+            end
+        end
+    else
+        -- Legacy frame management when frame pooling is disabled
+        -- Find an unused frame or create a new one if needed
+        
+        -- First, look for a hidden frame we can reuse
+        for _, f in ipairs(frames) do
+            if not f:IsShown() then
+                frame = f
+                break
             end
         end
         
-        -- Stop any running animations
-        if oldest.animGroup and oldest.animGroup:IsPlaying() then
-            oldest.animGroup:Stop()
-        end
-        if oldest.fadeGroup and oldest.fadeGroup:IsPlaying() then
-            oldest.fadeGroup:Stop()
+        -- If we don't have any hidden frames, but we have reached our max visible notifications
+        -- reuse the oldest visible frame
+        if not frame and #frames >= GetMaxNotifications() then
+            -- Find the oldest frame
+            local oldest = frames[1]
+            local oldestTime = oldest.creationTime or 0
+            
+            for i = 2, #frames do
+                if (frames[i].creationTime or 0) < oldestTime then
+                    oldest = frames[i]
+                    oldestTime = oldest.creationTime or 0
+                end
+            end
+            
+            -- Stop any running animations
+            if oldest.animGroup and oldest.animGroup:IsPlaying() then
+                oldest.animGroup:Stop()
+            end
+            if oldest.fadeGroup and oldest.fadeGroup:IsPlaying() then
+                oldest.fadeGroup:Stop()
+            end
+            
+            frame = oldest
         end
         
-        frame = oldest
-    end
-    
-    -- If we still don't have a frame, create a new one
-    if not frame then
-        frame = CreateNotificationFrame()
-        table.insert(frames, frame)
+        -- If we still don't have a frame, create a new one
+        if not frame then
+            frame = CreateNotificationFrame()
+            table.insert(frames, frame)
+        end
     end
     
     -- Set a timestamp for this notification
@@ -306,10 +333,23 @@ function module:OnEnable()
     -- Register combat log events
     self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     
-    -- Create initial frame
-    if not frames[1] then
-        local frame = CreateNotificationFrame()
-        table.insert(frames, frame)
+    -- Initialize frame pool if enabled
+    if self.db.profile.useFramePooling then
+        if self.FramePool and not self.FramePool.initialized then
+            self.FramePool:Initialize()
+            self.FramePool.initialized = true
+            
+            if VUI.debug then
+                VUI:Print("SpellNotifications frame pool initialized")
+            end
+        end
+    else
+        -- Legacy frame creation when not using frame pooling
+        -- Create initial frame
+        if not frames[1] then
+            local frame = CreateNotificationFrame()
+            table.insert(frames, frame)
+        end
     end
 end
 
@@ -317,9 +357,19 @@ function module:OnDisable()
     -- Unregister events
     self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     
-    -- Hide frames
-    for _, frame in ipairs(frames) do
-        frame:Hide()
+    -- Handle frame cleanup based on pooling status
+    if self.db.profile.useFramePooling and self.FramePool then
+        -- Release all frames back to the pool
+        self.FramePool:ReleaseAllFrames("notification")
+        
+        if VUI.debug then
+            VUI:Print("SpellNotifications frame pool released all frames")
+        end
+    else
+        -- Hide frames (legacy method)
+        for _, frame in ipairs(frames) do
+            frame:Hide()
+        end
     end
 end
 

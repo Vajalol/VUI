@@ -24,6 +24,7 @@ MultiNotification.defaults = {
         fadeOutTime = 0.5,
         useSharedCooldown = true,
         sharedCooldown = 1.0,
+        useFramePooling = true,
     },
     categorySettings = {
         interrupt = {
@@ -231,8 +232,22 @@ function MultiNotification:OnInitialize()
         self:ApplyThemeToAll()
     end)
     
-    -- Pre-create notification frames for performance
-    self:PreCreateNotificationFrames()
+    -- Check if frame pooling is enabled
+    local useFramePooling = self.db.profile.globalSettings.useFramePooling
+    if useFramePooling then
+        -- Initialize the frame pool system
+        if self.FramePool and not self.FramePool.initialized then
+            self.FramePool:Initialize()
+            self.FramePool.initialized = true
+            
+            if VUI.debug then
+                VUI:Print("MultiNotification FramePool initialized")
+            end
+        end
+    else
+        -- Legacy method: Pre-create notification frames for performance
+        self:PreCreateNotificationFrames()
+    end
     
     VUI:Print("MultiNotification module initialized")
 end
@@ -254,8 +269,24 @@ function MultiNotification:OnDisable()
     self:UnregisterAllEvents()
     self:UnregisterAllComm()
     
-    -- Hide all notifications
-    self:ClearAllNotifications()
+    -- Handle frame cleanup based on pooling status
+    if self.db.profile.globalSettings.useFramePooling and self.FramePool then
+        -- Release all frames back to the pool
+        self.FramePool:ReleaseAllFrames("notification")
+        
+        if VUI.debug then
+            local stats = self.FramePool:GetStats()
+            VUI:Print(string.format(
+                "MultiNotification frame pool stats on disable: Created: %d, Recycled: %d, Memory saved: %.2f MB",
+                stats.framesCreated,
+                stats.framesRecycled,
+                stats.memoryReduction
+            ))
+        end
+    else
+        -- Hide all notifications using legacy method
+        self:ClearAllNotifications()
+    end
     
     VUI:Print("MultiNotification module disabled")
 end
@@ -510,12 +541,32 @@ end
 
 -- Get an available notification frame
 function MultiNotification:GetAvailableFrame()
-    for _, frame in ipairs(notificationFrames) do
-        if not frame:IsVisible() then
-            return frame
+    -- Check if frame pooling is enabled
+    if self.db.profile.globalSettings.useFramePooling and self.FramePool then
+        -- Get a frame from the pool (it will create one if needed)
+        local frame = self.FramePool:AcquireFrame("notification")
+        
+        -- If in debug mode, log the frame pooling usage
+        if VUI.debug and frame and frame.poolInfo and frame.poolInfo.recycleCount % 10 == 0 and frame.poolInfo.recycleCount > 0 then
+            -- Only log every 10 recycles to avoid spam
+            local stats = self.FramePool:GetStats()
+            VUI:Print(string.format(
+                "MultiNotification frame pool: %d frames recycled, saving ~%.2f MB", 
+                stats.framesRecycled, 
+                stats.memoryReduction
+            ))
         end
+        
+        return frame
+    else
+        -- Legacy frame management when frame pooling is disabled
+        for _, frame in ipairs(notificationFrames) do
+            if not frame:IsVisible() then
+                return frame
+            end
+        end
+        return nil -- No frames available
     end
-    return nil -- No frames available
 end
 
 -- Queue a notification when no frames are available
@@ -590,10 +641,23 @@ end
 
 -- Clear all active notifications
 function MultiNotification:ClearAllNotifications()
-    for _, frame in ipairs(notificationFrames) do
-        frame.animGroup:Stop()
-        frame:Hide()
+    -- Check if using frame pooling
+    if self.db.profile.globalSettings.useFramePooling and self.FramePool then
+        -- Release all frames back to the pool
+        self.FramePool:ReleaseAllFrames("notification")
+        
+        if VUI.debug then
+            VUI:Print("MultiNotification frame pool released all frames")
+        end
+    else
+        -- Legacy method: Hide all frames
+        for _, frame in ipairs(notificationFrames) do
+            frame.animGroup:Stop()
+            frame:Hide()
+        end
     end
+    
+    -- Clear tracking tables
     wipe(activeNotifications)
     wipe(notificationQueue)
 end
@@ -640,8 +704,29 @@ function MultiNotification:PLAYER_ENTERING_WORLD()
     )
     anchorFrame:SetScale(self.db.profile.globalSettings.scale)
     
-    for _, frame in ipairs(notificationFrames) do
-        frame:SetScale(self.db.profile.globalSettings.scale)
+    -- Handle frame pooling vs legacy frames
+    if self.db.profile.globalSettings.useFramePooling and self.FramePool then
+        -- Update active pooled frames scale
+        if self.FramePool.pools and self.FramePool.pools.notification then
+            for _, frame in ipairs(self.FramePool.pools.notification.active) do
+                frame:SetScale(self.db.profile.globalSettings.scale)
+            end
+        end
+    else
+        -- Legacy frame handling
+        for _, frame in ipairs(notificationFrames) do
+            frame:SetScale(self.db.profile.globalSettings.scale)
+        end
+    end
+    
+    -- Initialize frame pool if not already initialized and pooling is enabled
+    if self.db.profile.globalSettings.useFramePooling and self.FramePool and not self.FramePool.initialized then
+        self.FramePool:Initialize()
+        self.FramePool.initialized = true
+        
+        if VUI.debug then
+            VUI:Print("MultiNotification frame pool initialized on world entry")
+        end
     end
 end
 
@@ -720,9 +805,26 @@ function MultiNotification:GetOptions()
                 get = function() return self.db.profile.globalSettings.scale end,
                 set = function(_, value)
                     self.db.profile.globalSettings.scale = value
+                    
+                    -- Update anchor frame scale
                     anchorFrame:SetScale(value)
-                    for _, frame in ipairs(notificationFrames) do
-                        frame:SetScale(value)
+                    
+                    -- Handle frame scaling based on pooling status
+                    if self.db.profile.globalSettings.useFramePooling and self.FramePool and self.FramePool.pools then
+                        -- Update active pooled frames
+                        for _, frame in ipairs(self.FramePool.pools.notification.active) do
+                            frame:SetScale(value)
+                        end
+                        
+                        -- Update inactive pooled frames
+                        for _, frame in ipairs(self.FramePool.pools.notification.inactive) do
+                            frame:SetScale(value)
+                        end
+                    else
+                        -- Legacy frame method
+                        for _, frame in ipairs(notificationFrames) do
+                            frame:SetScale(value)
+                        end
                     end
                 end,
                 width = "full"
@@ -802,6 +904,65 @@ function MultiNotification:GetOptions()
                 get = function() return self.db.profile.globalSettings.sharedCooldown end,
                 set = function(_, value)
                     self.db.profile.globalSettings.sharedCooldown = value
+                end,
+                width = "full"
+            },
+            performanceHeader = {
+                order = 35,
+                type = "header",
+                name = "Performance Settings"
+            },
+            useFramePooling = {
+                order = 36,
+                type = "toggle",
+                name = "Use Frame Pooling",
+                desc = "Enable frame pooling system for improved performance and reduced memory usage",
+                get = function() 
+                    if self.db.profile.globalSettings.useFramePooling == nil then
+                        self.db.profile.globalSettings.useFramePooling = true
+                    end
+                    return self.db.profile.globalSettings.useFramePooling 
+                end,
+                set = function(_, value)
+                    self.db.profile.globalSettings.useFramePooling = value
+                    
+                    -- Clear notifications to ensure clean state
+                    self:ClearAllNotifications()
+                    
+                    -- Initialize or switch off frame pooling
+                    if value then
+                        if self.FramePool and not self.FramePool.initialized then
+                            self.FramePool:Initialize()
+                            self.FramePool.initialized = true
+                        end
+                    else
+                        -- Ensure legacy frames are available
+                        if #notificationFrames < self.db.profile.globalSettings.maxNotifications then
+                            self:PreCreateNotificationFrames()
+                        end
+                    end
+                end,
+                width = "full"
+            },
+            framePoolInfo = {
+                order = 37,
+                type = "description",
+                name = function()
+                    if not self.FramePool or not self.FramePool.GetStats then
+                        return "Frame pooling statistics unavailable."
+                    end
+                    
+                    local stats = self.FramePool:GetStats()
+                    return string.format(
+                        "Frame pooling statistics:\nFrames created: %d\nFrames recycled: %d\nActive frames: %d\nMemory saved: %.2f MB", 
+                        stats.framesCreated, 
+                        stats.framesRecycled,
+                        stats.activeFrames,
+                        stats.memoryReduction
+                    )
+                end,
+                hidden = function() 
+                    return not VUI.debug or not self.db.profile.globalSettings.useFramePooling 
                 end,
                 width = "full"
             },

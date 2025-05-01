@@ -25,6 +25,7 @@ local defaults = {
         customSpells = {},               -- Storage for custom important spells (serialized)
         maxNotifications = 3,            -- Maximum number of notifications visible at once
         notificationSpacing = 10,        -- Spacing between notifications in pixels
+        useFramePooling = true,          -- Use frame pooling system for improved performance
         position = {
             point = "CENTER",
             x = 0,
@@ -466,13 +467,59 @@ function module:GetConfig()
                 end,
                 width = "full"
             },
-            spellManagementHeader = {
+            performanceHeader = {
                 order = 10.89,
+                type = "header",
+                name = "Performance Settings"
+            },
+            useFramePooling = {
+                order = 10.9,
+                type = "toggle",
+                name = "Use Frame Pooling",
+                desc = "Enable frame pooling system for improved performance and reduced memory usage",
+                get = function() 
+                    if self.db.profile.useFramePooling == nil then
+                        self.db.profile.useFramePooling = true
+                    end
+                    return self.db.profile.useFramePooling 
+                end,
+                set = function(_, value)
+                    self.db.profile.useFramePooling = value
+                    -- Initialize frame pool if it wasn't already
+                    if value and self.FramePool and not self.FramePool.initialized then
+                        self.FramePool:Initialize()
+                        self.FramePool.initialized = true
+                    end
+                end,
+                width = "full"
+            },
+            framePoolInfo = {
+                order = 10.91,
+                type = "description",
+                name = function()
+                    if not self.FramePool or not self.FramePool.GetStats then
+                        return "Frame pooling statistics unavailable."
+                    end
+                    
+                    local stats = self.FramePool:GetStats()
+                    return string.format(
+                        "Frame pooling statistics:\nFrames created: %d\nFrames recycled: %d\nActive frames: %d\nMemory saved: %.2f MB", 
+                        stats.framesCreated, 
+                        stats.framesRecycled,
+                        stats.activeFrames,
+                        stats.memoryReduction
+                    )
+                end,
+                hidden = function() return not VUI.debug or not self.db.profile.useFramePooling end,
+                width = "full"
+            },
+            spellManagementHeader = {
+                order = 10.95,
                 type = "header",
                 name = "Spell Management"
             },
             openSpellManager = {
-                order = 10.9,
+                order = 10.96,
                 type = "execute",
                 name = "Manage Important Spells",
                 desc = "Open the spell management UI to customize which spells trigger notifications",
