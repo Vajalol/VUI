@@ -25,6 +25,7 @@ VUI.premadegroupfinder = {}
 VUI.detailsskin = {}
 VUI.msbt = {}
 VUI.spellnotifications = {}
+VUI.multinotification = {}
 
 -- Enhanced UI modules (from Phoenix UI)
 VUI.bags = {}
@@ -54,6 +55,7 @@ VUI.modules = {
     "spellnotifications",
     "detailsskin",
     "msbt",
+    "multinotification",
     
     -- Enhanced UI modules (from Phoenix UI)
     "bags",

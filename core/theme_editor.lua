@@ -304,7 +304,9 @@ function ThemeEditor:CreateEditorUI()
         {text = "Colors", frame = "colorFrame"},
         {text = "Textures", frame = "textureFrame"},
         {text = "Fonts", frame = "fontFrame"},
-        {text = "Import/Export", frame = "importExportFrame"}
+        {text = "Create Theme", frame = "createThemeFrame"},
+        {text = "Import/Export", frame = "importExportFrame"},
+        {text = "Media Stats", frame = "mediaStatsFrame"}
     }
     
     -- Create tab buttons
@@ -344,7 +346,9 @@ function ThemeEditor:CreateEditorUI()
     self:CreateColorTab(tabFrames[1])
     self:CreateTextureTab(tabFrames[2])
     self:CreateFontTab(tabFrames[3])
-    self:CreateImportExportTab(tabFrames[4])
+    self:CreateThemeWizardTab(tabFrames[4])
+    self:CreateImportExportTab(tabFrames[5])
+    self:CreateMediaStatsTab(tabFrames[6])
     
     -- Action buttons at bottom
     local buttonContainer = CreateFrame("Frame", nil, panel)
@@ -808,6 +812,905 @@ function ThemeEditor:CreateFontTab(frame)
 end
 
 -- Create the import/export tab content
+function ThemeEditor:CreatePreviewFrame(parentFrame, width, height)
+    local previewFrame = CreateFrame("Frame", nil, parentFrame)
+    previewFrame:SetSize(width, height)
+    
+    -- Create a background frame
+    local bg = CreateFrame("Frame", nil, previewFrame)
+    bg:SetPoint("TOPLEFT", previewFrame, "TOPLEFT", 0, 0)
+    bg:SetPoint("BOTTOMRIGHT", previewFrame, "BOTTOMRIGHT", 0, 0)
+    bg:SetFrameLevel(previewFrame:GetFrameLevel() - 1)
+    bg:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true, tileSize = 16, edgeSize = 16,
+        insets = { left = 3, right = 3, top = 3, bottom = 3 }
+    })
+    bg:SetBackdropColor(0.05, 0.05, 0.05, 0.8)
+    bg:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+    
+    -- Sample frame
+    local sampleFrame = CreateFrame("Frame", nil, previewFrame)
+    sampleFrame:SetSize(width * 0.45, height * 0.3)
+    sampleFrame:SetPoint("TOPLEFT", previewFrame, "TOPLEFT", 10, -10)
+    sampleFrame:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true, tileSize = 16, edgeSize = 16,
+        insets = { left = 3, right = 3, top = 3, bottom = 3 }
+    })
+    previewFrame.sampleFrame = sampleFrame
+    
+    -- Sample header
+    local sampleHeader = sampleFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    sampleHeader:SetPoint("TOPLEFT", sampleFrame, "TOPLEFT", 10, -10)
+    sampleHeader:SetText("Theme Preview - Header")
+    previewFrame.sampleHeader = sampleHeader
+    
+    -- Sample text
+    local sampleText = sampleFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    sampleText:SetPoint("TOPLEFT", sampleHeader, "BOTTOMLEFT", 0, -10)
+    sampleText:SetText("Sample UI text with theme styling")
+    previewFrame.sampleText = sampleText
+    
+    -- Sample button
+    local sampleButton = CreateFrame("Button", nil, sampleFrame, "UIPanelButtonTemplate")
+    sampleButton:SetSize(120, 26)
+    sampleButton:SetPoint("TOPLEFT", sampleText, "BOTTOMLEFT", 0, -15)
+    sampleButton:SetText("Sample Button")
+    previewFrame.sampleButton = sampleButton
+    
+    -- Sample statusbar
+    local sampleStatusBar = CreateFrame("StatusBar", nil, sampleFrame)
+    sampleStatusBar:SetSize(width * 0.4, 20)
+    sampleStatusBar:SetPoint("TOPLEFT", sampleButton, "BOTTOMLEFT", 0, -15)
+    sampleStatusBar:SetMinMaxValues(0, 100)
+    sampleStatusBar:SetValue(70)
+    previewFrame.sampleStatusBar = sampleStatusBar
+    
+    -- Add a second sample frame that looks like a unit frame
+    local unitFrame = CreateFrame("Frame", nil, previewFrame)
+    unitFrame:SetSize(width * 0.45, height * 0.15)
+    unitFrame:SetPoint("TOPLEFT", sampleFrame, "BOTTOMLEFT", 0, -20)
+    unitFrame:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true, tileSize = 16, edgeSize = 16,
+        insets = { left = 3, right = 3, top = 3, bottom = 3 }
+    })
+    previewFrame.unitFrame = unitFrame
+    
+    -- Unit frame health bar
+    local healthBar = CreateFrame("StatusBar", nil, unitFrame)
+    healthBar:SetSize(width * 0.4, 18)
+    healthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 10, -10)
+    healthBar:SetMinMaxValues(0, 100)
+    healthBar:SetValue(65)
+    previewFrame.healthBar = healthBar
+    
+    -- Unit frame name
+    local unitName = healthBar:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    unitName:SetPoint("LEFT", healthBar, "LEFT", 5, 0)
+    unitName:SetText("Player Name")
+    previewFrame.unitName = unitName
+    
+    -- Unit frame mana bar
+    local manaBar = CreateFrame("StatusBar", nil, unitFrame)
+    manaBar:SetSize(width * 0.4, 12)
+    manaBar:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, -2)
+    manaBar:SetMinMaxValues(0, 100)
+    manaBar:SetValue(80)
+    previewFrame.manaBar = manaBar
+    
+    -- Third example - action button
+    local actionButton = CreateFrame("Button", nil, previewFrame)
+    actionButton:SetSize(40, 40)
+    actionButton:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 0, -20)
+    actionButton:SetNormalTexture("Interface\\Buttons\\UI-Quickslot")
+    actionButton:GetNormalTexture():SetTexCoord(0.18, 0.82, 0.18, 0.82)
+    previewFrame.actionButton = actionButton
+    
+    -- Action button cooldown overlay
+    local cooldown = CreateFrame("Cooldown", nil, actionButton, "CooldownFrameTemplate")
+    cooldown:SetAllPoints()
+    cooldown:SetCooldown(GetTime(), 30)
+    
+    -- Action button border frame
+    local actionBorder = CreateFrame("Frame", nil, actionButton)
+    actionBorder:SetAllPoints()
+    actionBorder:SetFrameLevel(actionButton:GetFrameLevel() + 1)
+    actionBorder:SetBackdrop({
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        edgeSize = 14,
+        insets = { left = 3, right = 3, top = 3, bottom = 3 }
+    })
+    previewFrame.actionBorder = actionBorder
+    
+    -- Function to update the preview with current theme
+    function previewFrame:UpdateWithTheme(theme)
+        if not theme then return end
+        
+        -- Update sample frame
+        sampleFrame:SetBackdropColor(
+            theme.colors.backdrop.r or 0.1, 
+            theme.colors.backdrop.g or 0.1, 
+            theme.colors.backdrop.b or 0.1, 
+            theme.colors.backdrop.a or 0.8
+        )
+        sampleFrame:SetBackdropBorderColor(
+            theme.colors.border.r or 0.6, 
+            theme.colors.border.g or 0.6, 
+            theme.colors.border.b or 0.6, 
+            theme.colors.border.a or 1
+        )
+        
+        -- Update header text
+        if theme.fonts.header then
+            sampleHeader:SetFont(theme.fonts.header, theme.fontSizes.header or 14, theme.fontOutlines.header or "NONE")
+        end
+        sampleHeader:SetTextColor(
+            theme.colors.header.r or 1, 
+            theme.colors.header.g or 1, 
+            theme.colors.header.b or 1, 
+            theme.colors.header.a or 1
+        )
+        
+        -- Update normal text
+        if theme.fonts.normal then
+            sampleText:SetFont(theme.fonts.normal, theme.fontSizes.normal or 12, theme.fontOutlines.normal or "NONE")
+        end
+        sampleText:SetTextColor(
+            theme.colors.text.r or 1, 
+            theme.colors.text.g or 1, 
+            theme.colors.text.b or 1, 
+            theme.colors.text.a or 1
+        )
+        
+        -- Update button
+        if theme.colors.button then
+            local normalTex = sampleButton:GetNormalTexture()
+            if normalTex then
+                normalTex:SetVertexColor(
+                    theme.colors.button.r or 0.8, 
+                    theme.colors.button.g or 0.8, 
+                    theme.colors.button.b or 0.8, 
+                    theme.colors.button.a or 1
+                )
+            end
+        end
+        
+        -- Update statusbar
+        if theme.textures.statusbar then
+            sampleStatusBar:SetStatusBarTexture(theme.textures.statusbar)
+        end
+        sampleStatusBar:SetStatusBarColor(
+            theme.colors.statusbar.r or 0.8, 
+            theme.colors.statusbar.g or 0.8, 
+            theme.colors.statusbar.b or 0.2, 
+            theme.colors.statusbar.a or 1
+        )
+        
+        -- Update unit frame
+        unitFrame:SetBackdropColor(
+            theme.colors.backdrop.r or 0.1, 
+            theme.colors.backdrop.g or 0.1, 
+            theme.colors.backdrop.b or 0.1, 
+            theme.colors.backdrop.a or 0.8
+        )
+        unitFrame:SetBackdropBorderColor(
+            theme.colors.border.r or 0.6, 
+            theme.colors.border.g or 0.6, 
+            theme.colors.border.b or 0.6, 
+            theme.colors.border.a or 1
+        )
+        
+        -- Update health and mana bars
+        if theme.textures.statusbar then
+            healthBar:SetStatusBarTexture(theme.textures.statusbar)
+            manaBar:SetStatusBarTexture(theme.textures.statusbar)
+        end
+        healthBar:SetStatusBarColor(0.2, 0.8, 0.2, 1) -- Class-colored 
+        manaBar:SetStatusBarColor(0.2, 0.2, 0.8, 1)   -- Resource-colored
+        
+        -- Update unit name font
+        if theme.fonts.normal then
+            unitName:SetFont(theme.fonts.normal, theme.fontSizes.normal or 12, theme.fontOutlines.normal or "NONE")
+        end
+        
+        -- Update action button border
+        actionBorder:SetBackdropBorderColor(
+            theme.colors.border.r or 0.6, 
+            theme.colors.border.g or 0.6, 
+            theme.colors.border.b or 0.6, 
+            theme.colors.border.a or 1
+        )
+    end
+    
+    return previewFrame
+end
+
+-- Create the Theme Wizard tab content
+function ThemeEditor:CreateThemeWizardTab(frame)
+    -- Create title and description
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -10)
+    title:SetText("Create New Theme")
+    
+    local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -10)
+    desc:SetText("Follow the steps below to create a new custom theme using the theme wizard.")
+    desc:SetJustifyH("LEFT")
+    desc:SetWidth(frame:GetWidth() - 20)
+    
+    -- Create a theme preview frame
+    local previewFrame = self:CreatePreviewFrame(frame, frame:GetWidth() * 0.45, frame:GetHeight() * 0.4)
+    previewFrame:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -20, -40)
+    
+    -- Create a step indicator
+    local stepsFrame = CreateFrame("Frame", nil, frame)
+    stepsFrame:SetSize(frame:GetWidth() - 20, 30)
+    stepsFrame:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -20)
+    
+    local steps = {
+        "1. Base Theme",
+        "2. Color Scheme",
+        "3. Texture Style",
+        "4. Font Selection",
+        "5. Name and Save"
+    }
+    
+    local stepIndicators = {}
+    for i, stepText in ipairs(steps) do
+        local indicator = CreateFrame("Frame", nil, stepsFrame)
+        indicator:SetSize(frame:GetWidth() / #steps - 10, 30)
+        
+        if i == 1 then
+            indicator:SetPoint("LEFT", stepsFrame, "LEFT", 0, 0)
+        else
+            indicator:SetPoint("LEFT", stepIndicators[i-1], "RIGHT", 5, 0)
+        end
+        
+        indicator.bg = indicator:CreateTexture(nil, "BACKGROUND")
+        indicator.bg:SetAllPoints()
+        indicator.bg:SetColorTexture(0.1, 0.1, 0.1, 0.5)
+        
+        indicator.text = indicator:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        indicator.text:SetPoint("CENTER", indicator, "CENTER")
+        indicator.text:SetText(stepText)
+        
+        -- Store reference
+        stepIndicators[i] = indicator
+    end
+    
+    -- Highlight the current step
+    local function UpdateStepIndicators(currentStep)
+        for i, indicator in ipairs(stepIndicators) do
+            if i == currentStep then
+                indicator.bg:SetColorTexture(0.3, 0.3, 0.8, 0.7)
+                indicator.text:SetTextColor(1, 1, 1)
+            else
+                if i < currentStep then
+                    -- Completed step
+                    indicator.bg:SetColorTexture(0.2, 0.5, 0.2, 0.5)
+                    indicator.text:SetTextColor(0.8, 1, 0.8)
+                else
+                    -- Future step
+                    indicator.bg:SetColorTexture(0.1, 0.1, 0.1, 0.5)
+                    indicator.text:SetTextColor(0.7, 0.7, 0.7)
+                end
+            end
+        end
+    end
+    
+    -- Content area for the current step
+    local contentArea = CreateFrame("Frame", nil, frame)
+    contentArea:SetSize(frame:GetWidth() * 0.5 - 30, frame:GetHeight() - 160)
+    contentArea:SetPoint("TOPLEFT", stepsFrame, "BOTTOMLEFT", 0, -20)
+    
+    -- Step content frames
+    local stepFrames = {}
+    for i = 1, #steps do
+        local stepFrame = CreateFrame("Frame", nil, contentArea)
+        stepFrame:SetAllPoints(contentArea)
+        stepFrame:Hide()
+        stepFrames[i] = stepFrame
+    end
+    
+    -- Step 1: Base Theme Selection
+    local baseThemeFrame = stepFrames[1]
+    
+    local baseThemeLabel = baseThemeFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    baseThemeLabel:SetPoint("TOPLEFT", baseThemeFrame, "TOPLEFT", 0, 0)
+    baseThemeLabel:SetText("Select a Base Theme")
+    
+    local baseThemeDesc = baseThemeFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    baseThemeDesc:SetPoint("TOPLEFT", baseThemeLabel, "BOTTOMLEFT", 0, -10)
+    baseThemeDesc:SetText("Choose a built-in theme to use as the starting point for your custom theme.")
+    baseThemeDesc:SetJustifyH("LEFT")
+    baseThemeDesc:SetWidth(baseThemeFrame:GetWidth())
+    
+    -- Theme radio buttons
+    local baseThemeOptions = {
+        {name = "Phoenix Flame", value = "phoenixflame", description = "Dark red/brown backgrounds with fiery orange borders."},
+        {name = "Thunder Storm", value = "thunderstorm", description = "Deep blue backgrounds with electric blue borders."},
+        {name = "Arcane Mystic", value = "arcanemystic", description = "Deep purple backgrounds with violet borders."},
+        {name = "Fel Energy", value = "felenergy", description = "Dark green backgrounds with fel green borders."}
+    }
+    
+    local selectedBaseTheme = "thunderstorm"
+    local baseThemeRadios = {}
+    
+    for i, themeOption in ipairs(baseThemeOptions) do
+        local radio = CreateFrame("CheckButton", nil, baseThemeFrame, "UICheckButtonTemplate")
+        radio:SetSize(24, 24)
+        
+        if i == 1 then
+            radio:SetPoint("TOPLEFT", baseThemeDesc, "BOTTOMLEFT", 0, -20)
+        else
+            radio:SetPoint("TOPLEFT", baseThemeRadios[i-1].desc, "BOTTOMLEFT", -20, -10)
+        end
+        
+        radio.value = themeOption.value
+        radio:SetChecked(selectedBaseTheme == themeOption.value)
+        
+        radio.text = baseThemeFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        radio.text:SetPoint("LEFT", radio, "RIGHT", 5, 0)
+        radio.text:SetText(themeOption.name)
+        
+        radio.desc = baseThemeFrame:CreateFontString(nil, "OVERLAY", "GameFontSmall")
+        radio.desc:SetPoint("TOPLEFT", radio.text, "BOTTOMLEFT", 0, -2)
+        radio.desc:SetText(themeOption.description)
+        radio.desc:SetTextColor(0.7, 0.7, 0.7)
+        radio.desc:SetWidth(baseThemeFrame:GetWidth() - 30)
+        radio.desc:SetJustifyH("LEFT")
+        
+        radio:SetScript("OnClick", function()
+            -- Uncheck all others
+            for _, otherRadio in ipairs(baseThemeRadios) do
+                otherRadio:SetChecked(false)
+            end
+            -- Check this one
+            radio:SetChecked(true)
+            selectedBaseTheme = radio.value
+            
+            -- Update preview
+            local previewTheme = VUI:GetTheme(selectedBaseTheme)
+            previewFrame:UpdateWithTheme(previewTheme)
+        end)
+        
+        baseThemeRadios[i] = radio
+    end
+    
+    -- Step 2: Color Scheme
+    local colorSchemeFrame = stepFrames[2]
+    
+    local colorSchemeLabel = colorSchemeFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    colorSchemeLabel:SetPoint("TOPLEFT", colorSchemeFrame, "TOPLEFT", 0, 0)
+    colorSchemeLabel:SetText("Customize Color Scheme")
+    
+    local colorSchemeDesc = colorSchemeFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    colorSchemeDesc:SetPoint("TOPLEFT", colorSchemeLabel, "BOTTOMLEFT", 0, -10)
+    colorSchemeDesc:SetText("Adjust the primary and secondary colors for your theme.")
+    colorSchemeDesc:SetJustifyH("LEFT")
+    colorSchemeDesc:SetWidth(colorSchemeFrame:GetWidth())
+    
+    -- Create color pickers for primary elements
+    local primaryColor = {r = 0.3, g = 0.6, b = 1.0, a = 1.0}
+    local secondaryColor = {r = 1.0, g = 0.82, b = 0.0, a = 1.0}
+    
+    -- Primary color picker
+    local primaryLabel = colorSchemeFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    primaryLabel:SetPoint("TOPLEFT", colorSchemeDesc, "BOTTOMLEFT", 0, -20)
+    primaryLabel:SetText("Primary Color (borders, highlights):")
+    
+    local primarySwatch = CreateFrame("Button", nil, colorSchemeFrame)
+    primarySwatch:SetSize(24, 24)
+    primarySwatch:SetPoint("LEFT", primaryLabel, "RIGHT", 10, 0)
+    
+    primarySwatch.tex = primarySwatch:CreateTexture(nil, "BACKGROUND")
+    primarySwatch.tex:SetAllPoints(primarySwatch)
+    primarySwatch.tex:SetColorTexture(primaryColor.r, primaryColor.g, primaryColor.b, primaryColor.a)
+    
+    primarySwatch:SetBackdrop({
+        edgeFile = "Interface\\Buttons\\WHITE8x8",
+        edgeSize = 1
+    })
+    primarySwatch:SetBackdropBorderColor(0.3, 0.3, 0.3, 1.0)
+    
+    primarySwatch:SetScript("OnClick", function()
+        ColorPickerFrame:SetColorRGB(primaryColor.r, primaryColor.g, primaryColor.b)
+        ColorPickerFrame.hasOpacity = true
+        ColorPickerFrame.opacity = primaryColor.a
+        ColorPickerFrame.previousValues = {primaryColor.r, primaryColor.g, primaryColor.b, primaryColor.a}
+        ColorPickerFrame.func = function()
+            primaryColor.r, primaryColor.g, primaryColor.b = ColorPickerFrame:GetColorRGB()
+            primaryColor.a = OpacitySliderFrame:GetValue()
+            primarySwatch.tex:SetColorTexture(primaryColor.r, primaryColor.g, primaryColor.b, primaryColor.a)
+            
+            -- Update preview theme
+            local previewTheme = CopyTable(VUI:GetTheme(selectedBaseTheme))
+            -- Apply primary color to border and primary elements
+            previewTheme.colors.border = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+            previewTheme.colors.primary = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+            -- Apply secondary color to secondary elements
+            previewTheme.colors.secondary = {r = secondaryColor.r, g = secondaryColor.g, b = secondaryColor.b, a = secondaryColor.a}
+            
+            previewFrame:UpdateWithTheme(previewTheme)
+        end
+        ColorPickerFrame.cancelFunc = function(previousValues)
+            primaryColor.r, primaryColor.g, primaryColor.b, primaryColor.a = unpack(previousValues)
+            primarySwatch.tex:SetColorTexture(primaryColor.r, primaryColor.g, primaryColor.b, primaryColor.a)
+        end
+        ColorPickerFrame:Show()
+    end)
+    
+    -- Secondary color picker
+    local secondaryLabel = colorSchemeFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    secondaryLabel:SetPoint("TOPLEFT", primaryLabel, "BOTTOMLEFT", 0, -20)
+    secondaryLabel:SetText("Secondary Color (accents, highlights):")
+    
+    local secondarySwatch = CreateFrame("Button", nil, colorSchemeFrame)
+    secondarySwatch:SetSize(24, 24)
+    secondarySwatch:SetPoint("LEFT", secondaryLabel, "RIGHT", 10, 0)
+    
+    secondarySwatch.tex = secondarySwatch:CreateTexture(nil, "BACKGROUND")
+    secondarySwatch.tex:SetAllPoints(secondarySwatch)
+    secondarySwatch.tex:SetColorTexture(secondaryColor.r, secondaryColor.g, secondaryColor.b, secondaryColor.a)
+    
+    secondarySwatch:SetBackdrop({
+        edgeFile = "Interface\\Buttons\\WHITE8x8",
+        edgeSize = 1
+    })
+    secondarySwatch:SetBackdropBorderColor(0.3, 0.3, 0.3, 1.0)
+    
+    secondarySwatch:SetScript("OnClick", function()
+        ColorPickerFrame:SetColorRGB(secondaryColor.r, secondaryColor.g, secondaryColor.b)
+        ColorPickerFrame.hasOpacity = true
+        ColorPickerFrame.opacity = secondaryColor.a
+        ColorPickerFrame.previousValues = {secondaryColor.r, secondaryColor.g, secondaryColor.b, secondaryColor.a}
+        ColorPickerFrame.func = function()
+            secondaryColor.r, secondaryColor.g, secondaryColor.b = ColorPickerFrame:GetColorRGB()
+            secondaryColor.a = OpacitySliderFrame:GetValue()
+            secondarySwatch.tex:SetColorTexture(secondaryColor.r, secondaryColor.g, secondaryColor.b, secondaryColor.a)
+            
+            -- Update preview theme
+            local previewTheme = CopyTable(VUI:GetTheme(selectedBaseTheme))
+            -- Apply primary color to border and primary elements
+            previewTheme.colors.border = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+            previewTheme.colors.primary = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+            -- Apply secondary color to secondary elements
+            previewTheme.colors.secondary = {r = secondaryColor.r, g = secondaryColor.g, b = secondaryColor.b, a = secondaryColor.a}
+            
+            previewFrame:UpdateWithTheme(previewTheme)
+        end
+        ColorPickerFrame.cancelFunc = function(previousValues)
+            secondaryColor.r, secondaryColor.g, secondaryColor.b, secondaryColor.a = unpack(previousValues)
+            secondarySwatch.tex:SetColorTexture(secondaryColor.r, secondaryColor.g, secondaryColor.b, secondaryColor.a)
+        end
+        ColorPickerFrame:Show()
+    end)
+    
+    -- Step 3: Texture Style
+    local textureFrame = stepFrames[3]
+    
+    local textureLabel = textureFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    textureLabel:SetPoint("TOPLEFT", textureFrame, "TOPLEFT", 0, 0)
+    textureLabel:SetText("Select Texture Style")
+    
+    local textureDesc = textureFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    textureDesc:SetPoint("TOPLEFT", textureLabel, "BOTTOMLEFT", 0, -10)
+    textureDesc:SetText("Choose the texture styles for UI elements.")
+    textureDesc:SetJustifyH("LEFT")
+    textureDesc:SetWidth(textureFrame:GetWidth())
+    
+    -- Create dropdown for statusbar texture
+    local statusbarLabel = textureFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    statusbarLabel:SetPoint("TOPLEFT", textureDesc, "BOTTOMLEFT", 0, -20)
+    statusbarLabel:SetText("Status Bar Texture:")
+    
+    local statusbarDropdown = CreateFrame("Frame", "VUIWizardStatusbarDropdown", textureFrame, "UIDropDownMenuTemplate")
+    statusbarDropdown:SetPoint("TOPLEFT", statusbarLabel, "BOTTOMLEFT", -15, -5)
+    UIDropDownMenu_SetWidth(statusbarDropdown, 140)
+    
+    local statusbarTextures = {"smooth", "flat", "gloss", "normtext", "minimalist", "bars"}
+    local selectedStatusbar = "smooth"
+    
+    UIDropDownMenu_Initialize(statusbarDropdown, function(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+        for _, texture in ipairs(statusbarTextures) do
+            info.text = texture:gsub("^%l", string.upper) -- Capitalize first letter
+            info.value = texture
+            info.func = function()
+                selectedStatusbar = texture
+                UIDropDownMenu_SetText(statusbarDropdown, info.text)
+                
+                -- Update preview theme
+                local previewTheme = CopyTable(VUI:GetTheme(selectedBaseTheme))
+                -- Apply colors
+                previewTheme.colors.border = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+                previewTheme.colors.primary = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+                previewTheme.colors.secondary = {r = secondaryColor.r, g = secondaryColor.g, b = secondaryColor.b, a = secondaryColor.a}
+                -- Apply textures
+                previewTheme.textures.statusbar = selectedStatusbar
+                
+                previewFrame:UpdateWithTheme(previewTheme)
+            end
+            info.checked = (selectedStatusbar == texture)
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+    
+    -- Set initial value
+    UIDropDownMenu_SetText(statusbarDropdown, selectedStatusbar:gsub("^%l", string.upper))
+    
+    -- Create dropdown for border texture
+    local borderLabel = textureFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    borderLabel:SetPoint("TOPLEFT", statusbarDropdown, "BOTTOMLEFT", 15, -20)
+    borderLabel:SetText("Border Texture:")
+    
+    local borderDropdown = CreateFrame("Frame", "VUIWizardBorderDropdown", textureFrame, "UIDropDownMenuTemplate")
+    borderDropdown:SetPoint("TOPLEFT", borderLabel, "BOTTOMLEFT", -15, -5)
+    UIDropDownMenu_SetWidth(borderDropdown, 140)
+    
+    local borderTextures = {"thin", "thick", "glow", "solid", "shadow", "none"}
+    local selectedBorder = "thin"
+    
+    UIDropDownMenu_Initialize(borderDropdown, function(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+        for _, texture in ipairs(borderTextures) do
+            info.text = texture:gsub("^%l", string.upper) -- Capitalize first letter
+            info.value = texture
+            info.func = function()
+                selectedBorder = texture
+                UIDropDownMenu_SetText(borderDropdown, info.text)
+                
+                -- Update preview theme
+                local previewTheme = CopyTable(VUI:GetTheme(selectedBaseTheme))
+                -- Apply colors
+                previewTheme.colors.border = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+                previewTheme.colors.primary = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+                previewTheme.colors.secondary = {r = secondaryColor.r, g = secondaryColor.g, b = secondaryColor.b, a = secondaryColor.a}
+                -- Apply textures
+                previewTheme.textures.statusbar = selectedStatusbar
+                previewTheme.textures.border = selectedBorder
+                
+                previewFrame:UpdateWithTheme(previewTheme)
+            end
+            info.checked = (selectedBorder == texture)
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+    
+    -- Set initial value
+    UIDropDownMenu_SetText(borderDropdown, selectedBorder:gsub("^%l", string.upper))
+    
+    -- Step 4: Font Selection
+    local fontFrame = stepFrames[4]
+    
+    local fontLabel = fontFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    fontLabel:SetPoint("TOPLEFT", fontFrame, "TOPLEFT", 0, 0)
+    fontLabel:SetText("Choose Fonts")
+    
+    local fontDesc = fontFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    fontDesc:SetPoint("TOPLEFT", fontLabel, "BOTTOMLEFT", 0, -10)
+    fontDesc:SetText("Select fonts for different UI elements.")
+    fontDesc:SetJustifyH("LEFT")
+    fontDesc:SetWidth(fontFrame:GetWidth())
+    
+    -- Font dropdown for normal text
+    local normalFontLabel = fontFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    normalFontLabel:SetPoint("TOPLEFT", fontDesc, "BOTTOMLEFT", 0, -20)
+    normalFontLabel:SetText("Normal Text Font:")
+    
+    local normalFontDropdown = CreateFrame("Frame", "VUIWizardNormalFontDropdown", fontFrame, "UIDropDownMenuTemplate")
+    normalFontDropdown:SetPoint("TOPLEFT", normalFontLabel, "BOTTOMLEFT", -15, -5)
+    UIDropDownMenu_SetWidth(normalFontDropdown, 160)
+    
+    local fontOptions = {
+        "Friz Quadrata TT", "Arial Narrow", "VUI PT Sans Narrow", 
+        "VUI Roboto", "VUI Open Sans", "VUI Noto Sans"
+    }
+    local selectedNormalFont = "VUI PT Sans Narrow"
+    
+    UIDropDownMenu_Initialize(normalFontDropdown, function(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+        for _, font in ipairs(fontOptions) do
+            info.text = font
+            info.value = font
+            info.func = function()
+                selectedNormalFont = font
+                UIDropDownMenu_SetText(normalFontDropdown, font)
+                
+                -- Update preview theme
+                local previewTheme = CopyTable(VUI:GetTheme(selectedBaseTheme))
+                -- Apply colors
+                previewTheme.colors.border = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+                previewTheme.colors.primary = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+                previewTheme.colors.secondary = {r = secondaryColor.r, g = secondaryColor.g, b = secondaryColor.b, a = secondaryColor.a}
+                -- Apply textures
+                previewTheme.textures.statusbar = selectedStatusbar
+                previewTheme.textures.border = selectedBorder
+                -- Apply fonts
+                previewTheme.fonts.normal = selectedNormalFont
+                
+                previewFrame:UpdateWithTheme(previewTheme)
+            end
+            info.checked = (selectedNormalFont == font)
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+    
+    -- Set initial value
+    UIDropDownMenu_SetText(normalFontDropdown, selectedNormalFont)
+    
+    -- Font size slider
+    local fontSizeLabel = fontFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    fontSizeLabel:SetPoint("TOPLEFT", normalFontDropdown, "BOTTOMLEFT", 15, -20)
+    fontSizeLabel:SetText("Font Size:")
+    
+    local fontSizeSlider = CreateFrame("Slider", nil, fontFrame, "OptionsSliderTemplate")
+    fontSizeSlider:SetPoint("TOPLEFT", fontSizeLabel, "BOTTOMLEFT", 0, -5)
+    fontSizeSlider:SetWidth(180)
+    fontSizeSlider:SetMinMaxValues(8, 16)
+    fontSizeSlider:SetValue(12)
+    fontSizeSlider:SetValueStep(1)
+    fontSizeSlider.Low:SetText("8")
+    fontSizeSlider.High:SetText("16")
+    fontSizeSlider.Text:SetText("12")
+    
+    local selectedFontSize = 12
+    
+    fontSizeSlider:SetScript("OnValueChanged", function(self, value)
+        selectedFontSize = value
+        self.Text:SetText(value)
+        
+        -- Update preview theme
+        local previewTheme = CopyTable(VUI:GetTheme(selectedBaseTheme))
+        -- Apply colors
+        previewTheme.colors.border = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+        previewTheme.colors.primary = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+        previewTheme.colors.secondary = {r = secondaryColor.r, g = secondaryColor.g, b = secondaryColor.b, a = secondaryColor.a}
+        -- Apply textures
+        previewTheme.textures.statusbar = selectedStatusbar
+        previewTheme.textures.border = selectedBorder
+        -- Apply fonts
+        previewTheme.fonts.normal = selectedNormalFont
+        previewTheme.fontSizes = previewTheme.fontSizes or {}
+        previewTheme.fontSizes.normal = selectedFontSize
+        
+        previewFrame:UpdateWithTheme(previewTheme)
+    end)
+    
+    -- Step 5: Name and Save
+    local saveFrame = stepFrames[5]
+    
+    local saveLabel = saveFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    saveLabel:SetPoint("TOPLEFT", saveFrame, "TOPLEFT", 0, 0)
+    saveLabel:SetText("Name Your Theme")
+    
+    local saveDesc = saveFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    saveDesc:SetPoint("TOPLEFT", saveLabel, "BOTTOMLEFT", 0, -10)
+    saveDesc:SetText("Give your custom theme a name and save it.")
+    saveDesc:SetJustifyH("LEFT")
+    saveDesc:SetWidth(saveFrame:GetWidth())
+    
+    -- Theme name input
+    local nameLabel = saveFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    nameLabel:SetPoint("TOPLEFT", saveDesc, "BOTTOMLEFT", 0, -20)
+    nameLabel:SetText("Theme Name:")
+    
+    local nameInput = CreateFrame("EditBox", nil, saveFrame, "InputBoxTemplate")
+    nameInput:SetSize(200, 20)
+    nameInput:SetPoint("TOPLEFT", nameLabel, "BOTTOMLEFT", 5, -5)
+    nameInput:SetAutoFocus(false)
+    nameInput:SetText("My Custom Theme")
+    nameInput:SetScript("OnEscapePressed", function() nameInput:ClearFocus() end)
+    
+    -- Theme author input
+    local authorLabel = saveFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    authorLabel:SetPoint("TOPLEFT", nameInput, "BOTTOMLEFT", -5, -15)
+    authorLabel:SetText("Author:")
+    
+    local authorInput = CreateFrame("EditBox", nil, saveFrame, "InputBoxTemplate")
+    authorInput:SetSize(200, 20)
+    authorInput:SetPoint("TOPLEFT", authorLabel, "BOTTOMLEFT", 5, -5)
+    authorInput:SetAutoFocus(false)
+    authorInput:SetText(UnitName("player"))
+    authorInput:SetScript("OnEscapePressed", function() authorInput:ClearFocus() end)
+    
+    -- Theme description input
+    local descLabel = saveFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    descLabel:SetPoint("TOPLEFT", authorInput, "BOTTOMLEFT", -5, -15)
+    descLabel:SetText("Description:")
+    
+    local descInput = CreateFrame("EditBox", nil, saveFrame, "InputBoxTemplate")
+    descInput:SetSize(saveFrame:GetWidth() - 20, 20)
+    descInput:SetPoint("TOPLEFT", descLabel, "BOTTOMLEFT", 5, -5)
+    descInput:SetAutoFocus(false)
+    descInput:SetText("A custom theme created with the VUI Theme Wizard")
+    descInput:SetScript("OnEscapePressed", function() descInput:ClearFocus() end)
+    
+    -- Summary of settings
+    local summaryLabel = saveFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    summaryLabel:SetPoint("TOPLEFT", descInput, "BOTTOMLEFT", -5, -15)
+    summaryLabel:SetText("Theme Summary:")
+    
+    local summaryText = saveFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    summaryText:SetPoint("TOPLEFT", summaryLabel, "BOTTOMLEFT", 5, -5)
+    summaryText:SetJustifyH("LEFT")
+    summaryText:SetWidth(saveFrame:GetWidth() - 20)
+    
+    -- Function to update summary
+    local function UpdateSummary()
+        local summary = string.format(
+            "Base Theme: %s\n" ..
+            "Primary Color: |cFF%02x%02x%02x%s|r\n" ..
+            "Secondary Color: |cFF%02x%02x%02x%s|r\n" ..
+            "StatusBar Texture: %s\n" ..
+            "Border Texture: %s\n" ..
+            "Font: %s (Size %d)",
+            selectedBaseTheme:gsub("^%l", string.upper),
+            primaryColor.r * 255, primaryColor.g * 255, primaryColor.b * 255, "Primary",
+            secondaryColor.r * 255, secondaryColor.g * 255, secondaryColor.b * 255, "Secondary",
+            selectedStatusbar:gsub("^%l", string.upper),
+            selectedBorder:gsub("^%l", string.upper),
+            selectedNormalFont, selectedFontSize
+        )
+        summaryText:SetText(summary)
+    end
+    
+    -- Initial summary update
+    UpdateSummary()
+    
+    -- Create save button
+    local saveButton = CreateFrame("Button", nil, saveFrame, "UIPanelButtonTemplate")
+    saveButton:SetSize(120, 26)
+    saveButton:SetPoint("BOTTOMRIGHT", saveFrame, "BOTTOM", -10, 0)
+    saveButton:SetText("Save Theme")
+    saveButton:SetScript("OnClick", function()
+        local themeName = nameInput:GetText():trim()
+        
+        if themeName == "" then
+            VUI:Print("Theme name cannot be empty.")
+            return
+        end
+        
+        -- Check if name is a default theme
+        for _, name in ipairs(DEFAULT_THEMES) do
+            if name:lower() == themeName:lower() then
+                VUI:Print("Cannot use a default theme name. Please choose another name.")
+                return
+            end
+        end
+        
+        -- Create new theme based on selections
+        local newTheme = CopyTable(VUI:GetTheme(selectedBaseTheme))
+        
+        -- Apply customizations
+        newTheme.name = themeName
+        newTheme.author = authorInput:GetText():trim()
+        newTheme.description = descInput:GetText():trim()
+        
+        -- Apply colors
+        newTheme.colors.border = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+        newTheme.colors.primary = {r = primaryColor.r, g = primaryColor.g, b = primaryColor.b, a = primaryColor.a}
+        newTheme.colors.secondary = {r = secondaryColor.r, g = secondaryColor.g, b = secondaryColor.b, a = secondaryColor.a}
+        
+        -- Apply textures
+        newTheme.textures.statusbar = selectedStatusbar
+        newTheme.textures.border = selectedBorder
+        
+        -- Apply fonts
+        newTheme.fonts.normal = selectedNormalFont
+        newTheme.fontSizes = newTheme.fontSizes or {}
+        newTheme.fontSizes.normal = selectedFontSize
+        
+        -- Save theme and reload editor
+        if VUI.db.profile.themeEditor.customThemes[themeName] and VUI.db.profile.themeEditor.confirmOverwrite then
+            StaticPopupDialogs["VUI_THEME_WIZARD_CONFIRM_SAVE"] = {
+                text = "A theme named '" .. themeName .. "' already exists. Overwrite it?",
+                button1 = "Yes",
+                button2 = "No",
+                OnAccept = function()
+                    VUI.db.profile.themeEditor.customThemes[themeName] = CopyTable(newTheme)
+                    VUI:Print("Theme '" .. themeName .. "' has been saved!")
+                    
+                    -- Select the new theme
+                    ThemeEditor:SelectTheme(themeName, true)
+                    UIDropDownMenu_SetText(ThemeEditor.themeDropdown, themeName)
+                    
+                    -- Close wizard
+                    ThemeEditor:SelectTab(1)
+                end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+            }
+            StaticPopup_Show("VUI_THEME_WIZARD_CONFIRM_SAVE")
+        else
+            VUI.db.profile.themeEditor.customThemes[themeName] = CopyTable(newTheme)
+            VUI:Print("Theme '" .. themeName .. "' has been saved!")
+            
+            -- Select the new theme
+            ThemeEditor:SelectTheme(themeName, true)
+            UIDropDownMenu_SetText(ThemeEditor.themeDropdown, themeName)
+            
+            -- Close wizard
+            ThemeEditor:SelectTab(1)
+        end
+    end)
+    
+    -- Navigation buttons (Back, Next)
+    local backButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    backButton:SetSize(100, 26)
+    backButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 10, 10)
+    backButton:SetText("< Back")
+    backButton:Disable()
+    
+    local nextButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    nextButton:SetSize(100, 26)
+    nextButton:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -10, 10)
+    nextButton:SetText("Next >")
+    
+    -- Current step tracking
+    local currentStep = 1
+    
+    -- Function to change steps
+    local function ChangeStep(step)
+        -- Hide all step frames
+        for i, stepFrame in ipairs(stepFrames) do
+            stepFrame:Hide()
+        end
+        
+        -- Show current step frame
+        stepFrames[step]:Show()
+        
+        -- Update step indicators
+        UpdateStepIndicators(step)
+        
+        -- Update buttons
+        backButton:SetEnabled(step > 1)
+        
+        if step == #steps then
+            nextButton:Hide()
+            -- Update summary on final step
+            UpdateSummary()
+        else
+            nextButton:Show()
+        end
+        
+        -- Store current step
+        currentStep = step
+    end
+    
+    -- Button click handlers
+    backButton:SetScript("OnClick", function()
+        if currentStep > 1 then
+            ChangeStep(currentStep - 1)
+        end
+    end)
+    
+    nextButton:SetScript("OnClick", function()
+        if currentStep < #steps then
+            ChangeStep(currentStep + 1)
+        end
+    end)
+    
+    -- Initialize with step 1
+    ChangeStep(1)
+    
+    -- Show the first base theme to start
+    local initialTheme = VUI:GetTheme("thunderstorm")
+    previewFrame:UpdateWithTheme(initialTheme)
+    
+    -- Store references
+    self.wizardPreviewFrame = previewFrame
+    self.wizardStepFrames = stepFrames
+    self.wizardCurrentStep = currentStep
+    self.wizardChangeStep = ChangeStep
+end
+
 function ThemeEditor:CreateImportExportTab(frame)
     -- Create title and description
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -1639,4 +2542,187 @@ function ThemeEditor:RegisterWithConfigUI()
         openButton:SetText("Open Theme Editor")
         openButton:SetScript("OnClick", function() ThemeEditor:Show() end)
     end
+end
+
+-- Create the Media Stats tab
+function ThemeEditor:CreateMediaStatsTab(frame)
+    -- Create scrollable container
+    local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -26, 0)
+    
+    local scrollChild = CreateFrame("Frame")
+    scrollFrame:SetScrollChild(scrollChild)
+    scrollChild:SetWidth(scrollFrame:GetWidth())
+    scrollChild:SetHeight(scrollFrame:GetHeight() * 1.5) -- Make it taller than the visible area
+    
+    -- Create header
+    local header = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    header:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 10, -10)
+    header:SetText("Media Cache Performance Statistics")
+    
+    local desc = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontSmall")
+    desc:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -5)
+    desc:SetText("This tab shows performance statistics for the enhanced media management system.")
+    desc:SetTextColor(0.7, 0.7, 0.7)
+    
+    -- Create Stats container
+    local statsFrame = CreateFrame("Frame", nil, scrollChild)
+    statsFrame:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -20)
+    statsFrame:SetPoint("RIGHT", scrollChild, "RIGHT", -30, 0)
+    statsFrame:SetHeight(300)
+    
+    -- Add a border around stats
+    statsFrame:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8x8",
+        edgeFile = "Interface\\Buttons\\WHITE8x8",
+        tile = false,
+        tileSize = 0,
+        edgeSize = 1,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    statsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.6)
+    statsFrame:SetBackdropBorderColor(0.3, 0.3, 0.3, 1.0)
+    
+    -- Stats labels
+    local yOffset = 15
+    local stats = {
+        { label = "Textures Loaded:", dataKey = "texturesLoaded" },
+        { label = "Cache Hits:", dataKey = "cacheHits" },
+        { label = "Cache Misses:", dataKey = "cacheMisses" },
+        { label = "Cache Hit Rate:", dataKey = "cacheHitRate" },
+        { label = "Cache Size:", dataKey = "cacheSize" },
+        { label = "Memory Usage:", dataKey = "memoryUsage" },
+        { label = "Queue Size:", dataKey = "queueSize" }
+    }
+    
+    local statLabels = {}
+    local statValues = {}
+    
+    for i, stat in ipairs(stats) do
+        -- Create label
+        local label = statsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        label:SetPoint("TOPLEFT", statsFrame, "TOPLEFT", 15, -yOffset)
+        label:SetText(stat.label)
+        label:SetJustifyH("LEFT")
+        
+        -- Create value
+        local value = statsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        value:SetPoint("TOPRIGHT", statsFrame, "TOPRIGHT", -15, -yOffset)
+        value:SetText("Loading...")
+        value:SetJustifyH("RIGHT")
+        
+        -- Store references
+        statLabels[stat.dataKey] = label
+        statValues[stat.dataKey] = value
+        
+        yOffset = yOffset + 25
+    end
+    
+    -- Add refresh button
+    local refreshButton = CreateFrame("Button", nil, scrollChild, "UIPanelButtonTemplate")
+    refreshButton:SetSize(120, 22)
+    refreshButton:SetPoint("TOPLEFT", statsFrame, "BOTTOMLEFT", 0, -15)
+    refreshButton:SetText("Refresh Stats")
+    
+    -- Add clear cache button
+    local clearCacheButton = CreateFrame("Button", nil, scrollChild, "UIPanelButtonTemplate")
+    clearCacheButton:SetSize(120, 22)
+    clearCacheButton:SetPoint("LEFT", refreshButton, "RIGHT", 10, 0)
+    clearCacheButton:SetText("Clear Cache")
+    
+    -- Add preload button for current theme
+    local preloadButton = CreateFrame("Button", nil, scrollChild, "UIPanelButtonTemplate")
+    preloadButton:SetSize(180, 22)
+    preloadButton:SetPoint("TOPLEFT", refreshButton, "BOTTOMLEFT", 0, -15)
+    preloadButton:SetText("Preload Current Theme")
+    
+    -- Function to update stats display
+    local function UpdateStats()
+        -- Get current stats
+        local mediaStats = VUI:GetMediaStats()
+        
+        -- Update display
+        for dataKey, valueText in pairs(statValues) do
+            if mediaStats[dataKey] ~= nil then
+                if dataKey == "cacheHitRate" then
+                    valueText:SetText(string.format("%.1f%%", mediaStats[dataKey]))
+                else
+                    valueText:SetText(tostring(mediaStats[dataKey]))
+                end
+            else
+                valueText:SetText("N/A")
+            end
+        end
+    end
+    
+    -- Update stats on show
+    frame:SetScript("OnShow", UpdateStats)
+    
+    -- Button scripts
+    refreshButton:SetScript("OnClick", function()
+        UpdateStats()
+        PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
+    end)
+    
+    clearCacheButton:SetScript("OnClick", function()
+        VUI:ClearUnusedMediaCache()
+        UpdateStats()
+        PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
+    end)
+    
+    preloadButton:SetScript("OnClick", function()
+        local currentThemeName = VUI.db.profile.appearance.theme or "thunderstorm"
+        VUI:PreloadThemeTextures(currentThemeName)
+        UpdateStats()
+        PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
+    end)
+    
+    -- Add performance notes section
+    local notesHeader = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    notesHeader:SetPoint("TOPLEFT", preloadButton, "BOTTOMLEFT", 0, -20)
+    notesHeader:SetText("Performance Notes:")
+    
+    local notesBG = CreateFrame("Frame", nil, scrollChild)
+    notesBG:SetPoint("TOPLEFT", notesHeader, "BOTTOMLEFT", 0, -5)
+    notesBG:SetPoint("RIGHT", scrollChild, "RIGHT", -30, 0)
+    notesBG:SetHeight(150)
+    
+    -- Add a border around notes
+    notesBG:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8x8",
+        edgeFile = "Interface\\Buttons\\WHITE8x8",
+        tile = false,
+        tileSize = 0,
+        edgeSize = 1,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    notesBG:SetBackdropColor(0.1, 0.1, 0.1, 0.6)
+    notesBG:SetBackdropBorderColor(0.3, 0.3, 0.3, 1.0)
+    
+    local notesText = notesBG:CreateFontString(nil, "OVERLAY", "GameFontSmall")
+    notesText:SetPoint("TOPLEFT", notesBG, "TOPLEFT", 10, -10)
+    notesText:SetPoint("BOTTOMRIGHT", notesBG, "BOTTOMRIGHT", -10, 10)
+    notesText:SetJustifyH("LEFT")
+    notesText:SetJustifyV("TOP")
+    notesText:SetText(
+        "• The new media caching system improves performance by:\n" ..
+        "  - Caching textures for faster access\n" ..
+        "  - Lazy loading non-essential textures\n" ..
+        "  - Preloading theme assets when needed\n" ..
+        "  - Freeing memory when textures are no longer used\n\n" ..
+        "• High cache hit rate indicates good performance\n" ..
+        "• Preloading the current theme may increase initial memory usage\n" ..
+        "• Memory usage estimates are approximate\n"
+    )
+    notesText:SetTextColor(0.7, 0.7, 0.7)
+    
+    -- Initial stats update
+    UpdateStats()
+    
+    -- Store references
+    self.mediaStatsScrollFrame = scrollFrame
+    self.mediaStatsScrollChild = scrollChild
+    self.statValues = statValues
+    self.updateStatsFunc = UpdateStats
 end

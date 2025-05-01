@@ -77,4 +77,7 @@
     
     <!-- Enhanced Player Frame Module -->
     <Include file="epf\index.xml"/>
+    
+    <!-- Multi-Notification Module -->
+    <Include file="multinotification\load.xml"/>
 </Ui>

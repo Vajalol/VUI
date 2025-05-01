@@ -276,6 +276,35 @@ function Dashboard:CreateModuleCards()
             edgeSize = 12,
             insets = { left = 3, right = 3, top = 3, bottom = 3 }
         })
+        
+        -- Add visual animations to cards
+        if VUI.UI and VUI.UI.Animation then
+            -- Set initial state for animation
+            card:SetAlpha(0)
+            
+            -- Delay each card's appearance slightly based on its position
+            -- This creates a cascade effect
+            local delay = (row * cardsPerRow + col) * 0.05
+            C_Timer.After(delay, function()
+                -- Fade in animation
+                VUI.UI.Animation:FadeIn(card, 0.3, 1)
+            end)
+            
+            -- Add highlight effect on mouse hover
+            card:SetScript("OnEnter", function()
+                -- Scale up slightly
+                VUI.UI.Animation:Scale(card, 1, 1.05, 0.2)
+                
+                -- Add a subtle glow effect
+                local themeColor = VUI.UI:GetThemeColors().border
+                VUI.UI.Animation:Glow(card, themeColor, 0.5)
+            end)
+            
+            card:SetScript("OnLeave", function()
+                -- Scale back to normal
+                VUI.UI.Animation:Scale(card, 1.05, 1, 0.2)
+            end)
+        end
         card:SetBackdropColor(0.15, 0.15, 0.15, 0.8)
         card:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.8)
         
@@ -388,6 +417,41 @@ function Dashboard:CreateModuleCards()
                 if not InterfaceOptionsFrame:IsShown() then
                     InterfaceOptionsFrame_OpenToCategory("VUI")
                 end
+            end)
+        end
+        
+        -- Add button animations if animation system is available
+        if VUI.UI and VUI.UI.Animation then
+            -- Toggle button animation
+            toggleButton:SetScript("OnEnter", function(self)
+                -- Highlight animation
+                VUI.UI.Animation:Scale(self, 1, 1.1, 0.15)
+            end)
+            
+            toggleButton:SetScript("OnLeave", function(self)
+                -- Return to normal size
+                VUI.UI.Animation:Scale(self, 1.1, 1, 0.15)
+            end)
+            
+            -- Config button animation
+            configButton:SetScript("OnEnter", function(self)
+                -- Add shine effect and slight scale
+                VUI.UI.Animation:Scale(self, 1, 1.15, 0.15)
+                VUI.UI.Animation:Shine(self, 45, 10, 0.3)
+            end)
+            
+            configButton:SetScript("OnLeave", function(self)
+                -- Return to normal size
+                VUI.UI.Animation:Scale(self, 1.15, 1, 0.15)
+            end)
+            
+            -- Add click feedback
+            toggleButton:HookScript("OnMouseDown", function(self)
+                VUI.UI.Animation:Flash(self, 1, 0.1, 0.7, 1)
+            end)
+            
+            configButton:HookScript("OnMouseDown", function(self)
+                VUI.UI.Animation:Flash(self, 1, 0.1, 0.7, 1)
             end)
         end
         
@@ -613,6 +677,34 @@ function Dashboard:CreateFilterBar()
         self:UpdateCategoryButtons()
     end)
     
+    -- Add animations to filter buttons if animation system is available
+    if VUI.UI and VUI.UI.Animation then
+        local categoryButtons = {allButton, coreButton, uiButton, toolsButton, addonButton}
+        
+        for _, button in ipairs(categoryButtons) do
+            -- Hover effect
+            button:SetScript("OnEnter", function(self)
+                if self:GetButtonState() ~= "PUSHED" then
+                    VUI.UI.Animation:Scale(self, 1, 1.05, 0.2)
+                    local themeColor = VUI.UI:GetThemeColors().accent
+                    VUI.UI.Animation:Glow(self, themeColor, 0.3)
+                end
+            end)
+            
+            button:SetScript("OnLeave", function(self)
+                if self:GetButtonState() ~= "PUSHED" then
+                    VUI.UI.Animation:Scale(self, 1.05, 1, 0.2)
+                end
+            end)
+            
+            -- Click effect
+            button:HookScript("OnClick", function(self)
+                VUI.UI.Animation:Flash(self, 1, 0.1, 0.7, 1)
+                VUI.UI.Animation:Bounce(self, 2, 1)
+            end)
+        end
+    end
+    
     -- Store references
     self.filterBar = filterBar
     self.categoryButtons = {
@@ -742,6 +834,27 @@ function Dashboard:CreateQuickButtons()
     local spacing = 10
     local xOffset = 0
     
+    -- Function to add animations to quick buttons
+    local function AddButtonAnimations(button)
+        if VUI.UI and VUI.UI.Animation then
+            -- Hover effect
+            button:SetScript("OnEnter", function(self)
+                VUI.UI.Animation:Scale(self, 1, 1.05, 0.15)
+                local themeColor = VUI.UI:GetThemeColors().accent
+                VUI.UI.Animation:Glow(self, themeColor, 0.3)
+            end)
+            
+            button:SetScript("OnLeave", function(self)
+                VUI.UI.Animation:Scale(self, 1.05, 1, 0.15)
+            end)
+            
+            -- Click effect
+            button:HookScript("OnMouseDown", function(self)
+                VUI.UI.Animation:Flash(self, 1, 0.1, 0.7, 1)
+            end)
+        end
+    end
+    
     -- Reload UI button
     local reloadButton = CreateFrame("Button", nil, quickButtons, "UIPanelButtonTemplate")
     reloadButton:SetSize(buttonWidth, buttonHeight)
@@ -750,6 +863,9 @@ function Dashboard:CreateQuickButtons()
     reloadButton:SetScript("OnClick", function()
         ReloadUI()
     end)
+    
+    -- Add animations to reload button
+    AddButtonAnimations(reloadButton)
     
     xOffset = xOffset + buttonWidth + spacing
     
@@ -769,6 +885,9 @@ function Dashboard:CreateQuickButtons()
             end
         end
     end)
+    
+    -- Add animations to module button
+    AddButtonAnimations(moduleButton)
     
     xOffset = xOffset + buttonWidth + spacing
     
@@ -847,6 +966,9 @@ function Dashboard:CreateQuickButtons()
         -- Update UI
         Dashboard:UpdateModuleStatus()
     end)
+    
+    -- Add animations to toggleAll button
+    AddButtonAnimations(toggleAllButton)
     
     xOffset = xOffset + buttonWidth + spacing
     
@@ -1091,6 +1213,9 @@ function Dashboard:CreateQuickButtons()
     
     -- Store reference for later updates
     self.moduleDropdown = moduleDropdown
+    
+    -- Add animations to module manager button
+    AddButtonAnimations(moduleManagerButton)
     
     xOffset = xOffset + buttonWidth + spacing
     
@@ -1665,12 +1790,33 @@ function Dashboard:Show()
     -- Apply filter based on active category
     self:FilterModules(VUI.db.profile.dashboard.activeCategory)
     
-    self.panel:Show()
+    -- Show with animation if available
+    if VUI.UI and VUI.UI.Animation and VUI.UI.Animation:ShouldAnimate() then
+        self.panel:SetAlpha(0)
+        self.panel:Show()
+        
+        -- Fade in animation
+        VUI.UI.Animation:FadeIn(self.panel, 0.3, 1)
+        
+        -- Add a slight scale animation for more impact
+        VUI.UI.Animation:Scale(self.panel, 0.95, 1, 0.3)
+    else
+        self.panel:Show()
+    end
 end
 
 -- Hide dashboard
 function Dashboard:Hide()
-    if self.panel then
+    if not self.panel then return end
+    
+    -- Hide with animation if available
+    if VUI.UI and VUI.UI.Animation and VUI.UI.Animation:ShouldAnimate() then
+        -- Fade out animation with slight scale down
+        VUI.UI.Animation:FadeOut(self.panel, 0.25, 0, function()
+            self.panel:Hide()
+        end)
+        VUI.UI.Animation:Scale(self.panel, 1, 0.95, 0.25)
+    else
         self.panel:Hide()
     end
 end

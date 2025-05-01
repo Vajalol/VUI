@@ -119,9 +119,19 @@ end
 function VUI.ThemeIntegration:InitializeCallbacks()
     -- Hook into theme change events
     hooksecurefunc(VUI.ThemeIntegration, "ApplyTheme", function(self, theme)
-        -- Call all registered callbacks
-        for name, callback in pairs(self.callbacks) do
-            pcall(callback, theme, VUI.media.themes[theme] or {})
+        -- Create a smooth transition effect for theme changes
+        if VUI.UI and VUI.UI.Animation then
+            VUI.UI.Animation:ThemeTransition(function()
+                -- Call all registered callbacks
+                for name, callback in pairs(self.callbacks) do
+                    pcall(callback, theme, VUI.media.themes[theme] or {})
+                end
+            end)
+        else
+            -- Fallback if animation system isn't ready
+            for name, callback in pairs(self.callbacks) do
+                pcall(callback, theme, VUI.media.themes[theme] or {})
+            end
         end
     end)
 end

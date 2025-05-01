@@ -1,5 +1,8 @@
 local _, VUI = ...
 
+-- Enhanced Media Management System
+-- Provides better performance through texture caching, lazy loading, and memory management
+
 -- Media initialization
 function VUI:InitializeMedia()
     -- Create the media table to store all textures, fonts, and sounds
@@ -12,6 +15,28 @@ function VUI:InitializeMedia()
         sounds = {},
         icons = {},
     }
+    
+    -- Create caches for loaded assets
+    self.mediaCache = {
+        textures = {},      -- Cache for loaded textures
+        fonts = {},         -- Cache for loaded fonts
+        sounds = {}         -- Cache for loaded sounds
+    }
+    
+    -- Create statistics tracking
+    self.mediaStats = {
+        texturesLoaded = 0, -- Count of loaded textures
+        cacheMisses = 0,    -- Count of cache misses
+        cacheHits = 0,      -- Count of cache hits
+        memoryUsage = 0     -- Estimated memory usage
+    }
+    
+    -- Create lazy loading queue for media assets
+    self.mediaQueue = {}    -- Queue for lazy loading assets
+    self.mediaQueueActive = false
+    
+    -- Register callback for theme changes to clear unused cache
+    self:RegisterCallback("ThemeChanged", function() self:ClearUnusedMediaCache() end)
     
     -- Register default textures
     self.media.textures.logo = "Interface\\AddOns\\VUI\\media\\textures\\logo.tga"
@@ -218,6 +243,9 @@ function VUI:InitializeMedia()
     self.media.fonts.bold = "Interface\\AddOns\\VUI\\media\\Fonts\\PTSansNarrow-Bold.ttf"
     self.media.fonts.header = "Fonts\\MORPHEUS.TTF"
     
+    -- Initialize preloading of essential textures
+    self:InitializePreloading()
+    
     -- External fonts included with the addon
     self.media.fonts.avant = "Interface\\AddOns\\VUI\\media\\Fonts\\AvantGarde.TTF"
     self.media.fonts.expressway = "Interface\\AddOns\\VUI\\media\\Fonts\\Expressway.ttf"
@@ -331,8 +359,13 @@ function VUI:RegisterMediaWithUI()
     end
     
     -- Connect texture functions
-    self.UI.GetTexture = function(_, category, name)
-        return self:GetTexture(category, name)
+    self.UI.GetTexture = function(_, category, name, priority)
+        return self:GetTexture(category, name, priority)
+    end
+    
+    -- Connect theme asset functions
+    self.UI.GetThemeAsset = function(_, assetType, themeName, priority)
+        return self:GetThemeAsset(assetType, themeName, priority)
     end
     
     -- Connect color functions
@@ -345,8 +378,21 @@ function VUI:RegisterMediaWithUI()
         self:PlaySound(sound)
     end
     
+    -- Connect media management functions
+    self.UI.ClearMediaCache = function(_)
+        self:ClearUnusedMediaCache()
+    end
+    
+    self.UI.PreloadThemeTextures = function(_, themeName)
+        self:PreloadThemeTextures(themeName)
+    end
+    
+    self.UI.GetMediaStats = function(_)
+        return self:GetMediaStats()
+    end
+    
     -- Notify about connection
-    self:Print("Media connected to UI framework")
+    self:Debug("Media connected to UI framework with enhanced performance management")
 end
 
 -- Helper function to create a color object from RGB values
@@ -369,14 +415,23 @@ function VUI:GetColor(name, subtype, key)
     end
 end
 
--- Helper function to get a texture by name
-function VUI:GetTexture(category, name)
+-- Helper function to get a texture by name with caching
+function VUI:GetTexture(category, name, priority)
     if not category or not name then return "" end
     
+    -- Get the texture path
+    local texturePath = ""
     if self.media[category] and self.media[category][name] then
-        return self.media[category][name]
+        texturePath = self.media[category][name]
     else
         return "" -- Return empty string if not found
+    end
+    
+    -- If we have a texture path, use the caching system
+    if texturePath and texturePath ~= "" then
+        return self:GetTextureCached(texturePath, priority)
+    else
+        return texturePath
     end
 end
 
@@ -391,17 +446,26 @@ function VUI:GetCommonTexturePath(textureType, assetName)
     return "Interface\\AddOns\\VUI\\media\\textures\\common\\" .. (textureType or "") .. (assetName and "\\" .. assetName or "")
 end
 
--- Get theme-specific asset for the current or specified theme
-function VUI:GetThemeAsset(assetType, themeName)
+-- Get theme-specific asset for the current or specified theme with caching
+function VUI:GetThemeAsset(assetType, themeName, priority)
     themeName = themeName or self.db.profile.appearance.theme or "thunderstorm"
     
+    local texturePath
     -- Check if we have a direct registration for this theme and asset type
     if self.media[assetType] and self.media[assetType][themeName] then
-        return self.media[assetType][themeName]
+        texturePath = self.media[assetType][themeName]
+    else
+        -- Otherwise get a path based on the standard theme structure
+        texturePath = self:GetThemeTexturePath(themeName, assetType)
     end
     
-    -- Otherwise return a path based on the standard theme structure
-    return self:GetThemeTexturePath(themeName, assetType)
+    -- Use texture caching for better performance
+    if texturePath and texturePath ~= "" then
+        -- Theme assets like borders are HIGH priority
+        return self:GetTextureCached(texturePath, priority or "HIGH")
+    else
+        return texturePath
+    end
 end
 
 -- Helper function to apply a texture to a frame
@@ -514,4 +578,259 @@ function VUI:PlaySound(sound)
     
     -- If we're here, we couldn't play the sound
     self:Print("Could not play sound: " .. tostring(sound))
+end
+
+--------------------------------------------------
+-- Enhanced Media Management Functions
+--------------------------------------------------
+
+-- Get a texture with caching for better performance
+function VUI:GetTextureCached(texturePath, priority)
+    if not texturePath then return nil end
+    
+    -- Check if texture is in cache
+    if self.mediaCache.textures[texturePath] then
+        self.mediaStats.cacheHits = self.mediaStats.cacheHits + 1
+        return self.mediaCache.textures[texturePath]
+    end
+    
+    -- Cache miss, will need to load the texture
+    self.mediaStats.cacheMisses = self.mediaStats.cacheMisses + 1
+    
+    -- If it's a high priority texture, load immediately
+    if priority == "HIGH" then
+        local texture = self:LoadTexture(texturePath)
+        self.mediaCache.textures[texturePath] = texture
+        return texture
+    end
+    
+    -- Otherwise queue for lazy loading and return a placeholder
+    -- Add to lazy loading queue if not already queued
+    local alreadyQueued = false
+    for _, item in ipairs(self.mediaQueue) do
+        if item.path == texturePath then
+            alreadyQueued = true
+            break
+        end
+    end
+    
+    if not alreadyQueued then
+        table.insert(self.mediaQueue, {
+            type = "texture",
+            path = texturePath,
+            priority = priority or "MEDIUM"
+        })
+        
+        -- Start lazy loading if not already active
+        if not self.mediaQueueActive then
+            self:ProcessMediaQueue()
+        end
+    end
+    
+    -- Return a placeholder texture for now (solid color based on theme)
+    local placeholder = self:GetPlaceholderTexture()
+    return placeholder
+end
+
+-- Load a texture immediately without caching
+function VUI:LoadTexture(texturePath)
+    if not texturePath then return nil end
+    
+    -- Estimate texture size for memory tracking (very approximate)
+    local memoryEstimate = 0.1 -- MB, very rough estimate
+    self.mediaStats.memoryUsage = self.mediaStats.memoryUsage + memoryEstimate
+    self.mediaStats.texturesLoaded = self.mediaStats.texturesLoaded + 1
+    
+    return texturePath
+end
+
+-- Generate a placeholder texture (solid color based on theme)
+function VUI:GetPlaceholderTexture()
+    return "Interface\\Buttons\\WHITE8x8"
+end
+
+-- Process the media loading queue
+function VUI:ProcessMediaQueue()
+    self.mediaQueueActive = true
+    
+    -- Process up to 5 items per frame
+    local function ProcessNextBatch()
+        local itemsProcessed = 0
+        local itemsRemaining = #self.mediaQueue
+        
+        if itemsRemaining == 0 then
+            self.mediaQueueActive = false
+            return
+        end
+        
+        -- Sort queue by priority
+        table.sort(self.mediaQueue, function(a, b)
+            if a.priority == "HIGH" and b.priority ~= "HIGH" then
+                return true
+            elseif a.priority ~= "HIGH" and b.priority == "HIGH" then
+                return false
+            else
+                return a.priority < b.priority
+            end
+        end)
+        
+        -- Process up to 5 items
+        for i = 1, math.min(5, itemsRemaining) do
+            local item = table.remove(self.mediaQueue, 1)
+            
+            if item.type == "texture" then
+                self.mediaCache.textures[item.path] = self:LoadTexture(item.path)
+            elseif item.type == "font" then
+                self.mediaCache.fonts[item.path] = item.path -- No font loading required
+            elseif item.type == "sound" then
+                self.mediaCache.sounds[item.path] = item.path -- No sound loading required
+            end
+            
+            itemsProcessed = itemsProcessed + 1
+            
+            -- Prevent processing too much in one frame (performance safeguard)
+            if itemsProcessed >= 5 then
+                break
+            end
+        end
+        
+        -- If there are more items, schedule the next batch
+        if #self.mediaQueue > 0 then
+            C_Timer.After(0.1, ProcessNextBatch)
+        else
+            self.mediaQueueActive = false
+        end
+    end
+    
+    -- Start processing
+    ProcessNextBatch()
+end
+
+-- Clear unused textures from cache to free memory
+function VUI:ClearUnusedMediaCache()
+    local currentTheme = self.db.profile.appearance.theme or "thunderstorm"
+    local texturesToKeep = {}
+    
+    -- Identify textures to keep (current theme)
+    local function MarkTextureForKeeping(texturePath)
+        if texturePath and type(texturePath) == "string" then
+            texturesToKeep[texturePath] = true
+        end
+    end
+    
+    -- Mark theme textures
+    if self.media.themes[currentTheme] then
+        local theme = self.media.themes[currentTheme]
+        MarkTextureForKeeping(theme.background)
+        MarkTextureForKeeping(theme.border)
+        MarkTextureForKeeping(theme.statusbar)
+        if theme.effects then
+            for _, texture in pairs(theme.effects) do
+                MarkTextureForKeeping(texture)
+            end
+        end
+    end
+    
+    -- Mark common textures
+    MarkTextureForKeeping(self.media.textures.logo)
+    MarkTextureForKeeping(self.media.textures.glow)
+    MarkTextureForKeeping(self.media.textures.highlight)
+    
+    -- Clear unused textures
+    for path in pairs(self.mediaCache.textures) do
+        if not texturesToKeep[path] then
+            self.mediaCache.textures[path] = nil
+            
+            -- Adjust memory usage estimate
+            local memoryEstimate = 0.1 -- MB, very rough estimate
+            self.mediaStats.memoryUsage = self.mediaStats.memoryUsage - memoryEstimate
+        end
+    end
+    
+    -- Force garbage collection
+    collectgarbage("collect")
+    
+    -- Debug info
+    self:Debug("Media cache cleared. Kept " .. self:TableCount(texturesToKeep) .. " textures. Memory estimate: " .. 
+               string.format("%.2f", self.mediaStats.memoryUsage) .. " MB")
+end
+
+-- Count table entries (helper function)
+function VUI:TableCount(t)
+    local count = 0
+    if type(t) ~= "table" then return 0 end
+    for _ in pairs(t) do count = count + 1 end
+    return count
+end
+
+-- Get media usage statistics
+function VUI:GetMediaStats()
+    return {
+        texturesLoaded = self.mediaStats.texturesLoaded,
+        cacheMisses = self.mediaStats.cacheMisses,
+        cacheHits = self.mediaStats.cacheHits,
+        cacheHitRate = self.mediaStats.cacheHits / (self.mediaStats.cacheHits + self.mediaStats.cacheMisses + 0.001) * 100,
+        memoryUsage = string.format("%.2f", self.mediaStats.memoryUsage) .. " MB",
+        cacheSize = self:TableCount(self.mediaCache.textures),
+        queueSize = #self.mediaQueue
+    }
+end
+
+-- Preload essential textures for the current theme
+function VUI:PreloadThemeTextures(themeName)
+    themeName = themeName or self.db.profile.appearance.theme or "thunderstorm"
+    
+    self:Debug("Preloading textures for theme: " .. themeName)
+    
+    -- Preload theme assets
+    if self.media.themes[themeName] then
+        local theme = self.media.themes[themeName]
+        
+        -- Load core theme assets at HIGH priority
+        self:GetTextureCached(theme.background, "HIGH")
+        self:GetTextureCached(theme.border, "HIGH")
+        self:GetTextureCached(theme.statusbar, "HIGH")
+        
+        -- Load effects at MEDIUM priority
+        if theme.effects then
+            for _, texture in pairs(theme.effects) do
+                self:GetTextureCached(texture, "MEDIUM")
+            end
+        end
+        
+        -- Theme preview can be loaded at LOW priority
+        if theme.preview then
+            self:GetTextureCached(theme.preview, "LOW")
+        end
+    end
+    
+    -- Preload common textures
+    self:GetTextureCached(self.media.textures.logo, "HIGH")
+    self:GetTextureCached(self.media.textures.glow, "HIGH")
+    self:GetTextureCached(self.media.textures.highlight, "MEDIUM")
+    
+    -- Preload module-specific textures
+    for moduleName, moduleTextures in pairs(self.media.textures) do
+        if type(moduleTextures) == "table" and moduleName ~= "fonts" and moduleName ~= "sounds" then
+            for _, texture in pairs(moduleTextures) do
+                self:GetTextureCached(texture, "LOW")
+            end
+        end
+    end
+end
+
+-- Initialize preloading of theme textures
+function VUI:InitializePreloading()
+    -- Start preloading after a short delay to not impact initial loading
+    C_Timer.After(1, function()
+        self:PreloadThemeTextures()
+    end)
+    
+    -- Set up event to preload new theme when theme changes
+    self:RegisterCallback("ThemeChanged", function(newTheme) 
+        -- Clear the old theme's cache first
+        self:ClearUnusedMediaCache()
+        -- Then preload the new theme
+        self:PreloadThemeTextures(newTheme)
+    end)
 end

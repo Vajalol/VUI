@@ -12,5 +12,6 @@
     <Script file="MSBTMain.lua"/>
     <Script file="MSBTAnimationStyles.lua"/>
     <Script file="ThemeIntegration.lua"/>
+    <Script file="MultiNotificationIntegration.lua"/>
     <Script file="init.lua"/>
 </Ui>
