@@ -88,6 +88,11 @@ function EPF:Enable()
     self.enabled = true
     self.settings.enabled = true
     
+    -- Initialize ThemeIntegration if available
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
+    
     -- Apply configuration to PlayerFrame
     self:SetupPlayerFrame()
     
@@ -114,7 +119,12 @@ function EPF:RegisterThemeCallbacks()
     if VUI.callbacks and VUI.callbacks.RegisterCallback then
         VUI.callbacks:RegisterCallback("OnThemeChanged", function(theme)
             if self.enabled and self.settings.useThemeColors then
-                self:ApplyTheme(theme)
+                -- Use ThemeIntegration if available, otherwise fall back to old method
+                if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+                    self.ThemeIntegration:ApplyTheme(theme)
+                else
+                    self:ApplyTheme(theme)
+                end
             end
         end)
     end
@@ -188,7 +198,12 @@ function EPF:SetupPlayerFrame()
     
     -- Apply current theme
     if self.settings.useThemeColors then
-        self:ApplyTheme()
+        -- Use ThemeIntegration if available, otherwise fall back to old method
+        if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+            self.ThemeIntegration:ApplyTheme()
+        else
+            self:ApplyTheme()
+        end
     end
 end
 

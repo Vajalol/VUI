@@ -260,6 +260,11 @@ function BuffOverlay:Initialize()
     
     -- Initialize the enhanced display system if enabled
     self:InitializeEnhancedDisplay()
+    
+    -- Initialize the theme integration
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
 end
 
 -- Apply theme to all buff frames
@@ -267,9 +272,15 @@ function BuffOverlay:ApplyTheme(theme)
     -- If theme not provided, get it from the current profile
     theme = theme or VUI.db.profile.appearance.theme or "thunderstorm"
     
-    -- Apply theme to existing frames
-    for _, frame in pairs(self.frames) do
-        self:ApplyThemeToBuffFrame(frame)
+    -- Apply through ThemeIntegration if available
+    if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+        self.ThemeIntegration:ApplyTheme(theme)
+    else
+        -- Legacy theme application (fallback)
+        -- Apply theme to existing frames
+        for _, frame in pairs(self.frames) do
+            self:ApplyThemeToBuffFrame(frame)
+        end
     end
     
     -- Update visual effects for active buffs

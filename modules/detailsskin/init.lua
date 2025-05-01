@@ -145,11 +145,17 @@ end
 function DetailsSkin:OnThemeChanged(newTheme)
     if not Details then return end
     
-    -- Update all instances with the new theme
-    self:ApplySkinToAllInstances()
-    
-    -- Update all plugin windows
-    self:ApplySkinToPlugins()
+    -- Use ThemeIntegration if available
+    if self.ThemeIntegration and self.ThemeIntegration.ApplyTheme then
+        self.ThemeIntegration:ApplyTheme(newTheme)
+    else
+        -- Legacy fallback
+        -- Update all instances with the new theme
+        self:ApplySkinToAllInstances()
+        
+        -- Update all plugin windows
+        self:ApplySkinToPlugins()
+    end
 end
 
 -- Apply skin to Details plugins
@@ -225,7 +231,12 @@ function DetailsSkin:Initialize()
         self.Reports:Initialize()
     end
     
-    -- Register for theme changes
+    -- Initialize theme integration
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
+    
+    -- Register for theme changes (legacy support)
     if VUI.ThemeIntegration and VUI.ThemeIntegration.RegisterThemeChangeCallback then
         VUI.ThemeIntegration:RegisterThemeChangeCallback(function(newTheme)
             DetailsSkin:OnThemeChanged(newTheme)
