@@ -269,6 +269,12 @@ function MultiNotification:OnEnable()
     -- Register for relevant events
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     
+    -- Initialize Spell Events system (migrated from SpellNotifications)
+    if self.InitializeSpellEvents then
+        self:InitializeSpellEvents()
+        VUI:Print("MultiNotification Spell Events system initialized")
+    end
+    
     VUI:Print("MultiNotification module enabled")
 end
 
@@ -1276,4 +1282,48 @@ function MultiNotification:TestNotifications()
             self:ProcessNotificationQueue()
         end)
     end
+end
+
+-- Specialized method for spell events (migrated from SpellNotifications)
+-- This makes integration with our SpellEvents system cleaner
+function MultiNotification:ShowSpellNotification(title, message, spellID, category, soundFile, duration)
+    -- Check if notifications are enabled
+    if not self.db.profile.enabled then return end
+    
+    -- Default category if not provided
+    category = category or "important"
+    
+    -- Check if this category is enabled
+    local categorySettings = self.db.profile.categorySettings[category]
+    if not categorySettings or not categorySettings.enabled then return end
+    
+    -- Get spell icon if spellID is provided
+    local icon
+    if type(spellID) == "number" then
+        _, _, icon = GetSpellInfo(spellID)
+    elseif type(spellID) == "string" and spellID:find("Interface\\") then
+        -- Assume it's an icon path
+        icon = spellID
+    end
+    
+    -- Ensure we have an icon
+    if not icon then
+        -- Fallback icon if needed
+        icon = "Interface\\Icons\\INV_Misc_QuestionMark"
+    end
+    
+    -- Use the standard notification method to handle the actual display
+    local success = self:AddNotification(
+        category,   -- type
+        icon,       -- icon
+        message,    -- text (description)
+        duration or categorySettings.duration  -- duration
+    )
+    
+    -- Play sound if not handled in the AddNotification method
+    if success and soundFile and categorySettings.playSound then
+        PlaySoundFile(soundFile, "Master")
+    end
+    
+    return success
 end

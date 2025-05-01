@@ -60,12 +60,14 @@ This document tracks significant changes to the VUI addon suite.
 
 ### Module Improvements
 - Unified Notification System:
-  - Consolidated SpellNotifications functionality into MultiNotification
+  - Completely removed SpellNotifications module and merged all functionality into MultiNotification
   - Created a single, centralized notification system for all addon components
   - Eliminated duplicate code and improved consistency
+  - Created modular spell event tracking with frame pooling optimization
   - Integrated with MSBT module for combat text
   - Support for multiple notification types and priorities
   - Enhanced spell detection with unified configuration
+  - Implemented migration for user settings during the consolidation
 
 ### Technical
 - Complete module standardization across all components

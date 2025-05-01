@@ -77,7 +77,4 @@
     
     <!-- Multi-Notification Module (Unified Notification System) -->
     <Include file="multinotification\load.xml"/>
-    
-    <!-- SpellNotifications Module (Legacy - to be deprecated) -->
-    <Include file="spellnotifications\index.xml"/>
 </Ui>

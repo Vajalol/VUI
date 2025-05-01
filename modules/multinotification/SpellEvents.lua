@@ -3,241 +3,341 @@
     Version: 0.2.0
     Author: VortexQ8
     
-    Spell event detection and handling for the unified notification system
+    Combat log event handler for the MultiNotification system.
+    Detects and processes spell events for notifications.
 ]]
 
 local _, VUI = ...
 local MultiNotification = VUI:GetModule("MultiNotification")
 
--- Reference to spell lists
-local SpellCategories = {}
-local RoleCategories = {}
-local CustomSpells = {}
+-- Default spell categories
+MultiNotification.SpellCategories = {
+    ["interrupt"] = "Interrupt",
+    ["dispel"] = "Dispel",
+    ["important"] = "Important",
+    ["defensive"] = "Defensive Cooldowns",
+    ["offensive"] = "Offensive Cooldowns",
+    ["utility"] = "Utility Abilities",
+    ["cc"] = "Crowd Control",
+    ["healing"] = "Healing Abilities"
+}
 
--- Initialize spell event handling
+-- Role categories for filtering
+MultiNotification.RoleCategories = {
+    ["ALL"] = "All Roles",
+    ["TANK"] = "Tank",
+    ["HEALER"] = "Healer",
+    ["DAMAGER"] = "Damage Dealer",
+    ["PVP"] = "PvP"
+}
+
+-- Initialize spell event tracking
 function MultiNotification:InitializeSpellEvents()
-    -- Register combat log events
-    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "ProcessCombatLogEvent")
-    
-    -- Initialize spell categories (from SpellNotifications)
-    SpellCategories = {
-        ["interrupt"] = "Interrupts",
-        ["dispel"] = "Dispels",
-        ["important"] = "Important Abilities",
-        ["defensive"] = "Defensive Cooldowns",
-        ["offensive"] = "Offensive Cooldowns",
-        ["utility"] = "Utility Abilities",
-        ["cc"] = "Crowd Control",
-        ["healing"] = "Healing Abilities"
-    }
-    
-    -- Initialize role categories
-    RoleCategories = {
-        ["ALL"] = "All Roles",
-        ["TANK"] = "Tank",
-        ["HEALER"] = "Healer",
-        ["DAMAGER"] = "Damage Dealer",
-        ["PVP"] = "PvP"
-    }
-    
-    -- Import SpellNotifications spell list if available
-    local SpellNotifications = VUI:GetModule("SpellNotifications")
-    if SpellNotifications then
-        -- Import existing spell lists
-        if SpellNotifications.SpellCategories then
-            SpellCategories = SpellNotifications.SpellCategories
-        end
-        
-        if SpellNotifications.RoleCategories then
-            RoleCategories = SpellNotifications.RoleCategories
-        end
-        
-        if SpellNotifications.CustomSpells then
-            CustomSpells = SpellNotifications.CustomSpells
-        end
-        
-        if SpellNotifications.db and SpellNotifications.db.profile and SpellNotifications.db.profile.importantSpells then
-            self.db.profile.importantSpells = SpellNotifications.db.profile.importantSpells
-        end
-    end
-    
-    -- Initialize spell settings if not already set
+    -- Create default database structure if it doesn't exist
     if not self.db.profile.spellSettings then
         self.db.profile.spellSettings = {
-            enabled = true,
-            notifyAllInterrupts = true,
-            notifyAllDispels = true,
-            showSourceInfo = true,
-            displayTime = 3,
             importantSpells = {},
-            useFramePooling = true
+            enableSpellNotifications = true,
+            showMyInterrupts = true,
+            showOtherInterrupts = true,
+            showMyDispels = true,
+            showOtherDispels = true,
+            showImportantSpells = true,
+            soundEnabled = true,
+            importantSoundFile = "important", -- This will reference a sound in our media system
+            interruptSoundFile = "interrupt",
+            dispelSoundFile = "dispel",
+            priorityThreshold = 2, -- Medium priority or higher get notifications
         }
     end
+
+    -- Define event filters
+    self.eventFilterList = {
+        ["SPELL_INTERRUPT"] = true,
+        ["SPELL_DISPEL"] = true,
+        ["SPELL_STOLEN"] = true,
+        ["SPELL_CAST_SUCCESS"] = true,
+        ["SPELL_AURA_APPLIED"] = true,
+        ["SPELL_SUMMON"] = true,
+    }
     
-    -- Copy important spells if not set
-    if not self.db.profile.spellSettings.importantSpells then
-        self.db.profile.spellSettings.importantSpells = {}
-    end
+    -- Register combat log event handler
+    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "OnCombatLogEvent")
     
-    -- Make categories accessible
-    self.SpellCategories = SpellCategories
-    self.RoleCategories = RoleCategories
-    self.CustomSpells = CustomSpells
-    
-    VUI:Print("MultiNotification spell event detection initialized")
+    -- Load built-in important spells if we haven't already
+    self:LoadPredefinedSpells()
 end
 
--- Process combat log events
-function MultiNotification:ProcessCombatLogEvent()
-    -- Check if spell notifications are enabled
-    if not self.db.profile.enabled or not self.db.profile.spellSettings.enabled then
+-- Loads predetermined important spells
+function MultiNotification:LoadPredefinedSpells()
+    if self.predefinedSpellsLoaded then return end
+    
+    -- Table of predetermined important spells organized by categories
+    local predefinedSpells = {
+        -- Interrupts (just a few examples)
+        [1766] = { type = "interrupt", name = "Kick", class = "ROGUE", priority = 2 },
+        [2139] = { type = "interrupt", name = "Counterspell", class = "MAGE", priority = 2 },
+        [6552] = { type = "interrupt", name = "Pummel", class = "WARRIOR", priority = 2 },
+        
+        -- Dispels (examples)
+        [4987] = { type = "dispel", name = "Cleanse", class = "PALADIN", priority = 2 },
+        [88423] = { type = "dispel", name = "Nature's Cure", class = "DRUID", priority = 2 },
+        [115450] = { type = "dispel", name = "Detox", class = "MONK", priority = 2 },
+        
+        -- Important defensive cooldowns (examples)
+        [31884] = { type = "defensive", name = "Avenging Wrath", class = "PALADIN", priority = 3 },
+        [47788] = { type = "defensive", name = "Guardian Spirit", class = "PRIEST", priority = 3 },
+        [33206] = { type = "defensive", name = "Pain Suppression", class = "PRIEST", priority = 3 },
+        
+        -- Important offensive cooldowns (examples)
+        [190319] = { type = "offensive", name = "Combustion", class = "MAGE", priority = 2 },
+        [12472] = { type = "offensive", name = "Icy Veins", class = "MAGE", priority = 2 },
+        [1719] = { type = "offensive", name = "Recklessness", class = "WARRIOR", priority = 2 },
+        
+        -- Crowd control abilities (examples)
+        [605] = { type = "cc", name = "Mind Control", class = "PRIEST", priority = 2 },
+        [118] = { type = "cc", name = "Polymorph", class = "MAGE", priority = 2 },
+        [51514] = { type = "cc", name = "Hex", class = "SHAMAN", priority = 2 },
+    }
+    
+    -- Merge predefined spells with user-defined ones
+    for spellID, data in pairs(predefinedSpells) do
+        if not self.db.profile.spellSettings.importantSpells[spellID] then
+            -- Add name and icon information
+            local name, _, icon = GetSpellInfo(spellID)
+            if name then
+                data.name = name
+                data.icon = icon
+                data.id = spellID
+                data.roles = {"ALL"} -- Default to all roles
+                self.db.profile.spellSettings.importantSpells[spellID] = data
+            end
+        end
+    end
+    
+    self.predefinedSpellsLoaded = true
+end
+
+-- Main combat log event handler
+function MultiNotification:OnCombatLogEvent()
+    -- Extract the combat log parameters
+    local timestamp, event, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, spellID, spellName, _, extraSpellID, extraSpellName = CombatLogGetCurrentEventInfo()
+    
+    -- Skip if not in our event filter list
+    if not self.eventFilterList[event] then return end
+    
+    -- Skip if spell notifications are disabled
+    if not self.db.profile.spellSettings.enableSpellNotifications then return end
+    
+    -- Determine source player type (is it me, friendly player, hostile player, etc.)
+    local isPlayer = bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0
+    local isMe = sourceGUID == UnitGUID("player")
+    local isFriendly = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY) > 0
+    
+    -- Handle interrupts
+    if event == "SPELL_INTERRUPT" then
+        if (isMe and self.db.profile.spellSettings.showMyInterrupts) or 
+           (not isMe and isFriendly and self.db.profile.spellSettings.showOtherInterrupts) then
+            -- Format player name (colorize based on class for players)
+            local playerName = self:FormatPlayerName(sourceName, sourceFlags, sourceRaidFlags)
+            
+            -- Create the notification text
+            local text = playerName .. " interrupted " .. destName .. "'s " .. extraSpellName
+            
+            -- Display the notification
+            self:ShowSpellNotification(
+                spellName,          -- Title
+                text,               -- Message 
+                spellID,            -- Spell ID for icon
+                "interrupt",        -- Category
+                self.db.profile.spellSettings.interruptSoundFile -- Sound
+            )
+        end
         return
     end
     
-    -- Get combat log info
-    local timestamp, subevent, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, spellID, spellName = CombatLogGetCurrentEventInfo()
+    -- Handle dispels and spell steals
+    if event == "SPELL_DISPEL" or event == "SPELL_STOLEN" then
+        if (isMe and self.db.profile.spellSettings.showMyDispels) or 
+           (not isMe and isFriendly and self.db.profile.spellSettings.showOtherDispels) then
+            -- Format player name
+            local playerName = self:FormatPlayerName(sourceName, sourceFlags, sourceRaidFlags)
+            
+            -- Create the notification text
+            local action = event == "SPELL_DISPEL" and "dispelled" or "stole"
+            local text = playerName .. " " .. action .. " " .. destName .. "'s " .. extraSpellName
+            
+            -- Display the notification
+            self:ShowSpellNotification(
+                spellName,          -- Title
+                text,               -- Message
+                spellID,            -- Spell ID for icon
+                "dispel",           -- Category
+                self.db.profile.spellSettings.dispelSoundFile -- Sound
+            )
+        end
+        return
+    end
     
-    local playerGUID = UnitGUID("player")
-    local notificationType = nil
-    
-    -- Process different types of player-initiated events
-    if sourceGUID == playerGUID then
-        -- Check for successful interrupts
-        if subevent == "SPELL_INTERRUPT" then
-            notificationType = "interrupt"
-            -- Check if this is an important spell to notify
-            local isImportant, spellData = self:IsImportantSpell(spellID, "interrupt")
-            if isImportant or self.db.profile.spellSettings.notifyAllInterrupts then
-                self:ShowSpellNotification(spellID, sourceGUID, notificationType)
-            end
+    -- Check for important spells
+    if self.db.profile.spellSettings.showImportantSpells and 
+       (event == "SPELL_CAST_SUCCESS" or event == "SPELL_AURA_APPLIED" or event == "SPELL_SUMMON") and
+       isPlayer then
         
-        -- Check for successful dispels/purges
-        elseif subevent == "SPELL_DISPEL" or subevent == "SPELL_STOLEN" then
-            notificationType = "dispel"
-            -- Check if this is an important spell to notify
-            local isImportant, spellData = self:IsImportantSpell(spellID, "dispel")
-            if isImportant or self.db.profile.spellSettings.notifyAllDispels then
-                self:ShowSpellNotification(spellID, sourceGUID, notificationType)
+        -- Check if this is an important spell we want to track
+        local spellData = self.db.profile.spellSettings.importantSpells[spellID]
+        if spellData then
+            -- Check priority threshold
+            if spellData.priority < self.db.profile.spellSettings.priorityThreshold then
+                return
             end
+            
+            -- Format player name
+            local playerName = self:FormatPlayerName(sourceName, sourceFlags, sourceRaidFlags)
+            
+            -- Create notification text
+            local text
+            if destName and destName ~= sourceName and destGUID ~= sourceGUID then
+                text = playerName .. " used " .. spellName .. " on " .. destName
+            else
+                text = playerName .. " used " .. spellName
+            end
+            
+            -- Display the notification
+            self:ShowSpellNotification(
+                spellName,          -- Title
+                text,               -- Message
+                spellID,            -- Spell ID for icon
+                spellData.type,     -- Category
+                self.db.profile.spellSettings.importantSoundFile -- Sound
+            )
+        end
+    end
+end
+
+-- Helper function to format player names with class colors
+function MultiNotification:FormatPlayerName(name, flags, raidFlags)
+    if not name then return "Unknown" end
+    
+    -- Check if this is a player
+    local isPlayer = bit.band(flags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0
+    
+    if isPlayer then
+        -- Try to get class color
+        local _, className, classID
         
-        -- Check for important spell casts
-        elseif subevent == "SPELL_CAST_SUCCESS" then
-            -- Check if this is an important spell to notify
-            local isImportant, spellData = self:IsImportantSpell(spellID, "important")
-            if isImportant then
-                notificationType = "important"
-                self:ShowSpellNotification(spellID, sourceGUID, notificationType)
+        -- Check if it's the player or someone in their group
+        if name == UnitName("player") then
+            _, className = UnitClass("player")
+        else
+            -- Try to find the player in the group
+            for i = 1, GetNumGroupMembers() do
+                local unit = IsInRaid() and "raid"..i or "party"..i
+                if UnitExists(unit) and UnitName(unit) == name then
+                    _, className = UnitClass(unit)
+                    break
+                end
             end
         end
-    end
-    
-    -- For events targeting the player
-    if destGUID == playerGUID then
-        -- Check for important incoming spell casts
-        if subevent == "SPELL_CAST_SUCCESS" then
-            local isImportant, spellData = self:IsImportantSpell(spellID, "important")
-            if isImportant then
-                notificationType = "important"
-                self:ShowSpellNotification(spellID, sourceGUID, notificationType)
-            end
-        end
-    end
-end
-
--- Check if a spell is in the important spells list
-function MultiNotification:IsImportantSpell(spellID, category)
-    if not spellID or not self.db.profile.spellSettings.importantSpells then return false end
-    
-    -- Check if spell is in the important spells list
-    for _, spellData in pairs(self.db.profile.spellSettings.importantSpells) do
-        if spellData.id == spellID and (not category or spellData.category == category) then
-            return true, spellData
+        
+        -- Apply class color if available
+        if className and RAID_CLASS_COLORS[className] then
+            local color = RAID_CLASS_COLORS[className]
+            return string.format("|cff%02x%02x%02x%s|r", 
+                color.r * 255, 
+                color.g * 255, 
+                color.b * 255, 
+                name)
         end
     end
     
-    return false
-end
-
--- Show a spell notification
-function MultiNotification:ShowSpellNotification(spellID, sourceGUID, notificationType, text)
-    -- Get notification type settings
-    local notificationSettings = self.db.profile.spellSettings
-    
-    -- Get spell icon
-    local icon = spellID
-    if type(spellID) == "number" then
-        icon = GetSpellTexture(spellID) or spellID
-    end
-    
-    -- Get spell name if text is not provided
-    if not text and type(spellID) == "number" then
-        local spellName = GetSpellInfo(spellID)
-        text = spellName or tostring(spellID)
-    end
-    
-    -- Add source unit information if available and enabled
-    if self.db.profile.spellSettings.showSourceInfo and sourceGUID then
-        local sourceName = self:GetSourceNameFromGUID(sourceGUID)
-        if sourceName then
-            text = text .. " |cFFAAAAAA(" .. sourceName .. ")|r"
-        end
-    end
-    
-    -- Use the notification system to show the notification
-    return self:ShowNotification(
-        notificationType,
-        icon,
-        text,
-        notificationSettings.displayTime or nil
-    )
-end
-
--- Helper function to get a readable source name from GUID
-function MultiNotification:GetSourceNameFromGUID(guid)
-    if not guid then return nil end
-    
-    local name
-    -- Try to get name from GUID using different methods
-    if UnitExists("target") and UnitGUID("target") == guid then
-        name = UnitName("target")
-    elseif UnitExists("focus") and UnitGUID("focus") == guid then
-        name = UnitName("focus")
-    else
-        -- Check group members
-        for i = 1, GetNumGroupMembers() do
-            local unit = IsInRaid() and "raid"..i or "party"..i
-            if UnitExists(unit) and UnitGUID(unit) == guid then
-                name = UnitName(unit)
-                break
-            end
-        end
-    end
-    
+    -- If we couldn't apply class color, return the name as is
     return name
 end
 
--- Test notification function for spells
+-- Function to show a test notification for a specific spell
 function MultiNotification:TestSpellNotification(spellID, spellType)
-    if not spellID then
-        VUI:Print("|cFFFF0000No spell ID specified for testing.|r")
-        return
-    end
-
-    local spellName, _, spellIcon = GetSpellInfo(spellID)
-    if not spellName then
-        VUI:Print("|cFFFF0000Invalid spell ID:|r " .. tostring(spellID))
+    if not spellID then return end
+    
+    local name, _, icon = GetSpellInfo(spellID)
+    if not name then
+        print("|cFFFF0000Invalid spell ID.|r")
         return
     end
     
-    VUI:Print("|cFF00FF00Testing notification for spell:|r " .. spellName .. " (ID: " .. spellID .. ")")
-    VUI:Print("|cFF00FF00Type:|r " .. (spellType or "important"))
+    local text = "This is a test notification for " .. name
+    local soundFile
     
-    -- Use the player's GUID as the source for test notifications
-    local playerGUID = UnitGUID("player")
-    self:ShowSpellNotification(spellID, playerGUID, spellType or "important")
+    -- Determine sound file based on spell type
+    if spellType == "interrupt" then
+        soundFile = self.db.profile.spellSettings.interruptSoundFile
+    elseif spellType == "dispel" then
+        soundFile = self.db.profile.spellSettings.dispelSoundFile
+    else
+        soundFile = self.db.profile.spellSettings.importantSoundFile
+    end
+    
+    -- Show the test notification
+    self:ShowSpellNotification(
+        name .. " (Test)",   -- Title
+        text,                -- Message
+        spellID,             -- Spell ID for icon
+        spellType or "important", -- Category
+        soundFile,           -- Sound
+        8                    -- Duration (longer for testing)
+    )
+    
+    print("|cFF00FF00Test notification sent for|r " .. name)
 end
 
--- Register the initialization to be called after module is enabled
-MultiNotification:RegisterCallback("OnEnabled", function()
-    MultiNotification:InitializeSpellEvents()
-end)
+-- Helper function to filter spells based on criteria
+function MultiNotification:FilterSpells(options)
+    local spells = self:GetAllImportantSpells()
+    local filteredSpells = {}
+    
+    -- Default options
+    options = options or {}
+    options.type = options.type or "all"
+    options.role = options.role or "ALL"
+    options.customOnly = options.customOnly or false
+    
+    for id, data in pairs(spells) do
+        local includeSpell = true
+        
+        -- Filter by type
+        if options.type ~= "all" and data.type ~= options.type then
+            includeSpell = false
+        end
+        
+        -- Filter by role
+        if options.role ~= "ALL" and data.roles then
+            local hasRole = false
+            for _, role in ipairs(data.roles) do
+                if role == "ALL" or role == options.role then
+                    hasRole = true
+                    break
+                end
+            end
+            if not hasRole then includeSpell = false end
+        end
+        
+        -- Filter by class
+        if options.class and data.class and data.class ~= options.class then
+            includeSpell = false
+        end
+        
+        -- Filter by custom flag
+        if options.customOnly and not data.custom then
+            includeSpell = false
+        end
+        
+        if includeSpell then
+            filteredSpells[id] = data
+        end
+    end
+    
+    return filteredSpells
+end
+
+-- Register this file to be loaded with the module
+VUI:RegisterModuleScript("MultiNotification", "SpellEvents")
