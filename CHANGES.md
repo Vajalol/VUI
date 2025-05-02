@@ -17,6 +17,10 @@ This document tracks significant changes to the VUI addon suite.
   - Dynamic Module Loading (Complete)
   - Frame rate based throttling (Complete)
 - Phase 5: Accessibility Improvements (Complete):
+- Phase 6: Advanced Spell System Enhancements (In Progress):
+  - TrufiGCD Spell Categorization System (Complete)
+  - Timeline view option for spell history (Planned)
+  - Integration with Details damage meter (Planned)
   - High contrast mode for better visibility (Complete)
   - UI scaling options for different display resolutions (Complete)
   - Colorblind-friendly theme variants (Complete)
@@ -275,6 +279,16 @@ This document tracks significant changes to the VUI addon suite.
     - Global cooldown filtering for cleaner display
     - Combat state awareness for appropriate display timing
     - Smart content type detection (raids, M+, arena, etc.)
+  - Implemented Spell Categorization System:
+    - Eight functional categories (offensive, defensive, healing, utility, interrupts, dispels, cooldowns, standard)
+    - Visual distinction with category-specific borders and glow effects
+    - Importance levels within categories (high, medium, low)
+    - Database of 300+ pre-categorized class abilities
+    - Theme-aware visual styling that adapts to active VUI theme
+    - Category-specific size scaling for enhanced visibility
+    - Integration with existing icon customization system
+    - Performance-optimized implementation with efficient lookups
+    - Category-based configuration options
 
 - DetailsSkin Module Optimization:
   - Implemented texture atlas system for improved performance

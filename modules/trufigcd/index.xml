@@ -5,4 +5,7 @@
     <Script file="trufigcd.lua"/>
     <Script file="core.lua"/>
     <Script file="ThemeIntegration.lua"/>
+    <Script file="icon_customization.lua"/>
+    <Script file="advanced_filtering.lua"/>
+    <Script file="categories.lua"/>
 </Ui>

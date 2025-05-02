@@ -100,6 +100,31 @@ function TrufiGCD:Initialize()
     self.currentIndex = 0
     self.lastSpellIconShow = 0
     
+    -- Initialize default database values
+    if not VUI.db.profile.modules.trufigcd then
+        VUI.db.profile.modules.trufigcd = {}
+    end
+    
+    if VUI.db.profile.modules.trufigcd.enableCategories == nil then
+        VUI.db.profile.modules.trufigcd.enableCategories = true
+    end
+    
+    if not VUI.db.profile.modules.trufigcd.categories then
+        VUI.db.profile.modules.trufigcd.categories = {
+            offensive = true,
+            defensive = true,
+            healing = true,
+            utility = true,
+            interrupts = true,
+            dispels = true,
+            cooldowns = true,
+            standard = true
+        }
+    end
+    
+    -- Store local reference to DB
+    self.db = VUI.db.profile.modules.trufigcd
+    
     -- Initialize the anchor
     self:CreateAnchor()
     
@@ -133,6 +158,11 @@ function TrufiGCD:Initialize()
     -- Initialize advanced filtering if available
     if self.InitializeAdvancedFiltering then
         self:InitializeAdvancedFiltering()
+    end
+    
+    -- Initialize spell categorization if available
+    if self.Categories and self.Categories.Initialize then
+        self.Categories:Initialize()
     end
     
     -- Log initialization
@@ -328,6 +358,8 @@ function TrufiGCD:AddSpell(spellID, texture, name)
             if self.frames[i].spellName then
                 self.frames[i].spellName:SetText(self.frames[i-1].spellName:GetText())
             end
+            -- Pass on spell ID for categorization
+            self.frames[i].spellID = self.frames[i-1].spellID
             self.frames[i]:Show()
         else
             self.frames[i]:Hide()
@@ -339,7 +371,18 @@ function TrufiGCD:AddSpell(spellID, texture, name)
     if self.frames[1].spellName then
         self.frames[1].spellName:SetText(name)
     end
+    -- Store spell ID for categorization
+    self.frames[1].spellID = spellID
     self.frames[1]:Show()
+    
+    -- Apply categorization styling if enabled
+    if self.db.enableCategories and self.Categories then
+        for i, frame in ipairs(self.frames) do
+            if frame:IsShown() and frame.spellID then
+                self.Categories:ApplyToFrame(frame, frame.spellID)
+            end
+        end
+    end
     
     -- Start the fade animation
     self:StartFadeAnimation()
