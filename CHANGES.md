@@ -283,6 +283,21 @@ This document tracks significant changes to the VUI addon suite.
     - Interactive tooltip information on mouseover
     - Compatibility with all major party frame addons and default UI
     - Intelligent positioning based on party frame layout
+  - Specialized raid layouts:
+    - Five distinct layout options for different raid scenarios
+    - Grid layout with configurable column count and sorting
+    - Class Groups layout with color-coded headers and organization
+    - Role layout separating tanks, healers, and DPS
+    - Compact layout for minimalist display during intense encounters
+    - Priority-based layout highlighting critical raid cooldowns
+    - Theme-aware styling with dynamic color adjustments
+    - Encounter-specific cooldown prioritization
+    - Intelligent filtering to focus on relevant abilities
+    - Customizable icon sizing and positioning
+    - Performance-optimized frame creation for large raids
+    - Smooth transitions between layout types
+    - Real-time updates with low resource usage
+    - Enhanced visibility of raid-critical cooldowns
   - Enhanced cooldown tracking with context-awareness:
     - Zone-specific priority adjustments (PvP, raid, dungeon)
     - Smart filtering options based on group content

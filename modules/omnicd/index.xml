@@ -9,5 +9,6 @@
     <Script file="priority_system.lua"/>
     <Script file="priority_config.lua"/>
     <Script file="party_frames.lua"/>
+    <Script file="raid_layouts.lua"/>
     <Script file="core.lua"/>
 </Ui>

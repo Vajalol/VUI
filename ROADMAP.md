@@ -228,7 +228,7 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Texture atlas implementation
 - ✓ Enhanced party frame integration
 - ✓ Priority system
-- ☐ Specialized raid layouts
+- ✓ Specialized raid layouts
 
 ### DetailsSkin
 - ✓ Core damage meter styling
