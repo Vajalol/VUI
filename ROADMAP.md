@@ -181,7 +181,7 @@ This section outlines the development phases, current status, and upcoming work 
 - Audio feedback options ✓
 - Profile management improvements ✓
 
-## Phase 6: Context-Sensitive UI (Planned) ☐
+## Phase 6: Context-Sensitive UI (Deferred) ✗
 - Situation-aware information panels ☐
 - Combat state reactive frames ☐
 - Role-specific UI adaptations ☐
@@ -266,6 +266,7 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Completed
 - ⟳ In Progress
 - ☐ Planned
+- ✗ Deferred
 
 ## Configuration Approach
 - Tabbed interface for better organization of settings
