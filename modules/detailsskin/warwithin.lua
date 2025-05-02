@@ -18,13 +18,16 @@ WarWithinSkin.skinDescription = "An authentic skin inspired by Resike's The War 
 -- Path constants for textures
 local TEXTURE_PATH = "Interface\\AddOns\\VUI\\media\\textures\\detailsskin\\warwithin\\"
 
--- Available textures (placeholder paths until we integrate the actual textures)
+-- Available textures (using actual texture files from Resike's addon)
 WarWithinSkin.textures = {
     barTexture = TEXTURE_PATH .. "bar.tga",
     backgroundTexture = TEXTURE_PATH .. "background.tga",
     borderTexture = TEXTURE_PATH .. "border.tga",
     titleBarTexture = TEXTURE_PATH .. "title.tga",
     statusBarTexture = TEXTURE_PATH .. "statusbar.tga",
+    classIconsTexture = TEXTURE_PATH .. "ClassIconsTWW.blp",
+    specsTexture = TEXTURE_PATH .. "specs.blp",
+    augmentTexture = TEXTURE_PATH .. "augment.blp"
 }
 
 -- Color scheme for The War Within theme
@@ -248,7 +251,7 @@ function WarWithinSkin:StyleRows(instance)
         overlay_texture = self.textures.barTexture,
         no_icon_backdrop = false,
         icon_size = {14, 14},
-        icon_file = "Interface\\AddOns\\Details\\images\\classes_small",
+        icon_file = self.textures.classIconsTexture, -- Use included class icons
         start_after_icon = true,
         icon_grayscale = false,
         font_face = "Expressway",
@@ -256,6 +259,9 @@ function WarWithinSkin:StyleRows(instance)
         font_face_file = [[Interface\Addons\VUI\media\fonts\Expressway.ttf]],
         texture_class_colors = true,
         alpha = 1,
+        spec_file = self.textures.specsTexture, -- Use included spec icons
+        use_spec_icons = true,
+        icon_size_offset = 1.2,
         backdrop = {
             enabled = false,
             size = 4,
@@ -312,6 +318,63 @@ function WarWithinSkin:Register()
             isDefault = false -- Set VUI's skin as the default
         })
     end
+end
+
+-- Style augmentation bar for evoker classes (retail only)
+function WarWithinSkin:StyleAugmentationBar(instance)
+    -- Apply augmentation bar texture to instance if it exists
+    if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and instance and instance.baseframe then
+        -- Check if Details class colors exists
+        if not Details or not Details.class_colors or not Details.class_colors["EVOKER"] then
+            return
+        end
+        
+        local evokerColor = Details.class_colors["EVOKER"]
+        
+        -- Apply to existing bars
+        for _, line in ipairs(instance:GetAllLines()) do
+            if line and line.extraStatusbar then
+                line.extraStatusbar:SetStatusBarTexture(self.textures.augmentTexture)
+                line.extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
+                if line.extraStatusbar.texture then
+                    line.extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+                end
+            end
+        end
+        
+        -- Hook for new lines that get created
+        if Details and Details.gump and not self._augmentBarHooked then
+            hooksecurefunc(Details.gump, "CreateNewLine", function(_, hookInstance, index)
+                if hookInstance.meu_id ~= instance:GetId() then
+                    return
+                end
+                
+                local newLine = _G['DetailsBarra_' .. hookInstance.meu_id .. '_' .. index]
+                if newLine and newLine.extraStatusbar then
+                    newLine.extraStatusbar:SetStatusBarTexture(self.textures.augmentTexture)
+                    newLine.extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
+                    if newLine.extraStatusbar.texture then
+                        newLine.extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+                    end
+                end
+            end)
+            
+            self._augmentBarHooked = true
+        end
+    end
+end
+
+-- Apply the War Within skin to an instance (override to add augmentation styling)
+local originalApplySkin = WarWithinSkin.ApplySkin
+WarWithinSkin.ApplySkin = function(self, instance)
+    local result = originalApplySkin(self, instance)
+    
+    -- Add augmentation bar styling (only applies in retail)
+    if result then
+        self:StyleAugmentationBar(instance)
+    end
+    
+    return result
 end
 
 -- Initialize the War Within skin

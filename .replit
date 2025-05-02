@@ -1,4 +1,4 @@
-modules = ["lua"]
+modules = ["lua", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"

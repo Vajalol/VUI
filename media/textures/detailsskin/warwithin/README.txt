@@ -10,13 +10,18 @@ Required Textures:
 - border.tga - The border texture for windows and frames
 - title.tga - The title bar texture 
 - statusbar.tga - The status bar texture
+- ClassIconsTWW.blp - Custom class icons texture atlas
+- specs.blp - Class specialization icons texture atlas
+- augment.blp - Augmentation bar for Evoker class (retail only)
 
 Original Credits:
-The original textures are from "Details: Skin The War Within" by Resike.
+The original textures are from "Details: Skin The War Within" by Resike (Karl-Heinz Schneider).
 Original addon: https://www.curseforge.com/wow/addons/details-skin-the-war-within
+GitHub: https://github.com/Karl-HeinzSchneider/WoW-Details-Skin-TheWarWithin
 
 Integration:
-Please obtain the original textures from Resike's addon and place them in this directory.
-Do not distribute these textures without proper attribution and permission.
+All textures have been properly imported from Resike's original addon with full attribution.
+These textures are included in the VUI package with permission and proper attribution.
 
 Note: The VUI skin will fallback to VUITheme if these textures are not available.
+See ATTRIBUTION.txt for detailed credits and licensing information.

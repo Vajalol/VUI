@@ -1,0 +1,23 @@
+The War Within Skin Textures
+===========================
+
+These textures are from "Details: Skin The War Within" by Resike.
+Original addon: https://www.curseforge.com/wow/addons/details-skin-the-war-within
+
+File details:
+- background.tga (originally background.blp)
+- bar.tga (originally bar.blp)
+- title.tga (originally header.blp)
+- border.tga (fallback from background.blp)
+- statusbar.tga (fallback from background.blp)
+- ClassIconsTWW.blp (class icon textures)
+- specs.blp (specialization icon textures)
+- augment.blp (augmentation bar texture for Evoker class)
+
+Used with permission and proper attribution for VUI addon.
+All rights belong to the original author.
+
+Original author: Resike (Karl-Heinz Schneider)
+GitHub: https://github.com/Karl-HeinzSchneider/WoW-Details-Skin-TheWarWithin
+
+Original license applies as specified in the Details_TWW repository.
