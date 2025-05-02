@@ -591,21 +591,32 @@ VUI.options = {
                     name = "Module",
                     desc = "Select a module to configure",
                     order = 3,
-                    values = {
-                        ["chat"] = "Chat",
-                        ["buffoverlay"] = "BuffOverlay",
-                        ["trufigcd"] = "TrufiGCD",
-                        ["moveany"] = "MoveAny",
-                        ["auctionator"] = "Auctionator",
-                        ["angrykeystone"] = "Angry Keystones",
-                        ["omnicc"] = "OmniCC",
-                        ["omnicd"] = "OmniCD",
-                        ["idtip"] = "idTip",
-                        ["premadegroupfinder"] = "Premade Group Finder",
-                        ["detailsskin"] = "Details Skin",
-                        ["msbt"] = "Scrolling Battle Text",
-                        ["multinotification"] = "Multi-Notification"
-                    },
+                    values = function()
+                        local moduleValues = {}
+                        local moduleNames = {
+                            ["chat"] = "Chat",
+                            ["buffoverlay"] = "BuffOverlay",
+                            ["trufigcd"] = "TrufiGCD",
+                            ["moveany"] = "MoveAny",
+                            ["auctionator"] = "Auctionator",
+                            ["angrykeystone"] = "Angry Keystones",
+                            ["omnicc"] = "OmniCC",
+                            ["omnicd"] = "OmniCD",
+                            ["idtip"] = "idTip",
+                            ["premadegroupfinder"] = "Premade Group Finder",
+                            ["detailsskin"] = "Details Skin",
+                            ["msbt"] = "Scrolling Battle Text",
+                            ["multinotification"] = "Multi-Notification"
+                        }
+                        
+                        -- Add icons to each module name
+                        for moduleName, displayName in pairs(moduleNames) do
+                            local iconPath = VUI:GetModuleIcon(moduleName)
+                            moduleValues[moduleName] = "|T" .. iconPath .. ":16:16:0:0|t " .. displayName
+                        end
+                        
+                        return moduleValues
+                    end,
                     get = function() return VUI.selectedModule or "buffoverlay" end,
                     set = function(_, value)
                         VUI.selectedModule = value
