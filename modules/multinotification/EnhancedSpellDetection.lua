@@ -794,10 +794,14 @@ function MultiNotification:GetEnhancedSpellDetectionOptions()
             order = 6,
             type = "toggle",
             name = "Debug Mode",
-            desc = "Show performance metrics and debug information",
-            get = function() return Config.debugMode end,
-            set = function(_, value) Config.debugMode = value end,
+            desc = "Debug mode disabled in production release",
+            get = function() return false end,
+            set = function(_, value) 
+                -- Debug mode always disabled in production
+                Config.debugMode = false 
+            end,
             width = "full",
+            disabled = true, -- Always disabled in production
         },
         resetCaches = {
             order = 7,
