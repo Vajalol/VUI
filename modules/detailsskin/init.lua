@@ -104,8 +104,14 @@ function DetailsSkin:GetSettings()
             useCustomTemplates = true,
             barAlpha = 0.9,
             rowHeight = 16,
-            fontSize = 10
+            fontSize = 10,
+            activeSkin = "VUITheme"  -- Default to VUI theme skin
         }
+    end
+    
+    -- Ensure activeSkin is set
+    if VUI.db.profile.modules.detailsskin.activeSkin == nil then
+        VUI.db.profile.modules.detailsskin.activeSkin = "VUITheme"
     end
     
     return VUI.db.profile.modules.detailsskin
@@ -123,6 +129,25 @@ function DetailsSkin:ApplySkin(instance)
         return false
     end
     
+    -- Use skin registry if available
+    if self.SkinRegistry then
+        local activeSkin = settings.activeSkin or "VUITheme"
+        
+        -- Check if this instance already has a skin applied
+        if instance._currentSkin and instance._currentSkin ~= activeSkin then
+            -- Reset old skin before applying new one
+            self.SkinRegistry:ResetSkin(instance._currentSkin, instance)
+        end
+        
+        -- Apply skin from registry
+        local success = self.SkinRegistry:ApplySkin(activeSkin, instance)
+        if success then
+            instance._currentSkin = activeSkin
+            return true
+        end
+    end
+    
+    -- Fallback to legacy theme-based skin if registry fails or isn't available
     local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     
     -- Call our comprehensive skin application function
@@ -613,11 +638,120 @@ function DetailsSkin:GetConfig()
                     }
                 }
             },
+            skinGroup = {
+                type = "group",
+                name = "Skin Selection",
+                inline = true,
+                order = 5,
+                args = {
+                    skinDescription = {
+                        type = "description",
+                        name = "Choose which skin to apply to Details! windows.",
+                        order = 1
+                    },
+                    currentSkin = {
+                        type = "select",
+                        name = "Active Skin",
+                        desc = "Select which skin to use for Details!",
+                        values = function()
+                            local skins = {}
+                            if DetailsSkin.SkinRegistry then
+                                local availableSkins = DetailsSkin.SkinRegistry:GetAvailableSkins()
+                                for _, skin in ipairs(availableSkins) do
+                                    skins[skin.id] = skin.name .. " (" .. skin.author .. ")"
+                                end
+                            else
+                                skins["VUITheme"] = "VUI Theme"
+                            end
+                            return skins
+                        end,
+                        get = function() 
+                            return settings.activeSkin or "VUITheme" 
+                        end,
+                        set = function(_, val)
+                            settings.activeSkin = val
+                            -- Apply the selected skin to all instances
+                            if Details and DetailsSkin.SkinRegistry then
+                                local instances = Details:GetAllInstances()
+                                for _, instance in ipairs(instances) do
+                                    -- Reset current skin first if it exists
+                                    if instance._currentSkin and instance._currentSkin ~= val then
+                                        DetailsSkin.SkinRegistry:ResetSkin(instance._currentSkin, instance)
+                                    end
+                                    -- Apply new skin
+                                    if DetailsSkin.SkinRegistry:ApplySkin(val, instance) then
+                                        instance._currentSkin = val
+                                    end
+                                end
+                            else
+                                -- Fallback to standard application
+                                DetailsSkin:ApplySkinToAllInstances()
+                            end
+                        end,
+                        width = "full",
+                        order = 2
+                    },
+                    refreshSkins = {
+                        type = "execute",
+                        name = "Refresh Skins",
+                        desc = "Reapply the selected skin to all Details! windows",
+                        func = function()
+                            if Details and DetailsSkin.SkinRegistry then
+                                local activeSkin = settings.activeSkin or "VUITheme"
+                                local instances = Details:GetAllInstances()
+                                for _, instance in ipairs(instances) do
+                                    DetailsSkin.SkinRegistry:ApplySkin(activeSkin, instance)
+                                    instance._currentSkin = activeSkin
+                                end
+                            else
+                                -- Fallback to standard application
+                                DetailsSkin:ApplySkinToAllInstances()
+                            end
+                        end,
+                        width = "full",
+                        order = 3
+                    },
+                    makeDefault = {
+                        type = "execute",
+                        name = "Set as Default",
+                        desc = "Make the current skin the default for new Details! windows",
+                        func = function()
+                            if DetailsSkin.SkinRegistry then
+                                DetailsSkin.SkinRegistry:SetDefaultSkin(settings.activeSkin or "VUITheme")
+                            end
+                        end,
+                        width = "full",
+                        order = 4
+                    },
+                    skinSpacer = {
+                        type = "description",
+                        name = " ",
+                        order = 5
+                    },
+                    skinInfo = {
+                        type = "description",
+                        name = function()
+                            local activeSkin = settings.activeSkin or "VUITheme"
+                            if DetailsSkin.SkinRegistry then
+                                local skin = DetailsSkin.SkinRegistry:GetSkin(activeSkin)
+                                if skin then
+                                    return "|cFFFFD100" .. skin.name .. "|r\n" .. 
+                                           skin.description .. "\n\n" ..
+                                           "Created by: " .. skin.author
+                                end
+                            end
+                            return "VUI Theme\nThe standard VUI-themed skin for Details!"
+                        end,
+                        order = 6,
+                        width = "full"
+                    }
+                }
+            },
             barGroup = {
                 type = "group",
                 name = "Bars and Rows",
                 inline = true,
-                order = 5,
+                order = 6,
                 args = {
                     rowHeight = {
                         type = "range",
