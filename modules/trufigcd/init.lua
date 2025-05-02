@@ -179,10 +179,7 @@ function TrufiGCD:Initialize()
         self:InitializeTimeline()
     end
     
-    -- Log initialization
-    if VUI.debug then
-        VUI:Debug("TrufiGCD module initialized with enhanced features")
-    end
+    -- Module initialized with enhanced features
 end
 
 -- Create the anchor frame for positioning

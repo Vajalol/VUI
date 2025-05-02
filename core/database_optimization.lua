@@ -12,7 +12,7 @@ local DBOpt = VUI:NewModule("DatabaseOptimization", "AceEvent-3.0", "AceTimer-3.
 local CACHE_CLEANUP_INTERVAL = 60 -- Seconds between cache cleanup operations
 local BATCH_SIZE = 5 -- Number of operations to batch together
 local THROTTLE_PERIOD = 0.2 -- Seconds to wait for batching similar operations
-local DEBUG_MODE = false -- Set to true for detailed logging
+local DEBUG_MODE = false -- Always false in production release
 
 -- Initialization
 function DBOpt:OnInitialize()

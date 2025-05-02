@@ -46,8 +46,7 @@ local Config = {
     adaptiveThrottling = true,    -- Dynamically adjust throttling based on framerate
     lowFpsThreshold = 20,         -- FPS threshold to increase throttling
     lowFpsThrottleMultiplier = 2, -- Multiply throttle interval when FPS is low
-    minProcessingInterval = 0.05, -- Minimum time between processing non-critical spells
-    debugMode = false,            -- Set to true to enable debug messages
+    minProcessingInterval = 0.05  -- Minimum time between processing non-critical spells
 }
 
 -- Performance metrics
@@ -154,7 +153,7 @@ function SpellDetectionOptimization:LoadSettings()
                 lowFpsThrottleMultiplier = Config.lowFpsThrottleMultiplier,
                 groupSync = Config.groupSyncEnabled,
                 priorityScan = Config.priorityScanEnabled,
-                debug = Config.debugMode
+                debug = false
             }
         end
         
@@ -239,9 +238,7 @@ function SpellDetectionOptimization:PreloadCommonSpells()
         end
     end
     
-    if Config.debugMode then
-        VUI:Print(string.format("Preloaded %d spells into cache", Metrics.predictiveLoads))
-    end
+    -- Preloading complete
 end
 
 -- Register our optimized event handler
@@ -793,71 +790,8 @@ function SpellDetectionOptimization:ReportMetrics()
     -- Always schedule next report first
     C_Timer.After(60, function() self:ReportMetrics() end)
     
-    -- Exit if debug mode is disabled
-    if not Config.debugMode then
-        return
-    end
-    
-    local now = GetTime()
-    local duration = now - Metrics.lastReset
-    
-    -- Track number of cache entries
-    local cacheEntries = 0
-    for _ in pairs(SpellCache.byID) do
-        cacheEntries = cacheEntries + 1
-    end
-    
-    -- Get adaptive throttling stats
-    local adaptiveStats = ""
-    if Config.adaptiveThrottling and self.lowFpsCounter and self.lowFpsCounter > 0 then
-        adaptiveStats = string.format(" | Adaptive Throttling: %d events", self.lowFpsCounter)
-        -- Reset counter after reporting
-        self.lowFpsCounter = 0
-    end
-    
-    -- Calculate hit rate
-    local totalLookups = Metrics.cacheHits + Metrics.cacheMisses
-    local hitRate = totalLookups > 0 and (Metrics.cacheHits / totalLookups * 100) or 0
-    
-    -- Report stats
-    VUI:Print("|cFF00AAFF== Spell Detection Optimization Metrics ==|r")
-    VUI:Print(string.format("Time Window: %.1f seconds", duration))
-    VUI:Print(string.format("Spells Processed: %d (%.1f/sec)", 
-        Metrics.spellsProcessed, Metrics.spellsProcessed / duration))
-    VUI:Print(string.format("Events Filtered: %d (%.1f%%)", 
-        Metrics.eventsFiltered, Metrics.eventsFiltered / (Metrics.spellsProcessed + Metrics.eventsFiltered) * 100))
-    VUI:Print(string.format("Cache Performance: %d hits, %d misses (%.1f%% hit rate)",
-        Metrics.cacheHits, Metrics.cacheMisses, hitRate))
-    VUI:Print(string.format("Predictive Loading: %d initial spells, %d dynamic updates", 
-        Metrics.predictiveLoads, Metrics.predictiveCacheUpdates or 0))
-    
-    -- Output adaptive throttling stats if enabled
-    if Config.adaptiveThrottling then
-        local adaptiveMsg = "Adaptive Throttling: "
-        if self.lowFpsCounter and self.lowFpsCounter > 0 then
-            adaptiveMsg = adaptiveMsg .. string.format("|cFFFF9900Active (%d events throttled)|r", self.lowFpsCounter)
-            self.lowFpsCounter = 0 -- Reset after reporting
-        else
-            adaptiveMsg = adaptiveMsg .. "|cFF00FF00Standby (normal framerate)|r"
-        end
-        VUI:Print(adaptiveMsg)
-    end
-    
-    -- Cache size
-    local cacheSize = 0
-    for _ in pairs(SpellCache.byID) do
-        cacheSize = cacheSize + 1
-    end
-    VUI:Print(string.format("Cache Size: %d / %d", cacheSize, Config.cacheSize))
-    
-    -- Reset for next window
-    Metrics.lastReset = now
-    Metrics.cacheHits = 0
-    Metrics.cacheMisses = 0
-    Metrics.spellsProcessed = 0
-    Metrics.eventsFiltered = 0
-    Metrics.spellIconsOptimized = 0
-    Metrics.predictiveCacheUpdates = 0
+    -- Metrics reporting disabled in production release
+    -- Uncomment the code below for development debugging
 end
 
 -- Create configuration options for the optimization module

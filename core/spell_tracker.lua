@@ -704,7 +704,7 @@ function SpellTracker:UpdateGroupComposition()
         self.groupComposition[playerGUID] = {
             name = UnitName("player"),
             class = playerClass,
-            spec = nil -- TODO: Get specialization if needed
+            spec = GetSpecialization() and GetSpecializationInfo(GetSpecialization()) or nil
         }
     end
     
@@ -728,10 +728,19 @@ function SpellTracker:UpdateGroupComposition()
             local _, class = UnitClass(unitID)
             
             if guid and class then
+                -- Try to get specialization for group members
+                local spec
+                if UnitIsVisible(unitID) then
+                    local specID = GetInspectSpecialization(unitID)
+                    if specID and specID > 0 then
+                        spec = specID
+                    end
+                end
+                
                 self.groupComposition[guid] = {
                     name = name,
                     class = class,
-                    spec = nil -- TODO: Get specialization if needed
+                    spec = spec
                 }
                 
                 -- Also update guidCache if we have this unit

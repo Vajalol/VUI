@@ -77,8 +77,7 @@ function PGF:GetConfig()
     return config
 end
 
--- Register module config with the VUI ModuleAPI
-VUI.ModuleAPI:RegisterModuleConfig("premadegroupfinder", PGF:GetConfig())
+-- Module config registration is done later with extended options
 
 -- Set up module defaults
 local defaults = {

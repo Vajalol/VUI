@@ -2,7 +2,7 @@
 
 This document tracks significant changes to the VUI addon suite.
 
-## v0.3.0 (In Development)
+## v0.3.0 (Release Candidate)
 
 ### Development Status
 - Final Documentation and Polish:
@@ -10,22 +10,33 @@ This document tracks significant changes to the VUI addon suite.
   - Developer API Documentation (Complete)
   - Module Integration Guide (Complete)
   - Performance Optimization Guide (Complete)
+  - Module Registration Standardization (Complete)
+  - Code Quality Improvements (Complete)
 
 ### Major Features
 - Extensive Documentation System:
   - Created detailed User Guide with full feature explanations
   - Implemented Developer Guide for module creation
   - Added performance optimization documentation
-  - Enhanced in-game help system
+  - Enhanced in-game help system with contextual assistance
+  - Added first-time user welcome guide with feature highlights
 
 ### Quality of Life Improvements
 - Enhanced configuration tooltips with detailed explanations
 - Improved first-time user experience with guided setup
 - Optimized default settings for better out-of-box experience
-- Enhanced theme preview system
-- Added module dependency visualization
-- Created profile export/import functionality
-- Enhanced macro template system
+- Enhanced theme preview system with real-time visual updates
+- Added module dependency visualization for better configuration understanding
+- Created profile export/import functionality with string encoding
+- Enhanced macro template system with class-specific recommendations
+- Fixed module registration patterns for improved stability
+- Standardized module configuration to prevent duplication
+- Removed development test code for cleaner release
+- Enhanced spell detection code with proper specialization tracking
+- Fixed and standardized all module registration patterns
+- Resolved duplicate module registration issues in 6 modules
+- Added module help system with comprehensive documentation
+- Improved Blizzard UI skin implementations with clearer code
 
 ## v0.2.0 (Released)
 

@@ -663,7 +663,7 @@ local config = {
 }
 
 -- Register module with VUI
-VUI:RegisterModule(InfoFrame, defaults, config)
+VUI:RegisterModule("infoframe", InfoFrame)
 
 -- Return the module to make it accessible to other files
 VUI.modules.infoframe = InfoFrame

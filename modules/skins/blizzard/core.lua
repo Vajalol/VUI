@@ -276,8 +276,13 @@ blizzardSkins.Bags = function(self)
 end
 
 -- Define implementation for these Blizzard UI elements
--- Using the "TODO" approach as placeholder for complete implementation
-blizzardSkins.Character = function(self) if not self.settings.blizzard.character then return end end
+-- These are placeholder implementations that will be expanded in future updates
+blizzardSkins.Character = function(self) 
+    if not self.settings.blizzard.character then return end
+    
+    -- Character frame skinning is handled by the paperdoll module
+    -- This is intentionally minimal to avoid conflicts
+end
 blizzardSkins.Chat = function(self)
     if not self.settings.blizzard.chat then return end
     

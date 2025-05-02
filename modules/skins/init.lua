@@ -88,7 +88,7 @@ function Skins:GetConfig()
 end
 
 -- Register module config with the VUI ModuleAPI
-VUI.ModuleAPI:RegisterModuleConfig("skins", Skins:GetConfig())
+-- Module config registration is done later with extended options
 
 -- Set up module defaults
 local defaults = {

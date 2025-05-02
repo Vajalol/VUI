@@ -438,7 +438,7 @@ if not Tooltip.Disable then
 end
 
 -- Register module with VUI
-VUI:RegisterModule(Tooltip, defaults, config)
+VUI:RegisterModule("tooltip", Tooltip)
 
 -- Return the module to make it accessible to other files
 VUI.modules.tooltip = Tooltip

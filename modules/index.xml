@@ -77,4 +77,7 @@
     
     <!-- Multi-Notification Module (Unified Notification System) -->
     <Include file="multinotification\load.xml"/>
+    
+    <!-- Help System Module -->
+    <Include file="help\index.xml"/>
 </Ui>

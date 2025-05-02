@@ -82,7 +82,7 @@ function UnitFrames:GetConfig()
 end
 
 -- Register module config with the VUI ModuleAPI
-VUI.ModuleAPI:RegisterModuleConfig("unitframes", UnitFrames:GetConfig())
+-- Module config registration is done later with extended options
 
 -- Set up module defaults
 local defaults = {
