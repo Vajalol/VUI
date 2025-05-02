@@ -580,6 +580,11 @@ function Profiles:Initialize()
     if self.settings.autoSave then
         self:StartAutoSave()
     end
+    
+    -- Initialize theme integration
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
 end
 
 -- Enable module

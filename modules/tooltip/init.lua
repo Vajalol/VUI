@@ -10,6 +10,37 @@ local Tooltip = {
     author = "VortexQ8",
 }
 
+-- Initialize the module
+function Tooltip:Initialize()
+    -- Initialize settings with defaults
+    self.settings = VUI.ModuleAPI:InitializeModuleSettings(self.name, defaults)
+    
+    -- Set enabled state based on settings
+    self:SetEnabledState(self.settings.enabled)
+    
+    -- Hook tooltip functions
+    self:HookTooltipFunctions()
+    
+    -- Initialize theme integration if available
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
+    
+    -- Register for combat events
+    self:RegisterEvent("PLAYER_REGEN_DISABLED")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED")
+    
+    -- Print debug message
+    if VUI.debug then
+        VUI:Print("Tooltip module initialized")
+    end
+end
+
+-- Hook tooltip functions to add our custom information
+function Tooltip:HookTooltipFunctions()
+    -- This is a placeholder function that will be implemented in core.lua
+end
+
 -- Get configuration options for main UI integration
 function Tooltip:GetConfig()
     local config = {

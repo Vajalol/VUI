@@ -1,6 +1,6 @@
 --[[
     VUI - MultiNotification Animation Variations
-    Version: 0.3.0
+    Version: 1.0.0
     Author: VortexQ8
     
     This file implements enhanced animation variations for the MultiNotification module:

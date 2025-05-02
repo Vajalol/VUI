@@ -1,6 +1,6 @@
 --[[
     VUI - MultiNotification SpellManagementUI
-    Version: 0.3.0
+    Version: 1.0.0
     Author: VortexQ8
     
     Spell management UI for the unified notification system

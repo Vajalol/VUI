@@ -527,6 +527,11 @@ function PGF:Initialize()
     
     -- Initialize advanced features
     self:InitializeAdvancedFeatures()
+    
+    -- Initialize theme integration
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
 end
 
 -- Initialize advanced PGF features

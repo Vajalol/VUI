@@ -1,6 +1,6 @@
 --[[
     VUI - TrufiGCD Icon Customization
-    Version: 0.3.0
+    Version: 1.0.0
     Author: VortexQ8
     
     This file implements enhanced icon customization for the TrufiGCD module:

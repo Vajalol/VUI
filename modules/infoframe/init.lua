@@ -10,6 +10,30 @@ local InfoFrame = {
     author = "VortexQ8",
 }
 
+-- Initialize function for the module
+function InfoFrame:Initialize()
+    -- Initialize settings with defaults
+    self.settings = VUI.ModuleAPI:InitializeModuleSettings(self.name, defaults)
+    
+    -- Set enabled state based on settings
+    self:SetEnabledState(self.settings.enabled)
+    
+    -- Register for events
+    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+    self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+    
+    -- Initialize ThemeIntegration if available
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
+    
+    -- Print debug message
+    if VUI.debug then
+        VUI:Print("InfoFrame module initialized")
+    end
+end
+
 -- Get configuration options for main UI integration
 function InfoFrame:GetConfig()
     local config = {

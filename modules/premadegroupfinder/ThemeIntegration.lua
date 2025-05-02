@@ -2,6 +2,41 @@
 local _, VUI = ...
 local PGF = VUI.premadegroupfinder
 
+-- Create Theme Integration submodule
+PGF.ThemeIntegration = {}
+
+-- Initialize Theme Integration
+function PGF.ThemeIntegration:Initialize()
+    -- Register for theme changes
+    VUI:RegisterCallback("ThemeChanged", self.ApplyTheme, self)
+    
+    -- Apply current theme
+    self:ApplyTheme(VUI.activeTheme)
+    
+    -- Debug output
+    if VUI.debug then
+        VUI:Print("PGF ThemeIntegration initialized")
+    end
+end
+
+-- Apply a theme
+function PGF.ThemeIntegration:ApplyTheme(theme)
+    if not theme or not PGF.themeAssets[theme] then
+        theme = "thunderstorm" -- Default theme
+    end
+    
+    -- Set current theme assets
+    PGF.currentThemeAssets = PGF.themeAssets[theme]
+    
+    -- Apply theme to UI elements if they exist
+    PGF:UpdateThemeElements()
+    
+    -- Debug output
+    if VUI.debug then
+        VUI:Print("PGF theme applied: " .. theme)
+    end
+end
+
 -- Theme-specific textures for each theme
 PGF.themeAssets = {
     -- Phoenix Flame theme assets

@@ -1,6 +1,6 @@
 --[[
     VUI - Actionbars Module Configuration
-    Version: 0.3.0
+    Version: 1.0.0
     Author: VortexQ8
 ]]
 

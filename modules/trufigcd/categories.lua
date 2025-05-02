@@ -1,6 +1,6 @@
 --[[
     VUI - TrufiGCD Spell Categorization
-    Version: 0.3.0
+    Version: 1.0.0
     Author: VortexQ8
     
     This system classifies spells into functional categories with visual distinctions:

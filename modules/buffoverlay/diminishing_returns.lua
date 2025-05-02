@@ -1,6 +1,6 @@
 --[[
     VUI - BuffOverlay Diminishing Returns Tracking
-    Version: 0.3.0
+    Version: 1.0.0
     Author: VortexQ8
     
     This file implements diminishing returns tracking for the BuffOverlay module:
