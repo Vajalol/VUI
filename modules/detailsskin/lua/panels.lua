@@ -48,8 +48,15 @@ end
 -- Style the main window frame
 function DS.Panels:StyleWindowFrame(instance, colors, settings)
     -- Frame backdrop
-    instance.baseframe.backdrop_texture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. 
-                                         (VUI.db.profile.appearance.theme or "thunderstorm") .. "\\background"
+    -- Get textures from atlas if available
+    if DS.Atlas and DS.Atlas.GetBackgroundTexture then
+        -- Use atlas texture
+        instance.baseframe.backdrop_texture = DS.Atlas:GetBackgroundTexture(VUI.db.profile.appearance.theme or "thunderstorm")
+    else
+        -- Fallback to regular texture path
+        instance.baseframe.backdrop_texture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. 
+                                            (VUI.db.profile.appearance.theme or "thunderstorm") .. "\\background"
+    end
     instance.baseframe.backdrop_alpha = settings.backgroundOpacity
     
     -- Border
@@ -61,8 +68,16 @@ function DS.Panels:StyleWindowFrame(instance, colors, settings)
     }
     
     -- Frame backdrop
+    local borderTexture
+    -- Get border texture from atlas if available
+    if DS.Atlas and DS.Atlas.GetBorderTexture then
+        borderTexture = DS.Atlas:GetBorderTexture()
+    else
+        borderTexture = "Interface\\AddOns\\VUI\\media\\textures\\border"
+    end
+    
     instance.frame_backdrop = {
-        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border",
+        edgeFile = borderTexture,
         tileEdge = true,
         edgeSize = settings.borderSize or 1,
         insets = {left = 0, right = 0, top = 0, bottom = 0},
@@ -130,8 +145,16 @@ end
 -- Style menu elements
 function DS.Panels:StyleMenuElements(instance, colors, settings)
     -- Menu backdrop
+    local borderTexture
+    -- Get border texture from atlas if available
+    if DS.Atlas and DS.Atlas.GetBorderTexture then
+        borderTexture = DS.Atlas:GetBorderTexture()
+    else
+        borderTexture = "Interface\\AddOns\\VUI\\media\\textures\\border"
+    end
+    
     instance.menu_backdrop = {
-        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border",
+        edgeFile = borderTexture,
         tileEdge = true,
         edgeSize = settings.borderSize or 1,
         insets = {left = 0, right = 0, top = 0, bottom = 0},
@@ -187,9 +210,18 @@ end
 -- Style status bar
 function DS.Panels:StyleStatusBar(instance, colors, settings)
     -- Status bar settings
+    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    local statusbarTexture
+    
+    -- Get statusbar texture from atlas if available
+    if DS.Atlas and DS.Atlas.GetStatusBarTexture then
+        statusbarTexture = DS.Atlas:GetStatusBarTexture(theme)
+    else
+        statusbarTexture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\statusbar"
+    end
+    
     instance.statusbar_info = {
-        texture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. 
-                 (VUI.db.profile.appearance.theme or "thunderstorm") .. "\\statusbar",
+        texture = statusbarTexture,
         color = {
             colors.primary.r,
             colors.primary.g,
@@ -235,13 +267,29 @@ function DS.Panels:StyleRows(instance, colors, settings, theme)
     instance.row_height = settings.rowHeight or 16
     
     -- Row info
+    -- Get texture for row background from atlas if available
+    local rowBackgroundTexture
+    if DS.Atlas and DS.Atlas.GetBackgroundDarkTexture then
+        rowBackgroundTexture = DS.Atlas:GetBackgroundDarkTexture(theme)
+    else
+        rowBackgroundTexture = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background_dark"
+    end
+    
+    -- Get border texture from atlas if available
+    local rowBorderTexture
+    if DS.Atlas and DS.Atlas.GetBorderDarkTexture then
+        rowBorderTexture = DS.Atlas:GetBorderDarkTexture()
+    else
+        rowBorderTexture = "Interface\\AddOns\\VUI\\media\\textures\\border_dark"
+    end
+    
     instance.row_info = {
         -- Basic appearance
         texture = barTexture,
-        texture_background = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background_dark",
+        texture_background = rowBackgroundTexture,
         backdrop = {
             enabled = settings.rowBackdrop or false,
-            texture = "Interface\\AddOns\\VUI\\media\\textures\\border_dark",
+            texture = rowBorderTexture,
             color = {0, 0, 0, 0.2},
             size = 1
         },

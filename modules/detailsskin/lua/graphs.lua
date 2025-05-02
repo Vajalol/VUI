@@ -118,7 +118,7 @@ end
 function DS.Graphs:StyleBarGraphs(instance, colors, settings, theme)
     -- Bar graph settings
     local barSettings = {
-        -- Bar appearance
+        -- Bar appearance using atlas texture if available
         bar_texture = DS:GetBarTexture(theme),
         bar_color = {
             colors.primary.r,
@@ -190,9 +190,16 @@ end
 
 -- Style pie charts in reports
 function DS.Graphs:StylePieCharts(instance, colors, settings, theme)
+    -- Get background texture from atlas if available
+    local backgroundTexture
+    if DS.Atlas and DS.Atlas.GetBackgroundTexture then
+        backgroundTexture = DS.Atlas:GetBackgroundTexture(theme)
+    end
+    
     -- Pie chart settings
     local pieSettings = {
         -- General appearance
+        background_texture = backgroundTexture,
         background_color = {
             colors.background.r,
             colors.background.g,
@@ -244,6 +251,17 @@ end
 
 -- Style custom displays (scrolls, texts, etc.)
 function DS.Graphs:StyleCustomDisplays(instance, colors, settings, theme)
+    -- Get atlas textures if available
+    local backgroundTexture, borderTexture
+    if DS.Atlas then
+        if DS.Atlas.GetBackgroundTexture then
+            backgroundTexture = DS.Atlas:GetBackgroundTexture(theme)
+        end
+        if DS.Atlas.GetBorderTexture then
+            borderTexture = DS.Atlas:GetBorderTexture()
+        end
+    end
+    
     -- Text area styling (used in various places)
     local textAreaSettings = {
         font_size = settings.textAreaFontSize or 11,
@@ -253,12 +271,14 @@ function DS.Graphs:StyleCustomDisplays(instance, colors, settings, theme)
             colors.text.b,
             1
         },
+        background_texture = backgroundTexture,
         background_color = {
             colors.background.r,
             colors.background.g,
             colors.background.b,
             0.3
         },
+        border_texture = borderTexture,
         border_color = {
             colors.border.r,
             colors.border.g,

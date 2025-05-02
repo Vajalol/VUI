@@ -529,31 +529,64 @@ function VUI:CreateBackdrop(bgColor, borderColor, borderSize, inset)
 end
 
 -- Helper function to get a font by name or return a path
+-- Enhanced with font atlas support and caching
 function VUI:GetFont(fontName)
+    -- Handle nil case
     if not fontName then
         return self.media.fonts.normal
     end
     
+    -- Check font cache first for best performance
+    if self.mediaCache.fonts[fontName] then
+        self.mediaStats.cacheHits = self.mediaStats.cacheHits + 1
+        return self.mediaCache.fonts[fontName]
+    end
+    
+    local fontPath
+    
+    -- Check if this is a theme-specific font request (format: "theme_fonttype")
+    local theme, fontType = fontName:match("^(%w+)_(%w+)$")
+    if theme and fontType and self.FontAtlas then
+        fontPath = self.FontAtlas:GetThemeFont(theme, fontType)
+        if fontPath then
+            -- Cache and return the result
+            self.mediaCache.fonts[fontName] = fontPath
+            self.mediaStats.cacheMisses = self.mediaStats.cacheMisses + 1
+            return fontPath
+        end
+    end
+    
     -- If it's a known font name in our media
-    if self.media.fonts[fontName] then
-        return self.media.fonts[fontName]
+    if self.media.fonts[fontName:lower()] then
+        fontPath = self.media.fonts[fontName:lower()]
+        self.mediaCache.fonts[fontName] = fontPath
+        self.mediaStats.cacheMisses = self.mediaStats.cacheMisses + 1
+        return fontPath
     end
     
     -- If it already looks like a path, return it
     if fontName:find("\\") then
+        -- Cache path-like entries too
+        self.mediaCache.fonts[fontName] = fontName
+        self.mediaStats.cacheMisses = self.mediaStats.cacheMisses + 1
         return fontName
     end
     
     -- Check LibSharedMedia if available
     if LibStub and LibStub:GetLibrary("LibSharedMedia-3.0", true) then
         local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
-        local path = LSM:Fetch("font", fontName)
-        if path then
-            return path
+        fontPath = LSM:Fetch("font", fontName)
+        if fontPath then
+            -- Cache and return the result
+            self.mediaCache.fonts[fontName] = fontPath
+            self.mediaStats.cacheMisses = self.mediaStats.cacheMisses + 1
+            return fontPath
         end
     end
     
     -- Default fallback
+    self.mediaCache.fonts[fontName] = self.media.fonts.normal
+    self.mediaStats.cacheMisses = self.mediaStats.cacheMisses + 1
     return self.media.fonts.normal
 end
 
@@ -822,7 +855,10 @@ function VUI:GetMediaStats()
         cacheHitRate = self.mediaStats.cacheHits / (self.mediaStats.cacheHits + self.mediaStats.cacheMisses + 0.001) * 100,
         memoryUsage = string.format("%.2f", self.mediaStats.memoryUsage) .. " MB",
         cacheSize = self:TableCount(self.mediaCache.textures),
-        queueSize = #self.mediaQueue
+        queueSize = #self.mediaQueue,
+        
+        -- Font system stats
+        fontCacheSize = self:TableCount(self.mediaCache.fonts),
     }
     
     -- Add atlas stats if Atlas system is initialized
@@ -831,6 +867,24 @@ function VUI:GetMediaStats()
         stats.atlasTexturesSaved = atlasStats.texturesSaved
         stats.atlasMemoryReduction = atlasStats.memoryReduction
         stats.atlasesLoaded = atlasStats.atlasesLoaded
+    end
+    
+    -- Add font system stats if FontIntegration system is initialized
+    if self.FontIntegration and self.FontIntegration.GetStats then
+        local fontStats = self.FontIntegration:GetStats()
+        stats.fontObjectsCreated = fontStats.fontObjectsCreated
+        stats.fontObjectsReused = fontStats.fontObjectsReused
+        stats.fontCalls = fontStats.getCalls
+        stats.fontCacheHits = fontStats.cacheHits
+        stats.fontCacheMisses = fontStats.cacheMisses
+        
+        if fontStats.getCalls > 0 then
+            stats.fontCacheHitRate = fontStats.cacheHits / (fontStats.getCalls) * 100
+        else
+            stats.fontCacheHitRate = 0
+        end
+        
+        stats.fontMemoryEstimate = string.format("%.2f", fontStats.memoryEstimate / 1024 / 1024) .. " MB"
     end
     
     return stats

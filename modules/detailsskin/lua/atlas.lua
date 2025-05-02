@@ -369,6 +369,137 @@ function DS.Atlas:GetBorderTexture()
     return "Interface\\AddOns\\VUI\\media\\textures\\border.tga"
 end
 
+-- Get dark border texture from atlas
+function DS.Atlas:GetBorderDarkTexture()
+    -- Ensure atlas is registered
+    if not self.registered then
+        self:RegisterAtlas()
+    end
+    
+    -- Get the atlas texture
+    local atlasKey = "details.border_dark"
+    if Atlas:TextureExists(atlasKey) then
+        self.stats.atlasHits = self.stats.atlasHits + 1
+        self.stats.memoryEstimatedSaved = self.stats.memoryEstimatedSaved + 20
+        return Atlas:GetTexture(atlasKey)
+    else
+        -- Register it now if it wasn't registered before
+        Atlas:RegisterTexture(
+            "details.border_dark",
+            "Interface\\AddOns\\VUI\\media\\textures\\border_dark.tga",
+            {
+                width = 32,
+                height = 32,
+                coords = {0, 1, 0, 1} -- Full texture coordinates
+            }
+        )
+        
+        -- Try again
+        if Atlas:TextureExists(atlasKey) then
+            self.stats.atlasHits = self.stats.atlasHits + 1
+            return Atlas:GetTexture(atlasKey)
+        else
+            self.stats.cacheMisses = self.stats.cacheMisses + 1
+        end
+    end
+    
+    -- Fallback to classic texture path
+    self.stats.textureLoads = self.stats.textureLoads + 1
+    return "Interface\\AddOns\\VUI\\media\\textures\\border_dark.tga"
+end
+
+-- Get dark background texture from atlas
+function DS.Atlas:GetBackgroundDarkTexture(theme)
+    theme = theme or VUI.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Ensure atlas is registered
+    if not self.registered then
+        self:RegisterAtlas()
+    end
+    
+    -- Check if theme exists in our entries
+    if not self.entries[theme] then
+        theme = "thunderstorm" -- Fallback to default theme
+    end
+    
+    -- Get the atlas texture
+    local atlasKey = "details." .. theme .. ".background_dark"
+    if Atlas:TextureExists(atlasKey) then
+        self.stats.atlasHits = self.stats.atlasHits + 1
+        self.stats.memoryEstimatedSaved = self.stats.memoryEstimatedSaved + 20
+        return Atlas:GetTexture(atlasKey)
+    else
+        -- Register it now if it wasn't registered before
+        Atlas:RegisterTexture(
+            atlasKey,
+            "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background_dark.tga",
+            {
+                width = 256,
+                height = 256,
+                coords = {0, 1, 0, 1} -- Full texture coordinates
+            }
+        )
+        
+        -- Try again
+        if Atlas:TextureExists(atlasKey) then
+            self.stats.atlasHits = self.stats.atlasHits + 1
+            return Atlas:GetTexture(atlasKey)
+        else
+            self.stats.cacheMisses = self.stats.cacheMisses + 1
+        end
+    end
+    
+    -- Fallback to classic texture path
+    self.stats.textureLoads = self.stats.textureLoads + 1
+    return "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background_dark.tga"
+end
+
+-- Get statusbar texture from atlas
+function DS.Atlas:GetStatusBarTexture(theme)
+    theme = theme or VUI.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Ensure atlas is registered
+    if not self.registered then
+        self:RegisterAtlas()
+    end
+    
+    -- Check if theme exists in our entries
+    if not self.entries[theme] then
+        theme = "thunderstorm" -- Fallback to default theme
+    end
+    
+    -- Get the atlas texture
+    local atlasKey = "details." .. theme .. ".statusbar"
+    if Atlas:TextureExists(atlasKey) then
+        self.stats.atlasHits = self.stats.atlasHits + 1
+        self.stats.memoryEstimatedSaved = self.stats.memoryEstimatedSaved + 20
+        return Atlas:GetTexture(atlasKey)
+    else
+        -- Register it now if it wasn't registered before
+        Atlas:RegisterTexture(
+            atlasKey,
+            "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\statusbar.tga",
+            {
+                width = 256,
+                height = 32,
+                coords = {0, 1, 0, 1} -- Full texture coordinates
+            }
+        )
+        
+        -- Try again
+        if Atlas:TextureExists(atlasKey) then
+            self.stats.atlasHits = self.stats.atlasHits + 1
+            return Atlas:GetTexture(atlasKey)
+        else
+            self.stats.cacheMisses = self.stats.cacheMisses + 1
+        end
+    end
+    
+    -- Fallback to classic texture path
+    self.stats.textureLoads = self.stats.textureLoads + 1
+    return "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\statusbar.tga"
+end
+
 -- Reset statistics
 function DS.Atlas:ResetStats()
     self.stats = {

@@ -167,6 +167,11 @@ function DetailsSkin:ApplySkinToPlugins()
     local theme = VUI.db.profile.appearance.theme or "thunderstorm"
     local colors = self:GetThemeColors(theme)
     
+    -- Get textures using the atlas system if available
+    local bgTexture = self:GetBackgroundTexture(theme)
+    local borderTexture = self:GetBorderTexture()
+    local titleTexture = self:GetTitleTexture(theme)
+    
     -- Apply skin to all plugin frames
     if Details.PluginCount and Details.PluginCount > 0 then
         for i = 1, Details.PluginCount do
@@ -178,12 +183,12 @@ function DetailsSkin:ApplySkinToPlugins()
                 if not frame.VUISkinned then
                     -- Skip plugins that don't want to be skinned
                     if not plugin.NoFrameSkin then
-                        -- Apply theme backdrop
+                        -- Apply theme backdrop with atlas textures
                         frame:SetBackdrop({
-                            edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\border", 
+                            edgeFile = borderTexture, 
                             tileEdge = true,
                             edgeSize = settings.borderSize or 1,
-                            bgFile = "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. theme .. "\\background",
+                            bgFile = bgTexture,
                             insets = {left = 3, right = 3, top = 3, bottom = 3}
                         })
                         
@@ -203,16 +208,111 @@ function DetailsSkin:ApplySkinToPlugins()
                         
                         -- Apply theme to title bar if it exists
                         if frame.TitleBar then
-                            frame.TitleBar:SetTexture("Interface\\AddOns\\VUI\\modules\\detailsskin\\textures\\" .. theme .. "_title_bar.svg")
+                            frame.TitleBar:SetTexture(titleTexture)
                         end
                         
                         -- Mark as skinned
                         frame.VUISkinned = true
+                        frame.VUITheme = theme -- Store current theme
                     end
+                else
+                    -- Check if theme changed and update textures if needed
+                    if frame.VUITheme ~= theme then
+                        -- Update textures with new theme
+                        frame:SetBackdrop({
+                            edgeFile = borderTexture, 
+                            tileEdge = true,
+                            edgeSize = settings.borderSize or 1,
+                            bgFile = bgTexture,
+                            insets = {left = 3, right = 3, top = 3, bottom = 3}
+                        })
+                        
+                        -- Update title bar texture if it exists
+                        if frame.TitleBar then
+                            frame.TitleBar:SetTexture(titleTexture)
+                        end
+                        
+                        frame.VUITheme = theme
+                    end
+                    
+                    -- Update colors
+                    frame:SetBackdropBorderColor(
+                        colors.border.r,
+                        colors.border.g,
+                        colors.border.b,
+                        settings.borderOpacity or 0.7
+                    )
+                    frame:SetBackdropColor(
+                        colors.background.r,
+                        colors.background.g,
+                        colors.background.b,
+                        settings.backgroundOpacity or 0.5
+                    )
                 end
             end
         end
     end
+end
+
+-- Function called by ThemeIntegration to style plugin frames
+function DetailsSkin:StylizePluginFrames(theme, backgroundTexture, borderTexture)
+    if not Details then return end
+    local settings = self:GetSettings()
+    if not settings.enabled then return end
+    
+    -- Use passed textures or get them from our atlas
+    local bgTexture = backgroundTexture or self:GetBackgroundTexture(theme)
+    local edgeTexture = borderTexture or self:GetBorderTexture()
+    local titleTexture = self:GetTitleTexture(theme)
+    local colors = self:GetThemeColors(theme)
+    
+    -- Apply skin to all plugin frames
+    if Details.PluginCount and Details.PluginCount > 0 then
+        for i = 1, Details.PluginCount do
+            local plugin = Details.tabela_plugins[i]
+            if plugin and plugin.Frame then
+                local frame = plugin.Frame
+                
+                -- Skip plugins that don't want to be skinned
+                if not plugin.NoFrameSkin then
+                    -- Apply theme backdrop with atlas textures
+                    frame:SetBackdrop({
+                        edgeFile = edgeTexture, 
+                        tileEdge = true,
+                        edgeSize = settings.borderSize or 1,
+                        bgFile = bgTexture,
+                        insets = {left = 3, right = 3, top = 3, bottom = 3}
+                    })
+                    
+                    -- Apply theme colors
+                    frame:SetBackdropBorderColor(
+                        colors.border.r,
+                        colors.border.g,
+                        colors.border.b,
+                        settings.borderOpacity or 0.7
+                    )
+                    
+                    frame:SetBackdropColor(
+                        colors.background.r,
+                        colors.background.g,
+                        colors.background.b,
+                        settings.backgroundOpacity or 0.5
+                    )
+                    
+                    -- Apply theme to title bar if it exists
+                    if frame.TitleBar then
+                        frame.TitleBar:SetTexture(titleTexture)
+                    end
+                    
+                    -- Mark as skinned
+                    frame.VUISkinned = true
+                    frame.VUITheme = theme -- Store current theme
+                end
+            end
+        end
+    end
+    
+    return true
 end
 
 -- Initialize the module
@@ -288,15 +388,85 @@ function DetailsSkin:GetHeaderStyle(theme)
 end
 
 function DetailsSkin:GetBarTexture(theme)
+    -- Use atlas texture if available
+    if self.Atlas and self.Atlas.GetBarTexture then
+        return self.Atlas:GetBarTexture(theme)
+    end
+    -- Fallback to traditional texture path
     return self.Themes.GetBarTexture(theme)
+end
+
+function DetailsSkin:GetTitleTexture(theme)
+    -- Use atlas texture if available
+    if self.Atlas and self.Atlas.GetTitleTexture then
+        return self.Atlas:GetTitleTexture(theme)
+    end
+    -- Fallback to traditional texture path
+    local headerStyle = self:GetHeaderStyle(theme)
+    return headerStyle and headerStyle.texture
+end
+
+function DetailsSkin:GetBackgroundTexture(theme)
+    -- Use atlas texture if available
+    if self.Atlas and self.Atlas.GetBackgroundTexture then
+        return self.Atlas:GetBackgroundTexture(theme)
+    end
+    -- Fallback to traditional texture path
+    return "Interface\\AddOns\\VUI\\media\\textures\\themes\\" .. (theme or "thunderstorm") .. "\\background.tga"
+end
+
+function DetailsSkin:GetBorderTexture()
+    -- Use atlas texture if available
+    if self.Atlas and self.Atlas.GetBorderTexture then
+        return self.Atlas:GetBorderTexture()
+    end
+    -- Fallback to traditional texture path
+    return "Interface\\AddOns\\VUI\\media\\textures\\border.tga"
 end
 
 function DetailsSkin:GetAnimationSettings(theme)
     return self.Themes.GetAnimationSettings(theme)
 end
 
+function DetailsSkin:GetAnimTexture(theme, animType)
+    -- Use atlas texture if available
+    if self.Atlas and self.Atlas.GetAnimTexture then
+        return self.Atlas:GetAnimTexture(theme, animType)
+    end
+    -- Fallback to traditional texture path
+    local animations = self.Themes.GetAnimationSettings(theme)
+    return animations and animations[animType]
+end
+
 function DetailsSkin:RegisterThemeMedia()
     self.Themes.RegisterThemeMedia()
+    
+    -- Register atlas textures if available
+    if self.Atlas and self.Atlas.RegisterAtlas then
+        self.Atlas:RegisterAtlas()
+    end
+end
+
+-- Get atlas performance statistics
+function DetailsSkin:GetAtlasStats()
+    if self.Atlas and self.Atlas.GetStats then
+        return self.Atlas:GetStats()
+    end
+    return {
+        textureLoads = 0,
+        atlasHits = 0,
+        cacheMisses = 0,
+        memoryEstimatedSaved = 0
+    }
+end
+
+-- Reset atlas statistics
+function DetailsSkin:ResetAtlasStats()
+    if self.Atlas and self.Atlas.ResetStats then
+        self.Atlas:ResetStats()
+        return true
+    end
+    return false
 end
 
 -- Configuration getter for the options panel
