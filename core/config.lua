@@ -1139,7 +1139,11 @@ function VUI:CreateModulesSection()
             {text = "Angry Keystones", value = "angrykeystone"},
             {text = "OmniCC", value = "omnicc"},
             {text = "OmniCD", value = "omnicd"},
-            {text = "idTip", value = "idtip"}
+            {text = "idTip", value = "idtip"},
+            {text = "MultiNotification", value = "multinotification"},
+            {text = "Details Skin", value = "detailsskin"},
+            {text = "MSBT", value = "msbt"},
+            {text = "Premade Group Finder", value = "premadegroupfinder"}
         }
         
         frame.moduleDropdown.initialize = function(dropdown)
@@ -1329,7 +1333,11 @@ function VUI:CreateAboutSection()
             "• Angry Keystones - Mythic+ dungeon improvements",
             "• OmniCC - Cooldown count on all buttons",
             "• OmniCD - Party cooldown tracking",
-            "• idTip - Display spell, item, quest IDs in tooltips"
+            "• idTip - Display spell, item, quest IDs in tooltips",
+            "• MultiNotification - Enhanced notification system",
+            "• Details Skin - Customized appearance for Details damage meter",
+            "• MSBT - MikScrollingBattleText integration",
+            "• Premade Group Finder - LFG interface enhancements"
         }
         
         for i, moduleText in ipairs(moduleList) do
