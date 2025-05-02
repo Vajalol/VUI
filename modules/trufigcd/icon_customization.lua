@@ -318,10 +318,7 @@ function TrufiGCD:InitializeIconCustomization()
         self:LoadIconMasks()
     end
     
-    -- Log initialization
-    if VUI.debug then
-        VUI:Debug("TrufiGCD Icon Customization initialized")
-    end
+    -- Icon customization system ready
 end
 
 -- Load icon mask textures based on selected mask type

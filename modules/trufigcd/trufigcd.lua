@@ -37,25 +37,9 @@ end
 -- Preload the atlas textures for better performance
 function VUI.TrufiGCD:PreloadAtlasTextures()
     -- Preload the module's texture atlas if available
+    -- Load texture atlas for better performance
     if VUI.Atlas and VUI.Atlas.PreloadAtlas then
         VUI.Atlas:PreloadAtlas("modules.trufigcd")
-        
-        -- Log successful preload
-        if VUI.debug then
-            VUI:Debug("TrufiGCD atlas textures preloaded")
-            
-            -- Display memory stats if available
-            if VUI.Atlas.GetStats then
-                local stats = VUI.Atlas:GetStats()
-                VUI:Debug(string.format("Atlas Stats: Textures Saved: %d, Memory Reduction: %s",
-                    stats.texturesSaved, stats.memoryReduction))
-            end
-        end
-    else
-        -- Log error if atlas system is not available
-        if VUI.debug then
-            VUI:Debug("WARNING: Atlas system not available for TrufiGCD")
-        end
     end
 end
 

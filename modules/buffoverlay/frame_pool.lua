@@ -52,10 +52,7 @@ function FramePool:Initialize()
     -- Update stats periodically (once every minute)
     self:CreateStatsMonitor()
     
-    -- Log initialization
-    if VUI.debug then
-        VUI:Print("BuffOverlay FramePool initialized with 20 preallocated frames")
-    end
+    -- Frame pool preallocated and ready
 end
 
 -- Preallocate frames for efficiency
@@ -120,19 +117,13 @@ function FramePool:CreateBuffFrame(index)
             atlasTextureInfo.coords.bottom
         )
         
-        -- Debug info
-        if VUI.debug then
-            VUI:Debug("BuffOverlay using atlas texture for glow")
-        end
+        -- Using optimized atlas texture
     else
         -- Fallback to original texture
         frame.glow:SetTexture("Interface\\Buttons\\UI-Panel-Button-Glow")
         frame.glow:SetTexCoord(0, 1, 0, 1)
         
-        -- Debug info
-        if VUI.debug then
-            VUI:Debug("BuffOverlay using fallback texture for glow")
-        end
+        -- Using standard texture
     end
     
     frame.glow:SetBlendMode("ADD")
@@ -150,10 +141,7 @@ function FramePool:CreateBuffFrame(index)
     local sparkTextureInfo = VUI:GetTextureCached(sparkTexture)
     
     if sparkTextureInfo and sparkTextureInfo.isAtlas then
-        -- Will be applied by ThemeIntegration when needed, just preload here
-        if VUI.debug then
-            VUI:Debug("BuffOverlay preloaded theme texture for " .. theme)
-        end
+        -- Theme texture preloaded for performance optimization
     end
     
     -- Cooldown swipe
@@ -316,16 +304,7 @@ end
 function FramePool:UpdateStats()
     self.stats.lastResetTime = GetTime()
     
-    -- Log stats if debugging is enabled
-    if VUI.debug then
-        VUI:Print(string.format(
-            "BuffOverlay FramePool stats: Created: %d, Recycled: %d, Active: %d, Peak: %d",
-            self.stats.framesCreated,
-            self.stats.framesRecycled,
-            self.stats.currentActiveFrames,
-            self.stats.peakActiveFrames
-        ))
-    end
+    -- Performance stats updated (visible in configuration panel)
 end
 
 -- Get current statistics

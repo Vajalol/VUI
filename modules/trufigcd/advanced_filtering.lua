@@ -373,10 +373,7 @@ function TrufiGCD:InitializeAdvancedFiltering()
     self:RegisterEvent("GROUP_ROSTER_UPDATE", "OnContextChanged")
     self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnContextChanged")
     
-    -- Log initialization
-    if VUI.debug then
-        VUI:Debug("TrufiGCD Advanced Filtering initialized")
-    end
+    -- Advanced filtering system initialized
 end
 
 -- Initialize class-specific data
@@ -560,10 +557,7 @@ function TrufiGCD:ApplyFilterPreset(presetName)
     -- Update UI to reflect changes
     self:UpdateFrames()
     
-    -- Log the applied preset
-    if VUI.debug then
-        VUI:Debug("Applied TrufiGCD filter preset: " .. presetName)
-    end
+    -- Preset applied: layout optimized for current content type
 end
 
 -- Check if a spell passes the advanced filters

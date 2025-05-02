@@ -33,10 +33,7 @@ function ThemeIntegration:Initialize()
     -- Apply the theme immediately
     self:ApplyTheme(activeTheme)
     
-    -- Log initialization
-    if VUI.debug then
-        VUI:Print("BuffOverlay ThemeIntegration initialized")
-    end
+    -- Theme integration ready
 end
 
 -- Apply the current theme to BuffOverlay
@@ -90,19 +87,13 @@ function ThemeIntegration:ApplyThemeToBuffFrame(frame)
                 atlasTextureInfo.coords.bottom
             )
             
-            -- Log atlas usage if debug mode
-            if VUI.debug then
-                VUI:Debug("BuffOverlay: Applied theme texture from atlas: " .. activeTheme)
-            end
+            -- Applied optimized theme texture from atlas
         else
             -- Fallback to original texture if not in atlas
             frame.themeOverlay:SetTexture(themeData.effects.spark or "Interface\\AddOns\\VUI\\media\\textures\\shared\\glow.tga")
             frame.themeOverlay:SetTexCoord(0, 1, 0, 1) -- Reset texture coordinates
             
-            -- Log fallback if debug mode
-            if VUI.debug then
-                VUI:Debug("BuffOverlay: Using fallback texture for theme: " .. activeTheme)
-            end
+            -- Using standard texture
         end
     end
     

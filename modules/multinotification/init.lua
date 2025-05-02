@@ -256,9 +256,7 @@ function MultiNotification:OnInitialize()
             self.FramePool:Initialize()
             self.FramePool.initialized = true
             
-            if VUI.debug then
-                VUI:Print("MultiNotification FramePool initialized")
-            end
+            -- FramePool system initialized
         end
     else
         -- Legacy method: Pre-create notification frames for performance
@@ -269,12 +267,7 @@ function MultiNotification:OnInitialize()
     if VUI.Atlas then
         VUI.Atlas:PreloadAtlas("modules.multinotification")
         
-        if VUI.debug then
-            VUI:Print("MultiNotification atlas textures preloaded")
-            local stats = VUI.Atlas:GetStats()
-            VUI:Print(string.format("Atlas texture stats: %d textures saved, %s memory reduction", 
-                stats.texturesSaved, stats.memoryReduction))
-        end
+        -- Atlas textures preloaded for performance optimization
     end
     
     VUI:Print("MultiNotification module initialized")
@@ -326,15 +319,7 @@ function MultiNotification:OnDisable()
         -- Release all frames back to the pool
         self.FramePool:ReleaseAllFrames("notification")
         
-        if VUI.debug then
-            local stats = self.FramePool:GetStats()
-            VUI:Print(string.format(
-                "MultiNotification frame pool stats on disable: Created: %d, Recycled: %d, Memory saved: %.2f MB",
-                stats.framesCreated,
-                stats.framesRecycled,
-                stats.memoryReduction
-            ))
-        end
+        -- Release all frames for memory efficiency
     else
         -- Hide all notifications using legacy method
         self:ClearAllNotifications()
@@ -702,16 +687,7 @@ function MultiNotification:GetAvailableFrame()
         -- Get a frame from the pool (it will create one if needed)
         local frame = self.FramePool:AcquireFrame("notification")
         
-        -- If in debug mode, log the frame pooling usage
-        if VUI.debug and frame and frame.poolInfo and frame.poolInfo.recycleCount % 10 == 0 and frame.poolInfo.recycleCount > 0 then
-            -- Only log every 10 recycles to avoid spam
-            local stats = self.FramePool:GetStats()
-            VUI:Print(string.format(
-                "MultiNotification frame pool: %d frames recycled, saving ~%.2f MB", 
-                stats.framesRecycled, 
-                stats.memoryReduction
-            ))
-        end
+        -- Frame recycling optimizes memory usage
         
         return frame
     else
@@ -942,9 +918,7 @@ function MultiNotification:ClearAllNotifications()
         -- Release all frames back to the pool
         self.FramePool:ReleaseAllFrames("notification")
         
-        if VUI.debug then
-            VUI:Print("MultiNotification frame pool released all frames")
-        end
+        -- All notification frames released for memory efficiency
     else
         -- Legacy method: Hide all frames
         for _, frame in ipairs(notificationFrames) do
@@ -1020,9 +994,7 @@ function MultiNotification:PLAYER_ENTERING_WORLD()
         self.FramePool:Initialize()
         self.FramePool.initialized = true
         
-        if VUI.debug then
-            VUI:Print("MultiNotification frame pool initialized on world entry")
-        end
+        -- Frame pool initialized for optimal performance
     end
 end
 

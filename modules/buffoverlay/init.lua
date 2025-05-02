@@ -334,10 +334,7 @@ function BuffOverlay:Initialize()
     -- Preload the atlas textures for BuffOverlay
     self:PreloadAtlasTextures()
     
-    -- Log initialization
-    if VUI.debug then
-        VUI:Debug("BuffOverlay module initialized with Atlas texture optimization")
-    end
+    -- BuffOverlay module initialized with Atlas texture optimization
 end
 
 -- Initialize category settings
@@ -351,18 +348,7 @@ function BuffOverlay:InitializeCategories()
         VUI.db.profile.modules.buffoverlay.enableCategorySounds = true
     end
     
-    -- Log category initialization
-    if VUI.debug then
-        VUI:Debug("BuffOverlay categories initialized")
-        
-        -- Display category count
-        local categoryCount = 0
-        for _ in pairs(self.Categories) do
-            categoryCount = categoryCount + 1
-        end
-        
-        VUI:Debug(string.format("Category count: %d", categoryCount))
-    end
+    -- BuffOverlay categories initialized
 end
 
 -- Preload the atlas textures
@@ -371,22 +357,9 @@ function BuffOverlay:PreloadAtlasTextures()
     if VUI.Atlas and VUI.Atlas.PreloadAtlas then
         VUI.Atlas:PreloadAtlas("modules.buffoverlay")
         
-        -- Log successful preload
-        if VUI.debug then
-            VUI:Debug("BuffOverlay atlas textures preloaded")
-            
-            -- Display memory stats if available
-            if VUI.Atlas.GetStats then
-                local stats = VUI.Atlas:GetStats()
-                VUI:Debug(string.format("Atlas Stats: Textures Saved: %d, Memory Reduction: %s",
-                    stats.texturesSaved, stats.memoryReduction))
-            end
-        end
+        -- Atlas textures preloaded
     else
-        -- Log error if atlas system is not available
-        if VUI.debug then
-            VUI:Debug("WARNING: Atlas system not available for BuffOverlay")
-        end
+        -- Atlas system not available for BuffOverlay
     end
 end
 
@@ -494,12 +467,7 @@ function BuffOverlay:SetupFrames()
         -- Don't pre-create frames here, the FramePool system handles this
         -- in its Initialize method
         
-        -- Log debug info
-        if VUI.debug then
-            local stats = self.FramePool:GetStats()
-            VUI:Print(string.format("BuffOverlay using FramePool system - Available frames: %d, Recycled: %d", 
-                #self.FramePool.pools.buff.inactive, stats.framesRecycled))
-        end
+        -- Using FramePool system for optimization
     else
         -- Fallback to legacy system for backward compatibility
         -- Create buff frames (pre-create a reasonable number for reuse)
@@ -1454,18 +1422,7 @@ function BuffOverlay:ScheduleDisplayUpdate(unit, cache)
         self:EnhanceAuraVisual(frame, aura, config)
     end
     
-    -- Performance monitoring if debug mode is on
-    if VUI.debug and self.FramePool and useFramePooling then
-        local stats = self.FramePool:GetStats()
-        if stats.framesRecycled > 0 then
-            VUI:Print(string.format(
-                "BuffOverlay frame recycling: Showing %d auras, recycled %d frames (%.2f MB saved)", 
-                numVisible, 
-                stats.framesRecycled,
-                stats.memoryReduction
-            ))
-        end
-    end
+    -- Frame recycling system optimizes memory usage
 end
 
 -- Throttled update function with performance optimization
@@ -1715,22 +1672,11 @@ function BuffOverlay:UpdateSettings()
     self:UpdateAuras("target")
     self:UpdateAuras("focus")
     
-    -- Log frame pooling stats if debug mode is enabled
+    -- Ensure frame pooling is enabled by default for best performance
     local useFramePooling = VUI.db.profile.modules.buffoverlay.useFramePooling
     if useFramePooling == nil then
         useFramePooling = true
         VUI.db.profile.modules.buffoverlay.useFramePooling = true
-    end
-    
-    if VUI.debug and self.FramePool and useFramePooling then
-        local stats = self.FramePool:GetStats()
-        VUI:Print(string.format(
-            "BuffOverlay frame pooling stats - Created: %d, Active: %d, Recycled: %d, Memory saved: %.2f MB",
-            stats.framesCreated,
-            stats.activeFrames,
-            stats.framesRecycled,
-            stats.memoryReduction
-        ))
     end
 end
 
@@ -1891,31 +1837,7 @@ function BuffOverlay:GetOptions()
                             BuffOverlay:UpdateSettings()
                         end,
                     },
-                    performanceHeader = {
-                        type = "header",
-                        name = "Performance Information",
-                        order = 2,
-                        hidden = function() return not VUI.debug end,
-                    },
-                    performanceInfo = {
-                        type = "description",
-                        name = function()
-                            if not BuffOverlay.FramePool then
-                                return "Frame pooling statistics unavailable."
-                            end
-                            
-                            local stats = BuffOverlay.FramePool:GetStats()
-                            return string.format(
-                                "Frame pooling statistics:\nFrames created: %d\nFrames recycled: %d\nActive frames: %d\nMemory saved: %.2f MB", 
-                                stats.framesCreated, 
-                                stats.framesRecycled,
-                                stats.activeFrames,
-                                stats.memoryReduction
-                            )
-                        end,
-                        order = 3,
-                        hidden = function() return not VUI.debug end,
-                    },
+                    -- Performance section removed for production release
                 }
             },
             filters = {
