@@ -4,7 +4,7 @@
 
 <h1 align="center">VUI - Unified World of Warcraft Addon Suite</h1>
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.3.0-blue.svg" alt="Version 0.3.0"/>
+  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version 1.0.0"/>
   <img src="https://img.shields.io/badge/WoW-The%20War%20Within-purple.svg" alt="The War Within"/>
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License"/>
   <a href="https://discord.gg/z5W3EWUrwu"><img src="https://img.shields.io/badge/Discord-Join%20Community-7289DA?logo=discord&logoColor=white" alt="Discord"/></a>
@@ -100,7 +100,7 @@ VUI combines the functionality of multiple popular addons:
 
 ## 🔄 Development Status
 
-VUI version 0.3.0 is feature-complete and ready for use with World of Warcraft: The War Within Season 2.
+VUI version 1.0.0 is the official release version, fully verified and ready for use with World of Warcraft: The War Within Season 2.
 
 For details on development progress and upcoming features, please refer to:
 - [ROADMAP.md](ROADMAP.md) - Our comprehensive development roadmap

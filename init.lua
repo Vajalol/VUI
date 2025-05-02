@@ -1,11 +1,11 @@
 -- VUI - Unified World of Warcraft Addon Suite
 -- Author: VortexQ8
--- Version: 0.3.0
+-- Version: 1.0.0
 
 -- Create global VUI table
 VUI = {}
 VUI.name = "VUI"
-VUI.version = "0.3.0"
+VUI.version = "1.0.0"
 VUI.author = "VortexQ8"
 
 -- Define global library references that will be used throughout the addon

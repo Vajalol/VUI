@@ -2,7 +2,7 @@
 
 This document tracks significant changes to the VUI addon suite.
 
-## v0.3.0 (Release Candidate)
+## v1.0.0 (Official Release)
 
 ### Development Status
 - Final Documentation and Polish:
