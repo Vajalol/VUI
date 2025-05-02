@@ -46,7 +46,7 @@ local MODULE_CATEGORIES = {
     ["Core"] = {"Core", "ModuleAPI", "Integration"},
     ["UI"] = {"unitframes", "ActionBars", "skins", "visualconfig"},
     ["Tools"] = {"profiles", "automation", "Performance"},
-    ["Addons"] = {"angrykeystone", "auctionator", "buffoverlay", "idtip", "moveany", "omnicc", "omnicd", "trufigcd", "premadegroupfinder"}
+    ["Addons"] = {"angrykeystone", "auctionator", "buffoverlay", "idtip", "moveany", "omnicc", "omnicd", "trufigcd", "premadegroupfinder", "multinotification", "msbt", "detailsskin"}
 }
 
 -- Registered modules
