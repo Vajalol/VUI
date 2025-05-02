@@ -99,6 +99,11 @@ function BuffOverlay:InitializeEnhancedDisplay()
         end
     end
     
+    -- Initialize categories if they're not already initialized
+    if self.InitializeCategories then
+        self:InitializeCategories()
+    end
+    
     -- Register options for the configuration UI
     self:RegisterEnhancedDisplayOptions()
     

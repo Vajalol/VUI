@@ -21,6 +21,7 @@ function BuffOverlay:CreateConfigPanel()
         {text = "General", value = "general"},
         {text = "Display", value = "display"},
         {text = "Filters", value = "filters"},
+        {text = "Categories", value = "categories"},
         {text = "Healer Spells", value = "healerspells"},
         {text = "Spell List", value = "spells"}
     })
@@ -32,6 +33,8 @@ function BuffOverlay:CreateConfigPanel()
             self:CreateDisplayTab(container)
         elseif group == "filters" then
             self:CreateFiltersTab(container)
+        elseif group == "categories" then
+            self:CreateCategoriesTab(container)
         elseif group == "healerspells" then
             self:CreateHealerSpellsTab(container)
         elseif group == "spells" then
@@ -129,6 +132,160 @@ function BuffOverlay:CreateFiltersTab(container)
         VUI.db.profile.modules.buffoverlay.trackTargetBuffs = value
     end)
     container:AddChild(targetBuffsCheckbox)
+end
+
+-- Create the Categories tab
+function BuffOverlay:CreateCategoriesTab(container)
+    -- Header with description
+    local header = AceGUI:Create("Heading")
+    header:SetText("Buff Categories Configuration")
+    header:SetFullWidth(true)
+    container:AddChild(header)
+    
+    local desc = AceGUI:Create("Label")
+    desc:SetText("Configure how buffs and debuffs are categorized and displayed. Categories determine the visual appearance and priority of auras.")
+    desc:SetFullWidth(true)
+    container:AddChild(desc)
+    
+    -- Spacer
+    container:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
+    
+    -- Enable categories toggle
+    local enableCategoriesCheckbox = AceGUI:Create("CheckBox")
+    enableCategoriesCheckbox:SetLabel("Enable Buff Group Categorization")
+    enableCategoriesCheckbox:SetWidth(300)
+    
+    -- Initialize the value in database if it doesn't exist
+    if VUI.db.profile.modules.buffoverlay.enableCategories == nil then
+        VUI.db.profile.modules.buffoverlay.enableCategories = true
+    end
+    
+    enableCategoriesCheckbox:SetValue(VUI.db.profile.modules.buffoverlay.enableCategories)
+    enableCategoriesCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.buffoverlay.enableCategories = value
+        -- Update the displayed auras with new categorization rules
+        BuffOverlay:UpdateAuras("player")
+        BuffOverlay:UpdateAuras("target")
+        BuffOverlay:UpdateAuras("focus")
+    end)
+    container:AddChild(enableCategoriesCheckbox)
+    
+    -- Enable category sounds
+    local enableCategorySoundsCheckbox = AceGUI:Create("CheckBox")
+    enableCategorySoundsCheckbox:SetLabel("Enable Category Sound Effects")
+    enableCategorySoundsCheckbox:SetWidth(300)
+    
+    -- Initialize the value in database if it doesn't exist
+    if VUI.db.profile.modules.buffoverlay.enableCategorySounds == nil then
+        VUI.db.profile.modules.buffoverlay.enableCategorySounds = true
+    end
+    
+    enableCategorySoundsCheckbox:SetValue(VUI.db.profile.modules.buffoverlay.enableCategorySounds)
+    enableCategorySoundsCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+        VUI.db.profile.modules.buffoverlay.enableCategorySounds = value
+    end)
+    container:AddChild(enableCategorySoundsCheckbox)
+    
+    -- Spacer
+    container:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
+    
+    -- Create a scroll frame to display categories
+    local scrollFrame = AceGUI:Create("ScrollFrame")
+    scrollFrame:SetLayout("Flow")
+    scrollFrame:SetFullWidth(true)
+    scrollFrame:SetHeight(300)
+    container:AddChild(scrollFrame)
+    
+    -- Display each category and its settings
+    for category, info in pairs(self.Categories) do
+        -- Create a group for this category
+        local categoryGroup = AceGUI:Create("InlineGroup")
+        categoryGroup:SetTitle(category)
+        categoryGroup:SetLayout("Flow")
+        categoryGroup:SetFullWidth(true)
+        scrollFrame:AddChild(categoryGroup)
+        
+        -- Color swatch for the category
+        local colorSwatch = AceGUI:Create("ColorPicker")
+        colorSwatch:SetLabel("Color")
+        colorSwatch:SetWidth(120)
+        colorSwatch:SetColor(info.color.r, info.color.g, info.color.b)
+        colorSwatch:SetCallback("OnValueChanged", function(widget, event, r, g, b, a)
+            self.Categories[category].color.r = r
+            self.Categories[category].color.g = g
+            self.Categories[category].color.b = b
+            -- Update auras to show the new color
+            BuffOverlay:UpdateAuras("player")
+            BuffOverlay:UpdateAuras("target")
+            BuffOverlay:UpdateAuras("focus")
+        end)
+        categoryGroup:AddChild(colorSwatch)
+        
+        -- Glow effect toggle
+        local glowCheckbox = AceGUI:Create("CheckBox")
+        glowCheckbox:SetLabel("Glow Effect")
+        glowCheckbox:SetWidth(120)
+        glowCheckbox:SetValue(info.glow or false)
+        glowCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+            self.Categories[category].glow = value
+            -- Update auras to apply the change
+            BuffOverlay:UpdateAuras("player")
+            BuffOverlay:UpdateAuras("target")
+            BuffOverlay:UpdateAuras("focus")
+        end)
+        categoryGroup:AddChild(glowCheckbox)
+        
+        -- Pulse effect toggle
+        local pulseCheckbox = AceGUI:Create("CheckBox")
+        pulseCheckbox:SetLabel("Pulse Effect")
+        pulseCheckbox:SetWidth(120)
+        pulseCheckbox:SetValue(info.pulse or false)
+        pulseCheckbox:SetCallback("OnValueChanged", function(widget, event, value)
+            self.Categories[category].pulse = value
+            -- Update auras to apply the change
+            BuffOverlay:UpdateAuras("player")
+            BuffOverlay:UpdateAuras("target")
+            BuffOverlay:UpdateAuras("focus")
+        end)
+        categoryGroup:AddChild(pulseCheckbox)
+        
+        -- Priority slider
+        local prioritySlider = AceGUI:Create("Slider")
+        prioritySlider:SetLabel("Priority")
+        prioritySlider:SetWidth(200)
+        prioritySlider:SetSliderValues(0, 100, 5)
+        prioritySlider:SetValue(info.priority or 50)
+        prioritySlider:SetCallback("OnValueChanged", function(widget, event, value)
+            self.Categories[category].priority = value
+            -- Update auras to apply the new priorities
+            BuffOverlay:UpdateAuras("player")
+            BuffOverlay:UpdateAuras("target")
+            BuffOverlay:UpdateAuras("focus")
+        end)
+        categoryGroup:AddChild(prioritySlider)
+        
+        -- Spacer
+        categoryGroup:AddChild(AceGUI:Create("Label"):SetText(" "):SetFullWidth(true))
+        
+        -- Sound dropdown if sounds are enabled
+        if info.sound then
+            local soundDropdown = AceGUI:Create("Dropdown")
+            soundDropdown:SetLabel("Sound Effect")
+            soundDropdown:SetWidth(200)
+            soundDropdown:SetList({
+                ["none"] = "None",
+                ["buff"] = "Buff",
+                ["debuff"] = "Debuff",
+                ["important"] = "Important",
+                ["critical"] = "Critical",
+            })
+            soundDropdown:SetValue(info.sound or "none")
+            soundDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                self.Categories[category].sound = value ~= "none" and value or nil
+            end)
+            categoryGroup:AddChild(soundDropdown)
+        end
+    end
 end
 
 -- Create the Healer Spells tab

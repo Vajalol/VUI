@@ -209,7 +209,7 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Frame pooling optimization
 - ✓ Enhanced visibility options
 - ✓ Diminishing returns tracking
-- ☐ Buff group categorization
+- ✓ Buff group categorization
 - ☐ Special effects for important buffs
 
 ### TrufiGCD

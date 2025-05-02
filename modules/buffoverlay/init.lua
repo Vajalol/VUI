@@ -102,6 +102,47 @@ local focusAuraCache = {}          -- Cache for focus auras
 local auraImportance = {}          -- Table to store importance values for auras
 
 -- Get the importance of a spell for sorting
+-- Categorize an aura based on spell ID, unit caster, and other factors
+function BuffOverlay:CategorizeAura(spellID, unitCaster, unitID, isDebuff)
+    if not spellID then return "MINOR" end
+    
+    -- If categories feature is disabled, return STANDARD
+    if not VUI.db.profile.modules.buffoverlay.enableCategories then
+        return "STANDARD"
+    end
+    
+    -- Check for direct category assignment in CategorySpellLists
+    for category, spellList in pairs(self.CategorySpellLists) do
+        if spellList[spellID] then
+            return category
+        end
+    end
+    
+    -- Apply categorization rules
+    for _, rule in ipairs(self.CategorizationRules) do
+        -- Check if this rule applies to this type of aura
+        local isApplicableType = false
+        for _, auraType in ipairs(rule.types) do
+            if (auraType == "buff" and not isDebuff) or (auraType == "debuff" and isDebuff) then
+                isApplicableType = true
+                break
+            end
+        end
+        
+        if isApplicableType then
+            -- Check rule conditions
+            for _, condition in ipairs(rule.conditions) do
+                if condition(spellID, unitCaster, unitID) then
+                    return rule.category
+                end
+            end
+        end
+    end
+    
+    -- Default fallback
+    return isDebuff and "STANDARD" or "MINOR"
+end
+
 function BuffOverlay:GetSpellImportance(spellID, isDebuff)
     if not spellID then return 0 end
     
@@ -111,6 +152,12 @@ function BuffOverlay:GetSpellImportance(spellID, isDebuff)
     end
     
     local importance = 0
+    
+    -- Get aura category and assign base importance
+    local category = self:CategorizeAura(spellID, nil, "player", isDebuff)
+    if category and self.Categories[category] then
+        importance = importance + self.Categories[category].priority
+    end
     
     -- Healer spells are more important
     if self.HealerSpells and self.HealerSpells[spellID] then
@@ -258,6 +305,9 @@ function BuffOverlay:Initialize()
     -- Register for theme changes
     VUI.RegisterCallback(self, "ThemeChanged", "ApplyTheme")
     
+    -- Initialize category settings
+    self:InitializeCategories()
+    
     -- Initialize the enhanced display system if enabled
     self:InitializeEnhancedDisplay()
     
@@ -282,6 +332,31 @@ function BuffOverlay:Initialize()
     -- Log initialization
     if VUI.debug then
         VUI:Debug("BuffOverlay module initialized with Atlas texture optimization")
+    end
+end
+
+-- Initialize category settings
+function BuffOverlay:InitializeCategories()
+    -- Set up default settings if they don't exist
+    if VUI.db.profile.modules.buffoverlay.enableCategories == nil then
+        VUI.db.profile.modules.buffoverlay.enableCategories = true
+    end
+    
+    if VUI.db.profile.modules.buffoverlay.enableCategorySounds == nil then
+        VUI.db.profile.modules.buffoverlay.enableCategorySounds = true
+    end
+    
+    -- Log category initialization
+    if VUI.debug then
+        VUI:Debug("BuffOverlay categories initialized")
+        
+        -- Display category count
+        local categoryCount = 0
+        for _ in pairs(self.Categories) do
+            categoryCount = categoryCount + 1
+        end
+        
+        VUI:Debug(string.format("Category count: %d", categoryCount))
     end
 end
 
@@ -851,6 +926,7 @@ function BuffOverlay:CacheUnitAuras(unit)
             
             if isWhitelisted and not isBlacklisted then
                 local importance = self:GetSpellImportance(spellID, false)
+                local category = self:CategorizeAura(spellID, source, unit, false)
                 
                 cache[spellID] = {
                     name = name,
@@ -863,6 +939,7 @@ function BuffOverlay:CacheUnitAuras(unit)
                     source = source,
                     spellID = spellID,
                     importance = importance,
+                    category = category,
                     
                     -- Calculate remaining time for more efficient updates
                     timeRemaining = expirationTime > 0 and (expirationTime / 1000 - GetTime()) or 9999
@@ -883,6 +960,7 @@ function BuffOverlay:CacheUnitAuras(unit)
             
             if isWhitelisted and not isBlacklisted then
                 local importance = self:GetSpellImportance(spellID, true)
+                local category = self:CategorizeAura(spellID, source, unit, true)
                 
                 cache[spellID] = {
                     name = name,
@@ -895,6 +973,7 @@ function BuffOverlay:CacheUnitAuras(unit)
                     source = source,
                     spellID = spellID,
                     importance = importance,
+                    category = category,
                     
                     -- Calculate remaining time for more efficient updates
                     timeRemaining = expirationTime > 0 and (expirationTime / 1000 - GetTime()) or 9999
@@ -1050,84 +1129,140 @@ function BuffOverlay:EnhanceAuraVisual(frame, aura, config)
         end
     end
     
-    -- Set border color and enhancements
-    if aura.isDebuff then
-        local color = DebuffTypeColor[aura.debuffType or "none"]
-        frame.border:SetVertexColor(color.r, color.g, color.b)
-        
-        -- Add additional visual indicator for dangerous debuffs
-        if not frame.dangerGlow and (aura.importance >= 80 or (aura.duration and aura.duration < 5)) then
-            frame.dangerGlow = frame:CreateTexture(nil, "OVERLAY")
-            frame.dangerGlow:SetPoint("CENTER")
-            frame.dangerGlow:SetSize(frame:GetWidth() * 1.4, frame:GetHeight() * 1.4)
-            frame.dangerGlow:SetTexture("Interface\\SpellActivationOverlay\\IconAlert")
-            frame.dangerGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
-            frame.dangerGlow:SetBlendMode("ADD")
-            frame.dangerGlow:SetVertexColor(1, 0, 0, 0.6)  -- Red for danger
-            frame.dangerGlow:Show()
-        elseif frame.dangerGlow and (aura.importance < 80 and (not aura.duration or aura.duration >= 5)) then
-            frame.dangerGlow:Hide()
-        end
-    else
-        -- It's a buff
-        if self.HealerSpells and self.HealerSpells[aura.spellID] then
-            -- Special color for healer spells
-            frame.border:SetVertexColor(0, 0.7, 1)  -- Cyan for healer spells
-            
-            -- Add healer indicator if not already present
-            if not frame.healerIcon then
-                frame.healerIcon = frame:CreateTexture(nil, "OVERLAY")
-                frame.healerIcon:SetSize(16, 16)
-                frame.healerIcon:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 2, 2)
-                frame.healerIcon:SetTexture("Interface\\AddOns\\VUI\\media\\icons\\plus")
-                frame.healerIcon:SetVertexColor(0, 1, 0)
-            end
-            frame.healerIcon:Show()
-        else
-            -- Regular buff
-            frame.border:SetVertexColor(0.1, 0.7, 0.1)  -- Green for normal buffs
-            
-            -- Hide healer icon if it exists
-            if frame.healerIcon then
-                frame.healerIcon:Hide()
-            end
-        end
-        
-        -- Hide danger glow for buffs
-        if frame.dangerGlow then
-            frame.dangerGlow:Hide()
+    -- Apply category-based visual enhancements if categories are enabled
+    if VUI.db.profile.modules.buffoverlay.enableCategories then
+        -- If the aura doesn't have a category yet, determine it
+        if not aura.category then
+            local isCastByPlayer = (aura.caster == "player")
+            local isBoss = aura.sourceUnit and UnitClassification(aura.sourceUnit) == "boss"
+            aura.category = self:DetermineCategoryForAura(
+                aura.spellID, 
+                aura.isDebuff and "HARMFUL" or "HELPFUL", 
+                isCastByPlayer, 
+                aura.duration,
+                isBoss
+            )
         end
     end
     
-    -- Apply visual enhancements based on importance
+    local category = aura.category or (aura.isDebuff and "STANDARD" or "MINOR")
+    local categoryInfo = self.Categories[category]
+    local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
+    
+    -- Apply theme-specific colors if available
+    local color
+    if self.ThemeColors and self.ThemeColors[currentTheme] and self.ThemeColors[currentTheme][category] then
+        color = self.ThemeColors[currentTheme][category]
+    elseif categoryInfo and categoryInfo.color then
+        color = categoryInfo.color
+    end
+    
+    -- Apply category-based border and color
+    if color then
+        frame.border:SetVertexColor(color.r, color.g, color.b)
+        
+        -- Apply custom border texture if specified for this category
+        if categoryInfo and categoryInfo.border and frame.border then
+            -- Replace texture with category-specific one
+            frame.border:SetTexture(categoryInfo.border)
+        end
+    else
+        -- Fallback to original border coloring if category colors aren't available
+        if aura.isDebuff then
+            local debuffColor = DebuffTypeColor[aura.debuffType or "none"]
+            frame.border:SetVertexColor(debuffColor.r, debuffColor.g, debuffColor.b)
+        else
+            if self.HealerSpells and self.HealerSpells[aura.spellID] then
+                frame.border:SetVertexColor(0, 0.7, 1)  -- Cyan for healer spells
+            else
+                frame.border:SetVertexColor(0.1, 0.7, 0.1)  -- Green for normal buffs
+            end
+        end
+    end
+    
+    -- Apply glow effect for important categories
+    if categoryInfo and categoryInfo.glow then
+        if not frame.categoryGlow then
+            frame.categoryGlow = frame:CreateTexture(nil, "OVERLAY")
+            frame.categoryGlow:SetPoint("CENTER")
+            frame.categoryGlow:SetSize(frame:GetWidth() * 1.4, frame:GetHeight() * 1.4)
+            frame.categoryGlow:SetTexture("Interface\\SpellActivationOverlay\\IconAlert")
+            frame.categoryGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+            frame.categoryGlow:SetBlendMode("ADD")
+        end
+        
+        -- Set color based on category
+        if color then
+            frame.categoryGlow:SetVertexColor(color.r, color.g, color.b, 0.6)
+        else
+            frame.categoryGlow:SetVertexColor(0.3, 0.8, 0.3, 0.4)  -- Default green
+        end
+        
+        frame.categoryGlow:Show()
+    else
+        if frame.categoryGlow then
+            frame.categoryGlow:Hide()
+        end
+    end
+    
+    -- Apply pulsing animation for critical categories
+    if categoryInfo and categoryInfo.pulse then
+        if not frame.categoryPulse then
+            frame.categoryPulse = frame:CreateAnimationGroup()
+            frame.categoryPulse:SetLooping("REPEAT")
+            
+            local grow = frame.categoryPulse:CreateAnimation("Scale")
+            grow:SetScale(1.05, 1.05)
+            grow:SetDuration(0.5)
+            grow:SetOrder(1)
+            
+            local shrink = frame.categoryPulse:CreateAnimation("Scale")
+            shrink:SetScale(1/1.05, 1/1.05)
+            shrink:SetDuration(0.5)
+            shrink:SetOrder(2)
+        end
+        
+        frame.categoryPulse:Play()
+    else
+        if frame.categoryPulse and frame.categoryPulse:IsPlaying() then
+            frame.categoryPulse:Stop()
+        end
+    end
+    
+    -- Play sound when a new critical buff/debuff appears
+    if isNew and categoryInfo and categoryInfo.sound and config.enableCategorySounds then
+        if PlaySoundFile then
+            local soundFile = "Interface\\AddOns\\VUI\\media\\sounds\\" .. categoryInfo.sound .. ".ogg"
+            PlaySoundFile(soundFile, "SFX")
+        end
+    end
+    
+    -- Special handling for healer spells
+    if self.HealerSpells and self.HealerSpells[aura.spellID] then
+        -- Add healer indicator if not already present
+        if not frame.healerIcon then
+            frame.healerIcon = frame:CreateTexture(nil, "OVERLAY")
+            frame.healerIcon:SetSize(16, 16)
+            frame.healerIcon:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 2, 2)
+            frame.healerIcon:SetTexture("Interface\\AddOns\\VUI\\media\\icons\\plus")
+            frame.healerIcon:SetVertexColor(0, 1, 0)
+        end
+        frame.healerIcon:Show()
+    else
+        -- Hide healer icon if it exists
+        if frame.healerIcon then
+            frame.healerIcon:Hide()
+        end
+    end
+    
+    -- Apply brightness based on importance
     if aura.importance >= 50 then
         -- More important auras are brighter
         frame.icon:SetVertexColor(1, 1, 1)
         frame.icon:SetDesaturated(false)
-        
-        -- Add a subtle glow for important buffs
-        if not frame.importantGlow and not aura.isDebuff then
-            frame.importantGlow = frame:CreateTexture(nil, "OVERLAY")
-            frame.importantGlow:SetPoint("CENTER")
-            frame.importantGlow:SetSize(frame:GetWidth() * 1.3, frame:GetHeight() * 1.3)
-            frame.importantGlow:SetTexture("Interface\\SpellActivationOverlay\\IconAlert")
-            frame.importantGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
-            frame.importantGlow:SetBlendMode("ADD")
-            frame.importantGlow:SetVertexColor(0.3, 0.8, 0.3, 0.4)  -- Green for good buffs
-            frame.importantGlow:Show()
-        elseif frame.importantGlow and not aura.isDebuff then
-            frame.importantGlow:Show()
-        elseif frame.importantGlow then
-            frame.importantGlow:Hide()
-        end
     else
         -- Less important auras are slightly desaturated
         frame.icon:SetVertexColor(0.9, 0.9, 0.9)
-        
-        -- Hide important glow for less important auras
-        if frame.importantGlow then
-            frame.importantGlow:Hide()
-        end
     end
     
     frame:Show()
@@ -1194,8 +1329,19 @@ function BuffOverlay:ScheduleDisplayUpdate(unit, cache)
     -- If there are no auras, just return
     if #visibleAuras == 0 then return end
     
-    -- Enhanced sort with importance factored in
+    -- Enhanced sort with categories and importance factored in
     table.sort(visibleAuras, function(a, b)
+        -- First, prioritize by category if categories are enabled
+        if VUI.db.profile.modules.buffoverlay.enableCategories and a.category and b.category then
+            local aCategoryInfo = self.Categories[a.category]
+            local bCategoryInfo = self.Categories[b.category]
+            
+            if aCategoryInfo and bCategoryInfo and
+               math.abs(aCategoryInfo.priority - bCategoryInfo.priority) > 20 then
+                return aCategoryInfo.priority > bCategoryInfo.priority
+            end
+        end
+        
         -- If one is a healer spell and the other isn't, healer spell comes first
         local aIsHealer = self.HealerSpells and self.HealerSpells[a.spellID] or false
         local bIsHealer = self.HealerSpells and self.HealerSpells[b.spellID] or false

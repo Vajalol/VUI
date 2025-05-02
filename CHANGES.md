@@ -220,6 +220,16 @@ This document tracks significant changes to the VUI addon suite.
     - Sound alerts for immune status
     - Options for tracking NPCs and players separately
     - Performance optimizations for combat scenarios
+  - Implemented buff group categorization system:
+    - Five distinct priority categories (CRITICAL, IMPORTANT, BENEFICIAL, STANDARD, MINOR)
+    - Intelligent automatic categorization based on spell type and importance
+    - Category-specific visual enhancements (borders, glows, colors)
+    - Dynamic sorting based on category priority
+    - Theme integration with category-specific colors for each theme
+    - Sound alerts for critical buff/debuff changes
+    - Animation effects tied to category importance
+    - Comprehensive configuration UI with category customization
+    - Performance-optimized category detection with caching
 
 - TrufiGCD Module Optimization:
   - Implemented texture atlas system for improved performance
