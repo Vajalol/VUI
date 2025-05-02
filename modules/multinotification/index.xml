@@ -1,0 +1,15 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- Main module file -->
+    <Script file="init.lua"/>
+    
+    <!-- Core functionality -->
+    <Script file="SpellEvents.lua"/>
+    
+    <!-- Optimization components -->
+    <Script file="FramePool.lua"/>
+    <Script file="EnhancedSpellDetection.lua"/>
+    
+    <!-- Submodules -->
+    <Script file="SpellManagement.lua"/>
+    <Script file="SoundManager.lua"/>
+</Ui>

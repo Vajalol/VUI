@@ -65,7 +65,13 @@ end
 -- Function to check if a module exists and is enabled
 function VUI:IsModuleEnabled(name)
     if not self.modules[name] then return false end
-    return self.db.profile.modules[name].enabled
+    
+    -- Use database optimization if available
+    if self.DatabaseOptimization then
+        return self.DatabaseOptimization:Get(self.db, "profile.modules." .. name .. ".enabled", false)
+    else
+        return self.db.profile.modules[name].enabled
+    end
 end
 
 -- Function to enable a module
@@ -73,7 +79,13 @@ function VUI:EnableModule(name)
     if not self.modules[name] then return end
     if self:IsModuleEnabled(name) then return end
     
-    self.db.profile.modules[name].enabled = true
+    -- Use database optimization if available
+    if self.DatabaseOptimization then
+        self.DatabaseOptimization:Set(self.db, "profile.modules." .. name .. ".enabled", true, true) -- Immediate update
+    else
+        self.db.profile.modules[name].enabled = true
+    end
+    
     if self.modules[name].Enable then
         self.modules[name]:Enable()
     end
@@ -86,7 +98,13 @@ function VUI:DisableModule(name)
     if not self.modules[name] then return end
     if not self:IsModuleEnabled(name) then return end
     
-    self.db.profile.modules[name].enabled = false
+    -- Use database optimization if available
+    if self.DatabaseOptimization then
+        self.DatabaseOptimization:Set(self.db, "profile.modules." .. name .. ".enabled", false, true) -- Immediate update
+    else
+        self.db.profile.modules[name].enabled = false
+    end
+    
     if self.modules[name].Disable then
         self.modules[name]:Disable()
     end
@@ -112,6 +130,18 @@ function VUI:OnInitialize()
     
     -- Set up slash commands
     self:RegisterChatCommand("vui", "SlashCommand")
+    
+    -- Initialize the Database Optimization System first to benefit other systems
+    if self.DatabaseOptimization then
+        self.DatabaseOptimization:Initialize()
+        
+        -- Register core databases with optimization system
+        self.DatabaseOptimization:RegisterModuleDatabase("Core", self.db)
+        self.DatabaseOptimization:RegisterModuleDatabase("Character", self.charDB)
+        
+        -- Preload common settings
+        self:PreloadCommonDatabaseValues()
+    end
     
     -- Load media files
     self:InitializeMedia()
@@ -152,9 +182,48 @@ function VUI:OnInitialize()
         if self:IsModuleEnabled(name) and module.Enable then
             module:Enable()
         end
+        
+        -- Register module database with optimization system if available
+        if self.DatabaseOptimization and module.db then
+            self.DatabaseOptimization:RegisterModuleDatabase(name, module.db)
+        end
     end
     
     self:Print("VUI v" .. self.version .. " initialized. Type /vui for options.")
+end
+
+-- Preload frequently accessed database values
+function VUI:PreloadCommonDatabaseValues()
+    if not self.DatabaseOptimization then return end
+    
+    -- Core settings frequently accessed
+    local commonPaths = {
+        -- General appearance
+        "profile.appearance.theme",
+        "profile.appearance.font",
+        "profile.appearance.fontSize",
+        "profile.appearance.statusbarTexture",
+        
+        -- Module states
+        "profile.modules",
+        
+        -- Performance settings
+        "profile.performance",
+        
+        -- UI layout
+        "profile.layout",
+        
+        -- Character-specific settings
+        "profile.characterSettings." .. (UnitName("player") or "Unknown")
+    }
+    
+    -- Preload core paths
+    for _, path in ipairs(commonPaths) do
+        local value = self.DatabaseOptimization:GetNestedValue(self.db, path)
+        if value ~= nil then
+            self.DatabaseOptimization:CacheValue(self.db, path, value)
+        end
+    end
 end
 
 -- Initialize UI Framework

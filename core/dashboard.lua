@@ -781,6 +781,66 @@ function Dashboard:CreatePerformanceMonitor()
     memoryText:SetPoint("RIGHT", perfFrame, "RIGHT", -10, 0)
     memoryText:SetText("Memory: --")
     
+    -- Expanded performance frame (for detailed stats)
+    local expandedFrame = CreateFrame("Frame", nil, self.panel, "BackdropTemplate")
+    expandedFrame:SetSize(300, 200)
+    expandedFrame:SetPoint("TOPRIGHT", perfFrame, "BOTTOMRIGHT", 0, -5)
+    expandedFrame:SetBackdrop({
+        bgFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\background-solid.tga",
+        edgeFile = "Interface\\AddOns\\VUI\\media\\textures\\common\\border-simple.tga",
+        tile = false,
+        tileSize = 0,
+        edgeSize = 8,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 }
+    })
+    expandedFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
+    expandedFrame:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.8)
+    expandedFrame:Hide()
+    
+    -- Add title for expanded frame
+    local expandedTitle = expandedFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    expandedTitle:SetPoint("TOPLEFT", expandedFrame, "TOPLEFT", 10, -10)
+    expandedTitle:SetText("Performance Statistics")
+    
+    -- Database stats section
+    local dbTitle = expandedFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    dbTitle:SetPoint("TOPLEFT", expandedTitle, "BOTTOMLEFT", 0, -15)
+    dbTitle:SetText("Database Optimization:")
+    
+    local dbStatsText = expandedFrame:CreateFontString(nil, "OVERLAY", "GameFontSmall")
+    dbStatsText:SetPoint("TOPLEFT", dbTitle, "BOTTOMLEFT", 5, -5)
+    dbStatsText:SetWidth(280)
+    dbStatsText:SetJustifyH("LEFT")
+    dbStatsText:SetText("No data available")
+    
+    -- Memory stats section
+    local memTitle = expandedFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    memTitle:SetPoint("TOPLEFT", dbStatsText, "BOTTOMLEFT", -5, -15)
+    memTitle:SetText("Memory Usage:")
+    
+    local memStatsText = expandedFrame:CreateFontString(nil, "OVERLAY", "GameFontSmall")
+    memStatsText:SetPoint("TOPLEFT", memTitle, "BOTTOMLEFT", 5, -5)
+    memStatsText:SetWidth(280)
+    memStatsText:SetJustifyH("LEFT")
+    memStatsText:SetText("No data available")
+    
+    -- Close button for expanded frame
+    local closeButton = CreateFrame("Button", nil, expandedFrame, "UIPanelCloseButton")
+    closeButton:SetPoint("TOPRIGHT", expandedFrame, "TOPRIGHT", -2, -2)
+    closeButton:SetScript("OnClick", function() expandedFrame:Hide() end)
+    
+    -- Make performance frame clickable to show/hide expanded frame
+    perfFrame:EnableMouse(true)
+    perfFrame:SetScript("OnMouseDown", function()
+        if expandedFrame:IsShown() then
+            expandedFrame:Hide()
+        else
+            expandedFrame:Show()
+            -- Update the detailed stats immediately when shown
+            Dashboard:UpdateDetailedPerformanceStats(dbStatsText, memStatsText)
+        end
+    end)
+    
     -- Update performance info every second
     local updateTimer = 0
     perfFrame:SetScript("OnUpdate", function(self, elapsed)
@@ -813,12 +873,94 @@ function Dashboard:CreatePerformanceMonitor()
             
             memoryText:SetText(string.format("Memory: %.1f MB", totalMB))
             
+            -- Update detailed stats if expanded frame is shown
+            if expandedFrame:IsShown() then
+                Dashboard:UpdateDetailedPerformanceStats(dbStatsText, memStatsText)
+            end
+            
             updateTimer = 0
         end
     end)
     
-    -- Store reference
+    -- Store references
     self.performanceFrame = perfFrame
+    self.expandedStatsFrame = expandedFrame
+    self.dbStatsText = dbStatsText
+    self.memStatsText = memStatsText
+end
+
+-- Update detailed performance statistics
+function Dashboard:UpdateDetailedPerformanceStats(dbStatsText, memStatsText)
+    -- Database optimization stats
+    if VUI.DatabaseOptimization then
+        local stats = VUI.DatabaseOptimization:GetStats()
+        if stats then
+            local dbText = string.format(
+                "Cache Hit Rate: %.1f%%\n" ..
+                "Cache Size: %d entries\n" ..
+                "Batch Writes: %d\n" ..
+                "Direct Writes: %d\n",
+                stats.hitRate * 100,
+                stats.cacheSize,
+                stats.batchedWrites,
+                stats.directWrites
+            )
+            
+            -- Add module stats if available
+            if stats.moduleStats then
+                dbText = dbText .. "\nTop Module Hit Rates:\n"
+                
+                -- Convert to sortable table
+                local moduleList = {}
+                for module, data in pairs(stats.moduleStats) do
+                    if data.reads > 0 then
+                        table.insert(moduleList, {
+                            name = module,
+                            hitRate = data.cacheHitRate or 0,
+                            reads = data.reads or 0
+                        })
+                    end
+                end
+                
+                -- Sort by hit rate
+                table.sort(moduleList, function(a, b) return a.hitRate > b.hitRate end)
+                
+                -- Show top 3 modules
+                for i = 1, math.min(3, #moduleList) do
+                    local module = moduleList[i]
+                    dbText = dbText .. string.format("  %s: %.1f%% (%d reads)\n", 
+                        module.name, module.hitRate * 100, module.reads)
+                end
+            end
+            
+            dbStatsText:SetText(dbText)
+        else
+            dbStatsText:SetText("Database stats not available")
+        end
+    else
+        dbStatsText:SetText("Database Optimization not active")
+    end
+    
+    -- Memory usage stats
+    local addonMemText = "VUI Module Memory Usage:\n"
+    UpdateAddOnMemoryUsage()
+    
+    -- Get memory usage for the main addon
+    local mainAddonMemory = GetAddOnMemoryUsage(addonName) / 1024  -- in MB
+    addonMemText = addonMemText .. string.format("Total: %.2f MB\n", mainAddonMemory)
+    
+    -- Add memory usage by resource type if available
+    if VUI.ResourceCleanup and VUI.ResourceCleanup.GetResourceStats then
+        local resourceStats = VUI.ResourceCleanup:GetResourceStats()
+        if resourceStats then
+            addonMemText = addonMemText .. "\nBy Resource Type:\n"
+            for name, amount in pairs(resourceStats) do
+                addonMemText = addonMemText .. string.format("  %s: %.2f MB\n", name, amount)
+            end
+        end
+    end
+    
+    memStatsText:SetText(addonMemText)
 end
 
 -- Create quick access buttons

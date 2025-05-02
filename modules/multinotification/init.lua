@@ -287,6 +287,18 @@ function MultiNotification:OnEnable()
         VUI:Print("MultiNotification Spell Events system initialized")
     end
     
+    -- Initialize Enhanced Spell Detection if available
+    if self.InitializeEnhancedSpellDetection then
+        self:InitializeEnhancedSpellDetection()
+        VUI:Print("MultiNotification Enhanced Spell Detection initialized")
+    end
+    
+    -- Initialize Frame Pool system if available
+    if self.FramePool and not self.FramePool.initialized and self.db.profile.globalSettings.useFramePooling then
+        self.FramePool:Initialize()
+        VUI:Print("MultiNotification Frame Pool system initialized")
+    end
+    
     VUI:Print("MultiNotification module enabled")
 end
 
