@@ -156,7 +156,7 @@ function ExampleModule:DemonstrateDynamicLoading()
     
     -- Example: Performance optimization
     VUI:Print("\nPerformance metrics:")
-    if DynamicLoading:GetPerformanceMetrics then
+    if DynamicLoading.GetPerformanceMetrics and type(DynamicLoading.GetPerformanceMetrics) == "function" then
         local metrics = DynamicLoading:GetPerformanceMetrics()
         
         VUI:Print(string.format("Total memory usage: %.2f KB", metrics.totalMemory or 0))

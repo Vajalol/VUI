@@ -90,6 +90,16 @@ function VUI:Initialize()
     self:InitializeThemeIntegration()
     self:InitializeFontIntegration()
     
+    -- Initialize Dynamic Module Loading system
+    if self.DynamicModuleLoading and self.DynamicModuleLoading.Initialize then
+        self.DynamicModuleLoading:Initialize()
+    end
+    
+    -- Initialize Module Manager after Dynamic Module Loading
+    if self.ModuleManager and self.ModuleManager.Initialize then
+        self.ModuleManager:Initialize()
+    end
+    
     -- Initialize ThemeHelpers after theme integration but before modules
     if self.ThemeHelpers then
         self.ThemeHelpers:UpdateCurrentTheme()
@@ -196,6 +206,28 @@ function VUI:InitializeModules()
             -- Register the module with core system if it's not already registered
             if VUI.RegisterModule and not VUI.modules[moduleName] then
                 VUI:RegisterModule(moduleName, module)
+            end
+            
+            -- Register with Dynamic Module Loading system if available
+            if self.DynamicModuleLoading then
+                local category = nil
+                local dependencies = module.dependencies or {}
+                
+                -- Determine module category based on module type
+                if moduleName == "MultiNotification" or moduleName == "BuffOverlay" or moduleName == "MoveAny" or moduleName == "OmniCC" then
+                    category = "core"
+                elseif moduleName == "OmniCD" or moduleName == "TrufiGCD" or moduleName == "DetailsSkin" or 
+                       moduleName == "MikScrollingBattleText" or moduleName == "SpellNotifications" then
+                    category = "combat"
+                elseif moduleName == "Auctionator" or moduleName == "PremadeGroupFinder" then
+                    category = "social"
+                elseif moduleName == "AngryKeystones" then
+                    category = "pve"
+                else
+                    category = "utility"
+                end
+                
+                self.DynamicModuleLoading:RegisterModule(moduleName, category, dependencies)
             end
             
             -- Initialize the module
