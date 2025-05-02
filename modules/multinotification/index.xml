@@ -6,7 +6,7 @@
     <Script file="SpellEvents.lua"/>
     
     <!-- Optimization components -->
-    <Script file="FramePool.lua"/>
+    <Script file="frame_pool.lua"/>
     <Script file="EnhancedSpellDetection.lua"/>
     
     <!-- Submodules -->

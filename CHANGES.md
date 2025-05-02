@@ -12,6 +12,7 @@ This document tracks significant changes to the VUI addon suite.
   - Performance Optimization Guide (Complete)
   - Module Registration Standardization (Complete)
   - Code Quality Improvements (Complete)
+  - File Naming Standardization (Complete)
 
 ### Major Features
 - Extensive Documentation System:
@@ -37,6 +38,11 @@ This document tracks significant changes to the VUI addon suite.
 - Resolved duplicate module registration issues in 6 modules
 - Added module help system with comprehensive documentation
 - Improved Blizzard UI skin implementations with clearer code
+- Standardized file naming conventions across modules:
+  - Resolved duplicate files in MultiNotification module (FramePool.lua vs frame_pool.lua)
+  - Standardized on snake_case for feature-specific files
+  - Maintained PascalCase for ThemeIntegration files
+  - Ensured consistent patterns across all modules
 - Removed all debug statements and logging for cleaner production code:
   - Removed debug messages from AngryKeystones module
   - Disabled debug functions in OmniCD module
