@@ -241,7 +241,7 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Skin selection UI
 - ✓ Enhanced graph styling
 - ✓ Custom report templates
-- ☐ Integration with other damage meters
+- ✗ Integration with other damage meters (not needed)
 
 ## Development Standards
 
