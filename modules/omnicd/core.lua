@@ -824,6 +824,357 @@ function OmniCD:DefineClassSpells()
     }
 end
 
+-- Initialize cooldown data
+function OmniCD:InitializeCooldowns()
+    -- Define cooldown times for spells
+    SPELL_COOLDOWN_TIME = {
+        -- Death Knight
+        [48707] = 60,     -- Anti-Magic Shell
+        [48792] = 180,    -- Icebound Fortitude
+        [51052] = 120,    -- Anti-Magic Zone
+        [49206] = 180,    -- Summon Gargoyle
+        [49028] = 120,    -- Dancing Rune Weapon
+        
+        -- Demon Hunter
+        [198589] = 60,    -- Blur
+        [196718] = 300,   -- Darkness
+        [196555] = 120,   -- Netherwalk
+        [191427] = 240,   -- Metamorphosis (Havoc)
+        [187827] = 180,   -- Metamorphosis (Vengeance)
+        [198013] = 40,    -- Eye Beam
+        
+        -- Druid
+        [61336] = 180,    -- Survival Instincts
+        [22812] = 60,     -- Barkskin
+        [102342] = 90,    -- Ironbark
+        [29166] = 180,    -- Innervate
+        [740] = 180,      -- Tranquility
+        
+        -- Hunter
+        [186265] = 180,   -- Aspect of the Turtle
+        [193530] = 120,   -- Aspect of the Wild
+        [19574] = 90,     -- Bestial Wrath
+        [288613] = 180,   -- Trueshot
+        
+        -- Mage
+        [45438] = 240,    -- Ice Block
+        [12472] = 180,    -- Icy Veins
+        [190319] = 120,   -- Combustion
+        [12042] = 90,     -- Arcane Power
+        
+        -- Monk
+        [115203] = 420,   -- Fortifying Brew
+        [122278] = 120,   -- Dampen Harm
+        [116705] = 15,    -- Spear Hand Strike
+        [115310] = 180,   -- Revival
+        
+        -- Paladin
+        [642] = 300,      -- Divine Shield
+        [86659] = 300,    -- Guardian of Ancient Kings
+        [31850] = 120,    -- Ardent Defender
+        [1022] = 300,     -- Blessing of Protection
+        [31821] = 180,    -- Aura Mastery
+        [31884] = 120,    -- Avenging Wrath
+        
+        -- Priest
+        [19236] = 90,     -- Desperate Prayer
+        [47585] = 120,    -- Dispersion
+        [33206] = 180,    -- Pain Suppression
+        [62618] = 180,    -- Power Word: Barrier
+        [47788] = 180,    -- Guardian Spirit
+        [64843] = 180,    -- Divine Hymn
+        
+        -- Rogue
+        [5277] = 120,     -- Evasion
+        [31224] = 120,    -- Cloak of Shadows
+        [2094] = 120,     -- Blind
+        [13750] = 180,    -- Adrenaline Rush
+        [51690] = 120,    -- Killing Spree
+        
+        -- Shaman
+        [108271] = 90,    -- Astral Shift
+        [98008] = 180,    -- Spirit Link Totem
+        [198067] = 150,   -- Fire Elemental
+        [51533] = 120,    -- Feral Spirit
+        [114050] = 180,   -- Ascendance (Elemental)
+        
+        -- Warlock
+        [104773] = 180,   -- Unending Resolve
+        [1122] = 180,     -- Summon Infernal
+        [205180] = 180,   -- Summon Darkglare
+        [265187] = 90,    -- Summon Demonic Tyrant
+        
+        -- Warrior
+        [871] = 240,      -- Shield Wall
+        [12975] = 180,    -- Last Stand
+        [97462] = 180,    -- Rallying Cry
+        [1719] = 90,      -- Recklessness
+        [107574] = 90,    -- Avatar
+        
+        -- Evoker
+        [363916] = 120,   -- Obsidian Scale
+        [370960] = 90,    -- Stasis
+        [359816] = 120,   -- Dream Flight
+        [370553] = 60,    -- Tip the Scales
+        [375087] = 120    -- Dragonrage
+    }
+    
+    -- Define which spells to track for each class
+    CLASS_SPELL_LIST = {
+        -- Death Knight
+        ["DEATHKNIGHT"] = {
+            48707,  -- Anti-Magic Shell
+            48792,  -- Icebound Fortitude
+            51052,  -- Anti-Magic Zone
+            49028,  -- Dancing Rune Weapon
+            47568,  -- Empower Rune Weapon
+            49206   -- Summon Gargoyle
+        },
+        
+        -- Demon Hunter
+        ["DEMONHUNTER"] = {
+            198589, -- Blur
+            196718, -- Darkness
+            196555, -- Netherwalk
+            187827, -- Metamorphosis (Vengeance)
+            198013, -- Eye Beam
+            191427  -- Metamorphosis (Havoc)
+        },
+        
+        -- Druid
+        ["DRUID"] = {
+            61336,  -- Survival Instincts
+            22812,  -- Barkskin
+            102342, -- Ironbark
+            29166,  -- Innervate
+            740,    -- Tranquility
+            194223, -- Celestial Alignment
+            102560, -- Incarnation: Chosen of Elune
+            106951, -- Berserk
+            50334   -- Berserk (Guardian)
+        },
+        
+        -- Hunter
+        ["HUNTER"] = {
+            186265, -- Aspect of the Turtle
+            193530, -- Aspect of the Wild
+            19574,  -- Bestial Wrath
+            288613, -- Trueshot
+            266779  -- Coordinated Assault
+        },
+        
+        -- Mage
+        ["MAGE"] = {
+            45438,  -- Ice Block
+            12472,  -- Icy Veins
+            190319, -- Combustion
+            12042   -- Arcane Power
+        },
+        
+        -- Monk
+        ["MONK"] = {
+            115203, -- Fortifying Brew
+            122278, -- Dampen Harm
+            115310, -- Revival
+            116849, -- Life Cocoon
+            115080, -- Touch of Death
+            137639, -- Storm, Earth, and Fire
+            152173  -- Serenity
+        },
+        
+        -- Paladin
+        ["PALADIN"] = {
+            642,    -- Divine Shield
+            86659,  -- Guardian of Ancient Kings
+            31850,  -- Ardent Defender
+            1022,   -- Blessing of Protection
+            31821,  -- Aura Mastery
+            31884   -- Avenging Wrath
+        },
+        
+        -- Priest
+        ["PRIEST"] = {
+            19236,  -- Desperate Prayer
+            47585,  -- Dispersion
+            33206,  -- Pain Suppression
+            62618,  -- Power Word: Barrier
+            47788,  -- Guardian Spirit
+            64843,  -- Divine Hymn
+            10060   -- Power Infusion
+        },
+        
+        -- Rogue
+        ["ROGUE"] = {
+            5277,   -- Evasion
+            31224,  -- Cloak of Shadows
+            2094,   -- Blind
+            13750,  -- Adrenaline Rush
+            51690,  -- Killing Spree
+            185313, -- Shadow Dance
+            121471  -- Shadow Blades
+        },
+        
+        -- Shaman
+        ["SHAMAN"] = {
+            108271, -- Astral Shift
+            98008,  -- Spirit Link Totem
+            198067, -- Fire Elemental
+            51533,  -- Feral Spirit
+            114050, -- Ascendance (Elemental)
+            114051, -- Ascendance (Enhancement)
+            114052  -- Ascendance (Restoration)
+        },
+        
+        -- Warlock
+        ["WARLOCK"] = {
+            104773, -- Unending Resolve
+            108416, -- Dark Pact
+            1122,   -- Summon Infernal
+            205180, -- Summon Darkglare
+            265187, -- Summon Demonic Tyrant
+            113858, -- Dark Soul: Instability
+            113860  -- Dark Soul: Misery
+        },
+        
+        -- Warrior
+        ["WARRIOR"] = {
+            871,    -- Shield Wall
+            12975,  -- Last Stand
+            97462,  -- Rallying Cry
+            1719,   -- Recklessness
+            107574, -- Avatar
+            227847  -- Bladestorm
+        },
+        
+        -- Evoker
+        ["EVOKER"] = {
+            363916, -- Obsidian Scale
+            374348, -- Rescue
+            370960, -- Stasis
+            359816, -- Dream Flight
+            370553, -- Tip the Scales
+            375087  -- Dragonrage
+        }
+    }
+    
+    -- Spell priorities (higher number = higher priority)
+    SPELL_PRIORITY = {
+        -- Warrior
+        [871] = 80,       -- Shield Wall
+        [12975] = 75,     -- Last Stand
+        [97462] = 70,     -- Rallying Cry
+        [107574] = 50,    -- Avatar
+        [1719] = 60,      -- Recklessness
+        [227847] = 40,    -- Bladestorm
+        
+        -- Paladin
+        [642] = 90,       -- Divine Shield
+        [86659] = 85,     -- Guardian of Ancient Kings
+        [31850] = 80,     -- Ardent Defender
+        [1022] = 95,      -- Blessing of Protection
+        [31821] = 85,     -- Aura Mastery
+        [31884] = 60,     -- Avenging Wrath
+        
+        -- Hunter
+        [186265] = 80,    -- Aspect of the Turtle
+        [193530] = 60,    -- Aspect of the Wild
+        [19574] = 50,     -- Bestial Wrath
+        [288613] = 70,    -- Trueshot
+        [266779] = 70,    -- Coordinated Assault
+        
+        -- Rogue
+        [5277] = 80,      -- Evasion
+        [31224] = 85,     -- Cloak of Shadows
+        [2094] = 60,      -- Blind
+        [13750] = 50,     -- Adrenaline Rush
+        [51690] = 60,     -- Killing Spree
+        [185313] = 50,    -- Shadow Dance
+        [121471] = 65,    -- Shadow Blades
+        
+        -- Priest
+        [19236] = 70,     -- Desperate Prayer
+        [47585] = 85,     -- Dispersion
+        [33206] = 90,     -- Pain Suppression
+        [62618] = 85,     -- Power Word: Barrier
+        [47788] = 95,     -- Guardian Spirit
+        [64843] = 85,     -- Divine Hymn
+        [10060] = 55,     -- Power Infusion
+        
+        -- Death Knight
+        [48707] = 75,     -- Anti-Magic Shell
+        [48792] = 85,     -- Icebound Fortitude
+        [51052] = 80,     -- Anti-Magic Zone
+        [49028] = 70,     -- Dancing Rune Weapon
+        [47568] = 55,     -- Empower Rune Weapon
+        [49206] = 50,     -- Summon Gargoyle
+        
+        -- Shaman
+        [108271] = 75,    -- Astral Shift
+        [98008] = 90,     -- Spirit Link Totem
+        [198067] = 50,    -- Fire Elemental
+        [51533] = 50,     -- Feral Spirit
+        [114050] = 60,    -- Ascendance (Elemental)
+        [114051] = 60,    -- Ascendance (Enhancement)
+        [114052] = 60,    -- Ascendance (Restoration)
+        
+        -- Mage
+        [45438] = 85,     -- Ice Block
+        [12472] = 60,     -- Icy Veins
+        [190319] = 65,    -- Combustion
+        [12042] = 55,     -- Arcane Power
+        
+        -- Warlock
+        [104773] = 85,    -- Unending Resolve
+        [108416] = 70,    -- Dark Pact
+        [1122] = 50,      -- Summon Infernal
+        [205180] = 50,    -- Summon Darkglare
+        [265187] = 50,    -- Summon Demonic Tyrant
+        
+        -- Monk
+        [115203] = 85,    -- Fortifying Brew
+        [122278] = 75,    -- Dampen Harm
+        [115310] = 85,    -- Revival
+        [116849] = 95,    -- Life Cocoon
+        [115080] = 50,    -- Touch of Death
+        [137639] = 55,    -- Storm, Earth, and Fire
+        [152173] = 60,    -- Serenity
+        
+        -- Druid
+        [61336] = 85,     -- Survival Instincts
+        [22812] = 75,     -- Barkskin
+        [102342] = 95,    -- Ironbark
+        [29166] = 60,     -- Innervate
+        [740] = 85,       -- Tranquility
+        [194223] = 60,    -- Celestial Alignment
+        
+        -- Demon Hunter
+        [198589] = 75,    -- Blur
+        [196555] = 75,    -- Netherwalk
+        [187827] = 80,    -- Metamorphosis (Vengeance)
+        [196718] = 90,    -- Darkness
+        [198013] = 40,    -- Eye Beam
+        [191427] = 45,    -- Metamorphosis (Havoc)
+        
+        -- Evoker
+        [363916] = 75,    -- Obsidian Scale
+        [374348] = 60,    -- Rescue
+        [370960] = 70,    -- Stasis
+        [359816] = 65,    -- Dream Flight
+        [370553] = 30,    -- Tip the Scales
+        [375087] = 50     -- Dragonrage
+    }
+    
+    -- Initialize the priority system if available
+    if self.PrioritySystem then
+        self.PrioritySystem:Initialize()
+    end
+    
+    -- Initialize config if available
+    if self.PriorityConfig then
+        self.PriorityConfig:Initialize()
+    end
+end
+
 -- Initialize the module
 function OmniCD:Initialize()
     -- Create database

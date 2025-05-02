@@ -6,5 +6,7 @@
     <Script file="groups.lua"/>
     <Script file="cooldowns.lua"/>
     <Script file="animations.lua"/>
+    <Script file="priority_system.lua"/>
+    <Script file="priority_config.lua"/>
     <Script file="core.lua"/>
 </Ui>

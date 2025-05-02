@@ -218,7 +218,7 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Texture atlas implementation
 - ✓ Enhanced icon customization
 - ✓ Advanced filtering options
-- ☐ Spell categorization
+- ✓ Spell categorization
 - ☐ Timeline view option
 - ☐ Integration with Details damage meter
 

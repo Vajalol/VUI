@@ -19,6 +19,7 @@ This document tracks significant changes to the VUI addon suite.
 - Phase 5: Accessibility Improvements (Complete):
 - Phase 6: Advanced Spell System Enhancements (In Progress):
   - TrufiGCD Spell Categorization System (Complete)
+  - OmniCD Priority System (Complete)
   - Timeline view option for spell history (Planned)
   - Integration with Details damage meter (Planned)
   - High contrast mode for better visibility (Complete)
@@ -253,6 +254,28 @@ This document tracks significant changes to the VUI addon suite.
     - Performance-aware effect application with FPS monitoring
     - Comprehensive configuration UI with effect previews
     - Integration with buff categorization system
+
+- OmniCD Module Enhancement:
+  - Implemented Priority System for cooldown tracking:
+    - Eight functional categories (defensive, external, interrupt, cc, offensive, movement, utility, standard)
+    - Four importance levels within categories (critical, major, normal, minor)
+    - Enhanced visual distinctions for different cooldown types
+    - Border color coding by priority category
+    - Dynamic icon scaling based on priority
+    - Glow effects for high-priority cooldowns
+    - Category-specific visual styling with theme integration
+    - Ready pulse animation for high-priority abilities
+    - Comprehensive database with 200+ categorized class abilities
+    - Priority-based sorting for improved visibility of important cooldowns
+    - Theme-aware visual styling with dynamic color adjustments
+    - Performance-aware visual effects system
+    - Comprehensive configuration panel for customization
+  - Enhanced cooldown tracking with context-awareness:
+    - Zone-specific priority adjustments (PvP, raid, dungeon)
+    - Smart filtering options based on group content
+    - Enhanced UI integration with theme colors
+    - Improved visibility for critical defensive cooldowns
+    - Customizable display options for different priority levels
 
 - TrufiGCD Module Optimization:
   - Implemented texture atlas system for improved performance
