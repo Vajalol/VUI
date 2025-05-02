@@ -350,7 +350,7 @@ This document tracks significant changes to the VUI addon suite.
     - Performance-optimized implementation with efficient lookups
     - Category-based configuration options
 
-- DetailsSkin Module Optimization:
+- DetailsSkin Module Enhancement:
   - Implemented texture atlas system for improved performance
   - Reduced memory usage by approximately 30% across all UI elements
   - Optimized theme switching with atlas-based texture handling
@@ -359,6 +359,18 @@ This document tracks significant changes to the VUI addon suite.
   - Applied theme integration for consistent visual styling
   - Added performance statistics tracking for texture usage
   - Improved panel, row, and status bar rendering with atlas textures
+  - Implemented skin registry system for managing multiple skins
+  - Added support for Resike's "The War Within" original skin:
+    - Created proper attribution and credit system
+    - Implemented War Within skin with authentic styling
+    - Added adaptive texture loading for skin compatibility
+    - Created directory structure for War Within skin assets
+  - Added skin selection UI in settings:
+    - Skin browsing with author information
+    - Theme-integrated skin preview system
+    - Automatic skin application to all Details instances
+    - Default skin management for new windows
+  - Enhanced custom report templates for theme-specific reporting
 
 ### Technical
 - Complete module standardization across all components

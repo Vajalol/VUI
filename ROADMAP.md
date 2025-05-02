@@ -236,8 +236,11 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Texture atlas implementation
 - ✓ Dynamic texture loading
 - ✓ Performance statistics tracking
+- ✓ Skin registry system
+- ✓ War Within skin integration
+- ✓ Skin selection UI
 - ☐ Enhanced graph styling
-- ☐ Custom report templates
+- ✓ Custom report templates
 - ☐ Integration with other damage meters
 
 ## Development Standards
