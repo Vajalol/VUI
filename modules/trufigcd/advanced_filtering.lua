@@ -1,6 +1,6 @@
 --[[
     VUI - TrufiGCD Advanced Filtering
-    Version: 0.2.0
+    Version: 0.3.0
     Author: VortexQ8
     
     This file implements advanced filtering options for the TrufiGCD module:

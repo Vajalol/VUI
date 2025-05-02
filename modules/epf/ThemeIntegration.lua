@@ -1,6 +1,6 @@
 --[[
     VUI - Enhanced Profile Frames (EPF) ThemeIntegration
-    Version: 0.2.0
+    Version: 0.3.0
     Author: VortexQ8
 ]]
 

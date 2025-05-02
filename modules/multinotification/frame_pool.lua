@@ -1,6 +1,6 @@
 --[[
     VUI - MultiNotification FramePool
-    Version: 0.2.0
+    Version: 0.3.0
     Author: VortexQ8
     
     Frame pooling system for improved performance in the unified notification system

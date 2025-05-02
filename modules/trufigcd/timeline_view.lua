@@ -1,6 +1,6 @@
 --[[
     VUI - TrufiGCD Timeline View
-    Version: 0.2.0
+    Version: 0.3.0
     Author: VortexQ8
     
     This file implements a timeline view for TrufiGCD spell history:

@@ -1,6 +1,6 @@
 --[[
     VUI - OmniCD Priority System
-    Version: 0.2.0
+    Version: 0.3.0
     Author: VortexQ8
     
     This file implements the priority system for the OmniCD module:

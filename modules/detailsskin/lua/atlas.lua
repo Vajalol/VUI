@@ -1,6 +1,6 @@
 --[[
     VUI - DetailsSkin Texture Atlas
-    Version: 0.2.0
+    Version: 0.3.0
     Author: VortexQ8
     
     This module implements the texture atlas system for the Details damage meter skin,

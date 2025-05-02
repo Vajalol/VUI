@@ -1,6 +1,6 @@
 --[[
     VUI - MultiNotification SpellEvents
-    Version: 0.2.0
+    Version: 0.3.0
     Author: VortexQ8
     
     Combat log event handler for the MultiNotification system.
