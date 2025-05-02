@@ -200,7 +200,7 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Priority system enhancement
 - ✓ Customizable positioning
 - ✓ Animation variations
-- ☐ Sound customization
+- ✓ Sound customization
 
 ### BuffOverlay
 - ✓ Core buff tracking

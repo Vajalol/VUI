@@ -300,6 +300,12 @@ function MultiNotification:OnEnable()
         VUI:Print("MultiNotification Enhanced Spell Detection initialized")
     end
     
+    -- Initialize Sound Manager if available
+    if self.RegisterSoundManager then
+        self.SoundManager = self:RegisterSoundManager()
+        VUI:Print("MultiNotification Sound Manager initialized")
+    end
+    
     -- Initialize Frame Pool system if available
     if self.FramePool and not self.FramePool.initialized and self.db.profile.globalSettings.useFramePooling then
         self.FramePool:Initialize()
@@ -545,7 +551,10 @@ function MultiNotification:ShowNotification(notificationType, icon, text, durati
     self:ArrangeNotificationFrames()
     
     -- Play sound if enabled for this category
-    if categorySettings.playSound then
+    if categorySettings.playSound and self.SoundManager then
+        self.SoundManager:PlaySound(notificationType)
+    elseif categorySettings.playSound then
+        -- Fallback to old sound system if SoundManager is not initialized
         local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
         local soundFile = self.db.profile.theme[currentTheme].sounds[notificationType]
         if soundFile then
@@ -1476,8 +1485,52 @@ function MultiNotification:GetOptions()
                 end,
                 width = "full"
             },
-            positionHeader = {
+            soundHeader = {
                 order = 40,
+                type = "header",
+                name = "Sound Settings"
+            },
+            soundSettings = {
+                order = 41,
+                type = "group",
+                inline = true,
+                name = "Sound Customization",
+                args = {
+                    soundSettingsDesc = {
+                        order = 1,
+                        type = "description",
+                        name = "Customize notification sounds for different types of alerts.",
+                        fontSize = "medium",
+                        width = "full"
+                    },
+                    soundCustomizer = {
+                        order = 2,
+                        type = "execute",
+                        name = "Customize Sounds",
+                        desc = "Open the sound customization panel",
+                        func = function()
+                            -- Show the sound customization UI
+                            if self.SoundManager then
+                                local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+                                local frame = AceConfigDialog:GetFrame("VUI")
+                                
+                                -- Create a container
+                                local container = frame:CreateChildFrame("Frame", "VUISoundCustomizationPanel")
+                                container:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -10)
+                                container:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -10, 10)
+                                
+                                -- Call the SoundManager to create the UI
+                                self.SoundManager:CreateConfigUI(container)
+                            else
+                                VUI:Print("Sound Manager is not available")
+                            end
+                        end,
+                        width = "full"
+                    },
+                },
+            },
+            positionHeader = {
+                order = 50,
                 type = "header",
                 name = "Position"
             },
@@ -1696,8 +1749,14 @@ function MultiNotification:ShowSpellNotification(title, message, spellID, catego
     )
     
     -- Play sound if not handled in the AddNotification method
-    if success and soundFile and categorySettings.playSound then
-        PlaySoundFile(soundFile, "Master")
+    if success and categorySettings.playSound then
+        if self.SoundManager then
+            -- Use SoundManager for sound playing
+            self.SoundManager:PlaySound(category)
+        elseif soundFile then
+            -- Fallback to direct sound playing if SoundManager is not available
+            PlaySoundFile(soundFile, "Master")
+        end
     end
     
     return success
