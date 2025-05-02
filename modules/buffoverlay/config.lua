@@ -22,6 +22,7 @@ function BuffOverlay:CreateConfigPanel()
         {text = "Display", value = "display"},
         {text = "Filters", value = "filters"},
         {text = "Categories", value = "categories"},
+        {text = "Special Effects", value = "specialeffects"},
         {text = "Healer Spells", value = "healerspells"},
         {text = "Spell List", value = "spells"}
     })
@@ -35,6 +36,8 @@ function BuffOverlay:CreateConfigPanel()
             self:CreateFiltersTab(container)
         elseif group == "categories" then
             self:CreateCategoriesTab(container)
+        elseif group == "specialeffects" then
+            self:CreateSpecialEffectsTab(container)
         elseif group == "healerspells" then
             self:CreateHealerSpellsTab(container)
         elseif group == "spells" then
@@ -413,6 +416,25 @@ function BuffOverlay:CreateHealerSpellsTab(container)
 end
 
 -- Create the Spells tab
+-- Create the Special Effects tab
+function BuffOverlay:CreateSpecialEffectsTab(container)
+    -- Call the CreateSpecialEffectsConfig function from the special_effects.lua file
+    if self.CreateSpecialEffectsConfig then
+        self:CreateSpecialEffectsConfig(container)
+    else
+        -- Fallback if the function doesn't exist
+        local header = AceGUI:Create("Heading")
+        header:SetText("Special Effects Not Available")
+        header:SetFullWidth(true)
+        container:AddChild(header)
+        
+        local desc = AceGUI:Create("Label")
+        desc:SetText("The special effects module is not properly loaded. Please report this issue.")
+        desc:SetFullWidth(true)
+        container:AddChild(desc)
+    end
+end
+
 function BuffOverlay:CreateSpellsTab(container)
     -- Spell list table
     local scrollFrame = AceGUI:Create("ScrollFrame")
