@@ -13,6 +13,10 @@ This document tracks significant changes to the VUI addon suite.
   - Module Registration Standardization (Complete)
   - Code Quality Improvements (Complete)
   - File Naming Standardization (Complete)
+- Unified Main GUI Panel:
+  - Centralized configuration system (In Progress)
+  - Module integration into main VUI panel (In Progress)
+  - Configuration standardization (In Progress)
 
 ### Major Features
 - Extensive Documentation System:
@@ -32,6 +36,11 @@ This document tracks significant changes to the VUI addon suite.
 - Enhanced macro template system with class-specific recommendations
 - Fixed module registration patterns for improved stability
 - Standardized module configuration to prevent duplication
+- Enhanced Main GUI Panel integration:
+  - Added missing modules to central configuration dropdown (MultiNotification, DetailsSkin, MSBT)
+  - Standardized configuration interface across all modules
+  - Updated module descriptions in About section for consistency
+  - Fixed module accessibility in the main configuration panel
 - Removed development test code for cleaner release
 - Enhanced spell detection code with proper specialization tracking
 - Fixed and standardized all module registration patterns
