@@ -191,6 +191,19 @@ This section outlines the development phases, current status, and upcoming work 
 
 ## Module-Specific Roadmap
 
+### Auctionator
+- ✓ Core auction house functionality
+- ✓ Theme integration
+- ✓ Enhanced selling interface with bag view
+- ✓ Smart undercut suggestions
+- ✓ Price history tracking
+- ✓ Advanced shopping lists system
+- ✓ Full auction house scanning
+- ✓ Category filtering system
+- ✓ Advanced search options
+- ✓ Item favorites management
+- ✓ Configuration integration
+
 ### MultiNotification
 - ✓ Core notification system
 - ✓ Spell event tracking
@@ -275,12 +288,18 @@ This section outlines the development phases, current status, and upcoming work 
 - ☐ Version consistency
 
 ### Module-by-Module Verification ⟳
-- ☐ Proper initialization
-- ☐ Theme integration implementation
-- ☐ Configuration integration
-- ☐ Version consistency
-- ☐ Required dependencies
-- ☐ Error handling
+- ✓ Proper initialization for Auctionator module
+- ✓ Theme integration implementation for Auctionator
+- ✓ Configuration integration for Auctionator
+- ✓ Version consistency for Auctionator
+- ✓ Required dependencies for Auctionator
+- ✓ Error handling for Auctionator
+- ☐ Proper initialization for remaining modules
+- ☐ Theme integration implementation for remaining modules
+- ☐ Configuration integration for remaining modules
+- ☐ Version consistency for remaining modules
+- ☐ Required dependencies for remaining modules
+- ☐ Error handling for remaining modules
 
 ### Theme System Verification ☐
 - ☐ All themes properly defined (Phoenix Flame, Thunder Storm, Arcane Mystic, Fel Energy, Class Color)
