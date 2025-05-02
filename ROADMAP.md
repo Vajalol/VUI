@@ -219,15 +219,15 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Enhanced icon customization
 - ✓ Advanced filtering options
 - ✓ Spell categorization
-- ☐ Timeline view option
-- ☐ Integration with Details damage meter
+- ✓ Timeline view option
+- ✗ Integration with Details damage meter (Deferred)
 
 ### OmniCD
 - ✓ Core cooldown tracking
 - ✓ Theme integration
 - ✓ Texture atlas implementation
-- ☐ Enhanced party frame integration
-- ☐ Priority system
+- ✓ Enhanced party frame integration
+- ✓ Priority system
 - ☐ Specialized raid layouts
 
 ### DetailsSkin

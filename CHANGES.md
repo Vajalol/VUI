@@ -270,6 +270,19 @@ This document tracks significant changes to the VUI addon suite.
     - Theme-aware visual styling with dynamic color adjustments
     - Performance-aware visual effects system
     - Comprehensive configuration panel for customization
+  - Enhanced party frame integration:
+    - Cooldown icon attachments to party frames for immediate visibility
+    - Theme-specific styling for consistent visual appearance
+    - Dynamic loading based on group composition
+    - Real-time cooldown tracking with visual countdown
+    - Ready state pulse animations for available abilities
+    - Category-based filtering system for focused information
+    - Customizable positioning with multiple attachment points
+    - Multiple display options (icon, text, bar)
+    - Performance-optimized frame creation and updates
+    - Interactive tooltip information on mouseover
+    - Compatibility with all major party frame addons and default UI
+    - Intelligent positioning based on party frame layout
   - Enhanced cooldown tracking with context-awareness:
     - Zone-specific priority adjustments (PvP, raid, dungeon)
     - Smart filtering options based on group content
