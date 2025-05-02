@@ -1,11 +1,11 @@
 -- VUI - Unified World of Warcraft Addon Suite
 -- Author: VortexQ8
--- Version: 0.2.0
+-- Version: 0.3.0
 
 -- Create global VUI table
 VUI = {}
 VUI.name = "VUI"
-VUI.version = "0.2.0"
+VUI.version = "0.3.0"
 VUI.author = "VortexQ8"
 
 -- Define global library references that will be used throughout the addon
@@ -152,6 +152,18 @@ end)
 function VUI:PreInitialize()
     -- Any setup that needs to happen before player login
     self:LoadDefaults()
+end
+
+-- Load media files
+function VUI:LoadMedia()
+    -- Register media files with LibSharedMedia if available
+    local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
+    if not LSM then return end
+    
+    -- Register our custom icons
+    LSM:Register("statusbar", "VUI Vortex", [[Interface\AddOns\VUI\media\icons\vui_icon.tga]])
+    
+    -- Additional media will be loaded through media/RegisterMediaLSM.lua
 end
 
 -- Register chat commands
