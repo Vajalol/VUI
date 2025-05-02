@@ -2,9 +2,8 @@
     VUI - Module Manager
     Author: VortexQ8
     
-    This file implements the module management system for VUI, integrating with
-    the dynamic module loading system to provide a unified interface for managing
-    modules and their dependencies.
+    This file implements the module management system for VUI, providing a unified 
+    interface for managing modules and their dependencies with optimized caching.
 ]]
 
 local _, VUI = ...
@@ -14,8 +13,14 @@ local L = VUI.L
 local ModuleManager = {}
 VUI.ModuleManager = ModuleManager
 
--- Reference to the DynamicModuleLoading system
-local DynamicLoading = VUI.DynamicModuleLoading
+-- Cache frequently used globals for better performance
+local GetTime = GetTime
+local pairs = pairs
+local type = type
+local tinsert = table.insert
+local tsort = table.sort
+local min = math.min
+local wipe = wipe
 
 -- Module reference cache
 local moduleCache = {}
@@ -24,18 +29,14 @@ local moduleCache = {}
 local settings = {
     enabled = true,
     trackUsageStats = true,
-    moduleTimeout = 5.0,  -- Maximum time (seconds) to wait for a module to load
-    autoRetry = true,     -- Auto-retry module loading on failure
-    maxRetries = 3,       -- Maximum number of retries for module loading
     debugMode = false,    -- Enable debug output
+    autoCleanupInterval = 300,  -- Cleanup unused cache entries every 5 minutes
 }
 
 -- Module usage statistics
 local moduleStats = {
     accessCount = {},        -- Number of times each module was accessed
-    loadTime = {},           -- Time taken to load each module
     lastAccess = {},         -- Last time each module was accessed
-    failureCount = {},       -- Number of times module loading failed
     dependencies = {},       -- Module dependencies
 }
 
@@ -61,13 +62,37 @@ function ModuleManager:Initialize()
         self:OnModuleUnloaded(moduleName)
     end)
     
-    -- Wait for dynamic module loading to be available
-    if not DynamicLoading then
-        VUI:Print("Module Manager initialized (waiting for Dynamic Module Loading)")
-        return
+    -- Set up cache cleanup timer
+    C_Timer.NewTicker(settings.autoCleanupInterval, function()
+        self:CleanupModuleCache()
+    end)
+    
+    if settings.debugMode then
+        VUI:Print("Module Manager initialized with optimized caching")
+    end
+end
+
+-- Cleanup unused entries in the module cache to prevent memory bloat
+function ModuleManager:CleanupModuleCache()
+    local now = GetTime()
+    local cacheSize = 0
+    local cleanedCount = 0
+    
+    -- Count cache entries and identify old ones
+    for name, _ in pairs(moduleCache) do
+        cacheSize = cacheSize + 1
+        
+        -- If this module hasn't been accessed recently (30+ minutes), remove it from cache
+        if settings.trackUsageStats and moduleStats.lastAccess[name] and 
+           (now - moduleStats.lastAccess[name] > 1800) then
+            moduleCache[name] = nil
+            cleanedCount = cleanedCount + 1
+        end
     end
     
-    VUI:Print("Module Manager initialized")
+    if settings.debugMode and cleanedCount > 0 then
+        VUI:Print(string.format("Module cache cleanup: removed %d of %d entries", cleanedCount, cacheSize))
+    end
 end
 
 -- Load settings from database
@@ -94,17 +119,12 @@ function ModuleManager:GetModule(name, silent)
         return nil
     end
     
-    -- Check cache first
+    -- Check cache first (fastest path)
     if moduleCache[name] then
         -- Update access stats
         if settings.trackUsageStats then
             moduleStats.accessCount[name] = (moduleStats.accessCount[name] or 0) + 1
             moduleStats.lastAccess[name] = GetTime()
-        end
-        
-        -- Notify DynamicLoading that module was accessed
-        if DynamicLoading then
-            DynamicLoading:UpdateModuleAccess(name)
         end
         
         return moduleCache[name]
@@ -114,7 +134,7 @@ function ModuleManager:GetModule(name, silent)
     local vModule = self.originalGetModule(VUI, name, true)
     
     if vModule then
-        -- Cache the result
+        -- Cache the result for future access
         moduleCache[name] = vModule
         
         -- Update access stats
@@ -123,74 +143,10 @@ function ModuleManager:GetModule(name, silent)
             moduleStats.lastAccess[name] = GetTime()
         end
         
-        -- Notify DynamicLoading that module was accessed
-        if DynamicLoading then
-            DynamicLoading:UpdateModuleAccess(name)
-        end
-        
         return vModule
     end
     
-    -- Module not found, use dynamic loading if available
-    if DynamicLoading and settings.enabled then
-        if DynamicLoading:IsModuleLoaded(name) then
-            -- Module is loaded but not in cache, try again with original method
-            vModule = self.originalGetModule(VUI, name, true)
-            
-            if vModule then
-                moduleCache[name] = vModule
-                
-                -- Update access stats
-                if settings.trackUsageStats then
-                    moduleStats.accessCount[name] = (moduleStats.accessCount[name] or 0) + 1
-                    moduleStats.lastAccess[name] = GetTime()
-                end
-                
-                return vModule
-            end
-        else
-            -- Try to load the module
-            DynamicLoading:LoadModule(name, function(success, message)
-                if success then
-                    -- Module loaded, update cache
-                    local module = self.originalGetModule(VUI, name, true)
-                    if module then
-                        moduleCache[name] = module
-                    end
-                else
-                    -- Failed to load
-                    if settings.debugMode then
-                        VUI:Print("Failed to load module " .. name .. ": " .. message)
-                    end
-                    
-                    -- Track failure
-                    if settings.trackUsageStats then
-                        moduleStats.failureCount[name] = (moduleStats.failureCount[name] or 0) + 1
-                    end
-                    
-                    -- Auto-retry if enabled
-                    if settings.autoRetry and moduleStats.failureCount[name] < settings.maxRetries then
-                        if settings.debugMode then
-                            VUI:Print("Retrying load of module " .. name .. " (attempt " .. moduleStats.failureCount[name] + 1 .. "/" .. settings.maxRetries .. ")")
-                        end
-                        
-                        C_Timer.After(1, function()
-                            DynamicLoading:LoadModule(name)
-                        end)
-                    end
-                end
-            end)
-            
-            -- Return nil for now, module will be available later
-            if not silent then
-                VUI:Print("Module " .. name .. " is being loaded dynamically. It will be available shortly.")
-            end
-            
-            return nil
-        end
-    end
-    
-    -- Module not found and can't be loaded
+    -- Module not found
     if not silent then
         VUI:Print("Module " .. name .. " not found.")
     end
@@ -198,59 +154,27 @@ function ModuleManager:GetModule(name, silent)
     return nil
 end
 
--- Call a method on a module, loading it if necessary
+-- Call a method on a module if available
 function ModuleManager:CallModuleMethod(moduleName, methodName, ...)
     if not moduleName or not methodName then
         return nil
     end
     
-    -- Get module (will load if needed)
+    -- Get module
     local module = self:GetModule(moduleName, true)
     
     if module then
-        -- Module already loaded, call method directly
+        -- Module exists, call method directly
         if type(module[methodName]) == "function" then
             return module[methodName](module, ...)
         else
             if settings.debugMode then
                 VUI:Print("Method " .. methodName .. " not found in module " .. moduleName)
             end
-            return nil
         end
-    elseif DynamicLoading and settings.enabled then
-        -- Module not loaded, load it first then call method
-        if DynamicLoading:IsModuleLoaded(moduleName) then
-            -- Module is loaded but not in cache for some reason
-            module = self.originalGetModule(VUI, moduleName, true)
-            
-            if module and type(module[methodName]) == "function" then
-                return module[methodName](module, ...)
-            end
-        else
-            -- Queue for loading and execution
-            local args = {...}
-            
-            DynamicLoading:LoadModule(moduleName, function(success)
-                if success then
-                    -- Module loaded, get reference and call method
-                    local loadedModule = self.originalGetModule(VUI, moduleName, true)
-                    
-                    if loadedModule and type(loadedModule[methodName]) == "function" then
-                        loadedModule[methodName](loadedModule, unpack(args))
-                    else
-                        if settings.debugMode then
-                            VUI:Print("Method " .. methodName .. " not found in module " .. moduleName .. " after loading")
-                        end
-                    end
-                else
-                    if settings.debugMode then
-                        VUI:Print("Failed to load module " .. moduleName .. " for method call " .. methodName)
-                    end
-                end
-            end)
-            
-            -- Return nil for now
-            return nil
+    else
+        if settings.debugMode then
+            VUI:Print("Module " .. moduleName .. " not available for method call " .. methodName)
         end
     end
     
@@ -263,8 +187,12 @@ function ModuleManager:IsModuleAvailable(moduleName)
         return false
     end
     
-    -- Check cache first
+    -- Check cache first (fastest path)
     if moduleCache[moduleName] then
+        -- Update access stats
+        if settings.trackUsageStats then
+            moduleStats.lastAccess[moduleName] = GetTime()
+        end
         return true
     end
     
@@ -273,47 +201,45 @@ function ModuleManager:IsModuleAvailable(moduleName)
     if module then
         -- Cache for future reference
         moduleCache[moduleName] = module
+        
+        -- Update access stats
+        if settings.trackUsageStats then
+            moduleStats.lastAccess[moduleName] = GetTime()
+        end
+        
         return true
-    end
-    
-    -- Check dynamic loading system
-    if DynamicLoading then
-        return DynamicLoading:IsModuleLoaded(moduleName)
     end
     
     return false
 end
 
--- Register module dependencies
+-- Register module dependencies (for documentation/reference only)
 function ModuleManager:RegisterDependencies(moduleName, dependencies)
     if not moduleName or not dependencies or #dependencies == 0 then
         return
     end
     
-    -- Store dependencies
+    -- Store dependencies for reference
     moduleStats.dependencies[moduleName] = dependencies
-    
-    -- Register with dynamic loading system if available
-    if DynamicLoading then
-        DynamicLoading:RegisterModule(moduleName, nil, dependencies)
-    end
 end
 
--- Reload a module
+-- Reload a module (remove from cache to force reload on next access)
 function ModuleManager:ReloadModule(moduleName)
     if not moduleName then
         return false
     end
     
     -- Remove from cache
-    moduleCache[moduleName] = nil
-    
-    -- Use dynamic loading if available
-    if DynamicLoading then
-        return DynamicLoading:ReloadModule(moduleName)
+    if moduleCache[moduleName] then
+        moduleCache[moduleName] = nil
+        
+        if settings.debugMode then
+            VUI:Print("Module " .. moduleName .. " removed from cache")
+        end
+        
+        return true
     end
     
-    -- Can't reload without dynamic loading
     return false
 end
 
@@ -338,42 +264,54 @@ end
 function ModuleManager:GetModuleStats()
     local stats = {
         moduleCount = 0,
-        loadedCount = 0,
+        cacheSize = 0,
         mostAccessed = {},
-        failedModules = {},
+        recentAccess = {},
+        memoryUsage = 0,
     }
     
-    -- Count modules
-    for name in pairs(moduleStats.accessCount) do
+    -- Count modules and get cache size
+    stats.cacheSize = 0
+    for _ in pairs(moduleCache) do
+        stats.cacheSize = stats.cacheSize + 1
+    end
+    
+    stats.moduleCount = 0
+    for _ in pairs(moduleStats.accessCount) do
         stats.moduleCount = stats.moduleCount + 1
-        
-        if self:IsModuleAvailable(name) then
-            stats.loadedCount = stats.loadedCount + 1
-        end
     end
     
     -- Find most accessed modules
     local accessList = {}
     for name, count in pairs(moduleStats.accessCount) do
-        table.insert(accessList, {name = name, count = count})
+        tinsert(accessList, {name = name, count = count})
     end
     
-    table.sort(accessList, function(a, b) return a.count > b.count end)
+    tsort(accessList, function(a, b) return a.count > b.count end)
     
-    -- Get top 5
-    for i = 1, math.min(5, #accessList) do
-        table.insert(stats.mostAccessed, accessList[i])
+    -- Get top 5 most accessed
+    for i = 1, min(5, #accessList) do
+        tinsert(stats.mostAccessed, accessList[i])
     end
     
-    -- Find modules with load failures
-    for name, count in pairs(moduleStats.failureCount) do
-        if count > 0 then
-            table.insert(stats.failedModules, {name = name, failures = count})
-        end
+    -- Find most recently accessed modules
+    local recentList = {}
+    for name, time in pairs(moduleStats.lastAccess) do
+        tinsert(recentList, {name = name, time = time})
     end
     
-    -- Sort by failure count
-    table.sort(stats.failedModules, function(a, b) return a.failures > b.failures end)
+    tsort(recentList, function(a, b) return a.time > b.time end)
+    
+    -- Get top 5 most recent
+    for i = 1, min(5, #recentList) do
+        tinsert(stats.recentAccess, {
+            name = recentList[i].name,
+            elapsed = GetTime() - recentList[i].time
+        })
+    end
+    
+    -- Estimate memory usage (very rough estimate)
+    stats.memoryUsage = stats.cacheSize * 10  -- ~10kb per module is a rough estimate
     
     return stats
 end
@@ -388,7 +326,7 @@ function ModuleManager:GetConfigOptions()
                 order = 1,
                 type = "toggle",
                 name = "Enable Module Manager",
-                desc = "Enables enhanced module management and dynamic loading",
+                desc = "Enables enhanced module management with optimized caching",
                 get = function() return settings.enabled end,
                 set = function(_, value) 
                     settings.enabled = value
@@ -409,21 +347,8 @@ function ModuleManager:GetConfigOptions()
                 width = "full",
                 disabled = function() return not settings.enabled end,
             },
-            autoRetry = {
-                order = 3,
-                type = "toggle",
-                name = "Auto-Retry Loading",
-                desc = "Automatically retry loading modules if they fail",
-                get = function() return settings.autoRetry end,
-                set = function(_, value) 
-                    settings.autoRetry = value
-                    VUI.db.profile.moduleManager.autoRetry = value
-                end,
-                width = "full",
-                disabled = function() return not settings.enabled end,
-            },
             debugMode = {
-                order = 4,
+                order = 3,
                 type = "toggle",
                 name = "Debug Mode",
                 desc = "Show detailed information about module operations",
@@ -436,44 +361,28 @@ function ModuleManager:GetConfigOptions()
                 disabled = function() return not settings.enabled end,
             },
             advancedHeader = {
-                order = 5,
+                order = 4,
                 type = "header",
-                name = "Advanced Settings",
+                name = "Cache Settings",
             },
-            moduleTimeout = {
-                order = 6,
+            autoCleanupInterval = {
+                order = 5,
                 type = "range",
-                name = "Module Timeout",
-                desc = "Maximum time to wait for a module to load (in seconds)",
-                min = 1,
-                max = 30,
-                step = 1,
-                get = function() return settings.moduleTimeout end,
+                name = "Cache Cleanup Interval",
+                desc = "How often to check and clean up unused modules from cache (in seconds)",
+                min = 60,
+                max = 1800,
+                step = 60,
+                get = function() return settings.autoCleanupInterval end,
                 set = function(_, value) 
-                    settings.moduleTimeout = value
-                    VUI.db.profile.moduleManager.moduleTimeout = value
+                    settings.autoCleanupInterval = value
+                    VUI.db.profile.moduleManager.autoCleanupInterval = value
                 end,
                 width = "full",
                 disabled = function() return not settings.enabled end,
             },
-            maxRetries = {
-                order = 7,
-                type = "range",
-                name = "Maximum Retries",
-                desc = "Maximum number of retries for module loading",
-                min = 1,
-                max = 10,
-                step = 1,
-                get = function() return settings.maxRetries end,
-                set = function(_, value) 
-                    settings.maxRetries = value
-                    VUI.db.profile.moduleManager.maxRetries = value
-                end,
-                width = "full",
-                disabled = function() return not settings.enabled or not settings.autoRetry end,
-            },
             clearCache = {
-                order = 8,
+                order = 6,
                 type = "execute",
                 name = "Clear Module Cache",
                 desc = "Clear the module cache, forcing all modules to be reloaded when accessed",
@@ -485,19 +394,29 @@ function ModuleManager:GetConfigOptions()
                 disabled = function() return not settings.enabled end,
             },
             resetStats = {
-                order = 9,
+                order = 7,
                 type = "execute",
                 name = "Reset Usage Statistics",
                 desc = "Reset all module usage statistics",
                 func = function()
                     wipe(moduleStats.accessCount)
-                    wipe(moduleStats.loadTime)
                     wipe(moduleStats.lastAccess)
-                    wipe(moduleStats.failureCount)
                     VUI:Print("Module usage statistics reset")
                 end,
                 width = "full",
                 disabled = function() return not settings.enabled or not settings.trackUsageStats end,
+            },
+            cleanupNow = {
+                order = 8,
+                type = "execute",
+                name = "Run Cache Cleanup Now",
+                desc = "Immediately clean up unused modules from the cache",
+                func = function()
+                    ModuleManager:CleanupModuleCache()
+                    VUI:Print("Module cache cleanup complete")
+                end,
+                width = "full",
+                disabled = function() return not settings.enabled end,
             },
         }
     }

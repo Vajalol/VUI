@@ -372,6 +372,15 @@ This document tracks significant changes to the VUI addon suite.
   - Added module-specific optimization guidelines
   - Documented performance testing methodologies
   - Added memory and CPU usage target guidelines
+- Enhanced performance optimization system:
+  - Removed Dynamic Module Loading dependencies for streamlined codebase
+  - Implemented optimized module management with advanced caching
+  - Added adaptive throttling based on framerate for improved performance in raids
+  - Enhanced spell detection with intelligent combat-aware processing
+  - Implemented predictive spell caching with group composition awareness
+  - Added automatic background caching during idle/non-combat periods
+  - Improved memory management with automated cleanup routines
+  - Added comprehensive performance metrics with detailed usage statistics
 
 ## v0.1.0 (Previous Release)
 

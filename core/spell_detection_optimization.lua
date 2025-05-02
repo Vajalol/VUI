@@ -19,15 +19,34 @@ local L = VUI.L
 local SpellDetectionOptimization = {}
 VUI.SpellDetectionOptimization = SpellDetectionOptimization
 
+-- Cache frequently used globals for better performance
+local GetTime = GetTime
+local pairs = pairs
+local ipairs = ipairs
+local tinsert = table.insert
+local tremove = table.remove
+local wipe = wipe
+local next = next
+local select = select
+local UnitIsUnit = UnitIsUnit
+local UnitExists = UnitExists
+local UnitGUID = UnitGUID
+local InCombatLockdown = InCombatLockdown
+local GetFramerate = GetFramerate
+
 -- Configuration
 local Config = {
     enabledByDefault = true,
-    cacheSize = 1000,             -- Number of spells to cache
+    cacheSize = 1500,             -- Increased cache size for better hit rates
     predictiveLoadingEnabled = true,
     combatThrottling = true,
     throttleInterval = 0.1,       -- 100ms throttling during combat
     groupSyncEnabled = true,      -- Sync important spells with group members
     priorityScanEnabled = true,   -- Prioritize scanning for important spells
+    adaptiveThrottling = true,    -- Dynamically adjust throttling based on framerate
+    lowFpsThreshold = 20,         -- FPS threshold to increase throttling
+    lowFpsThrottleMultiplier = 2, -- Multiply throttle interval when FPS is low
+    minProcessingInterval = 0.05, -- Minimum time between processing non-critical spells
     debugMode = false,            -- Set to true to enable debug messages
 }
 
@@ -65,6 +84,39 @@ function SpellDetectionOptimization:Initialize()
     -- Check if already initialized
     if self.initialized then return end
     
+    -- Initialize metrics
+    Metrics = {
+        cacheHits = 0,
+        cacheMisses = 0,
+        spellsProcessed = 0,
+        eventsFiltered = 0,
+        spellIconsOptimized = 0,
+        predictiveLoads = 0,
+        predictiveCacheUpdates = 0,
+        lowFpsEvents = 0,
+        lastReset = GetTime()
+    }
+    
+    -- Initialize spell cache
+    SpellCache = {
+        byID = {},
+        byName = {},
+        byType = {},
+        lastUsed = {},
+        priorityList = {},
+        pendingUpdates = {}
+    }
+    
+    -- Define priority values for different spell event types
+    PrioritySpellTypes = {
+        SPELL_INTERRUPT = 1.0,       -- Always process interrupts
+        SPELL_DISPEL = 1.0,          -- Always process dispels
+        SPELL_STOLEN = 1.0,          -- Always process spell steals
+        SPELL_CAST_SUCCESS = 0.8,    -- Process most casts, but throttle a bit
+        SPELL_AURA_APPLIED = 0.6,    -- Process some aura applications
+        SPELL_SUMMON = 0.7           -- Process most summons
+    }
+    
     -- Load saved variables or use defaults
     self:LoadSettings()
     
@@ -73,6 +125,9 @@ function SpellDetectionOptimization:Initialize()
     
     -- Register for event handling optimization
     self:RegisterEventOptimization()
+    
+    -- Set up frame-based predictive caching
+    self:SetupPredictiveCaching()
     
     -- Set initialized flag
     self.initialized = true
@@ -94,6 +149,9 @@ function SpellDetectionOptimization:LoadSettings()
                 predictiveLoading = Config.predictiveLoadingEnabled,
                 combatThrottling = Config.combatThrottling,
                 throttleInterval = Config.throttleInterval,
+                adaptiveThrottling = Config.adaptiveThrottling,
+                lowFpsThreshold = Config.lowFpsThreshold,
+                lowFpsThrottleMultiplier = Config.lowFpsThrottleMultiplier,
                 groupSync = Config.groupSyncEnabled,
                 priorityScan = Config.priorityScanEnabled,
                 debug = Config.debugMode
@@ -106,6 +164,14 @@ function SpellDetectionOptimization:LoadSettings()
         Config.predictiveLoadingEnabled = db.profile.optimizationSettings.predictiveLoading
         Config.combatThrottling = db.profile.optimizationSettings.combatThrottling
         Config.throttleInterval = db.profile.optimizationSettings.throttleInterval
+        
+        -- Load adaptive throttling settings (with defaults if missing)
+        Config.adaptiveThrottling = db.profile.optimizationSettings.adaptiveThrottling ~= nil and 
+                                  db.profile.optimizationSettings.adaptiveThrottling or Config.adaptiveThrottling
+        Config.lowFpsThreshold = db.profile.optimizationSettings.lowFpsThreshold or Config.lowFpsThreshold
+        Config.lowFpsThrottleMultiplier = db.profile.optimizationSettings.lowFpsThrottleMultiplier or Config.lowFpsThrottleMultiplier
+        
+        -- Load other settings
         Config.groupSyncEnabled = db.profile.optimizationSettings.groupSync
         Config.priorityScanEnabled = db.profile.optimizationSettings.priorityScan
         Config.debugMode = db.profile.optimizationSettings.debug
@@ -263,7 +329,25 @@ function SpellDetectionOptimization:OptimizedCombatLogEvent(module)
     -- Throttle in combat if enabled
     if Config.combatThrottling and InCombatLockdown() then
         local now = GetTime()
-        if not self.lastProcessTime or (now - self.lastProcessTime) >= Config.throttleInterval then
+        
+        -- Determine the appropriate throttle interval using adaptive throttling
+        local throttleInterval = Config.throttleInterval
+        
+        -- Apply adaptive throttling if enabled and framerate is low
+        if Config.adaptiveThrottling then
+            local currentFps = GetFramerate()
+            if currentFps < Config.lowFpsThreshold then
+                -- Increase throttle interval during low FPS to reduce CPU usage
+                throttleInterval = throttleInterval * Config.lowFpsThrottleMultiplier
+                
+                -- Add to metrics
+                if not self.lowFpsCounter then self.lowFpsCounter = 0 end
+                self.lowFpsCounter = self.lowFpsCounter + 1
+            end
+        end
+        
+        -- Check if enough time has passed since last processing
+        if not self.lastProcessTime or (now - self.lastProcessTime) >= throttleInterval then
             self.lastProcessTime = now
         else
             -- Skip this event due to throttling
@@ -519,16 +603,217 @@ function SpellDetectionOptimization:CheckCacheSize()
     end
 end
 
+-- Set up predictive caching using frame update handler
+function SpellDetectionOptimization:SetupPredictiveCaching()
+    -- Create a frame for predictive caching updates
+    local predictiveFrame = CreateFrame("Frame", "VUISpellCachePredictiveFrame")
+    local updateInterval = 0.5 -- Update every half second
+    local timeSinceLastUpdate = 0
+    
+    predictiveFrame:SetScript("OnUpdate", function(self, elapsed)
+        -- Only process when out of combat to avoid impacting performance during encounters
+        if InCombatLockdown() then return end
+        
+        timeSinceLastUpdate = timeSinceLastUpdate + elapsed
+        if timeSinceLastUpdate >= updateInterval then
+            timeSinceLastUpdate = 0
+            
+            -- Process any pending spell cache updates
+            SpellDetectionOptimization:ProcessPendingCacheUpdates()
+        end
+    end)
+    
+    -- Listen for combat state changes
+    predictiveFrame:RegisterEvent("PLAYER_REGEN_ENABLED")  -- Out of combat
+    predictiveFrame:RegisterEvent("PLAYER_REGEN_DISABLED") -- Entering combat
+    predictiveFrame:RegisterEvent("GROUP_ROSTER_UPDATE")   -- Group composition changed
+    
+    predictiveFrame:SetScript("OnEvent", function(self, event, ...)
+        if event == "PLAYER_REGEN_ENABLED" then
+            -- Player just left combat, good time to update cache
+            SpellDetectionOptimization:QueueFullCacheUpdate()
+        elseif event == "GROUP_ROSTER_UPDATE" then
+            -- Group changed, update spell priorities
+            SpellDetectionOptimization:QueueClassSpecificSpellUpdate()
+        end
+    end)
+    
+    -- Store frame reference
+    self.predictiveFrame = predictiveFrame
+end
+
+-- Queue class-specific spells for predictive loading based on group composition
+function SpellDetectionOptimization:QueueClassSpecificSpellUpdate()
+    -- Only proceed if predictive loading is enabled
+    if not Config.predictiveLoadingEnabled then return end
+    
+    SpellCache.pendingUpdates = SpellCache.pendingUpdates or {}
+    local classSpells = self:GetGroupClassSpells()
+    
+    -- Add class spells to pending updates queue
+    for _, spellID in ipairs(classSpells) do
+        if not SpellCache.byID[spellID] then
+            table.insert(SpellCache.pendingUpdates, spellID)
+        end
+    end
+end
+
+-- Queue a complete cache update (for out-of-combat optimization)
+function SpellDetectionOptimization:QueueFullCacheUpdate()
+    -- Only proceed if predictive loading is enabled
+    if not Config.predictiveLoadingEnabled then return end
+    
+    local MultiNotification = VUI:GetModule("MultiNotification")
+    if not MultiNotification or not MultiNotification.db then return end
+    
+    SpellCache.pendingUpdates = SpellCache.pendingUpdates or {}
+    
+    -- Get important spells from the module
+    local importantSpells = MultiNotification.db.profile.spellSettings.importantSpells
+    if not importantSpells then return end
+    
+    -- Queue all important spells for update
+    for spellID, data in pairs(importantSpells) do
+        if type(spellID) == "number" and not SpellCache.byID[spellID] then
+            table.insert(SpellCache.pendingUpdates, spellID)
+        end
+    end
+end
+
+-- Process pending cache updates out-of-combat
+function SpellDetectionOptimization:ProcessPendingCacheUpdates()
+    if not Config.predictiveLoadingEnabled or InCombatLockdown() then return end
+    if not SpellCache.pendingUpdates or #SpellCache.pendingUpdates == 0 then return end
+    
+    -- Process up to 10 spells per update to avoid client stuttering
+    local processCount = math.min(10, #SpellCache.pendingUpdates)
+    local processed = 0
+    
+    for i = 1, processCount do
+        local spellID = table.remove(SpellCache.pendingUpdates, 1)
+        if spellID then
+            local name, rank, icon = GetSpellInfo(spellID)
+            if name then
+                -- Cache the spell data
+                SpellCache.byID[spellID] = {
+                    id = spellID,
+                    name = name, 
+                    icon = icon,
+                    timestamp = GetTime()
+                }
+                
+                -- Cross-index by name
+                SpellCache.byName[name] = SpellCache.byID[spellID]
+                
+                -- Update last used time
+                SpellCache.lastUsed[spellID] = GetTime()
+                processed = processed + 1
+                Metrics.predictiveCacheUpdates = Metrics.predictiveCacheUpdates + 1
+            end
+        end
+    end
+    
+    -- Check cache size limits after updates
+    if processed > 0 then
+        self:CheckCacheSize()
+        
+        if Config.debugMode then
+            -- Only print updates for larger batches to avoid spam
+            if processed >= 5 then
+                VUI:Print(string.format("Predictive caching: Added %d spells to cache", processed))
+            end
+        end
+    end
+end
+
+-- Get class-specific spells based on current group composition
+function SpellDetectionOptimization:GetGroupClassSpells()
+    local classSpells = {}
+    
+    -- Common important class spells by ID
+    local spellsByClass = {
+        -- Death Knight
+        ["DEATHKNIGHT"] = {48707, 49028, 47476, 47568, 51271, 55233, 48792, 43265},
+        -- Demon Hunter
+        ["DEMONHUNTER"] = {198589, 212084, 196718, 187827, 191427, 203720, 207684, 204596},
+        -- Druid
+        ["DRUID"] = {740, 33891, 102342, 102793, 205636, 108238, 77764, 194223, 22812, 61336},
+        -- Hunter
+        ["HUNTER"] = {34477, 186257, 186265, 109304, 53271, 187650, 186387, 19574, 190925},
+        -- Mage
+        ["MAGE"] = {122, 2139, 45438, 113724, 12042, 12472, 190319, 110959, 190446},
+        -- Monk
+        ["MONK"] = {115203, 116844, 115078, 122470, 243435, 122278, 115310, 116680, 119582},
+        -- Paladin
+        ["PALADIN"] = {31884, 86659, 31821, 1022, 6940, 204018, 105809, 184662, 498, 642},
+        -- Priest
+        ["PRIEST"] = {47788, 33206, 62618, 64843, 64901, 10060, 15286, 19236, 586, 8122},
+        -- Rogue
+        ["ROGUE"] = {31224, 5277, 1966, 1856, 2983, 79140, 121471, 13750, 51690, 57934},
+        -- Shaman
+        ["SHAMAN"] = {98008, 108280, 16191, 51886, 8143, 208963, 114052, 192249, 198067},
+        -- Warlock
+        ["WARLOCK"] = {104773, 108416, 113860, 113858, 205180, 108503, 48020, 111771},
+        -- Warrior
+        ["WARRIOR"] = {97462, 118038, 6673, 1160, 871, 12975, 107574, 46968, 167105}
+    }
+    
+    -- Check current party/raid members
+    local isInRaid = IsInRaid()
+    local unitPrefix = isInRaid and "raid" or "party"
+    local maxMembers = isInRaid and 40 or 5
+    
+    -- Always include player's class
+    local playerClass = select(2, UnitClass("player"))
+    if playerClass and spellsByClass[playerClass] then
+        for _, spellID in ipairs(spellsByClass[playerClass]) do
+            table.insert(classSpells, spellID)
+        end
+    end
+    
+    -- Check group members
+    for i = 1, maxMembers do
+        local unit = i == maxMembers and not isInRaid and "player" or unitPrefix..i
+        if UnitExists(unit) then
+            local _, class = UnitClass(unit)
+            if class and spellsByClass[class] then
+                -- Add class-specific spells to the list, prioritizing important ones
+                for _, spellID in ipairs(spellsByClass[class]) do
+                    table.insert(classSpells, spellID)
+                end
+            end
+        end
+    end
+    
+    return classSpells
+end
+
 -- Report cache performance metrics
 function SpellDetectionOptimization:ReportMetrics()
+    -- Always schedule next report first
+    C_Timer.After(60, function() self:ReportMetrics() end)
+    
+    -- Exit if debug mode is disabled
     if not Config.debugMode then
-        -- Schedule next report and exit
-        C_Timer.After(60, function() self:ReportMetrics() end)
         return
     end
     
     local now = GetTime()
     local duration = now - Metrics.lastReset
+    
+    -- Track number of cache entries
+    local cacheEntries = 0
+    for _ in pairs(SpellCache.byID) do
+        cacheEntries = cacheEntries + 1
+    end
+    
+    -- Get adaptive throttling stats
+    local adaptiveStats = ""
+    if Config.adaptiveThrottling and self.lowFpsCounter and self.lowFpsCounter > 0 then
+        adaptiveStats = string.format(" | Adaptive Throttling: %d events", self.lowFpsCounter)
+        -- Reset counter after reporting
+        self.lowFpsCounter = 0
+    end
     
     -- Calculate hit rate
     local totalLookups = Metrics.cacheHits + Metrics.cacheMisses
@@ -543,7 +828,20 @@ function SpellDetectionOptimization:ReportMetrics()
         Metrics.eventsFiltered, Metrics.eventsFiltered / (Metrics.spellsProcessed + Metrics.eventsFiltered) * 100))
     VUI:Print(string.format("Cache Performance: %d hits, %d misses (%.1f%% hit rate)",
         Metrics.cacheHits, Metrics.cacheMisses, hitRate))
-    VUI:Print(string.format("Predictive Loads: %d", Metrics.predictiveLoads))
+    VUI:Print(string.format("Predictive Loading: %d initial spells, %d dynamic updates", 
+        Metrics.predictiveLoads, Metrics.predictiveCacheUpdates or 0))
+    
+    -- Output adaptive throttling stats if enabled
+    if Config.adaptiveThrottling then
+        local adaptiveMsg = "Adaptive Throttling: "
+        if self.lowFpsCounter and self.lowFpsCounter > 0 then
+            adaptiveMsg = adaptiveMsg .. string.format("|cFFFF9900Active (%d events throttled)|r", self.lowFpsCounter)
+            self.lowFpsCounter = 0 -- Reset after reporting
+        else
+            adaptiveMsg = adaptiveMsg .. "|cFF00FF00Standby (normal framerate)|r"
+        end
+        VUI:Print(adaptiveMsg)
+    end
     
     -- Cache size
     local cacheSize = 0
@@ -559,9 +857,7 @@ function SpellDetectionOptimization:ReportMetrics()
     Metrics.spellsProcessed = 0
     Metrics.eventsFiltered = 0
     Metrics.spellIconsOptimized = 0
-    
-    -- Schedule next report
-    C_Timer.After(60, function() self:ReportMetrics() end)
+    Metrics.predictiveCacheUpdates = 0
 end
 
 -- Create configuration options for the optimization module
@@ -651,8 +947,68 @@ function SpellDetectionOptimization:GetConfigOptions()
             width = "full",
             disabled = function() return not Config.enabledByDefault or not Config.combatThrottling end,
         },
-        cacheSize = {
+        adaptiveThrottling = {
             order = 6,
+            type = "toggle",
+            name = "Adaptive FPS Throttling",
+            desc = "Automatically increase throttling when framerate drops to maintain performance",
+            get = function() return Config.adaptiveThrottling end,
+            set = function(_, value) 
+                Config.adaptiveThrottling = value 
+                
+                -- Update settings in DB
+                local db = VUI.db:GetNamespace("MultiNotification")
+                if db and db.profile and db.profile.optimizationSettings then
+                    db.profile.optimizationSettings.adaptiveThrottling = value
+                end
+            end,
+            width = "full",
+            disabled = function() return not Config.enabledByDefault or not Config.combatThrottling end,
+        },
+        lowFpsThreshold = {
+            order = 7,
+            type = "range",
+            name = "Low FPS Threshold",
+            desc = "Framerate threshold to trigger additional throttling",
+            min = 10,
+            max = 60,
+            step = 1,
+            get = function() return Config.lowFpsThreshold end,
+            set = function(_, value) 
+                Config.lowFpsThreshold = value 
+                
+                -- Update settings in DB
+                local db = VUI.db:GetNamespace("MultiNotification")
+                if db and db.profile and db.profile.optimizationSettings then
+                    db.profile.optimizationSettings.lowFpsThreshold = value
+                end
+            end,
+            width = "full",
+            disabled = function() return not Config.enabledByDefault or not Config.combatThrottling or not Config.adaptiveThrottling end,
+        },
+        lowFpsThrottleMultiplier = {
+            order = 8,
+            type = "range",
+            name = "Low FPS Throttle Multiplier",
+            desc = "How much to increase throttling when framerate drops below threshold (higher = more aggressive throttling)",
+            min = 1.5,
+            max = 5.0,
+            step = 0.5,
+            get = function() return Config.lowFpsThrottleMultiplier end,
+            set = function(_, value) 
+                Config.lowFpsThrottleMultiplier = value 
+                
+                -- Update settings in DB
+                local db = VUI.db:GetNamespace("MultiNotification")
+                if db and db.profile and db.profile.optimizationSettings then
+                    db.profile.optimizationSettings.lowFpsThrottleMultiplier = value
+                end
+            end,
+            width = "full",
+            disabled = function() return not Config.enabledByDefault or not Config.combatThrottling or not Config.adaptiveThrottling end,
+        },
+        cacheSize = {
+            order = 9,
             type = "range",
             name = "Cache Size",
             desc = "Maximum number of spells to cache for faster lookup",
@@ -673,7 +1029,7 @@ function SpellDetectionOptimization:GetConfigOptions()
             disabled = function() return not Config.enabledByDefault end,
         },
         debugMode = {
-            order = 7,
+            order = 10,
             type = "toggle",
             name = "Debug Mode",
             desc = "Enable debug output for spell detection optimization metrics",
@@ -691,7 +1047,7 @@ function SpellDetectionOptimization:GetConfigOptions()
             disabled = function() return not Config.enabledByDefault end,
         },
         resetCache = {
-            order = 8,
+            order = 11,
             type = "execute",
             name = "Reset Cache",
             desc = "Clear the spell cache and reset all optimization metrics",
@@ -705,6 +1061,7 @@ function SpellDetectionOptimization:GetConfigOptions()
                 Metrics.eventsFiltered = 0
                 Metrics.spellIconsOptimized = 0
                 Metrics.predictiveLoads = 0
+                Metrics.predictiveCacheUpdates = 0
                 Metrics.lastReset = GetTime()
                 
                 VUI:Print("Spell detection cache has been reset")
