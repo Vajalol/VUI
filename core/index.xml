@@ -11,6 +11,7 @@
     <Script file="performance.lua"/>
     <Script file="combat_performance.lua"/>
     <Script file="event_optimization.lua"/>
+    <Script file="resource_cleanup.lua"/>
     
     <!-- UI Framework -->
     <Script file="UI.lua"/>

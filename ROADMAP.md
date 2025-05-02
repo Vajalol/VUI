@@ -163,7 +163,7 @@ This section outlines the development phases, current status, and upcoming work 
 - Reducing memory footprint during combat ✓
 - Event handling optimization ✓
 - Atlas-Based Theme Switching Performance ✓
-- Resource Cleanup During Idle ⟳
+- Resource Cleanup During Idle ✓
 
 ### Planned Optimizations ☐
 - DetailsRedux Texture Atlas Implementation ☐

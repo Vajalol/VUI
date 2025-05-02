@@ -17,6 +17,12 @@ local ThemeIntegration = DetailsSkin.ThemeIntegration
 local themeColors = {}
 local activeTheme = "thunderstorm"
 
+-- Reference to VUI Atlas
+local Atlas = VUI.Atlas
+
+-- Reference to DetailsSkin Atlas
+local DSAtlas 
+
 -- Initialize theme integration
 function ThemeIntegration:Initialize()
     -- Get current theme colors
@@ -27,6 +33,18 @@ function ThemeIntegration:Initialize()
     if VUI.callbacks and VUI.callbacks.RegisterCallback then
         VUI.callbacks:RegisterCallback("OnThemeChanged", function(theme)
             self:ApplyTheme(theme)
+        end)
+    end
+    
+    -- Setup reference to DetailsSkin atlas when available
+    if DetailsSkin.Atlas then
+        DSAtlas = DetailsSkin.Atlas
+    else
+        -- If atlas module is not loaded yet, set it up after initialization
+        VUI:RegisterCallback("OnInitialized", function()
+            if DetailsSkin.Atlas then
+                DSAtlas = DetailsSkin.Atlas
+            end
         end)
     end
     
@@ -136,9 +154,22 @@ function ThemeIntegration:ApplyThemeToInstance(instance)
     
     -- Apply to bars if enabled
     if VUI.db.profile.modules.detailsskin.styleBars then
-        -- Update bar colors based on theme
+        -- Get the bar texture from atlas if available
+        local barTexture
+        
+        if DSAtlas then
+            -- Use the atlas system for textures
+            barTexture = DSAtlas:GetBarTexture(activeTheme)
+        else
+            -- Fallback to traditional texture path if atlas not available
+            barTexture = DetailsSkin.ThemeBarTextures and 
+                         DetailsSkin.ThemeBarTextures[activeTheme] or 
+                         DetailsSkin.ThemeBarTextures.thunderstorm
+        end
+        
+        -- Update bar settings with atlas texture
         instance:SetBarSettings(
-            nil, -- texture stays the same
+            barTexture, -- Use atlas texture
             nil, -- size
             {
                 accentColor.r, 
@@ -150,6 +181,11 @@ function ThemeIntegration:ApplyThemeToInstance(instance)
             nil, -- barPadding
             nil  -- barCornerSize
         )
+        
+        -- Apply atlas-based row backdrop textures
+        if DSAtlas and instance.row_info and instance.row_backdrop_texture ~= barTexture then
+            instance.row_backdrop_texture = barTexture
+        end
     end
     
     -- Update instance
@@ -170,7 +206,16 @@ function ThemeIntegration:ApplyThemeToPlugins()
     
     -- Style existing plugin frames
     if DetailsSkin and DetailsSkin.StylizePluginFrames then
-        DetailsSkin:StylizePluginFrames(activeTheme)
+        -- Get atlas background and border textures if available
+        local backgroundTexture, borderTexture
+        
+        if DSAtlas then
+            backgroundTexture = DSAtlas:GetBackgroundTexture(activeTheme)
+            borderTexture = DSAtlas:GetBorderTexture()
+        end
+        
+        -- Pass atlas textures to the plugin styler
+        DetailsSkin:StylizePluginFrames(activeTheme, backgroundTexture, borderTexture)
     end
 end
 

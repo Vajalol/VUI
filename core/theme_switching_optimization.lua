@@ -192,7 +192,7 @@ function ThemeOpt:BuildUpdateQueue()
         local priority = self.state.framePriorities[frame] or self.config.priorityLevels.medium
         
         -- Skip hidden frames if configured to delay them
-        if self.config.delayNonVisibleUpdates and frame:IsShown and not frame:IsShown() then
+        if self.config.delayNonVisibleUpdates and type(frame.IsShown) == "function" and not frame:IsShown() then
             table.insert(priorityQueues[4], {frame = frame, updateFunc = updateInfo.updateFunc})
             self.state.skippedFrameCount = self.state.skippedFrameCount + 1
         else

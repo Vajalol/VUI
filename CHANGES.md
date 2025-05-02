@@ -43,6 +43,8 @@ This document tracks significant changes to the VUI addon suite.
     - MultiNotification atlas with optimized texture handling
     - BuffOverlay atlas implementation with frame pooling integration
     - TrufiGCD atlas with seamless icon frame integration
+    - OmniCD atlas with theme integration
+    - MoveAny texture atlas with optimized positioning system
     - Intelligent texture loading with memory monitoring
     - Comprehensive documentation for continued module atlas implementation
 - Implemented Frame Pooling System:
@@ -52,6 +54,18 @@ This document tracks significant changes to the VUI addon suite.
   - User-configurable toggle for frame pooling in settings
   - Module-specific optimizations for BuffOverlay, SpellNotifications, and MultiNotification
   - Estimated 30-40% memory reduction for frequently created/destroyed frames
+- Implemented Advanced Performance Optimizations:
+  - Combat Performance Optimization with frame throttling
+  - Event Optimization system for intelligent event handling
+  - Theme Switching Performance improvements with batched updates
+  - Resource Cleanup During Idle for reduced memory footprint:
+    - Idle-based cleanup (light: 30s, deep: 2min)
+    - Adaptive memory management with configurable thresholds
+    - Combat-aware operation with post-combat buffer period
+    - Module-specific cleanup handlers
+    - Intelligent resource caching with optimized limits
+    - 20-30% memory usage reduction during long sessions
+  - Performance metrics and monitoring system
 - Improved media management system:
   - Texture caching system to reduce memory usage
   - Lazy loading for non-essential textures
