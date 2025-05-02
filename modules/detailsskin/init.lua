@@ -326,6 +326,16 @@ function DetailsSkin:Initialize()
     -- Register theme textures
     self:RegisterThemeMedia()
     
+    -- Initialize skin registry
+    if self.SkinRegistry and self.SkinRegistry.Initialize then
+        self.SkinRegistry:Initialize()
+    end
+    
+    -- Initialize War Within skin
+    if self.WarWithin and self.WarWithin.Initialize then
+        self.WarWithin:Initialize()
+    end
+    
     -- Initialize report templates if enabled
     if self:GetSettings().useCustomTemplates then
         self.Reports:Initialize()
@@ -375,7 +385,7 @@ function DetailsSkin:Initialize()
         end
     end, 6) -- Try for 30 seconds
     
-    print("|cff1784d1VUI DetailsSkin|r module initialized.")
+    print("|cff1784d1VUI DetailsSkin|r module initialized with " .. #self.SkinRegistry:GetAvailableSkins() .. " available skins.")
 end
 
 -- Convenience functions to access theme data
