@@ -107,10 +107,7 @@ function BuffOverlay:InitializeEnhancedDisplay()
     -- Register options for the configuration UI
     self:RegisterEnhancedDisplayOptions()
     
-    -- Log initialization
-    if VUI.debug then
-        VUI:Debug("BuffOverlay Enhanced Display initialized")
-    end
+    -- Enhanced display features ready
 end
 
 -- Apply enhanced display effects to a frame

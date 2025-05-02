@@ -130,10 +130,8 @@ function SpellDetectionOptimization:Initialize()
     
     -- Set initialized flag
     self.initialized = true
-    VUI:Print("Spell Detection Logic Enhancement initialized")
     
-    -- Start metrics collection
-    C_Timer.After(60, function() self:ReportMetrics() end)
+    -- Metrics collection disabled in production release
 end
 
 -- Load settings from VUI database
@@ -173,7 +171,8 @@ function SpellDetectionOptimization:LoadSettings()
         -- Load other settings
         Config.groupSyncEnabled = db.profile.optimizationSettings.groupSync
         Config.priorityScanEnabled = db.profile.optimizationSettings.priorityScan
-        Config.debugMode = db.profile.optimizationSettings.debug
+        -- Always disable debug mode in production
+        Config.debugMode = false
     end
 end
 
@@ -714,12 +713,7 @@ function SpellDetectionOptimization:ProcessPendingCacheUpdates()
     if processed > 0 then
         self:CheckCacheSize()
         
-        if Config.debugMode then
-            -- Only print updates for larger batches to avoid spam
-            if processed >= 5 then
-                VUI:Print(string.format("Predictive caching: Added %d spells to cache", processed))
-            end
-        end
+        -- Debug metrics reporting removed for production
     end
 end
 
@@ -787,11 +781,8 @@ end
 
 -- Report cache performance metrics
 function SpellDetectionOptimization:ReportMetrics()
-    -- Always schedule next report first
-    C_Timer.After(60, function() self:ReportMetrics() end)
-    
-    -- Metrics reporting disabled in production release
-    -- Uncomment the code below for development debugging
+    -- Metrics collection and reporting completely disabled in production release
+    return
 end
 
 -- Create configuration options for the optimization module
@@ -962,23 +953,25 @@ function SpellDetectionOptimization:GetConfigOptions()
             width = "full",
             disabled = function() return not Config.enabledByDefault end,
         },
+        -- Debug mode disabled in production build
         debugMode = {
             order = 10,
             type = "toggle",
             name = "Debug Mode",
-            desc = "Enable debug output for spell detection optimization metrics",
-            get = function() return Config.debugMode end,
+            desc = "Debug output disabled in production release",
+            get = function() return false end,
             set = function(_, value) 
-                Config.debugMode = value 
+                -- Debug functionality disabled
+                Config.debugMode = false
                 
-                -- Update settings in DB
+                -- Update settings in DB to ensure debug is off
                 local db = VUI.db:GetNamespace("MultiNotification")
                 if db and db.profile and db.profile.optimizationSettings then
-                    db.profile.optimizationSettings.debug = value
+                    db.profile.optimizationSettings.debug = false
                 end
             end,
             width = "full",
-            disabled = function() return not Config.enabledByDefault end,
+            disabled = true, -- Always disabled in production
         },
         resetCache = {
             order = 11,
@@ -998,7 +991,7 @@ function SpellDetectionOptimization:GetConfigOptions()
                 Metrics.predictiveCacheUpdates = 0
                 Metrics.lastReset = GetTime()
                 
-                VUI:Print("Spell detection cache has been reset")
+                -- Reset complete
             end,
             width = "full",
             disabled = function() return not Config.enabledByDefault end,

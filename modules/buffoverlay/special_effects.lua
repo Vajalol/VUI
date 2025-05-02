@@ -237,21 +237,7 @@ function BuffOverlay:InitializeSpecialEffects()
     -- Register hooks for aura display
     self:SecureHook("ApplyThemeToBuffFrame", "CheckAndApplySpecialEffects")
     
-    -- Log initialization
-    if VUI.debug then
-        local specialEffectsCount = 0
-        for _ in pairs(self.SpecialEffectsSpells) do
-            specialEffectsCount = specialEffectsCount + 1
-        end
-        
-        local additionalSpellsCount = 0
-        for _ in pairs(additionalImportantSpells) do
-            additionalSpellsCount = additionalSpellsCount + 1
-        end
-        
-        VUI:Debug(string.format("BuffOverlay Special Effects initialized with %d effect definitions and %d additional important spells", 
-            specialEffectsCount, additionalSpellsCount))
-    end
+    -- Special effects system initialized
 end
 
 -- Check if an aura should have special effects and apply them

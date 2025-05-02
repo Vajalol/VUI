@@ -37,6 +37,10 @@ This document tracks significant changes to the VUI addon suite.
 - Resolved duplicate module registration issues in 6 modules
 - Added module help system with comprehensive documentation
 - Improved Blizzard UI skin implementations with clearer code
+- Removed all debug statements and logging for cleaner production code
+- Fixed syntax error in MSBTParser.lua for improved stability
+- Disabled metrics collection and reporting in production release
+- Ensured debug mode is completely disabled across all modules
 
 ## v0.2.0 (Released)
 

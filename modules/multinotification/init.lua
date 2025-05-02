@@ -270,7 +270,7 @@ function MultiNotification:OnInitialize()
         -- Atlas textures preloaded for performance optimization
     end
     
-    VUI:Print("MultiNotification module initialized")
+    -- Module initialized
 end
 
 -- Enable module
@@ -284,28 +284,28 @@ function MultiNotification:OnEnable()
     -- Initialize Spell Events system (migrated from SpellNotifications)
     if self.InitializeSpellEvents then
         self:InitializeSpellEvents()
-        VUI:Print("MultiNotification Spell Events system initialized")
+        -- Spell events system ready
     end
     
     -- Initialize Enhanced Spell Detection if available
     if self.InitializeEnhancedSpellDetection then
         self:InitializeEnhancedSpellDetection()
-        VUI:Print("MultiNotification Enhanced Spell Detection initialized")
+        -- Enhanced spell detection ready
     end
     
     -- Initialize Sound Manager if available
     if self.RegisterSoundManager then
         self.SoundManager = self:RegisterSoundManager()
-        VUI:Print("MultiNotification Sound Manager initialized")
+        -- Sound manager ready
     end
     
     -- Initialize Frame Pool system if available
     if self.FramePool and not self.FramePool.initialized and self.db.profile.globalSettings.useFramePooling then
         self.FramePool:Initialize()
-        VUI:Print("MultiNotification Frame Pool system initialized")
+        -- Frame pool system ready
     end
     
-    VUI:Print("MultiNotification module enabled")
+    -- Module enabled
 end
 
 -- Disable module
@@ -325,7 +325,7 @@ function MultiNotification:OnDisable()
         self:ClearAllNotifications()
     end
     
-    VUI:Print("MultiNotification module disabled")
+    -- Module disabled
 end
 
 -- Create anchor frame for notifications
@@ -1215,7 +1215,7 @@ function MultiNotification:GetOptions()
                             if self.OpenSpellManagementUI then
                                 self:OpenSpellManagementUI()
                             else
-                                VUI:Print("Spell management UI is not available.")
+                                -- Spell management UI component is not loaded
                             end
                         end,
                         width = "full",
@@ -1494,7 +1494,7 @@ function MultiNotification:GetOptions()
                                 -- Call the SoundManager to create the UI
                                 self.SoundManager:CreateConfigUI(container)
                             else
-                                VUI:Print("Sound Manager is not available")
+                                -- Sound Manager component not available
                             end
                         end,
                         width = "full"

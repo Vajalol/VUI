@@ -105,7 +105,7 @@ function TrufiGCD:Initialize()
         if self.Timeline and self.Timeline.ToggleTimeline then
             self.Timeline:ToggleTimeline()
         else
-            VUI:Print("Timeline view is not available")
+            -- Timeline view component not loaded
         end
     end)
     
@@ -500,7 +500,7 @@ function TrufiGCD:Enable()
     self:RegisterEvent("PLAYER_REGEN_ENABLED", self.PLAYER_REGEN_ENABLED)
     self:RegisterEvent("PLAYER_REGEN_DISABLED", self.PLAYER_REGEN_DISABLED)
     
-    VUI:Print("TrufiGCD module enabled")
+    -- Module enabled
 end
 
 function TrufiGCD:Disable()
@@ -527,7 +527,7 @@ function TrufiGCD:Disable()
         self.fadeTimer = nil
     end
     
-    VUI:Print("TrufiGCD module disabled")
+    -- Module disabled
 end
 
 -- Helper functions

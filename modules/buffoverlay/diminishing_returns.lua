@@ -248,7 +248,7 @@ local activeDRs = {}
 -- Store DR states for each target/category
 local drStates = {}
 
--- Current DR state for debug display
+-- Current DR state tracking (for internal use)
 local currentDR = {
     guid = nil,
     category = nil,
@@ -304,10 +304,7 @@ function DR:Initialize()
     -- Create a timer to manage DR states
     self.timer = C_Timer.NewTicker(0.1, function() DR:UpdateDRStates() end)
     
-    -- Debug message
-    if VUI.debug then
-        VUI:Debug("BuffOverlay Diminishing Returns system initialized")
-    end
+    -- Diminishing returns tracking initialized
 end
 
 -- Load DR status textures
@@ -743,7 +740,7 @@ function DR:SetDRState(guid, category, state, duration, expires)
         resetTime = expires + BuffOverlay.db.profile.diminishingReturns.drResetTime
     }
     
-    -- Set current DR for debug display
+    -- Update current DR state tracking
     currentDR = {
         guid = guid,
         category = category,
@@ -751,12 +748,7 @@ function DR:SetDRState(guid, category, state, duration, expires)
         expires = expires
     }
     
-    -- Log debug info
-    if VUI.debug then
-        local unitType = string_match(guid, "^Player") and "Player" or "NPC"
-        VUI:Debug(string_format("DR: %s - %s set to %s (expires at %.1f)", 
-            unitType, category, state, expires or 0))
-    end
+    -- DR state tracked in memory
 end
 
 -- Update all DR states (check for expired timers)
@@ -775,11 +767,7 @@ function DR:UpdateDRStates()
                 -- Remove from active DRs
                 activeDRs[key] = nil
                 
-                -- Log debug info
-                if VUI.debug then
-                    local unitType = string_match(dr.guid, "^Player") and "Player" or "NPC"
-                    VUI:Debug(string_format("DR: %s - %s reset", unitType, dr.category))
-                end
+                -- DR state reset
             end
         end
     end
@@ -897,10 +885,7 @@ function DR:COMBAT_LOG_EVENT_UNFILTERED()
                 end
             end
             
-            -- Log debug info
-            if VUI.debug then
-                VUI:Debug(string_format("DR: Cleared states for dead unit %s", destName or "Unknown"))
-            end
+            -- Clear DR states when unit dies
         end
     end
 end
@@ -966,9 +951,7 @@ function DR:Reset()
     wipe(drStates)
     wipe(activeDRs)
     
-    if VUI.debug then
-        VUI:Debug("DR: Reset all diminishing returns states")
-    end
+    -- All DR states reset
 end
 
 -- Register configuration options

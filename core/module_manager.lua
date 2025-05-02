@@ -29,7 +29,7 @@ local moduleCache = {}
 local settings = {
     enabled = true,
     trackUsageStats = true,
-    debugMode = false,    -- Enable debug output
+    debugMode = false,    -- Debug output disabled in production release
     autoCleanupInterval = 300,  -- Cleanup unused cache entries every 5 minutes
 }
 
@@ -67,9 +67,7 @@ function ModuleManager:Initialize()
         self:CleanupModuleCache()
     end)
     
-    if settings.debugMode then
-        VUI:Print("Module Manager initialized with optimized caching")
-    end
+    -- Debug messages disabled in production release
 end
 
 -- Cleanup unused entries in the module cache to prevent memory bloat
@@ -90,9 +88,7 @@ function ModuleManager:CleanupModuleCache()
         end
     end
     
-    if settings.debugMode and cleanedCount > 0 then
-        VUI:Print(string.format("Module cache cleanup: removed %d of %d entries", cleanedCount, cacheSize))
-    end
+    -- Debug messages disabled in production release
 end
 
 -- Load settings from database
@@ -168,14 +164,10 @@ function ModuleManager:CallModuleMethod(moduleName, methodName, ...)
         if type(module[methodName]) == "function" then
             return module[methodName](module, ...)
         else
-            if settings.debugMode then
-                VUI:Print("Method " .. methodName .. " not found in module " .. moduleName)
-            end
+            -- Debug messages disabled in production release
         end
     else
-        if settings.debugMode then
-            VUI:Print("Module " .. moduleName .. " not available for method call " .. methodName)
-        end
+        -- Debug messages disabled in production release
     end
     
     return nil
@@ -233,9 +225,7 @@ function ModuleManager:ReloadModule(moduleName)
     if moduleCache[moduleName] then
         moduleCache[moduleName] = nil
         
-        if settings.debugMode then
-            VUI:Print("Module " .. moduleName .. " removed from cache")
-        end
+        -- Debug messages disabled in production release
         
         return true
     end
@@ -351,14 +341,15 @@ function ModuleManager:GetConfigOptions()
                 order = 3,
                 type = "toggle",
                 name = "Debug Mode",
-                desc = "Show detailed information about module operations",
-                get = function() return settings.debugMode end,
+                desc = "Debug mode disabled in production release",
+                get = function() return false end,
                 set = function(_, value) 
-                    settings.debugMode = value
-                    VUI.db.profile.moduleManager.debugMode = value
+                    -- Debug mode always disabled in production
+                    settings.debugMode = false
+                    VUI.db.profile.moduleManager.debugMode = false
                 end,
                 width = "full",
-                disabled = function() return not settings.enabled end,
+                disabled = true, -- Always disabled in production
             },
             advancedHeader = {
                 order = 4,
