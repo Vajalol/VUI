@@ -170,8 +170,8 @@ This section outlines the development phases, current status, and upcoming work 
 ### Planned Optimizations ☐
 - Database Access Optimization ✓
 - Spell Detection Logic Enhancement ✓
-- Dynamic Module Loading ☐
-- Frame rate based throttling ☐
+- REMOVED: Dynamic Module Loading (not needed) ✗
+- REMOVED: Frame rate based throttling (not needed) ✗
 
 ## Phase 5: Accessibility Enhancements (Completed) ✓
 - High contrast mode ✓

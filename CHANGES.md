@@ -66,20 +66,7 @@ This document tracks significant changes to the VUI addon suite.
   - Enhanced response time by 20-25% for critical notifications and spells
   - Created detailed developer API for module integration with comprehensive documentation
 
-- Implemented Dynamic Module Loading System:
-  - Created core framework for on-demand module loading and unloading
-  - Implemented module dependency resolution and management
-  - Added intelligent module state tracking and lifecycle management
-  - Developed category-based module organization for smart loading
-  - Implemented automatic memory cleanup for unused modules
-  - Created combat-aware loading with intelligence for combat modules
-  - Added performance monitoring with detailed statistics
-  - Enhanced VUI's module system with dynamic loading capabilities
-  - Integrated with existing performance optimization systems
-  - Achieved 40-60% reduction in initial memory usage
-  - Improved startup times by 20-30% with delayed non-essential loading
-  - Created detailed developer documentation with best practices
-  - Added configuration panel for customizing dynamic loading behavior
+- REMOVED: Dynamic Module Loading System (not needed)
   
 - Implemented Database Access Optimization:
   - Added intelligent caching system for frequently accessed settings
@@ -141,20 +128,7 @@ This document tracks significant changes to the VUI addon suite.
     - Intelligent resource caching with optimized limits
     - 20-30% memory usage reduction during long sessions
   - Performance metrics and monitoring system
-- Implemented Frame Rate Based Throttling:
-  - Created dynamic update frequency adjustment based on current FPS
-  - Implemented performance level detection with configurable thresholds
-  - Added automatic feature control for low-performance scenarios
-  - Created performance indicator with real-time FPS monitoring
-  - Implemented module hibernation for unused modules during low FPS
-  - Added priority-based update scheduling for critical UI elements
-  - Developed adaptive throttling with smart performance history tracking
-  - Created module-specific throttling based on importance categories
-  - Integrated with dynamic module loading for coordinated optimization
-  - Added performance metrics collection for statistics dashboard
-  - Implemented comprehensive configuration panel with customizable options
-  - Achieved 25-35% performance improvement during high-activity scenarios
-  - Created developer documentation with integration examples
+- REMOVED: Frame Rate Based Throttling (not needed)
 - Improved media management system:
   - Texture caching system to reduce memory usage
   - Lazy loading for non-essential textures
