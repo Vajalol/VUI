@@ -18,4 +18,7 @@
     <Script file="Ace3\AceSerializer-3.0\AceSerializer-3.0.lua"/>
     <Script file="Ace3\AceBucket-3.0\AceBucket-3.0.lua"/>
     <Script file="Ace3\AceComm-3.0\AceComm-3.0.lua"/>
+    
+    <!-- Additional Libraries -->
+    <Script file="LibDeflate\LibDeflate.lua"/>
 </Ui>

@@ -2,6 +2,13 @@ local _, VUI = ...
 
 -- Default configuration values for all modules
 VUI.defaults = {
+    global = {
+        presets = {
+            -- Example preset formats:
+            -- ["My DPS Preset"] = { profileData = {}, description = "Optimized for DPS classes" },
+            -- ["My Healer Preset"] = { profileData = {}, description = "Optimized for healing" },
+        },
+    },
     profile = {
         general = {
             scale = 1.0,

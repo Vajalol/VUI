@@ -537,8 +537,27 @@ function ConfigUI:PerformSearch(text)
         end
     end
     
-    -- Search through all settings (this would be implemented more thoroughly to search actual settings)
-    -- For now, we'll just add a placeholder for demonstration
+    -- Search through all module settings
+    -- Iterate through each module's configuration
+    for moduleID, moduleInfo in pairs(VUI.modules or {}) do
+        if moduleInfo.name and moduleInfo.config then
+            -- If the module name matches
+            if moduleInfo.name:lower():find(searchText) then
+                table.insert(results, {
+                    type = "module",
+                    id = moduleID,
+                    name = moduleInfo.name,
+                    path = "Modules → " .. moduleInfo.name,
+                    module = moduleID
+                })
+            end
+            
+            -- Search through module settings
+            if type(moduleInfo.config) == "table" then
+                self:SearchOptionsTable(moduleInfo.config, moduleInfo.name, results, searchText)
+            end
+        end
+    end
     
     -- No results found
     if #results == 0 then
@@ -580,6 +599,35 @@ function ConfigUI:PerformSearch(text)
         resultButton:SetScript("OnClick", function()
             if result.type == "tab" or result.type == "section" then
                 self:SelectTab(result.tabID or result.id)
+                self.resultsFrame:Hide()
+            elseif result.type == "module" then
+                -- Navigate to modules tab and select the specific module
+                self:SelectTab("modules")
+                -- Set the module dropdown to the selected module
+                if VUI.selectedModule ~= result.module then
+                    VUI.selectedModule = result.module
+                    VUI:ShowModuleConfig()
+                end
+                self.resultsFrame:Hide()
+            elseif result.type == "setting" then
+                -- Navigate to the appropriate section and highlight the setting
+                if result.optionPath:find("Modules") then
+                    -- Extract module name
+                    local moduleName = result.optionPath:match("Modules → ([^→]+)")
+                    if moduleName then
+                        self:SelectTab("modules")
+                        -- Find the module ID from the name
+                        for id, info in pairs(VUI.modules or {}) do
+                            if info.name == moduleName then
+                                if VUI.selectedModule ~= id then
+                                    VUI.selectedModule = id
+                                    VUI:ShowModuleConfig()
+                                end
+                                break
+                            end
+                        end
+                    end
+                end
                 self.resultsFrame:Hide()
             end
         end)
@@ -650,6 +698,54 @@ function ConfigUI:AddContextHelp(frame, helpText)
     end)
     
     return helpIcon
+end
+
+-- Recursively search through an options table for settings that match the search text
+function ConfigUI:SearchOptionsTable(optionsTable, path, results, searchText)
+    if type(optionsTable) ~= "table" then return end
+    
+    -- Search through options
+    for key, option in pairs(optionsTable) do
+        if type(option) == "table" then
+            -- Check if it's a setting with a name
+            if option.name and type(option.name) == "string" then
+                local name = option.name
+                
+                -- Check if the name matches the search
+                if name:lower():find(searchText) then
+                    table.insert(results, {
+                        type = "setting",
+                        id = key,
+                        name = name,
+                        path = path .. " → " .. name,
+                        optionPath = path,
+                        settingKey = key
+                    })
+                end
+                
+                -- Check if it has a desc field that matches
+                if option.desc and type(option.desc) == "string" and option.desc:lower():find(searchText) then
+                    table.insert(results, {
+                        type = "setting",
+                        id = key,
+                        name = name .. " (Description Match)",
+                        path = path .. " → " .. name,
+                        optionPath = path,
+                        settingKey = key
+                    })
+                end
+            end
+            
+            -- If it has args, recursively search those
+            if option.args then
+                local newPath = path
+                if option.name and type(option.name) == "string" then
+                    newPath = path .. " → " .. option.name
+                end
+                self:SearchOptionsTable(option.args, newPath, results, searchText)
+            end
+        end
+    end
 end
 
 -- Update and refresh configuration UI

@@ -600,7 +600,11 @@ VUI.options = {
                         ["angrykeystone"] = "Angry Keystones",
                         ["omnicc"] = "OmniCC",
                         ["omnicd"] = "OmniCD",
-                        ["idtip"] = "idTip"
+                        ["idtip"] = "idTip",
+                        ["premadegroupfinder"] = "Premade Group Finder",
+                        ["detailsskin"] = "Details Skin",
+                        ["msbt"] = "Scrolling Battle Text",
+                        ["multinotification"] = "Multi-Notification"
                     },
                     get = function() return VUI.selectedModule or "buffoverlay" end,
                     set = function(_, value)
@@ -671,7 +675,11 @@ VUI.options = {
                            "• Angry Keystones - Mythic+ dungeon improvements\n" ..
                            "• OmniCC - Cooldown count on all buttons\n" ..
                            "• OmniCD - Party cooldown tracking\n" ..
-                           "• idTip - Display spell, item, quest IDs in tooltips\n",
+                           "• idTip - Display spell, item, quest IDs in tooltips\n" ..
+                           "• Premade Group Finder - Enhanced LFG interface\n" ..
+                           "• Details Skin - Themed appearance for Details! damage meter\n" ..
+                           "• Scrolling Battle Text - Combat info display (MSBT)\n" ..
+                           "• Multi-Notification - Unified notification system\n",
                     order = 2,
                     fontSize = "medium",
                 },
@@ -686,6 +694,10 @@ VUI.options = {
                            "- OmniCC by tullamods\n" ..
                            "- OmniCD (adapted implementation)\n" ..
                            "- idTip by Silverwind\n" ..
+                           "- Premade Group Finder by Savhz\n" ..
+                           "- Details Damage Meter by Terciob\n" ..
+                           "- MikScrollingBattleText by Mikord\n" ..
+                           "- Notification System by VortexQ8\n" ..
                            "\nSpecial thanks to all the original addon authors.",
                     order = 3,
                     fontSize = "medium",
@@ -694,6 +706,166 @@ VUI.options = {
         },
     },
 }
+
+-- Save the current profile as a preset
+function VUI:SaveProfileAsPreset(presetName, description)
+    if not presetName or presetName == "" then
+        self:Print("Error: Invalid preset name.")
+        return false
+    end
+    
+    -- Make a deep copy of the current profile data
+    local currentProfile = {}
+    local sourceProfile = self.db.profile
+    
+    -- Deep copy function for nested tables
+    local function deepCopy(source, destination)
+        for k, v in pairs(source) do
+            if type(v) == "table" then
+                destination[k] = {}
+                deepCopy(v, destination[k])
+            else
+                destination[k] = v
+            end
+        end
+    end
+    
+    -- Create deep copy of profile
+    deepCopy(sourceProfile, currentProfile)
+    
+    -- Save the preset
+    if not self.db.global.presets then
+        self.db.global.presets = {}
+    end
+    
+    self.db.global.presets[presetName] = {
+        profileData = currentProfile,
+        description = description or "",
+        created = date("%Y-%m-%d %H:%M:%S"),
+        version = self.version
+    }
+    
+    self:Print("Preset '" .. presetName .. "' has been saved.")
+    return true
+end
+
+-- Load a preset into the current profile
+function VUI:LoadPreset(presetName)
+    if not presetName or not self.db.global.presets or not self.db.global.presets[presetName] then
+        self:Print("Error: Preset '" .. (presetName or "unknown") .. "' not found.")
+        return false
+    end
+    
+    local preset = self.db.global.presets[presetName]
+    local presetData = preset.profileData
+    
+    -- Replace current profile with preset data
+    local function deepReplace(source, destination)
+        -- Clear destination table
+        for k in pairs(destination) do
+            destination[k] = nil
+        end
+        
+        -- Copy data from source to destination
+        for k, v in pairs(source) do
+            if type(v) == "table" then
+                destination[k] = {}
+                deepReplace(v, destination[k])
+            else
+                destination[k] = v
+            end
+        end
+    end
+    
+    -- Replace profile data
+    deepReplace(presetData, self.db.profile)
+    
+    -- Apply settings
+    self:ApplySettings()
+    
+    self:Print("Preset '" .. presetName .. "' has been loaded.")
+    return true
+end
+
+-- Delete a preset
+function VUI:DeletePreset(presetName)
+    if not presetName or not self.db.global.presets or not self.db.global.presets[presetName] then
+        self:Print("Error: Preset '" .. (presetName or "unknown") .. "' not found.")
+        return false
+    end
+    
+    self.db.global.presets[presetName] = nil
+    self:Print("Preset '" .. presetName .. "' has been deleted.")
+    return true
+end
+
+-- Export a preset to a string
+function VUI:ExportPreset(presetName)
+    if not presetName or not self.db.global.presets or not self.db.global.presets[presetName] then
+        self:Print("Error: Preset '" .. (presetName or "unknown") .. "' not found.")
+        return nil
+    end
+    
+    local preset = self.db.global.presets[presetName]
+    
+    -- Convert preset to a string for export
+    local serialized = LibStub:GetLibrary("AceSerializer-3.0"):Serialize(preset)
+    local encoded = LibStub:GetLibrary("LibDeflate"):EncodeForPrint(
+        LibStub:GetLibrary("LibDeflate"):CompressDeflate(serialized)
+    )
+    
+    return encoded
+end
+
+-- Import a preset from a string
+function VUI:ImportPreset(presetName, encodedString)
+    if not presetName or presetName == "" then
+        self:Print("Error: Invalid preset name.")
+        return false
+    end
+    
+    if not encodedString or encodedString == "" then
+        self:Print("Error: Invalid import string.")
+        return false
+    end
+    
+    local decoded = LibStub:GetLibrary("LibDeflate"):DecodeForPrint(encodedString)
+    if not decoded then
+        self:Print("Error: Import string is corrupted or invalid.")
+        return false
+    end
+    
+    local decompressed = LibStub:GetLibrary("LibDeflate"):DecompressDeflate(decoded)
+    if not decompressed then
+        self:Print("Error: Failed to decompress import string.")
+        return false
+    end
+    
+    local success, presetData = LibStub:GetLibrary("AceSerializer-3.0"):Deserialize(decompressed)
+    if not success then
+        self:Print("Error: Failed to deserialize preset data.")
+        return false
+    end
+    
+    -- Validate preset data
+    if not presetData.profileData then
+        self:Print("Error: Invalid preset data (missing profile data).")
+        return false
+    end
+    
+    -- Add imported preset
+    if not self.db.global.presets then
+        self.db.global.presets = {}
+    end
+    
+    -- Add import note
+    presetData.imported = true
+    presetData.importDate = date("%Y-%m-%d %H:%M:%S")
+    
+    self.db.global.presets[presetName] = presetData
+    self:Print("Preset '" .. presetName .. "' has been imported.")
+    return true
+end
 
 -- Add profile options to the config panel
 function VUI:SetupProfileOptions()
@@ -704,6 +876,242 @@ function VUI:SetupProfileOptions()
     self.options.args.profiles = profilesOptions
     self.options.args.profiles.order = 99  -- Make it appear at the end
     self.options.args.profiles.name = "Profiles"
+    
+    -- Add presets section to profiles tab
+    self.options.args.profiles.args.presetsHeader = {
+        type = "header",
+        name = "Configuration Presets",
+        order = 100,
+    }
+    
+    self.options.args.profiles.args.presetsDesc = {
+        type = "description",
+        name = "Save and load configuration presets. Presets capture your entire profile configuration and can be shared with others.",
+        order = 101,
+    }
+    
+    -- Save preset section
+    self.options.args.profiles.args.savePresetGroup = {
+        type = "group",
+        name = "Save Preset",
+        inline = true,
+        order = 102,
+        args = {
+            presetName = {
+                type = "input",
+                name = "Preset Name",
+                desc = "Enter a name for your preset",
+                order = 1,
+                width = "full",
+                get = function() return self.tempPresetName or "" end,
+                set = function(_, value) self.tempPresetName = value end,
+            },
+            presetDesc = {
+                type = "input",
+                name = "Description",
+                desc = "Enter a description for your preset",
+                order = 2,
+                width = "full",
+                multiline = 2,
+                get = function() return self.tempPresetDesc or "" end,
+                set = function(_, value) self.tempPresetDesc = value end,
+            },
+            savePreset = {
+                type = "execute",
+                name = "Save Preset",
+                desc = "Save your current configuration as a preset",
+                order = 3,
+                func = function()
+                    if self.tempPresetName and self.tempPresetName ~= "" then
+                        self:SaveProfileAsPreset(self.tempPresetName, self.tempPresetDesc)
+                        self.tempPresetName = nil
+                        self.tempPresetDesc = nil
+                    else
+                        self:Print("Please enter a name for your preset.")
+                    end
+                end,
+            },
+        },
+    }
+    
+    -- Load preset section
+    self.options.args.profiles.args.loadPresetGroup = {
+        type = "group",
+        name = "Load Preset",
+        inline = true,
+        order = 103,
+        args = {
+            presetSelect = {
+                type = "select",
+                name = "Select Preset",
+                desc = "Choose a preset to load",
+                order = 1,
+                width = "full",
+                values = function()
+                    local presets = {}
+                    if self.db.global.presets then
+                        for name, data in pairs(self.db.global.presets) do
+                            presets[name] = name
+                        end
+                    end
+                    return presets
+                end,
+                get = function() return self.selectedPreset end,
+                set = function(_, value) 
+                    self.selectedPreset = value
+                    -- Update preview description if available
+                    if value and self.db.global.presets and self.db.global.presets[value] then
+                        self.presetPreviewDesc = self.db.global.presets[value].description or ""
+                        self.presetPreviewDate = self.db.global.presets[value].created or "Unknown"
+                    else
+                        self.presetPreviewDesc = ""
+                        self.presetPreviewDate = ""
+                    end
+                end,
+            },
+            presetInfo = {
+                type = "description",
+                name = function()
+                    if self.selectedPreset and self.db.global.presets and self.db.global.presets[self.selectedPreset] then
+                        local preset = self.db.global.presets[self.selectedPreset]
+                        return "Description: " .. (preset.description or "None") .. 
+                               "\nCreated: " .. (preset.created or "Unknown") ..
+                               "\nVersion: " .. (preset.version or "Unknown")
+                    else
+                        return "Select a preset to view information"
+                    end
+                end,
+                order = 2,
+                width = "full",
+            },
+            loadPreset = {
+                type = "execute",
+                name = "Load Preset",
+                desc = "Load the selected preset",
+                order = 3,
+                width = "half",
+                disabled = function() return not self.selectedPreset end,
+                confirm = function() return "Are you sure you want to load this preset? Your current settings will be overwritten." end,
+                func = function()
+                    if self.selectedPreset then
+                        self:LoadPreset(self.selectedPreset)
+                    end
+                end,
+            },
+            deletePreset = {
+                type = "execute",
+                name = "Delete Preset",
+                desc = "Delete the selected preset",
+                order = 4,
+                width = "half",
+                disabled = function() return not self.selectedPreset end,
+                confirm = function() return "Are you sure you want to delete this preset? This cannot be undone." end,
+                func = function()
+                    if self.selectedPreset then
+                        self:DeletePreset(self.selectedPreset)
+                        self.selectedPreset = nil
+                        self.presetPreviewDesc = ""
+                        self.presetPreviewDate = ""
+                    end
+                end,
+            },
+        },
+    }
+    
+    -- Import/Export section
+    self.options.args.profiles.args.importExportGroup = {
+        type = "group",
+        name = "Import/Export Presets",
+        inline = true,
+        order = 104,
+        args = {
+            exportPresetSelect = {
+                type = "select",
+                name = "Select Preset to Export",
+                desc = "Choose a preset to export",
+                order = 1,
+                width = "full",
+                values = function()
+                    local presets = {}
+                    if self.db.global.presets then
+                        for name, data in pairs(self.db.global.presets) do
+                            presets[name] = name
+                        end
+                    end
+                    return presets
+                end,
+                get = function() return self.exportPreset end,
+                set = function(_, value) self.exportPreset = value end,
+            },
+            exportPreset = {
+                type = "execute",
+                name = "Export Preset",
+                desc = "Export the selected preset as a string",
+                order = 2,
+                width = "half",
+                disabled = function() return not self.exportPreset end,
+                func = function()
+                    if self.exportPreset then
+                        local exportString = self:ExportPreset(self.exportPreset)
+                        if exportString then
+                            self.exportString = exportString
+                            self:Print("Preset exported. Copy the string from the text box below.")
+                        end
+                    end
+                end,
+            },
+            spacer1 = {
+                type = "description",
+                name = " ",
+                order = 3,
+                width = "half",
+            },
+            exportString = {
+                type = "input",
+                name = "Export String",
+                desc = "Copy this string to share your preset",
+                order = 4,
+                width = "full",
+                multiline = 8,
+                get = function() return self.exportString or "" end,
+                set = function() end, -- Read-only
+            },
+            importNameInput = {
+                type = "input",
+                name = "Import Preset Name",
+                desc = "Enter a name for the preset you're importing",
+                order = 5,
+                width = "full",
+                get = function() return self.importPresetName or "" end,
+                set = function(_, value) self.importPresetName = value end,
+            },
+            importString = {
+                type = "input",
+                name = "Import String",
+                desc = "Paste a preset string here to import",
+                order = 6,
+                width = "full",
+                multiline = 8,
+                get = function() return self.importString or "" end,
+                set = function(_, value) self.importString = value end,
+            },
+            importPreset = {
+                type = "execute",
+                name = "Import Preset",
+                desc = "Import the preset from the string",
+                order = 7,
+                width = "full",
+                disabled = function() return not self.importPresetName or self.importPresetName == "" or not self.importString or self.importString == "" end,
+                func = function()
+                    if self.importPresetName and self.importPresetName ~= "" and self.importString and self.importString ~= "" then
+                        self:ImportPreset(self.importPresetName, self.importString)
+                        self.importPresetName = nil
+                        self.importString = nil
+                    end
+                end,
+            },
+        },
+    }
 end
 
 -- Custom VUI config panel
