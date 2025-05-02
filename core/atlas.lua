@@ -67,6 +67,10 @@ Atlas.files = {
         multinotification = {
             path = "Interface\\AddOns\\VUI\\media\\textures\\atlas\\modules\\multinotification.tga",
             size = {width = 512, height = 512}
+        },
+        moveany = {
+            path = "Interface\\AddOns\\VUI\\media\\textures\\atlas\\modules\\moveany.tga",
+            size = {width = 512, height = 512}
         }
     }
 }
@@ -182,6 +186,20 @@ Atlas.coordinates.modules = {
         ["dispel-icon"] = {left = 0.375, right = 0.5, top = 0.25, bottom = 0.375},
         ["important-icon"] = {left = 0.5, right = 0.625, top = 0.25, bottom = 0.375},
         ["cooldown-spiral"] = {left = 0.625, right = 0.75, top = 0.25, bottom = 0.375}
+    },
+    moveany = {
+        ["logo"] = {left = 0, right = 0.5, top = 0, bottom = 0.5},
+        ["logo_transparent"] = {left = 0.5, right = 1.0, top = 0, bottom = 0.5},
+        ["background"] = {left = 0, right = 0.25, top = 0.5, bottom = 0.75},
+        ["border"] = {left = 0.25, right = 0.5, top = 0.5, bottom = 0.75},
+        ["header"] = {left = 0.5, right = 0.75, top = 0.5, bottom = 0.75},
+        ["grid"] = {left = 0.75, right = 1.0, top = 0.5, bottom = 0.75},
+        ["handle"] = {left = 0, right = 0.125, top = 0.75, bottom = 0.875},
+        ["mover"] = {left = 0.125, right = 0.25, top = 0.75, bottom = 0.875},
+        ["lock"] = {left = 0.25, right = 0.375, top = 0.75, bottom = 0.875},
+        ["unlock"] = {left = 0.375, right = 0.5, top = 0.75, bottom = 0.875},
+        ["hidden"] = {left = 0.5, right = 0.625, top = 0.75, bottom = 0.875},
+        ["visible"] = {left = 0.625, right = 0.75, top = 0.75, bottom = 0.875}
     }
 }
 
@@ -572,6 +590,56 @@ function Atlas:RegisterWithMediaSystem()
     VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\multinotification\\cooldown-spiral.tga"] = {
         atlas = "modules.multinotification",
         key = "cooldown-spiral"
+    }
+    
+    -- Add MoveAny module textures
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\logo.tga"] = {
+        atlas = "modules.moveany",
+        key = "logo"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\logo_transparent.tga"] = {
+        atlas = "modules.moveany",
+        key = "logo_transparent"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\background.tga"] = {
+        atlas = "modules.moveany",
+        key = "background"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\border.tga"] = {
+        atlas = "modules.moveany",
+        key = "border"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\header.tga"] = {
+        atlas = "modules.moveany",
+        key = "header"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\grid.tga"] = {
+        atlas = "modules.moveany",
+        key = "grid"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\handle.tga"] = {
+        atlas = "modules.moveany",
+        key = "handle"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\mover.tga"] = {
+        atlas = "modules.moveany",
+        key = "mover"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\lock.tga"] = {
+        atlas = "modules.moveany",
+        key = "lock"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\unlock.tga"] = {
+        atlas = "modules.moveany",
+        key = "unlock"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\hidden.tga"] = {
+        atlas = "modules.moveany",
+        key = "hidden"
+    }
+    VUI.media.atlasTextures["Interface\\AddOns\\VUI\\media\\textures\\moveany\\visible.tga"] = {
+        atlas = "modules.moveany",
+        key = "visible"
     }
 end
 

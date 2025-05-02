@@ -9,6 +9,8 @@
     <!-- Core utilities -->
     <Script file="utils.lua"/>
     <Script file="performance.lua"/>
+    <Script file="combat_performance.lua"/>
+    <Script file="event_optimization.lua"/>
     
     <!-- UI Framework -->
     <Script file="UI.lua"/>
@@ -28,6 +30,7 @@
     <Script file="theme_integration.lua"/>
     <Script file="theme_helpers.lua"/>
     <Script file="theme_editor.lua"/>
+    <Script file="theme_switching_optimization.lua"/>
     <Script file="font_integration.lua"/>
     <Script file="module_theme_integration.lua"/>
     <Script file="dashboard.lua"/>

@@ -42,6 +42,13 @@ else
     echo "   Script not found. Skipping."
 fi
 
+echo "5. Generating MoveAny atlas..."
+if [ -f "tools/generate_moveany_atlas.sh" ]; then
+    bash tools/generate_moveany_atlas.sh
+else
+    echo "   Script not found. Skipping."
+fi
+
 echo ""
 echo "Atlas generation complete."
 echo "You should now have updated atlas textures in media/textures/atlas/modules/"
