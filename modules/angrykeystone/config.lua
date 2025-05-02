@@ -462,8 +462,7 @@ function AngryKeystones:InitializeConfig()
         VUI.db.profile.modules.angrykeystone.showEnemyDetails = true
     end
     
-    -- Debug message
-    VUI:Debug("AngryKeystones config initialized")
+    -- Debug disabled in production release
 end
 
 -- Initialization

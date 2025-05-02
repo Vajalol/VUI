@@ -344,9 +344,9 @@ function TrufiGCD:CreateFiltersTab(container)
         
         if spellID then
             TrufiGCD:AddToWhitelist(spellID)
-            print("Added " .. (GetSpellInfo(spellID) or input) .. " to TrufiGCD whitelist")
+            VUI:Print("Added " .. (GetSpellInfo(spellID) or input) .. " to TrufiGCD whitelist")
         else
-            print("Invalid spell ID or name")
+            VUI:Print("Invalid spell ID or name")
         end
     end)
     addGroup:AddChild(addWhitelistButton)
@@ -366,9 +366,9 @@ function TrufiGCD:CreateFiltersTab(container)
         
         if spellID then
             TrufiGCD:AddToBlacklist(spellID)
-            print("Added " .. (GetSpellInfo(spellID) or input) .. " to TrufiGCD blacklist")
+            VUI:Print("Added " .. (GetSpellInfo(spellID) or input) .. " to TrufiGCD blacklist")
         else
-            print("Invalid spell ID or name")
+            VUI:Print("Invalid spell ID or name")
         end
     end)
     addGroup:AddChild(addBlacklistButton)
@@ -385,7 +385,7 @@ function TrufiGCD:CreateFiltersTab(container)
             OnAccept = function()
                 VUI.db.profile.modules.trufigcd.whitelist = {}
                 VUI.db.profile.modules.trufigcd.blacklist = {}
-                print("TrufiGCD spell filters cleared")
+                VUI:Print("TrufiGCD spell filters cleared")
             end,
             timeout = 0,
             whileDead = true,
@@ -517,11 +517,11 @@ function TrufiGCD:CreateSpellsTab(container)
             local spellID = select(7, GetSpellInfo(spell))
             if spellID then
                 TrufiGCD:AddToWhitelist(spellID)
-                print("Added current spell " .. spell .. " to whitelist")
+                VUI:Print("Added current spell " .. spell .. " to whitelist")
                 self:CreateSpellsTab(container)
             end
         else
-            print("No spell currently being cast")
+            VUI:Print("No spell currently being cast")
         end
     end)
     container:AddChild(currentSpellButton)

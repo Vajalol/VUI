@@ -509,10 +509,10 @@ function BuffOverlay:CreateSpellsTab(container)
         
         if spellID then
             VUI.db.profile.modules.buffoverlay.spells[spellID] = true
-            print("Added " .. (GetSpellInfo(spellID) or input) .. " to BuffOverlay tracked spells")
+            VUI:Print("Added " .. (GetSpellInfo(spellID) or input) .. " to BuffOverlay tracked spells")
             self:CreateSpellsTab(container) -- Refresh tab
         else
-            print("Invalid spell ID or name")
+            VUI:Print("Invalid spell ID or name")
         end
     end)
     addGroup:AddChild(addButton)

@@ -134,14 +134,14 @@ end
 -- Initialize integration
 function MSBT:InitializeMultiNotificationIntegration()
     if not IsMultiNotificationAvailable() then
-        self:Print("MultiNotification module not available, using original notification system")
+        -- MultiNotification module not available, using original notification system
         return
     end
     
     if HookMSBTNotifications() then
-        self:Print("MSBT integrated with MultiNotification system")
+        -- MSBT successfully integrated with MultiNotification system
     else
-        self:Print("Failed to integrate MSBT with MultiNotification system")
+        -- Failed to integrate MSBT with MultiNotification system
     end
 end
 

@@ -354,7 +354,7 @@ function DetailsSkin.Config:GetOptions()
                         func = function()
                             local exportString = DetailsSkin.Config:ExportSettings()
                             -- This would typically show a dialog with the export string
-                            print(L["Settings exported to clipboard"] or "Settings exported to clipboard")
+                            VUI:Print(L["Settings exported to clipboard"] or "Settings exported to clipboard")
                         end,
                         width = "normal",
                         order = 3

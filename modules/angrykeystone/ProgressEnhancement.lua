@@ -265,6 +265,5 @@ function ProgressEnhancement:Initialize()
         end
     end)
     
-    -- Debug message
-    VUI:Debug("AngryKeystones Progress Enhancement initialized")
+    -- Debug disabled in production release
 end

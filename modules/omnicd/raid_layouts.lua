@@ -99,8 +99,7 @@ function OmniCD:InitializeRaidLayouts()
     -- Apply current layout
     self:ApplyRaidLayout()
     
-    -- Debug message
-    self:Debug("Raid layout system initialized")
+    -- Debug disabled in production release
 end
 
 -- Register event handlers for raid frames

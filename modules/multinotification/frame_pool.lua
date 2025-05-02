@@ -54,9 +54,7 @@ function FramePool:Initialize()
     self:CreateStatsMonitor()
     
     -- Log initialization
-    if VUI.debug then
-        VUI:Print("MultiNotification FramePool initialized with " .. (maxNotifications * 2) .. " preallocated frames")
-    end
+    -- Initialization message disabled in production release
 end
 
 -- Preallocate frames for efficiency
@@ -361,16 +359,7 @@ end
 function FramePool:UpdateStats()
     self.stats.lastResetTime = GetTime()
     
-    -- Log stats if debugging is enabled
-    if VUI.debug then
-        VUI:Print(string.format(
-            "MultiNotification FramePool stats: Created: %d, Recycled: %d, Active: %d, Peak: %d",
-            self.stats.framesCreated,
-            self.stats.framesRecycled,
-            self.stats.currentActiveFrames,
-            self.stats.peakActiveFrames
-        ))
-    end
+    -- Stats logging disabled in production release
 end
 
 -- Get current statistics

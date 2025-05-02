@@ -318,5 +318,5 @@ end
 function WarWithinSkin:Initialize()
     -- Ensure path for textures
     self:Register()
-    print("|cff1784d1VUI DetailsSkin|r: The War Within skin loaded.")
+    -- Initialization message disabled in production release
 end

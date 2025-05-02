@@ -52,7 +52,7 @@ function ThemeIntegration:Initialize()
     self:ApplyTheme(activeTheme)
     
     -- Log initialization
-    if VUI.debug then
+    if false then -- Debug disabled in production release
         VUI:Print("DetailsSkin ThemeIntegration initialized")
     end
 end

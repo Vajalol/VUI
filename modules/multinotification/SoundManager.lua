@@ -133,10 +133,7 @@ function SoundManager:Initialize()
     -- Register theme changed callback to update sounds
     VUI.RegisterCallback(self, "ThemeChanged", "UpdateThemeSounds")
     
-    -- Debug logging
-    if VUI.debug then
-        VUI:Debug("MultiNotification SoundManager initialized")
-    end
+    -- Debug logging disabled in production release
 end
 
 -- Update sound files based on theme
@@ -214,10 +211,7 @@ function SoundManager:PlaySound(notificationType)
         local channel = MultiNotification.db.profile.sound.channel or "SFX"
         PlaySoundFile(soundFile, channel, false, volume)
         
-        -- Log sound playing if in debug mode
-        if VUI.debug then
-            VUI:Debug("Playing sound " .. soundFile .. " for " .. notificationType .. " notification")
-        end
+        -- Sound logging disabled in production release
     end
 end
 

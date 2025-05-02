@@ -97,10 +97,7 @@ function ThemeIntegration:Initialize()
         end)
     end
     
-    -- Log initialization
-    if VUI.Debug then
-        VUI:Debug("MSBT Theme Integration initialized")
-    end
+    -- Theme integration initialized
 end
 
 -- Register theme-specific animation paths
@@ -121,9 +118,7 @@ function ThemeIntegration:RegisterAnimationPaths()
             return points
         else
             -- Return a default animation path if loading failed
-            if VUI.Debug then
-                VUI:Debug("Failed to load animation path for theme: " .. theme)
-            end
+            -- Failed to load animation path, will use default
             
             -- Default animation pattern (simple parabola)
             return {
@@ -154,9 +149,7 @@ function ThemeIntegration:RegisterAnimationPaths()
         local animPath = LoadAnimationPath(themeId)
         if animPath then
             Animations:RegisterAnimationPath("VUI " .. themeName, animPath)
-            if VUI.Debug then
-                VUI:Debug("Registered animation path for: " .. themeName)
-            end
+            -- Animation path registered successfully
         end
     end
     

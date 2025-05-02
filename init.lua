@@ -129,8 +129,8 @@ function VUI:Initialize()
         self.ModuleThemeIntegration:ApplyToAllModules()
     end
     
-    -- Print initialization message
-    print("|cff1784d1VUI|r v" .. self.version .. " initialized. Type |cff1784d1/vui|r for options.")
+    -- Print minimal initialization message with essential user guidance
+    print("|cff1784d1VUI|r v" .. self.version .. " loaded. Type |cff1784d1/vui|r for options.")
 end
 
 -- Framework for hooking into WoW events

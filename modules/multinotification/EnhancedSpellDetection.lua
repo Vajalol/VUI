@@ -35,7 +35,7 @@ local Config = {
     combatOptimization = true, -- Extra optimizations during combat
     eventMerging = true,       -- Merges similar events 
     predictiveLoading = true,  -- Preloads likely spells based on group composition
-    debugMode = false          -- Show debug output
+    debugMode = false          -- Debug mode disabled in production release
 }
 
 -- Initialize enhanced spell detection
@@ -56,17 +56,12 @@ function MultiNotification:InitializeEnhancedSpellDetection()
     -- Set up spec to important spell mapping
     self:InitializeSpecSpellMapping()
     
-    -- Schedule metrics reporting if debug is enabled
-    if Config.debugMode then
-        C_Timer.After(60, function() self:ReportSpellMetrics() end)
-    end
+    -- Metrics reporting disabled in production release
     
     -- Flag as initialized
     self.enhancedSpellDetectionInitialized = true
     
-    if VUI.debug then
-        VUI:Print("Enhanced Spell Detection initialized")
-    end
+    -- Initialization message disabled in production release
 end
 
 -- Register integration with core spell detection optimization
@@ -722,27 +717,7 @@ function MultiNotification:ReportSpellMetrics()
     local filterRate = Metrics.eventsFiltered / Metrics.eventsProcessed * 100
     local notificationRate = Metrics.notificationsShown / duration
     
-    -- Report stats
-    VUI:Print("|cFF00AAFF== Enhanced Spell Detection Metrics ==|r")
-    VUI:Print(string.format("Time Window: %.1f seconds", duration))
-    VUI:Print(string.format("Events: %d processed (%.1f/sec), %d filtered (%.1f%%)", 
-        Metrics.eventsProcessed, eventRate, Metrics.eventsFiltered, filterRate))
-    VUI:Print(string.format("Notifications: %d shown (%.1f/sec)", 
-        Metrics.notificationsShown, notificationRate))
-    VUI:Print(string.format("Duplicates Merged: %d", Metrics.duplicatesMerged))
-    
-    -- Report cache sizes
-    local playerCacheSize = 0
-    for _ in pairs(PlayerCache) do playerCacheSize = playerCacheSize + 1 end
-    
-    local eventHistorySize = 0
-    for _ in pairs(EventHistory) do eventHistorySize = eventHistorySize + 1 end
-    
-    local recentTargetsSize = 0
-    for _ in pairs(RecentTargets) do recentTargetsSize = recentTargetsSize + 1 end
-    
-    VUI:Print(string.format("Cache Sizes - Players: %d, Event History: %d, Recent Targets: %d",
-        playerCacheSize, eventHistorySize, recentTargetsSize))
+    -- Performance reporting disabled in production release
     
     -- Reset for next window
     Metrics.eventsProcessed = 0
@@ -752,6 +727,12 @@ function MultiNotification:ReportSpellMetrics()
     Metrics.lastReset = now
     
     -- Clean up caches
+    local eventHistorySize = 0
+    for _ in pairs(EventHistory) do eventHistorySize = eventHistorySize + 1 end
+    
+    local recentTargetsSize = 0
+    for _ in pairs(RecentTargets) do recentTargetsSize = recentTargetsSize + 1 end
+    
     if eventHistorySize > 200 then EventHistory = {} end
     if recentTargetsSize > 100 then RecentTargets = {} end
     

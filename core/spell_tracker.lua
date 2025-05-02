@@ -84,8 +84,8 @@ SpellTracker.settings = {
     useFramePool = true,
     predictiveLoading = true,
     combatOptimization = true,
-    logLevel = 2, -- 0: Off, 1: Error, 2: Warning, 3: Info, 4: Debug, 5: Trace
-    trackStatistics = true,
+    logLevel = 1, -- 0: Off, 1: Error, 2: Warning, 3: Info, 4: Debug, 5: Trace
+    trackStatistics = false,
     maxCacheSize = 500
 }
 
@@ -1233,17 +1233,18 @@ function SpellTracker:Log(level, message)
         prefix = "|cff888888VUI SpellTracker TRACE|r: "
     end
     
+    -- Skip debug and trace logs in production release
+    if level >= 4 then return end
+    
     if VUI.Logger then
         local logLevel = "INFO"
         if level == 1 then logLevel = "ERROR"
         elseif level == 2 then logLevel = "WARN"
-        elseif level == 4 then logLevel = "DEBUG"
-        elseif level == 5 then logLevel = "TRACE"
         end
         
         VUI.Logger:Log("SpellTracker", logLevel, message)
     else
-        print(prefix .. message)
+        VUI:Print(prefix .. message)
     end
 end
 

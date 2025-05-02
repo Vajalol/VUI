@@ -128,8 +128,7 @@ function Auctionator:Initialize()
     -- Load theme integration module
     self:LoadThemeIntegration()
     
-    -- Print initialization message
-    VUI:Print("|cff33bbff" .. self.name .. "|r: Module initialized")
+    -- Module initialized
 end
 
 -- Load the theme integration module
@@ -145,7 +144,7 @@ function Auctionator:LoadThemeIntegration()
         end)
         
         if not status then
-            VUI:Debug("Failed to load Auctionator theme integration: " .. tostring(error))
+            -- Failed to load Auctionator theme integration, using default styling
             return
         end
     end
@@ -924,7 +923,7 @@ function Auctionator:Enable()
     self:RegisterEvent("PLAYER_ENTERING_WORLD", self.PLAYER_ENTERING_WORLD)
     self:RegisterEvent("PLAYER_LOGOUT", self.PLAYER_LOGOUT)
     
-    VUI:Print("Auctionator module enabled")
+    -- Module enabled
 end
 
 function Auctionator:Disable()
@@ -934,7 +933,7 @@ function Auctionator:Disable()
     self:UnregisterEvent("PLAYER_ENTERING_WORLD")
     self:UnregisterEvent("PLAYER_LOGOUT")
     
-    VUI:Print("Auctionator module disabled")
+    -- Module disabled
 end
 
 -- Helper functions

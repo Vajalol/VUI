@@ -272,9 +272,9 @@ function MoveAny:CreatePresetsTab(container)
         local name = nameInput:GetText()
         if name and name ~= "" then
             self:SaveCurrentLayout(name)
-            print("Layout saved as: " .. name)
+            VUI:Print("Layout saved as: " .. name)
         else
-            print("Please enter a name for the layout")
+            VUI:Print("Please enter a name for the layout")
         end
     end)
     saveGroup:AddChild(saveButton)
@@ -349,21 +349,21 @@ function MoveAny:UnlockAllFrames()
     for _, frameData in ipairs(self:GetRegisteredFrames()) do
         self:MakeFrameMovable(frameData.frame)
     end
-    print("All frames unlocked for movement")
+    VUI:Print("All frames unlocked for movement")
 end
 
 function MoveAny:LockAllFrames()
     for _, frameData in ipairs(self:GetRegisteredFrames()) do
         self:MakeFrameStatic(frameData.frame)
     end
-    print("All frames locked")
+    VUI:Print("All frames locked")
 end
 
 function MoveAny:ResetAllFrames()
     for _, frameData in ipairs(self:GetRegisteredFrames()) do
         self:ResetFrame(frameData.frame)
     end
-    print("All frames reset to default positions")
+    VUI:Print("All frames reset to default positions")
 end
 
 function MoveAny:ToggleFrameMovable(frame)
@@ -391,9 +391,9 @@ function MoveAny:LoadPreset(presetName)
             for frameName, position in pairs(preset) do
                 self:ApplyFramePosition(frameName, position)
             end
-            print("Loaded " .. presetName .. " preset")
+            VUI:Print("Loaded " .. presetName .. " preset")
         else
-            print("Preset not found: " .. presetName)
+            VUI:Print("Preset not found: " .. presetName)
         end
     end
 end

@@ -1206,6 +1206,6 @@ function OmniCD:Initialize()
     -- Initialize the module
     if self.db.enabled then
         self:SetupModule()
-        VUI:Print("OmniCD module initialized")
+        -- Module initialization complete
     end
 end

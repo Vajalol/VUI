@@ -133,9 +133,9 @@ function Auctionator:CreateGeneralTab(container)
             OnAccept = function()
                 if _G.Auctionator and _G.Auctionator.Database then
                     _G.Auctionator.Database.Reset()
-                    print("Auctionator database has been reset")
+                    VUI:Print("Auctionator database has been reset")
                 else
-                    print("Could not reset Auctionator database")
+                    VUI:Print("Could not reset Auctionator database")
                 end
             end,
             timeout = 0,

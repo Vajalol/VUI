@@ -151,8 +151,7 @@ function VUI.angrykeystone:Initialize()
     -- Load enhanced functionality modules
     self:LoadEnhancements()
     
-    -- Print initialization message
-    VUI:Print("AngryKeystones module initialized")
+    -- Module initialized
     
     -- Enable if set in profile
     if VUI.db.profile.modules.angrykeystone.enabled then
@@ -174,7 +173,7 @@ function VUI.angrykeystone:LoadThemeIntegration()
     end)
     
     if not status then
-        VUI:Debug("Failed to load AngryKeystones theme integration: " .. tostring(error))
+        -- Theme integration load failed, using default styling
     end
 end
 
@@ -190,7 +189,7 @@ function VUI.angrykeystone:LoadEnhancements()
     end)
     
     if not status then
-        VUI:Debug("Failed to load AngryKeystones progress enhancement: " .. tostring(error))
+        -- Progress enhancement load failed, using default functionality
     end
     
     -- Try to load the Timer Enhancement module
@@ -203,7 +202,7 @@ function VUI.angrykeystone:LoadEnhancements()
     end)
     
     if not status then
-        VUI:Debug("Failed to load AngryKeystones timer enhancement: " .. tostring(error))
+        -- Timer enhancement load failed, using default functionality
     end
 end
 
@@ -214,7 +213,7 @@ function VUI.angrykeystone:Enable()
     -- Apply hooks and show frames
     self:ApplyHooks()
     
-    VUI:Print("AngryKeystones module enabled")
+    -- Module enabled
 end
 
 -- Disable module
@@ -224,7 +223,7 @@ function VUI.angrykeystone:Disable()
     -- Remove hooks and hide frames
     self:RemoveHooks()
     
-    VUI:Print("AngryKeystones module disabled")
+    -- Module disabled
 end
 
 -- Set up hooks for this module

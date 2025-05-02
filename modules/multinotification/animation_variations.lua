@@ -201,9 +201,7 @@ function MultiNotification:InitializeAnimationVariations()
     self:RegisterAnimationOptions()
     
     -- Log initialization
-    if VUI.debug then
-        VUI:Debug("MultiNotification Animation Variations initialized")
-    end
+    -- Debug log disabled in production release
 end
 
 -- Update the animation performance state based on combat, group, etc.
@@ -956,18 +954,14 @@ if originalShowNotification then
         if self.db.profile.globalSettings.useFramePooling and self.FramePool then
             frame = self.FramePool:AcquireFrame("notification")
             if not frame then
-                if VUI.debug then
-                    VUI:Print("Failed to acquire notification frame from pool")
-                end
+                -- Debug message disabled in production release
                 return
             end
         else
             -- Legacy frame acquisition
             frame = self:GetAvailableNotificationFrame()
             if not frame then
-                if VUI.debug then
-                    VUI:Print("No available notification frames")
-                end
+                -- Debug message disabled in production release
                 return
             end
         end

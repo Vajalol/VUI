@@ -64,10 +64,7 @@ function TrufiGCD:ApplyTheme()
         end
     end
     
-    -- Log theme application if in debug mode
-    if VUI.debug then
-        VUI:Debug("TrufiGCD: Theme applied - " .. theme.name)
-    end
+    -- Debug logs disabled in production release
 end
 
 -- Hook for theme changes

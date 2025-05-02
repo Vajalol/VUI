@@ -466,5 +466,5 @@ function ThemeIntegration:Initialize()
     self:ApplyTheme()
     
     -- Print initialization message
-    VUI:Debug("AngryKeystones theme integration initialized")
+    -- Debug disabled in production release
 end

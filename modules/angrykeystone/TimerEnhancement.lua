@@ -343,6 +343,5 @@ function TimerEnhancement:Initialize()
         end
     end)
     
-    -- Debug message
-    VUI:Debug("AngryKeystones Timer Enhancement initialized")
+    -- Debug disabled in production release
 end

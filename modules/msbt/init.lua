@@ -35,7 +35,7 @@ function MSBT:Initialize()
         self.ThemeIntegration:RegisterDefaultScrollAreas()
     end
     
-    print("|cff1784d1VUI " .. self.displayName .. "|r module initialized.")
+    -- Initialization message disabled in production release
 end
 
 -- Create a load function to properly initialize the original MSBT core
@@ -181,7 +181,7 @@ function MSBT:GetConfig()
         else
             -- Fallback to simple AceConfig dialog if themed panel creation failed
             if not MikSBT or not MikSBT.Main or not MikSBT.Main.isInitialized then
-                print("|cff1784d1VUI MSBT|r: MSBT needs to be enabled first.")
+                VUI:Print("MSBT needs to be enabled first.")
                 return
             end
             

@@ -344,7 +344,7 @@ end
 function DetailsSkin:Initialize()
     -- Only initialize if Details! is loaded
     if not Details then
-        print("|cff1784d1VUI DetailsSkin|r: Details! not found. Module will activate when Details! loads.")
+        VUI:Print("Details! not found. Module will activate when Details! loads.")
         return
     end
     
@@ -410,7 +410,7 @@ function DetailsSkin:Initialize()
         end
     end, 6) -- Try for 30 seconds
     
-    print("|cff1784d1VUI DetailsSkin|r module initialized with " .. #self.SkinRegistry:GetAvailableSkins() .. " available skins.")
+    -- Initialization message disabled in production release
 end
 
 -- Convenience functions to access theme data

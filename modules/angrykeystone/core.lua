@@ -109,8 +109,7 @@ function AngryKeystones:PlayCompletionSound()
     -- In a real addon, you would play the sound like this:
     -- PlaySoundFile(soundFile, "Master")
     
-    -- Debug message instead for development
-    VUI:Debug("Playing completion sound: " .. soundFile)
+    -- Debug disabled in production release
 end
 
 -- Hook keystone slotting to capture keystone level info
@@ -218,8 +217,7 @@ function AngryKeystones:CHALLENGE_MODE_START()
     -- Update displays
     self:UpdateDisplays()
     
-    -- Debug message
-    VUI:Debug("Challenge mode started")
+    -- Debug disabled in production release
 end
 
 -- Event: CHALLENGE_MODE_COMPLETED
@@ -229,8 +227,7 @@ function AngryKeystones:CHALLENGE_MODE_COMPLETED()
     -- Play completion sound
     self:PlayCompletionSound()
     
-    -- Debug message
-    VUI:Debug("Challenge mode completed")
+    -- Debug disabled in production release
 end
 
 -- Event: CHALLENGE_MODE_RESET
@@ -240,8 +237,7 @@ function AngryKeystones:CHALLENGE_MODE_RESET()
     -- Update displays
     self:UpdateDisplays()
     
-    -- Debug message
-    VUI:Debug("Challenge mode reset")
+    -- Debug disabled in production release
 end
 
 -- Event: PLAYER_ENTERING_WORLD
@@ -272,16 +268,14 @@ function AngryKeystones:ApplyHooks()
         self.ThemeIntegration:ApplyTheme()
     end
     
-    -- Debug message
-    VUI:Debug("AngryKeystones hooks applied")
+    -- Debug disabled in production release
 end
 
 -- Remove hooks
 function AngryKeystones:RemoveHooks()
     -- In a real addon, we would unhook functions here if possible
     
-    -- Debug message
-    VUI:Debug("AngryKeystones hooks removed")
+    -- Debug disabled in production release
 end
 
 -- Refresh settings based on configuration changes
@@ -291,6 +285,5 @@ function AngryKeystones:RefreshSettings()
     -- Update displays
     self:UpdateDisplays()
     
-    -- Debug message
-    VUI:Debug("AngryKeystones settings refreshed")
+    -- Debug disabled in production release
 end

@@ -261,7 +261,7 @@ function MultiNotification:TestSpellNotification(spellID, spellType)
     
     local name, _, icon = GetSpellInfo(spellID)
     if not name then
-        print("|cFFFF0000Invalid spell ID.|r")
+        VUI:Print("|cFFFF0000Invalid spell ID.|r")
         return
     end
     
@@ -287,7 +287,7 @@ function MultiNotification:TestSpellNotification(spellID, spellType)
         8                    -- Duration (longer for testing)
     )
     
-    print("|cFF00FF00Test notification sent for|r " .. name)
+    VUI:Print("|cFF00FF00Test notification sent for|r " .. name)
 end
 
 -- Helper function to filter spells based on criteria

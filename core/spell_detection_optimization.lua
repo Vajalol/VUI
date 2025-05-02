@@ -231,8 +231,7 @@ function SpellDetectionOptimization:PreloadCommonSpells()
                 -- Update last used time
                 SpellCache.lastUsed[spellID] = GetTime()
                 
-                -- Update metrics
-                Metrics.predictiveLoads = Metrics.predictiveLoads + 1
+                -- Metrics collection disabled in production release
             end
         end
     end
@@ -346,8 +345,7 @@ function SpellDetectionOptimization:OptimizedCombatLogEvent(module)
         if not self.lastProcessTime or (now - self.lastProcessTime) >= throttleInterval then
             self.lastProcessTime = now
         else
-            -- Skip this event due to throttling
-            Metrics.eventsFiltered = Metrics.eventsFiltered + 1
+            -- Skip this event due to throttling (metrics collection disabled)
             return
         end
     end
@@ -358,7 +356,7 @@ function SpellDetectionOptimization:OptimizedCombatLogEvent(module)
     -- Fast path: check if this event type is filtered by priority
     local eventPriority = module.eventFilterList[event]
     if not eventPriority then 
-        Metrics.eventsFiltered = Metrics.eventsFiltered + 1
+        -- Metrics collection disabled in production release
         return 
     end
     
@@ -367,7 +365,7 @@ function SpellDetectionOptimization:OptimizedCombatLogEvent(module)
 
     -- Use cached spell info when possible
     local spellInfo = self:GetSpellInfo(spellID, spellName)
-    Metrics.spellsProcessed = Metrics.spellsProcessed + 1
+    -- Metrics collection disabled in production release
     
     -- Process based on event type with priority handling
     if event == "SPELL_INTERRUPT" then
@@ -474,17 +472,17 @@ function SpellDetectionOptimization:GetSpellInfo(spellID, spellName)
     -- Try cache lookup first
     if spellID and SpellCache.byID[spellID] then
         SpellCache.lastUsed[spellID] = GetTime()
-        Metrics.cacheHits = Metrics.cacheHits + 1
+        -- Metrics collection disabled in production release
         return SpellCache.byID[spellID]
     elseif spellName and SpellCache.byName[spellName] then
         local cachedInfo = SpellCache.byName[spellName]
         SpellCache.lastUsed[cachedInfo.id] = GetTime()
-        Metrics.cacheHits = Metrics.cacheHits + 1
+        -- Metrics collection disabled in production release
         return cachedInfo
     end
     
     -- Not in cache, fetch from API
-    Metrics.cacheMisses = Metrics.cacheMisses + 1
+    -- Metrics collection disabled in production release
     
     local name, rank, icon
     if spellID then
@@ -704,7 +702,7 @@ function SpellDetectionOptimization:ProcessPendingCacheUpdates()
                 -- Update last used time
                 SpellCache.lastUsed[spellID] = GetTime()
                 processed = processed + 1
-                Metrics.predictiveCacheUpdates = Metrics.predictiveCacheUpdates + 1
+                -- Metrics collection disabled in production release
             end
         end
     end
@@ -979,17 +977,8 @@ function SpellDetectionOptimization:GetConfigOptions()
             name = "Reset Cache",
             desc = "Clear the spell cache and reset all optimization metrics",
             func = function()
+                -- Just initialize the spell cache, metrics collection is disabled in production
                 SpellDetectionOptimization:InitializeCache()
-                
-                -- Reset metrics
-                Metrics.cacheHits = 0
-                Metrics.cacheMisses = 0
-                Metrics.spellsProcessed = 0
-                Metrics.eventsFiltered = 0
-                Metrics.spellIconsOptimized = 0
-                Metrics.predictiveLoads = 0
-                Metrics.predictiveCacheUpdates = 0
-                Metrics.lastReset = GetTime()
                 
                 -- Reset complete
             end,

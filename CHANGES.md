@@ -37,7 +37,13 @@ This document tracks significant changes to the VUI addon suite.
 - Resolved duplicate module registration issues in 6 modules
 - Added module help system with comprehensive documentation
 - Improved Blizzard UI skin implementations with clearer code
-- Removed all debug statements and logging for cleaner production code
+- Removed all debug statements and logging for cleaner production code:
+  - Removed debug messages from AngryKeystones module
+  - Disabled debug functions in OmniCD module
+  - Removed metrics collection from spell detection system
+  - Replaced direct print() calls with standardized VUI:Print() in Auctionator and MSBT
+  - Made initialization messages more concise and user-friendly
+  - Verified addon passes validation tests with no syntax errors
 - Fixed syntax error in MSBTParser.lua for improved stability
 - Disabled metrics collection and reporting in production release
 - Ensured debug mode is completely disabled across all modules

@@ -45,8 +45,7 @@ function OmniCD:InitializePartyFrames()
     -- Apply theme
     self:ApplyThemeToPartyFrames()
     
-    -- Debug message
-    self:Debug("Party frame integration initialized")
+    -- Debug disabled in production release
 end
 
 -- Register for party frame related events
@@ -595,11 +594,10 @@ function OmniCD:HidePartyFrameIcons()
     end
 end
 
--- Debug function
+-- Debug function (disabled in production)
 function OmniCD:Debug(...)
-    if self.debugMode then
-        print("|cFF33FF99VUI OmniCD:|r", ...)
-    end
+    -- Debug output has been disabled for production release
+    return
 end
 
 -- Get theme element color 
