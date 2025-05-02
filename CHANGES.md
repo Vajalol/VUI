@@ -2,7 +2,32 @@
 
 This document tracks significant changes to the VUI addon suite.
 
-## v0.2.0 (In Development)
+## v0.3.0 (In Development)
+
+### Development Status
+- Final Documentation and Polish:
+  - Comprehensive User Guide (Complete)
+  - Developer API Documentation (Complete)
+  - Module Integration Guide (Complete)
+  - Performance Optimization Guide (Complete)
+
+### Major Features
+- Extensive Documentation System:
+  - Created detailed User Guide with full feature explanations
+  - Implemented Developer Guide for module creation
+  - Added performance optimization documentation
+  - Enhanced in-game help system
+
+### Quality of Life Improvements
+- Enhanced configuration tooltips with detailed explanations
+- Improved first-time user experience with guided setup
+- Optimized default settings for better out-of-box experience
+- Enhanced theme preview system
+- Added module dependency visualization
+- Created profile export/import functionality
+- Enhanced macro template system
+
+## v0.2.0 (Released)
 
 ### Development Status
 - Phase 4: Performance Optimization (Complete):
