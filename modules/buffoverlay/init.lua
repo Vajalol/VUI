@@ -271,6 +271,11 @@ function BuffOverlay:Initialize()
         self.FramePool:Initialize()
     end
     
+    -- Initialize the diminishing returns tracking system
+    if self.DiminishingReturns and self.DiminishingReturns.Initialize then
+        self.DiminishingReturns:Initialize()
+    end
+    
     -- Preload the atlas textures for BuffOverlay
     self:PreloadAtlasTextures()
     

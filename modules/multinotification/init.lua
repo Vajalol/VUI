@@ -25,6 +25,13 @@ MultiNotification.defaults = {
         useSharedCooldown = true,
         sharedCooldown = 1.0,
         useFramePooling = true,
+        layout = "vertical", -- vertical, horizontal, grid
+        growDirection = "DOWN", -- UP, DOWN, LEFT, RIGHT
+        gridSize = 2, -- Number of columns for grid layout
+        overflowBehavior = "queue", -- queue, replace_lowest, smart_merge
+        dynamicScaling = false, -- Scale notifications based on importance
+        stackSimilar = true, -- Stack similar notifications
+        minDisplayTime = 1.5, -- Minimum time a notification is displayed before it can be replaced
     },
     spellSettings = {
         enabled = true,
@@ -476,11 +483,55 @@ function MultiNotification:ShowNotification(notificationType, icon, text, durati
         lastNotificationTime = currentTime
     end
     
-    -- Find an available frame or add to queue
-    local frame = self:GetAvailableFrame()
-    if not frame then
-        self:QueueNotification(notificationType, icon, text, duration)
-        return
+    -- Handle notification based on overflow behavior
+    local frame = nil
+    local maxNotifications = self.db.profile.globalSettings.maxNotifications
+    local overflowBehavior = self.db.profile.globalSettings.overflowBehavior
+    
+    -- Count active notifications (visible frames)
+    local activeCount = 0
+    for _, notification in ipairs(activeNotifications) do
+        if notification.frame:IsVisible() then
+            activeCount = activeCount + 1
+        end
+    end
+    
+    -- Check if we're at the notification limit
+    if activeCount >= maxNotifications then
+        if overflowBehavior == "queue" then
+            -- Traditional behavior - add to queue for later
+            self:QueueNotification(notificationType, icon, text, duration)
+            return
+        elseif overflowBehavior == "replace_lowest" then
+            -- Replace the lowest priority notification currently on screen
+            frame = self:ReplaceLowestPriorityNotification(notificationType, categorySettings.priority)
+            if not frame then
+                -- If we couldn't replace a notification (current one has lower priority), add to queue
+                self:QueueNotification(notificationType, icon, text, duration)
+                return
+            end
+        elseif overflowBehavior == "smart_merge" then
+            -- Look for similar notifications that could be merged/replaced
+            frame = self:FindSimilarNotificationForReplacement(notificationType, icon)
+            if not frame then
+                -- Try replacing lowest priority if no similar found
+                frame = self:ReplaceLowestPriorityNotification(notificationType, categorySettings.priority)
+            end
+            if not frame then
+                -- Still no frame, add to queue
+                self:QueueNotification(notificationType, icon, text, duration)
+                return
+            end
+        end
+    else
+        -- Get a new frame if we're not at the limit
+        frame = self:GetAvailableFrame()
+        
+        -- If no frame is available, add to queue (fallback)
+        if not frame then
+            self:QueueNotification(notificationType, icon, text, duration)
+            return
+        end
     end
     
     -- Set notification content
@@ -518,6 +569,9 @@ function MultiNotification:ConfigureNotificationFrame(frame, notificationType, i
     local categorySettings = self.db.profile.categorySettings[notificationType]
     local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
     local themeSettings = self.db.profile.theme[currentTheme]
+    
+    -- Store notification type in the frame for later reference
+    frame.notificationType = notificationType
     
     -- Resize frame based on category settings
     frame:SetSize(categorySettings.iconSize * 1.2, categorySettings.iconSize * 1.2)
@@ -698,9 +752,84 @@ function MultiNotification:ProcessNotificationQueue()
     end
 end
 
+-- Find and replace the lowest priority notification
+function MultiNotification:ReplaceLowestPriorityNotification(notificationType, newPriority)
+    -- If no active notifications, nothing to replace
+    if #activeNotifications == 0 then
+        return nil
+    end
+    
+    -- Find the notification with the lowest priority
+    local lowestPriority = 999
+    local lowestNotification = nil
+    
+    for _, notification in ipairs(activeNotifications) do
+        local priority = self.db.profile.categorySettings[notification.type].priority or 1
+        
+        -- Only replace if the new notification has higher priority
+        if priority < newPriority and priority < lowestPriority then
+            lowestPriority = priority
+            lowestNotification = notification
+        end
+    end
+    
+    -- If we found a notification with lower priority, replace it
+    if lowestNotification then
+        local frame = lowestNotification.frame
+        
+        -- Remove from active notifications
+        for i = #activeNotifications, 1, -1 do
+            if activeNotifications[i].frame == frame then
+                table.remove(activeNotifications, i)
+                break
+            end
+        end
+        
+        -- Stop animations and return the frame for reuse
+        frame.animGroup:Stop()
+        return frame
+    end
+    
+    -- No suitable notification found for replacement
+    return nil
+end
+
+-- Find a similar notification for merging/replacement
+function MultiNotification:FindSimilarNotificationForReplacement(notificationType, icon)
+    -- Only merge similar notifications if enabled
+    if not self.db.profile.globalSettings.stackSimilar then
+        return nil
+    end
+    
+    -- Look for a notification of the same type with the same icon
+    for _, notification in ipairs(activeNotifications) do
+        if notification.type == notificationType and notification.frame.icon:GetTexture() == icon then
+            local frame = notification.frame
+            
+            -- Remove from active notifications
+            for i = #activeNotifications, 1, -1 do
+                if activeNotifications[i].frame == frame then
+                    table.remove(activeNotifications, i)
+                    break
+                end
+            end
+            
+            -- Stop animations and return the frame for reuse
+            frame.animGroup:Stop()
+            return frame
+        end
+    end
+    
+    -- No similar notification found
+    return nil
+end
+
 -- Arrange notification frames
 function MultiNotification:ArrangeNotificationFrames()
     local spacing = self.db.profile.globalSettings.spacing
+    local layout = self.db.profile.globalSettings.layout
+    local growDirection = self.db.profile.globalSettings.growDirection
+    local gridSize = self.db.profile.globalSettings.gridSize
     local visibleFrames = {}
     
     -- Collect all visible frames
@@ -718,17 +847,82 @@ function MultiNotification:ArrangeNotificationFrames()
         end
     end
     
-    -- Arrange visible frames
+    -- Sort frames by priority (if enabled)
+    if self.db.profile.globalSettings.dynamicScaling then
+        table.sort(visibleFrames, function(a, b)
+            local aPriority = self.db.profile.categorySettings[a.notificationType].priority or 1
+            local bPriority = self.db.profile.categorySettings[b.notificationType].priority or 1
+            return aPriority > bPriority -- Higher priority first
+        end)
+    end
+    
+    -- Arrange visible frames based on layout type
     for i, frame in ipairs(visibleFrames) do
+        -- Apply dynamic scaling if enabled
+        if self.db.profile.globalSettings.dynamicScaling then
+            local notificationType = frame.notificationType
+            local categorySettings = self.db.profile.categorySettings[notificationType]
+            local maxPriority = 10
+            local minScale = 0.8
+            local scale = minScale + ((categorySettings.priority / maxPriority) * (1.0 - minScale))
+            frame:SetScale(scale * self.db.profile.globalSettings.scale)
+        end
+        
+        -- Position frames based on layout
+        frame:ClearAllPoints()
         if i == 1 then
             -- First frame attaches to the anchor
-            frame:ClearAllPoints()
             frame:SetPoint("CENTER", anchorFrame, "CENTER")
         else
-            -- Other frames attach below the previous
-            frame:ClearAllPoints()
-            frame:SetPoint("TOP", visibleFrames[i-1], "BOTTOM", 0, -spacing)
+            -- Position based on selected layout
+            if layout == "vertical" then
+                self:PositionVerticalLayout(frame, visibleFrames[i-1], growDirection, spacing)
+            elseif layout == "horizontal" then
+                self:PositionHorizontalLayout(frame, visibleFrames[i-1], growDirection, spacing)
+            elseif layout == "grid" then
+                self:PositionGridLayout(frame, visibleFrames, i, gridSize, spacing)
+            end
         end
+    end
+end
+
+-- Position frame in vertical layout (up or down)
+function MultiNotification:PositionVerticalLayout(frame, prevFrame, growDirection, spacing)
+    if growDirection == "DOWN" then
+        frame:SetPoint("TOP", prevFrame, "BOTTOM", 0, -spacing)
+    else -- UP
+        frame:SetPoint("BOTTOM", prevFrame, "TOP", 0, spacing)
+    end
+end
+
+-- Position frame in horizontal layout (left or right)
+function MultiNotification:PositionHorizontalLayout(frame, prevFrame, growDirection, spacing)
+    if growDirection == "RIGHT" then
+        frame:SetPoint("LEFT", prevFrame, "RIGHT", spacing, 0)
+    else -- LEFT
+        frame:SetPoint("RIGHT", prevFrame, "LEFT", -spacing, 0)
+    end
+end
+
+-- Position frame in grid layout
+function MultiNotification:PositionGridLayout(frame, allFrames, index, gridSize, spacing)
+    local row = math.floor((index - 1) / gridSize)
+    local col = (index - 1) % gridSize
+    
+    if col == 0 then
+        -- First column in a new row
+        if row == 1 then
+            -- First row, anchor to the first frame
+            frame:SetPoint("TOP", allFrames[1], "BOTTOM", 0, -spacing)
+        else
+            -- Not first row, anchor to the frame above
+            local frameAbove = allFrames[index - gridSize]
+            frame:SetPoint("TOP", frameAbove, "BOTTOM", 0, -spacing)
+        end
+    else
+        -- Not first column, anchor to the frame to the left
+        local frameLeft = allFrames[index - 1]
+        frame:SetPoint("LEFT", frameLeft, "RIGHT", spacing, 0)
     end
 end
 
@@ -842,6 +1036,109 @@ function MultiNotification:GetOptions()
                     else
                         self:OnDisable()
                     end
+                end,
+                width = "full"
+            },
+            layoutHeader = {
+                order = 2,
+                type = "header",
+                name = "Layout & Positioning"
+            },
+            layout = {
+                order = 3,
+                type = "select",
+                name = "Layout Type",
+                desc = "Choose how notifications are arranged on screen",
+                values = {
+                    vertical = "Vertical Stack",
+                    horizontal = "Horizontal Stack",
+                    grid = "Grid Pattern"
+                },
+                get = function() return self.db.profile.globalSettings.layout end,
+                set = function(_, value)
+                    self.db.profile.globalSettings.layout = value
+                    self:ArrangeNotificationFrames()
+                end,
+                width = "full"
+            },
+            growDirection = {
+                order = 4,
+                type = "select",
+                name = "Growth Direction",
+                desc = "Choose which direction new notifications appear from the anchor point",
+                values = function()
+                    if self.db.profile.globalSettings.layout == "vertical" then
+                        return {UP = "Upward", DOWN = "Downward"}
+                    elseif self.db.profile.globalSettings.layout == "horizontal" then
+                        return {LEFT = "Leftward", RIGHT = "Rightward"}
+                    else
+                        return {DOWN = "Downward (Grid)"}
+                    end
+                end,
+                get = function() return self.db.profile.globalSettings.growDirection end,
+                set = function(_, value)
+                    self.db.profile.globalSettings.growDirection = value
+                    self:ArrangeNotificationFrames()
+                end,
+                width = "full"
+            },
+            gridSize = {
+                order = 5,
+                type = "range",
+                name = "Grid Columns",
+                desc = "Number of columns when using grid layout",
+                min = 2,
+                max = 6,
+                step = 1,
+                get = function() return self.db.profile.globalSettings.gridSize end,
+                set = function(_, value)
+                    self.db.profile.globalSettings.gridSize = value
+                    self:ArrangeNotificationFrames()
+                end,
+                disabled = function() return self.db.profile.globalSettings.layout ~= "grid" end,
+                width = "full"
+            },
+            priorityHeader = {
+                order = 6, 
+                type = "header",
+                name = "Priority System"
+            },
+            overflowBehavior = {
+                order = 7,
+                type = "select",
+                name = "Overflow Behavior",
+                desc = "How to handle notifications when the maximum is reached",
+                values = {
+                    queue = "Queue (Show Later)",
+                    replace_lowest = "Replace Lowest Priority",
+                    smart_merge = "Smart Merge (Stack Similar)"
+                },
+                get = function() return self.db.profile.globalSettings.overflowBehavior end,
+                set = function(_, value)
+                    self.db.profile.globalSettings.overflowBehavior = value
+                end,
+                width = "full"
+            },
+            dynamicScaling = {
+                order = 8,
+                type = "toggle",
+                name = "Dynamic Scaling",
+                desc = "Scale notifications based on their priority (higher priority = larger size)",
+                get = function() return self.db.profile.globalSettings.dynamicScaling end,
+                set = function(_, value)
+                    self.db.profile.globalSettings.dynamicScaling = value
+                    self:ArrangeNotificationFrames()
+                end,
+                width = "full"
+            },
+            stackSimilar = {
+                order = 9,
+                type = "toggle",
+                name = "Stack Similar Notifications",
+                desc = "Replace existing notifications with new ones of the same type",
+                get = function() return self.db.profile.globalSettings.stackSimilar end,
+                set = function(_, value)
+                    self.db.profile.globalSettings.stackSimilar = value
                 end,
                 width = "full"
             },

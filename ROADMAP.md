@@ -197,9 +197,9 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Theme integration
 - ✓ Texture atlas implementation
 - ✓ Frame pooling optimization
-- ⟳ Priority system enhancement
-- ⟳ Customizable positioning
-- ☐ Animation variations
+- ✓ Priority system enhancement
+- ✓ Customizable positioning
+- ✓ Animation variations
 - ☐ Sound customization
 
 ### BuffOverlay
@@ -207,8 +207,8 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Theme integration  
 - ✓ Texture atlas implementation
 - ✓ Frame pooling optimization
-- ⟳ Enhanced visibility options
-- ☐ Diminishing returns tracking
+- ✓ Enhanced visibility options
+- ✓ Diminishing returns tracking
 - ☐ Buff group categorization
 - ☐ Special effects for important buffs
 
@@ -216,8 +216,8 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Core ability tracking
 - ✓ Theme integration
 - ✓ Texture atlas implementation
-- ⟳ Enhanced icon customization
-- ⟳ Advanced filtering options
+- ✓ Enhanced icon customization
+- ✓ Advanced filtering options
 - ☐ Spell categorization
 - ☐ Timeline view option
 - ☐ Integration with Details damage meter

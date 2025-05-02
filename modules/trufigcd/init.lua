@@ -110,6 +110,35 @@ function TrufiGCD:Initialize()
     self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
     self:RegisterEvent("PLAYER_REGEN_DISABLED")
+    
+    -- Create frame for the spell queue
+    self:SetupFrames()
+    
+    -- Register for theme changes
+    VUI.RegisterCallback(self, "ThemeChanged", "ApplyTheme")
+    
+    -- Load theme
+    self:ApplyTheme(VUI.db.profile.appearance.theme or "thunderstorm")
+    
+    -- Preload atlas textures if that function exists
+    if self.PreloadAtlasTextures then
+        self:PreloadAtlasTextures()
+    end
+    
+    -- Initialize icon customization if available
+    if self.InitializeIconCustomization then
+        self:InitializeIconCustomization()
+    end
+    
+    -- Initialize advanced filtering if available
+    if self.InitializeAdvancedFiltering then
+        self:InitializeAdvancedFiltering()
+    end
+    
+    -- Log initialization
+    if VUI.debug then
+        VUI:Debug("TrufiGCD module initialized with enhanced features")
+    end
 end
 
 -- Create the anchor frame for positioning

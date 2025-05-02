@@ -182,6 +182,44 @@ This document tracks significant changes to the VUI addon suite.
     - Group composition awareness for optimized spell tracking
     - Enhanced memory management with frame pooling
     - Performance metrics for ongoing optimization
+  - Enhanced priority system with:
+    - Smart overflow management to handle notification limits
+    - Priority-based frame replacement during high activity
+    - Similar notification stacking for reduced screen clutter
+    - Dynamic notification scaling based on priority
+  - Enhanced positioning options:
+    - Multiple layout types (vertical, horizontal, grid)
+    - Customizable growth directions for all layouts
+    - Grid layout with configurable column count
+    - Comprehensive configuration UI for all layout options
+  - Enhanced animation variations:
+    - Multiple animation styles (fade, slide, scale, bounce, pulse, spin, flip, glide)
+    - Category-specific animation preferences
+    - Performance-aware animation intensity adjustments
+    - Custom animation sequences for different notification types
+    - Adaptive performance mode for combat and raid scenarios
+    - FPS-conscious animation complexity scaling
+
+- BuffOverlay Module Enhancement:
+  - Implemented comprehensive enhanced visibility options:
+    - High-contrast mode for improved buff/debuff recognition
+    - Category-based coloring system for different aura types
+    - Customizable glow effects for important auras (static, pulsing, border)
+    - Dynamic scaling based on aura importance
+    - Improved text clarity with shadow effects and size scaling
+    - Comprehensive filtering system with duration-based options
+    - Dispellable aura highlighting and filtering
+    - Fade-in/fade-out animations for smoother transitions
+  - Implemented PvP diminishing returns tracking system:
+    - Visual indicators for diminishing returns status (50%, 25%, immune)
+    - Category-based DR classification for crowd control types
+    - Duration calculations for subsequent diminished effects
+    - Comprehensive spell database covering all crowd control types
+    - Timers for tracking DR reset periods
+    - Multiple display styles (icon overlay, border highlight, text indicators)
+    - Sound alerts for immune status
+    - Options for tracking NPCs and players separately
+    - Performance optimizations for combat scenarios
 
 - TrufiGCD Module Optimization:
   - Implemented texture atlas system for improved performance
@@ -192,6 +230,22 @@ This document tracks significant changes to the VUI addon suite.
   - Added performance-optimized config button interactions
   - Integrated with theme system for dynamic color updates
   - Comprehensive documentation for texture atlas implementation
+  - Enhanced icon customization with:
+    - Customizable borders and styles based on spell types
+    - Dynamic icon scaling for important abilities
+    - Animated glow effects for critical spells
+    - Improved text clarity and positioning options
+    - Multiple icon style options (default, circular, square, etc.)
+    - Category-based coloring system for different spell types
+    - Special visual effects for important abilities
+  - Advanced filtering system with:
+    - Context-aware preset system for different content types
+    - Category-based filtering (damage, healing, utility, etc.)
+    - Class/spec specific filters with automatic detection
+    - Comprehensive whitelist/blacklist management
+    - Global cooldown filtering for cleaner display
+    - Combat state awareness for appropriate display timing
+    - Smart content type detection (raids, M+, arena, etc.)
 
 - DetailsSkin Module Optimization:
   - Implemented texture atlas system for improved performance
