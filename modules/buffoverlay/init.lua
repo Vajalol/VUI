@@ -326,6 +326,11 @@ function BuffOverlay:Initialize()
         self.DiminishingReturns:Initialize()
     end
     
+    -- Initialize the special effects system
+    if self.InitializeSpecialEffects then
+        self:InitializeSpecialEffects()
+    end
+    
     -- Preload the atlas textures for BuffOverlay
     self:PreloadAtlasTextures()
     

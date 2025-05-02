@@ -230,6 +230,15 @@ This document tracks significant changes to the VUI addon suite.
     - Animation effects tied to category importance
     - Comprehensive configuration UI with category customization
     - Performance-optimized category detection with caching
+  - Implemented special effects for important buffs:
+    - Multiple visual effect types (particles, spinning border, pulse, color shift, sparkle, lightning, vortex, shadow, rune circle)
+    - Special effect assignments for critical class abilities and defensive cooldowns
+    - Enhanced visibility for important raid mechanics and boss debuffs
+    - Intensity and speed customization for all visual effects
+    - Sound effect integration for important buff activation
+    - Performance-aware effect application with FPS monitoring
+    - Comprehensive configuration UI with effect previews
+    - Integration with buff categorization system
 
 - TrufiGCD Module Optimization:
   - Implemented texture atlas system for improved performance

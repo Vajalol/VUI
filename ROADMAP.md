@@ -210,7 +210,7 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Enhanced visibility options
 - ✓ Diminishing returns tracking
 - ✓ Buff group categorization
-- ☐ Special effects for important buffs
+- ✓ Special effects for important buffs
 
 ### TrufiGCD
 - ✓ Core ability tracking
@@ -280,9 +280,3 @@ This section outlines the development phases, current status, and upcoming work 
 - Module-specific documentation
 - Theme customization guide
 
-## Contribution Guidelines
-- Fork the repository
-- Create a new branch for your feature
-- Follow the coding standards
-- Submit pull requests with clear descriptions
-- Test thoroughly before submission
