@@ -239,7 +239,7 @@ This section outlines the development phases, current status, and upcoming work 
 - ✓ Skin registry system
 - ✓ War Within skin integration
 - ✓ Skin selection UI
-- ☐ Enhanced graph styling
+- ✓ Enhanced graph styling
 - ✓ Custom report templates
 - ☐ Integration with other damage meters
 

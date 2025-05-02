@@ -344,6 +344,20 @@ This document tracks significant changes to the VUI addon suite.
   - Added skin selection UI in settings:
     - Skin browsing with author information
     - Theme-integrated skin preview system
+  - Enhanced graph styling system:
+    - Created comprehensive graph styling framework for all chart types
+    - Implemented theme-specific gradients and styling for line graphs
+    - Added interactive elements with tooltips and hover highlights
+    - Created performance-optimized rendering with frame tracking
+    - Added support for animation with multiple preset types
+    - Implemented theme-aware data visualization for all graph types
+    - Enhanced tooltips with detailed information display
+    - Added styling for scatter plots and area charts
+    - Created comprehensive color palette system for pie charts
+    - Implemented adaptive display based on instance size
+    - Added support for the DetailsDpsGraph plugin
+    - Created performance monitoring system for graphs
+    - Added HSL-to-RGB color conversion for advanced styling
     - Automatic skin application to all Details instances
     - Default skin management for new windows
   - Enhanced custom report templates for theme-specific reporting
