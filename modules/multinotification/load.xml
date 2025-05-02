@@ -5,6 +5,6 @@
     <Script file="ThemeIntegration.lua"/>
     
     <!-- Unified notification system components -->
-    <Script file="SpellEvents.lua"/>
-    <Script file="SpellManagementUI.lua"/>
+    <Script file="spell_events.lua"/>
+    <Script file="spell_management_ui.lua"/>
 </Ui>

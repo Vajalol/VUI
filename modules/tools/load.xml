@@ -5,5 +5,7 @@
     <Script file="init.lua"/>
     
     <!-- Module Components -->
-    <!-- Will add implementation files here as they are developed -->
+    <Script file="tools/buff_checker.lua"/>
+    <Script file="tools/mouse_trail.lua"/>
+    <Script file="tools/position_of_power.lua"/>
 </Ui>

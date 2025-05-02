@@ -3,13 +3,13 @@
     <Script file="init.lua"/>
     
     <!-- Core functionality -->
-    <Script file="SpellEvents.lua"/>
+    <Script file="spell_events.lua"/>
     
     <!-- Optimization components -->
     <Script file="frame_pool.lua"/>
-    <Script file="EnhancedSpellDetection.lua"/>
+    <Script file="enhanced_spell_detection.lua"/>
     
     <!-- Submodules -->
-    <Script file="SpellManagement.lua"/>
-    <Script file="SoundManager.lua"/>
+    <Script file="spell_management_ui.lua"/>
+    <Script file="sound_manager.lua"/>
 </Ui>

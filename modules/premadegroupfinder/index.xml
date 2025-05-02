@@ -1,9 +1,17 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
+    <!-- Main module files -->
     <Script file="init.lua"/>
     <Script file="config.lua"/>
-    <Script file="Util.lua"/>
+    <Script file="util.lua"/>
     <Script file="core.lua"/>
+    
+    <!-- Advanced functionality -->
+    <Script file="role_display.lua"/>
+    <Script file="rating_visualization.lua"/>
+    <Script file="advanced_filtering.lua"/>
+    
+    <!-- Theme integration -->
     <Script file="ThemeIntegration.lua"/>
     <Script file="MediaRegistration.lua"/>
 </Ui>

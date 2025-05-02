@@ -10,6 +10,6 @@
     <Script file="ThemeIntegration.lua"/>
     
     <!-- Enhanced functionality -->
-    <Script file="ProgressEnhancement.lua"/>
-    <Script file="TimerEnhancement.lua"/>
+    <Script file="progress_enhancement.lua"/>
+    <Script file="timer_enhancement.lua"/>
 </Ui>
