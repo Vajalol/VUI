@@ -348,6 +348,13 @@ function VUI:SlashCommand(input)
                 InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
                 InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
             end
+        elseif command == "timeline" then
+            -- Toggle TrufiGCD timeline if available
+            if self:IsModuleEnabled("trufigcd") and self.modules.trufigcd.Timeline and self.modules.trufigcd.Timeline.ToggleTimeline then
+                self.modules.trufigcd.Timeline:ToggleTimeline()
+            else
+                self:Print("TrufiGCD Timeline view is not available. Make sure the TrufiGCD module is enabled.")
+            end
         elseif command == "dashboard" then
             -- Toggle dashboard
             if self.Dashboard then
@@ -386,6 +393,7 @@ function VUI:SlashCommand(input)
             self:Print("  /vui dashboard - Toggles the dashboard")
             self:Print("  /vui config - Opens the configuration panel")
             self:Print("  /vui theme - Opens the theme editor")
+            self:Print("  /vui timeline - Opens the TrufiGCD spell history timeline")
             self:Print("  /vui profile - Opens the profile management panel")
             self:Print("  /vui spells - Opens the spell management UI")
             self:Print("  /vui spells list - Lists your custom spells")
@@ -397,6 +405,7 @@ function VUI:SlashCommand(input)
             self:Print("  /vui toggle <module> - Toggles a module")
             self:Print("  /vui version - Displays the addon version")
             self:Print("  /vui list - Lists all available modules")
+            self:Print("  /trufitimeline - Direct command to toggle the spell timeline view")
         end
     end
 end

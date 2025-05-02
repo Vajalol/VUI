@@ -100,6 +100,15 @@ function TrufiGCD:Initialize()
     self.currentIndex = 0
     self.lastSpellIconShow = 0
     
+    -- Register slash command for easy timeline access
+    VUI:RegisterChatCommand("trufitimeline", function() 
+        if self.Timeline and self.Timeline.ToggleTimeline then
+            self.Timeline:ToggleTimeline()
+        else
+            VUI:Print("Timeline view is not available")
+        end
+    end)
+    
     -- Initialize default database values
     if not VUI.db.profile.modules.trufigcd then
         VUI.db.profile.modules.trufigcd = {}
@@ -163,6 +172,11 @@ function TrufiGCD:Initialize()
     -- Initialize spell categorization if available
     if self.Categories and self.Categories.Initialize then
         self.Categories:Initialize()
+    end
+    
+    -- Initialize Timeline View if available
+    if self.InitializeTimeline then
+        self:InitializeTimeline()
     end
     
     -- Log initialization
