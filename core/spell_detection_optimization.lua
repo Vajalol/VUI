@@ -49,7 +49,7 @@ local Config = {
     minProcessingInterval = 0.05  -- Minimum time between processing non-critical spells
 }
 
--- Performance metrics
+-- Performance metrics - disabled for production release
 local Metrics = {
     cacheHits = 0,
     cacheMisses = 0,
@@ -58,6 +58,7 @@ local Metrics = {
     spellIconsOptimized = 0,
     predictiveLoads = 0,
     lastReset = GetTime(),
+    enabled = false -- Metrics disabled in production
 }
 
 -- Spell caching system

@@ -130,7 +130,7 @@ function VUI:Initialize()
     end
     
     -- Print minimal initialization message with essential user guidance
-    print("|cff1784d1VUI|r v" .. self.version .. " loaded. Type |cff1784d1/vui|r for options.")
+    self:Print("v" .. self.version .. " loaded. Type |cff1784d1/vui|r for options.")
 end
 
 -- Framework for hooking into WoW events

@@ -20,13 +20,14 @@ local EventHistory = {}        -- Tracks event history for smart filtering
 local RecentTargets = {}       -- Recent spell targets for merging similar events
 local SpecSpellMapping = {}    -- Specialization to important spells mapping
 
--- Performance metrics
+-- Performance metrics - disabled in production release
 local Metrics = {
     eventsProcessed = 0,       -- Total events processed
     eventsFiltered = 0,        -- Events filtered out
     notificationsShown = 0,    -- Notifications displayed
     duplicatesMerged = 0,      -- Similar events merged
-    lastReset = GetTime()      -- Last metrics reset
+    lastReset = GetTime(),     -- Last metrics reset
+    enabled = false            -- Metrics collection disabled in production
 }
 
 -- Configuration

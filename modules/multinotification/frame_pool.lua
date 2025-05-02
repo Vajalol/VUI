@@ -28,13 +28,14 @@ FramePool.pools = {
     }
 }
 
--- Statistics for performance monitoring
+-- Statistics for performance monitoring - disabled in production
 FramePool.stats = {
     framesCreated = 0,
     framesRecycled = 0,
     currentActiveFrames = 0,
     peakActiveFrames = 0,
-    lastResetTime = 0
+    lastResetTime = 0,
+    enabled = false -- Statistics tracking disabled in production
 }
 
 -- Initialize the frame pool system

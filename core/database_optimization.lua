@@ -24,7 +24,7 @@ function DBOpt:OnInitialize()
         -- Batch processing queues
         writeQueue = {},
         
-        -- Usage statistics
+        -- Usage statistics - disabled in production release
         stats = {
             cacheHits = 0,
             cacheMisses = 0,
@@ -32,7 +32,8 @@ function DBOpt:OnInitialize()
             directWrites = 0,
             cacheSize = 0,
             cacheCleaned = 0,
-            moduleAccess = {}
+            moduleAccess = {},
+            enabled = false -- Statistics tracking disabled in production
         },
         
         -- Optimization settings

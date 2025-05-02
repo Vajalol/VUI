@@ -28,8 +28,8 @@ local moduleCache = {}
 -- Settings
 local settings = {
     enabled = true,
-    trackUsageStats = true,
-    debugMode = false,    -- Debug output disabled in production release
+    trackUsageStats = false,    -- Disabled for production release
+    debugMode = false,          -- Debug output disabled in production release
     autoCleanupInterval = 300,  -- Cleanup unused cache entries every 5 minutes
 }
 
@@ -264,6 +264,11 @@ function ModuleManager:GetModuleStats()
     stats.cacheSize = 0
     for _ in pairs(moduleCache) do
         stats.cacheSize = stats.cacheSize + 1
+    end
+    
+    -- Skip detailed stats if tracking is disabled
+    if not settings.trackUsageStats then
+        return stats
     end
     
     stats.moduleCount = 0
