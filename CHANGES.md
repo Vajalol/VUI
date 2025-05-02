@@ -45,6 +45,8 @@ This document tracks significant changes to the VUI addon suite.
 - Standardized module configuration to prevent duplication
 - Enhanced Main GUI Panel integration:
   - Added missing modules to central configuration dropdown (MultiNotification, DetailsSkin, MSBT)
+  - Added icons to all modules in the configuration panel for better visual identification
+  - Created professional Vortex-themed addon icon with Thunder Storm color scheme
   - Standardized configuration interface across all modules
   - Updated module descriptions in About section for consistency
   - Fixed module accessibility in the main configuration panel

@@ -3,12 +3,11 @@
 ## Notes: A comprehensive WoW addon suite with advanced UI customization, modular notification system, and performance optimization
 ## Author: VortexQ8
 ## Version: 0.3.0
-## IconTexture: Interface\AddOns\VUI\generated-icon.png
+## IconTexture: Interface\AddOns\VUI\media\icons\vui_icon.tga
 ## SavedVariables: VUIDB, VUICharacterDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0
-## X-Website: https://github.com/VortexQ8/VUI
-## X-Curse-Project-ID: 123456
-## X-WoWI-ID: 12345
+## X-Website: https://github.com/Vajalol/VUI
+## X-Curse-Project-ID: 1257198
 
 # Main addon file
 init.lua
