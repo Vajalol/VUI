@@ -25,6 +25,11 @@ function Auctionator:GetConfig()
                 end,
                 order = 1
             },
+            generalHeading = {
+                type = "header",
+                name = "General Settings",
+                order = 2
+            },
             useVUITheme = {
                 type = "toggle",
                 name = "Use VUI Theme",
@@ -38,30 +43,52 @@ function Auctionator:GetConfig()
                         self.ThemeIntegration:ApplyTheme()
                     end
                 end,
-                order = 2
+                order = 3
+            },
+            defaultTab = {
+                type = "select",
+                name = "Default Tab",
+                desc = "Which tab should be active when opening Auctionator",
+                values = {
+                    ["search"] = "Search",
+                    ["sell"] = "Sell",
+                    ["cancel"] = "Cancel",
+                    ["more"] = "More",
+                },
+                get = function() return VUI.db.profile.modules.auctionator.defaultTab or "search" end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.defaultTab = value
+                end,
+                order = 4
+            },
+            scanHeading = {
+                type = "header",
+                name = "Scan Settings",
+                order = 5
             },
             autoscan = {
                 type = "toggle",
                 name = "Auto-Scan AH",
                 desc = "Automatically scan the auction house when opened",
-                get = function() return VUI.db.profile.modules.auctionator.autoscan end,
+                get = function() return VUI.db.profile.modules.auctionator.scanOptions.autoscan end,
                 set = function(_, value) 
-                    VUI.db.profile.modules.auctionator.autoscan = value
+                    VUI.db.profile.modules.auctionator.scanOptions.autoscan = value
                 end,
-                order = 2
+                order = 6
             },
-            undercut = {
+            scanInterval = {
                 type = "range",
-                name = "Default Undercut",
-                desc = "Default undercut amount when listing items",
-                min = 1,
-                max = 100,
-                step = 1,
-                get = function() return VUI.db.profile.modules.auctionator.undercut or 5 end,
+                name = "Auto-Scan Interval",
+                desc = "Minutes between automatic scans (if Auto-Scan enabled)",
+                min = 15,
+                max = 180,
+                step = 5,
+                get = function() return VUI.db.profile.modules.auctionator.scanOptions.scanInterval or 60 end,
                 set = function(_, value) 
-                    VUI.db.profile.modules.auctionator.undercut = value
+                    VUI.db.profile.modules.auctionator.scanOptions.scanInterval = value
                 end,
-                order = 3
+                order = 7,
+                disabled = function() return not VUI.db.profile.modules.auctionator.scanOptions.autoscan end,
             },
             scanSpeed = {
                 type = "select",
@@ -72,11 +99,11 @@ function Auctionator:GetConfig()
                     ["medium"] = "Medium (Balanced)",
                     ["fast"] = "Fast (More Resource Usage)"
                 },
-                get = function() return VUI.db.profile.modules.auctionator.scanSpeed or "medium" end,
+                get = function() return VUI.db.profile.modules.auctionator.scanOptions.throttleRate or "medium" end,
                 set = function(_, value) 
-                    VUI.db.profile.modules.auctionator.scanSpeed = value
+                    VUI.db.profile.modules.auctionator.scanOptions.throttleRate = value
                 end,
-                order = 4
+                order = 8
             },
             saveHistory = {
                 type = "toggle",
@@ -86,7 +113,116 @@ function Auctionator:GetConfig()
                 set = function(_, value) 
                     VUI.db.profile.modules.auctionator.saveHistory = value
                 end,
-                order = 5
+                order = 9
+            },
+            sellingHeading = {
+                type = "header",
+                name = "Selling Settings",
+                order = 10
+            },
+            undercut = {
+                type = "range",
+                name = "Default Undercut",
+                desc = "Default percentage to undercut when listing items",
+                min = 1,
+                max = 100,
+                step = 1,
+                get = function() return VUI.db.profile.modules.auctionator.undercut or 5 end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.undercut = value
+                end,
+                order = 11
+            },
+            defaultDuration = {
+                type = "select",
+                name = "Default Duration",
+                desc = "Default auction duration when listing items",
+                values = {
+                    [1] = "12 Hours",
+                    [2] = "24 Hours",
+                    [3] = "48 Hours",
+                },
+                get = function() return VUI.db.profile.modules.auctionator.defaultDuration or 2 end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.defaultDuration = value
+                end,
+                order = 12
+            },
+            rememberLastSellSettings = {
+                type = "toggle",
+                name = "Remember Last Sell Settings",
+                desc = "Remember your last settings for each item when selling",
+                get = function() return VUI.db.profile.modules.auctionator.rememberLastSellSettings end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.rememberLastSellSettings = value
+                end,
+                order = 13
+            },
+            bagViewHeading = {
+                type = "header",
+                name = "Bag View Settings",
+                order = 14
+            },
+            showBagView = {
+                type = "toggle",
+                name = "Show Bag View",
+                desc = "Show bag contents in the sell tab",
+                get = function() return VUI.db.profile.modules.auctionator.showBagView end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.showBagView = value
+                end,
+                order = 15
+            },
+            bagViewScale = {
+                type = "range",
+                name = "Bag View Scale",
+                desc = "Size of the bag icons in the sell tab",
+                min = 0.5,
+                max = 2,
+                step = 0.1,
+                get = function() return VUI.db.profile.modules.auctionator.bagViewScale or 1 end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.bagViewScale = value
+                    -- Update scale if the bag frame exists
+                    if self.bagFrame then
+                        self.bagFrame:SetScale(value)
+                    end
+                end,
+                order = 16,
+                disabled = function() return not VUI.db.profile.modules.auctionator.showBagView end,
+            },
+            shoppingListHeading = {
+                type = "header",
+                name = "Shopping List Settings",
+                order = 17
+            },
+            defaultShoppingList = {
+                type = "select",
+                name = "Default Shopping List",
+                desc = "The default shopping list to use",
+                values = function()
+                    local lists = {}
+                    for i, list in ipairs(self.shoppingLists) do
+                        lists[list.name] = list.name
+                    end
+                    return lists
+                end,
+                get = function() return VUI.db.profile.modules.auctionator.shoppingListOptions.defaultList or "Default" end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.shoppingListOptions.defaultList = value
+                    VUI.db.profile.modules.auctionator.shoppingListOptions.activeList = value
+                end,
+                order = 18
+            },
+            showEmptyLists = {
+                type = "toggle",
+                name = "Show Empty Lists",
+                desc = "Show shopping lists with no items in the dropdown",
+                get = function() return VUI.db.profile.modules.auctionator.shoppingListOptions.showEmptyLists end,
+                set = function(_, value) 
+                    VUI.db.profile.modules.auctionator.shoppingListOptions.showEmptyLists = value
+                end,
+                order = 19
             }
         }
     }
@@ -103,6 +239,9 @@ function Auctionator:Initialize()
     self.scans = {}
     self.recentSearches = {}
     self.favorites = {}
+    self.shoppingLists = {}
+    self.scanData = {}
+    self.itemPriceData = {}
     
     -- Register events
     self:RegisterEvent("AUCTION_HOUSE_SHOW")
@@ -115,6 +254,8 @@ function Auctionator:Initialize()
         self.favorites = VUI.charDB.profile.modules.auctionator.favorites or {}
         self.recentSearches = VUI.charDB.profile.modules.auctionator.recentSearches or {}
         self.lastScan = VUI.charDB.profile.modules.auctionator.lastScan or 0
+        self.shoppingLists = VUI.charDB.profile.modules.auctionator.shoppingLists or {}
+        self.itemPriceData = VUI.charDB.profile.modules.auctionator.itemPriceData or {}
     end
     
     -- Initialize hooks
@@ -123,6 +264,33 @@ function Auctionator:Initialize()
     -- Set default theme options if not set
     if VUI.db.profile.modules.auctionator.useVUITheme == nil then
         VUI.db.profile.modules.auctionator.useVUITheme = true
+    end
+    
+    -- Set default scan options if not set
+    if VUI.db.profile.modules.auctionator.scanOptions == nil then
+        VUI.db.profile.modules.auctionator.scanOptions = {
+            autoscan = false,
+            scanInterval = 60, -- Minutes between auto-scans
+            throttleRate = "medium" -- Scan speed (slow, medium, fast)
+        }
+    end
+    
+    -- Set default shopping list options if not set
+    if VUI.db.profile.modules.auctionator.shoppingListOptions == nil then
+        VUI.db.profile.modules.auctionator.shoppingListOptions = {
+            activeList = "Default",
+            defaultList = "Default"
+        }
+    end
+    
+    -- Create default shopping list if none exist
+    if #self.shoppingLists == 0 then
+        self.shoppingLists = {
+            {
+                name = "Default",
+                items = {}
+            }
+        }
     end
     
     -- Load theme integration module
@@ -438,9 +606,56 @@ function Auctionator:CreateSearchTab()
     self.searchTabFrame:SetPoint("TOPLEFT", self.mainFrame, "TOPLEFT", 105, -5)
     self.searchTabFrame:SetPoint("BOTTOMRIGHT", self.mainFrame, "BOTTOMRIGHT", -5, 5)
     
+    -- Create category dropdown
+    local categoryFrame = CreateFrame("Frame", nil, self.searchTabFrame)
+    categoryFrame:SetPoint("TOPLEFT", self.searchTabFrame, "TOPLEFT", 5, -5)
+    categoryFrame:SetSize(150, 25)
+    
+    local categoryLabel = categoryFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    categoryLabel:SetPoint("TOPLEFT", categoryFrame, "TOPLEFT", 0, 0)
+    categoryLabel:SetText("Category:")
+    
+    local categoryDropdown = CreateFrame("Frame", nil, categoryFrame, "UIDropDownMenuTemplate")
+    categoryDropdown:SetPoint("TOPLEFT", categoryLabel, "BOTTOMLEFT", -15, -2)
+    
+    UIDropDownMenu_SetWidth(categoryDropdown, 130)
+    UIDropDownMenu_SetText(categoryDropdown, "All Categories")
+    
+    UIDropDownMenu_Initialize(categoryDropdown, function(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+        
+        info.func = function(self)
+            UIDropDownMenu_SetText(categoryDropdown, self:GetText())
+            Auctionator.selectedCategory = self.value
+        end
+        
+        info.text = "All Categories"
+        info.value = 0
+        UIDropDownMenu_AddButton(info)
+        
+        -- Add predefined categories - would use real Enum.ItemClass in real implementation
+        local categories = {
+            {id = 1, name = "Weapons"},
+            {id = 2, name = "Armor"},
+            {id = 3, name = "Containers"},
+            {id = 4, name = "Consumables"},
+            {id = 5, name = "Trade Goods"},
+            {id = 6, name = "Recipes"},
+            {id = 7, name = "Miscellaneous"},
+        }
+        
+        for _, category in ipairs(categories) do
+            info.text = category.name
+            info.value = category.id
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+    
+    self.categoryDropdown = categoryDropdown
+    
     -- Create search box
     local searchBox = CreateFrame("EditBox", nil, self.searchTabFrame, "SearchBoxTemplate")
-    searchBox:SetPoint("TOPLEFT", self.searchTabFrame, "TOPLEFT", 5, -5)
+    searchBox:SetPoint("TOPLEFT", categoryFrame, "BOTTOMLEFT", 0, -10)
     searchBox:SetSize(250, 25)
     searchBox:SetAutoFocus(false)
     
@@ -470,34 +685,38 @@ function Auctionator:CreateSearchTab()
         end
     end)
     
-    -- Favorite button
-    local favoriteButton = CreateFrame("Button", nil, self.searchTabFrame, "UIPanelButtonTemplate")
-    favoriteButton:SetPoint("LEFT", searchButton, "RIGHT", 5, 0)
-    favoriteButton:SetSize(80, 25)
-    favoriteButton:SetText("Favorite")
+    -- Advanced search options button
+    local advancedButton = CreateFrame("Button", nil, self.searchTabFrame, "UIPanelButtonTemplate")
+    advancedButton:SetPoint("LEFT", searchButton, "RIGHT", 5, 0)
+    advancedButton:SetSize(80, 25)
+    advancedButton:SetText("Advanced")
     
-    favoriteButton:SetScript("OnClick", function()
-        local searchText = searchBox:GetText()
-        if searchText and searchText ~= "" then
-            Auctionator:ToggleFavorite(searchText)
+    advancedButton:SetScript("OnClick", function()
+        -- Toggle advanced search options
+        if self.advancedSearchFrame and self.advancedSearchFrame:IsShown() then
+            self.advancedSearchFrame:Hide()
+        else
+            self:ShowAdvancedSearchOptions()
         end
     end)
     
-    -- Create tabs for recent searches and favorites
+    -- Create tabs for lists
     local listTabs = {
-        {name = "recent", label = "Recent Searches"},
-        {name = "favorites", label = "Favorites"}
+        {name = "recent", label = "Recent"},
+        {name = "favorites", label = "Favorites"},
+        {name = "shopping", label = "Shopping Lists"}
     }
     
     local listTabButtons = {}
     local listFrame = CreateFrame("Frame", nil, self.searchTabFrame)
-    listFrame:SetPoint("TOPLEFT", searchBox, "BOTTOMLEFT", 0, -30)
+    listFrame:SetPoint("TOPLEFT", searchBox, "BOTTOMLEFT", 0, -35)
     listFrame:SetSize(250, 25)
     
     for i, tab in ipairs(listTabs) do
         local tabButton = CreateFrame("Button", nil, listFrame)
-        tabButton:SetPoint("TOPLEFT", listFrame, "TOPLEFT", (i-1) * 125, 0)
-        tabButton:SetSize(125, 25)
+        local tabWidth = 250 / #listTabs
+        tabButton:SetPoint("TOPLEFT", listFrame, "TOPLEFT", (i-1) * tabWidth, 0)
+        tabButton:SetSize(tabWidth, 25)
         tabButton:SetText(tab.label)
         tabButton:SetNormalFontObject("GameFontNormal")
         
@@ -515,7 +734,7 @@ function Auctionator:CreateSearchTab()
     
     self.searchListTabButtons = listTabButtons
     
-    -- Create list frame for searches/favorites
+    -- Create list frame for searches/favorites/shopping lists
     self.searchListFrame = CreateFrame("Frame", nil, self.searchTabFrame)
     self.searchListFrame:SetPoint("TOPLEFT", listFrame, "BOTTOMLEFT", 0, -5)
     self.searchListFrame:SetPoint("BOTTOMRIGHT", self.searchTabFrame, "BOTTOMLEFT", 255, 5)
@@ -537,14 +756,53 @@ function Auctionator:CreateSearchTab()
     self.searchListScrollFrame = scrollFrame
     self.searchListScrollChild = scrollChild
     
+    -- Create shopping list management controls
+    self:CreateShoppingListControls()
+    
     -- Create results frame
     self.searchResultsFrame = CreateFrame("Frame", nil, self.searchTabFrame)
     self.searchResultsFrame:SetPoint("TOPLEFT", self.searchListFrame, "TOPRIGHT", 5, 0)
     self.searchResultsFrame:SetPoint("BOTTOMRIGHT", self.searchTabFrame, "BOTTOMRIGHT", -5, 5)
     
+    -- Add column headers to results
+    local headerFrame = CreateFrame("Frame", nil, self.searchResultsFrame)
+    headerFrame:SetPoint("TOPLEFT", self.searchResultsFrame, "TOPLEFT", 0, 0)
+    headerFrame:SetPoint("RIGHT", self.searchResultsFrame, "RIGHT", 0, 0)
+    headerFrame:SetHeight(25)
+    
+    -- Create column headers
+    local headers = {
+        {text = "Item", width = 0.45},  -- 45% of width
+        {text = "Quantity", width = 0.15}, -- 15% of width
+        {text = "Price Each", width = 0.2}, -- 20% of width
+        {text = "Total", width = 0.2} -- 20% of width
+    }
+    
+    local prevHeader
+    for i, header in ipairs(headers) do
+        local headerText = headerFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        
+        if i == 1 then
+            headerText:SetPoint("TOPLEFT", headerFrame, "TOPLEFT", 5, 0)
+            headerText:SetWidth(headerFrame:GetWidth() * header.width - 5)
+        else
+            headerText:SetPoint("TOPLEFT", prevHeader, "TOPRIGHT", 5, 0)
+            headerText:SetWidth(headerFrame:GetWidth() * header.width - 5)
+        end
+        
+        headerText:SetText(header.text)
+        headerText:SetJustifyH("LEFT")
+        
+        prevHeader = headerText
+        headers[i].textObj = headerText
+    end
+    
+    self.resultsHeaders = headers
+    self.resultsHeaderFrame = headerFrame
+    
     -- Create scroll frame for results
     local resultsScrollFrame = CreateFrame("ScrollFrame", nil, self.searchResultsFrame, "HybridScrollFrameTemplate")
-    resultsScrollFrame:SetPoint("TOPLEFT")
+    resultsScrollFrame:SetPoint("TOPLEFT", headerFrame, "BOTTOMLEFT", 0, -2)
     resultsScrollFrame:SetPoint("BOTTOMRIGHT", -30, 0)
     
     local resultsScrollChild = CreateFrame("Frame", nil, resultsScrollFrame)
@@ -559,11 +817,128 @@ function Auctionator:CreateSearchTab()
     self.resultsScrollFrame = resultsScrollFrame
     self.resultsScrollChild = resultsScrollChild
     
+    -- Create scan frame and progress bar
+    local scanFrame = CreateFrame("Frame", nil, self.searchTabFrame)
+    scanFrame:SetPoint("BOTTOMRIGHT", self.searchTabFrame, "BOTTOMRIGHT", -10, 10)
+    scanFrame:SetSize(200, 30)
+    
+    local scanButton = CreateFrame("Button", nil, scanFrame, "UIPanelButtonTemplate")
+    scanButton:SetPoint("BOTTOMRIGHT", scanFrame, "BOTTOMRIGHT", 0, 0)
+    scanButton:SetSize(100, 25)
+    scanButton:SetText("Full Scan")
+    
+    scanButton:SetScript("OnClick", function()
+        self:StartFullScan()
+    end)
+    
+    local scanProgressBar = CreateFrame("StatusBar", nil, scanFrame)
+    scanProgressBar:SetPoint("RIGHT", scanButton, "LEFT", -5, 0)
+    scanProgressBar:SetSize(95, 25)
+    scanProgressBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+    scanProgressBar:SetStatusBarColor(0, 0.7, 0)
+    scanProgressBar:SetMinMaxValues(0, 100)
+    scanProgressBar:SetValue(0)
+    scanProgressBar:Hide()
+    
+    local scanProgressText = scanProgressBar:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    scanProgressText:SetPoint("CENTER")
+    scanProgressText:SetText("0%")
+    
+    self.scanButton = scanButton
+    self.scanProgressBar = scanProgressBar
+    self.scanProgressText = scanProgressText
+    
     -- Start with recent searches tab
     self:SwitchSearchListTab("recent")
     
     -- Hide the tab by default
     self.searchTabFrame:Hide()
+end
+
+-- Create shopping list controls
+function Auctionator:CreateShoppingListControls()
+    -- Shopping list management frame
+    local listControlsFrame = CreateFrame("Frame", nil, self.searchListFrame)
+    listControlsFrame:SetPoint("BOTTOMLEFT", self.searchListFrame, "BOTTOMLEFT", 0, 0)
+    listControlsFrame:SetPoint("BOTTOMRIGHT", self.searchListFrame, "BOTTOMRIGHT", 0, 0)
+    listControlsFrame:SetHeight(60)
+    listControlsFrame:Hide()
+    
+    -- Create shopping list dropdown
+    local listLabel = listControlsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    listLabel:SetPoint("TOPLEFT", listControlsFrame, "TOPLEFT", 5, 0)
+    listLabel:SetText("Shopping List:")
+    
+    local listDropdown = CreateFrame("Frame", nil, listControlsFrame, "UIDropDownMenuTemplate")
+    listDropdown:SetPoint("TOPLEFT", listLabel, "BOTTOMLEFT", -15, -2)
+    
+    UIDropDownMenu_SetWidth(listDropdown, 150)
+    
+    UIDropDownMenu_Initialize(listDropdown, function(frame, level)
+        local info = UIDropDownMenu_CreateInfo()
+        
+        info.func = function(self)
+            UIDropDownMenu_SetText(listDropdown, self:GetText())
+            local listName = self:GetText()
+            Auctionator:SelectShoppingList(listName)
+        end
+        
+        -- Add all shopping lists
+        for i, list in ipairs(Auctionator.shoppingLists) do
+            local showList = true
+            if not VUI.db.profile.modules.auctionator.shoppingListOptions.showEmptyLists and #list.items == 0 then
+                showList = false
+            end
+            
+            if showList then
+                info.text = list.name
+                info.checked = (list.name == Auctionator.currentShoppingList)
+                UIDropDownMenu_AddButton(info)
+            end
+        end
+    end)
+    
+    -- Set initial text
+    local defaultList = VUI.db.profile.modules.auctionator.shoppingListOptions.defaultList or "Default"
+    UIDropDownMenu_SetText(listDropdown, defaultList)
+    self.currentShoppingList = defaultList
+    
+    self.shoppingListDropdown = listDropdown
+    
+    -- Create new list button
+    local newListButton = CreateFrame("Button", nil, listControlsFrame, "UIPanelButtonTemplate")
+    newListButton:SetPoint("TOPLEFT", listDropdown, "BOTTOMLEFT", 16, -5)
+    newListButton:SetSize(60, 22)
+    newListButton:SetText("New")
+    
+    newListButton:SetScript("OnClick", function()
+        self:CreateNewShoppingList()
+    end)
+    
+    -- Create add item button
+    local addItemButton = CreateFrame("Button", nil, listControlsFrame, "UIPanelButtonTemplate")
+    addItemButton:SetPoint("LEFT", newListButton, "RIGHT", 5, 0)
+    addItemButton:SetSize(60, 22)
+    addItemButton:SetText("Add")
+    
+    addItemButton:SetScript("OnClick", function()
+        self:AddItemToShoppingList()
+    end)
+    
+    -- Create delete list button
+    local deleteListButton = CreateFrame("Button", nil, listControlsFrame, "UIPanelButtonTemplate")
+    deleteListButton:SetPoint("LEFT", addItemButton, "RIGHT", 5, 0)
+    deleteListButton:SetSize(60, 22)
+    deleteListButton:SetText("Delete")
+    
+    deleteListButton:SetScript("OnClick", function()
+        self:DeleteShoppingList()
+    end)
+    
+    self.shoppingListControls = listControlsFrame
+    self.shoppingListControls.newListButton = newListButton
+    self.shoppingListControls.addItemButton = addItemButton
+    self.shoppingListControls.deleteListButton = deleteListButton
 end
 
 -- Switch between recent searches and favorites list
@@ -581,14 +956,389 @@ function Auctionator:SwitchSearchListTab(tabName)
         end
     end
     
+    -- Clear the list
+    self.searchListScrollChild:SetHeight(1)
+    for i, child in ipairs({self.searchListScrollChild:GetChildren()}) do
+        child:Hide()
+        child:SetParent(nil)
+    end
+    
+    -- Show/hide shopping list controls
+    if tabName == "shopping" then
+        if self.shoppingListControls then
+            self.shoppingListControls:Show()
+        end
+    else
+        if self.shoppingListControls then
+            self.shoppingListControls:Hide()
+        end
+    end
+    
     -- Update the list based on the selected tab
     if tabName == "recent" then
         self:UpdateRecentSearchesList()
     elseif tabName == "favorites" then
         self:UpdateFavoritesList()
+    elseif tabName == "shopping" then
+        self:UpdateShoppingList()
     end
     
     self.currentSearchListTab = tabName
+end
+
+-- Select a shopping list
+function Auctionator:SelectShoppingList(listName)
+    -- Find the list
+    local foundList = false
+    for i, list in ipairs(self.shoppingLists) do
+        if list.name == listName then
+            foundList = true
+            break
+        end
+    end
+    
+    -- Create the list if it doesn't exist
+    if not foundList then
+        table.insert(self.shoppingLists, {
+            name = listName,
+            items = {}
+        })
+    end
+    
+    -- Set as current list
+    self.currentShoppingList = listName
+    VUI.db.profile.modules.auctionator.shoppingListOptions.activeList = listName
+    
+    -- Update the display
+    self:UpdateShoppingList()
+end
+
+-- Create a new shopping list
+function Auctionator:CreateNewShoppingList()
+    -- Create popup dialog
+    StaticPopupDialogs["VUI_AUCTIONATOR_NEW_LIST"] = {
+        text = "Enter name for new shopping list:",
+        button1 = "Create",
+        button2 = "Cancel",
+        OnAccept = function(self)
+            local listName = self.editBox:GetText()
+            if listName and listName ~= "" then
+                -- Check if a list with this name already exists
+                local listExists = false
+                for i, list in ipairs(Auctionator.shoppingLists) do
+                    if list.name == listName then
+                        listExists = true
+                        break
+                    end
+                end
+                
+                if not listExists then
+                    -- Create the new list
+                    table.insert(Auctionator.shoppingLists, {
+                        name = listName,
+                        items = {}
+                    })
+                    
+                    -- Select the new list
+                    Auctionator:SelectShoppingList(listName)
+                    UIDropDownMenu_SetText(Auctionator.shoppingListDropdown, listName)
+                else
+                    -- Show error message
+                    Auctionator:Print("A shopping list with that name already exists.")
+                end
+            end
+        end,
+        hasEditBox = true,
+        editBoxWidth = 150,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3
+    }
+    
+    StaticPopup_Show("VUI_AUCTIONATOR_NEW_LIST")
+end
+
+-- Add an item to the shopping list
+function Auctionator:AddItemToShoppingList()
+    -- Create popup dialog
+    StaticPopupDialogs["VUI_AUCTIONATOR_ADD_ITEM"] = {
+        text = "Enter item to add to shopping list:",
+        button1 = "Add",
+        button2 = "Cancel",
+        OnAccept = function(self)
+            local itemText = self.editBox:GetText()
+            if itemText and itemText ~= "" then
+                Auctionator:AddItemToCurrentList(itemText)
+            end
+        end,
+        hasEditBox = true,
+        editBoxWidth = 150,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3
+    }
+    
+    StaticPopup_Show("VUI_AUCTIONATOR_ADD_ITEM")
+end
+
+-- Add an item to the current shopping list
+function Auctionator:AddItemToCurrentList(itemText)
+    if not self.currentShoppingList then
+        self:Print("No shopping list selected.")
+        return
+    end
+    
+    -- Find the list
+    for i, list in ipairs(self.shoppingLists) do
+        if list.name == self.currentShoppingList then
+            -- Check if item already exists
+            local itemExists = false
+            for j, item in ipairs(list.items) do
+                if item.text == itemText then
+                    itemExists = true
+                    break
+                end
+            end
+            
+            if not itemExists then
+                -- Add the item
+                table.insert(list.items, {
+                    text = itemText,
+                    added = time()
+                })
+                
+                -- Update the display
+                self:UpdateShoppingList()
+            else
+                self:Print("Item already exists in the list.")
+            end
+            
+            break
+        end
+    end
+end
+
+-- Remove an item from a shopping list
+function Auctionator:RemoveItemFromList(listName, itemIndex)
+    -- Find the list
+    for i, list in ipairs(self.shoppingLists) do
+        if list.name == listName then
+            -- Remove the item
+            table.remove(list.items, itemIndex)
+            
+            -- Update the display
+            self:UpdateShoppingList()
+            break
+        end
+    end
+end
+
+-- Update the shopping list display
+function Auctionator:UpdateShoppingList()
+    -- Clear the list
+    self.searchListScrollChild:SetHeight(1)
+    for i, child in ipairs({self.searchListScrollChild:GetChildren()}) do
+        child:Hide()
+        child:SetParent(nil)
+    end
+    
+    -- Find the current list
+    local currentList = nil
+    for i, list in ipairs(self.shoppingLists) do
+        if list.name == self.currentShoppingList then
+            currentList = list
+            break
+        end
+    end
+    
+    if not currentList then
+        -- No list selected or list doesn't exist
+        return
+    end
+    
+    -- Create list items
+    local yOffset = -5
+    local itemHeight = 25
+    
+    for i, item in ipairs(currentList.items) do
+        -- Create item frame
+        local itemFrame = CreateFrame("Frame", nil, self.searchListScrollChild)
+        itemFrame:SetPoint("TOPLEFT", self.searchListScrollChild, "TOPLEFT", 5, yOffset)
+        itemFrame:SetPoint("RIGHT", self.searchListScrollChild, "RIGHT", -5, 0)
+        itemFrame:SetHeight(itemHeight)
+        
+        -- Item background
+        local bg = itemFrame:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints()
+        
+        -- Alternate row colors
+        if i % 2 == 0 then
+            bg:SetColorTexture(0.1, 0.1, 0.1, 0.3)
+        else
+            bg:SetColorTexture(0.15, 0.15, 0.15, 0.3)
+        end
+        
+        -- Item text
+        local itemText = itemFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        itemText:SetPoint("LEFT", itemFrame, "LEFT", 5, 0)
+        itemText:SetPoint("RIGHT", itemFrame, "RIGHT", -25, 0)
+        itemText:SetJustifyH("LEFT")
+        itemText:SetText(item.text)
+        
+        -- Search button
+        local searchButton = CreateFrame("Button", nil, itemFrame)
+        searchButton:SetPoint("RIGHT", itemFrame, "RIGHT", -5, 0)
+        searchButton:SetSize(16, 16)
+        searchButton:SetNormalTexture("Interface\\Buttons\\UI-CheckBox-Check")
+        
+        searchButton:SetScript("OnClick", function()
+            -- Search for this item
+            if Auctionator.searchBox then
+                Auctionator.searchBox:SetText(item.text)
+                Auctionator:PerformSearch(item.text)
+            end
+        end)
+        
+        -- Delete button
+        local deleteButton = CreateFrame("Button", nil, itemFrame)
+        deleteButton:SetPoint("RIGHT", searchButton, "LEFT", -2, 0)
+        deleteButton:SetSize(16, 16)
+        deleteButton:SetNormalTexture("Interface\\Buttons\\UI-StopButton")
+        
+        deleteButton:SetScript("OnClick", function()
+            -- Remove this item
+            Auctionator:RemoveItemFromList(currentList.name, i)
+        end)
+        
+        -- Make the whole row clickable to search
+        itemFrame:EnableMouse(true)
+        itemFrame:SetScript("OnMouseUp", function(self, button)
+            if button == "LeftButton" then
+                -- Search for this item
+                if Auctionator.searchBox then
+                    Auctionator.searchBox:SetText(item.text)
+                    Auctionator:PerformSearch(item.text)
+                end
+            end
+        end)
+        
+        -- Hover highlight
+        itemFrame:SetScript("OnEnter", function()
+            bg:SetColorTexture(0.3, 0.3, 0.3, 0.4)
+        end)
+        
+        itemFrame:SetScript("OnLeave", function()
+            if i % 2 == 0 then
+                bg:SetColorTexture(0.1, 0.1, 0.1, 0.3)
+            else
+                bg:SetColorTexture(0.15, 0.15, 0.15, 0.3)
+            end
+        end)
+        
+        yOffset = yOffset - itemHeight
+    end
+    
+    -- Adjust the scroll child height
+    local totalHeight = math.abs(yOffset)
+    self.searchListScrollChild:SetHeight(math.max(totalHeight, self.searchListScrollFrame:GetHeight()))
+end
+
+-- Delete a shopping list
+function Auctionator:DeleteShoppingList()
+    if not self.currentShoppingList or self.currentShoppingList == "Default" then
+        self:Print("Cannot delete the default shopping list.")
+        return
+    end
+    
+    -- Create popup dialog
+    StaticPopupDialogs["VUI_AUCTIONATOR_DELETE_LIST"] = {
+        text = "Are you sure you want to delete shopping list '" .. self.currentShoppingList .. "'?",
+        button1 = "Delete",
+        button2 = "Cancel",
+        OnAccept = function()
+            local listIndex = nil
+            for i, list in ipairs(Auctionator.shoppingLists) do
+                if list.name == Auctionator.currentShoppingList then
+                    listIndex = i
+                    break
+                end
+            end
+            
+            if listIndex then
+                -- Remove the list
+                table.remove(Auctionator.shoppingLists, listIndex)
+                
+                -- Select the default list
+                Auctionator:SelectShoppingList("Default")
+                UIDropDownMenu_SetText(Auctionator.shoppingListDropdown, "Default")
+            end
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3
+    }
+    
+    StaticPopup_Show("VUI_AUCTIONATOR_DELETE_LIST")
+end
+
+-- Start a full auction house scan
+function Auctionator:StartFullScan()
+    -- Show progress elements
+    self.scanProgressBar:Show()
+    self.scanProgressBar:SetValue(0)
+    self.scanProgressText:SetText("0%")
+    
+    -- Set scan in progress state
+    self.scanInProgress = true
+    self.scanStartTime = GetTime()
+    self.scanItems = {}
+    self.scanProgress = 0
+    
+    self:Print("Starting full auction house scan...")
+    
+    -- Use C_Timer to simulate the scan process
+    -- In a real implementation, this would use the Blizzard auction house API
+    C_Timer.After(0.1, function() self:ProcessScanBatch(1) end)
+end
+
+-- Process a batch of the scan
+function Auctionator:ProcessScanBatch(batchNumber)
+    -- Update progress
+    local progress = math.min(batchNumber * 5, 100)
+    self.scanProgressBar:SetValue(progress)
+    self.scanProgressText:SetText(progress .. "%")
+    self.scanProgress = progress
+    
+    if progress < 100 then
+        -- Continue scanning
+        local throttleRate = VUI.db.profile.modules.auctionator.scanOptions.throttleRate or "medium"
+        local delay = 0.1
+        
+        if throttleRate == "slow" then
+            delay = 0.2
+        elseif throttleRate == "fast" then
+            delay = 0.05
+        end
+        
+        C_Timer.After(delay, function() self:ProcessScanBatch(batchNumber + 1) end)
+    else
+        -- Finish scan
+        self.scanInProgress = false
+        self.scanProgressText:SetText("Scan Complete")
+        
+        -- Save scan time
+        self.lastScan = GetTime()
+        VUI.charDB.profile.modules.auctionator.lastScan = self.lastScan
+        
+        self:Print("Auction house scan complete!")
+        
+        C_Timer.After(2, function() 
+            self.scanProgressBar:Hide() 
+        end)
+    end
 end
 
 -- Create the Sell tab UI
@@ -598,20 +1348,52 @@ function Auctionator:CreateSellTab()
     self.sellTabFrame:SetPoint("TOPLEFT", self.mainFrame, "TOPLEFT", 105, -5)
     self.sellTabFrame:SetPoint("BOTTOMRIGHT", self.mainFrame, "BOTTOMRIGHT", -5, 5)
     
+    -- Left side - Item details and posting options
+    local sellOptionsFrame = CreateFrame("Frame", nil, self.sellTabFrame)
+    sellOptionsFrame:SetPoint("TOPLEFT", self.sellTabFrame, "TOPLEFT", 5, -5)
+    sellOptionsFrame:SetPoint("BOTTOMRIGHT", self.sellTabFrame, "BOTTOMRIGHT", -270, 5)
+    
+    -- Create item selection header
+    local itemSelectHeader = sellOptionsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    itemSelectHeader:SetPoint("TOPLEFT", sellOptionsFrame, "TOPLEFT", 5, -5)
+    itemSelectHeader:SetText("Post an Item")
+    
     -- Create item frame
-    local itemFrame = CreateFrame("Frame", nil, self.sellTabFrame)
-    itemFrame:SetPoint("TOPLEFT", self.sellTabFrame, "TOPLEFT", 5, -5)
+    local itemFrame = CreateFrame("Frame", nil, sellOptionsFrame)
+    itemFrame:SetPoint("TOPLEFT", itemSelectHeader, "BOTTOMLEFT", 0, -10)
     itemFrame:SetSize(250, 50)
     
     -- Create item texture frame
     local itemTexture = CreateFrame("Button", nil, itemFrame)
     itemTexture:SetPoint("TOPLEFT", itemFrame, "TOPLEFT", 5, -5)
     itemTexture:SetSize(40, 40)
+    itemTexture:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
+    
+    -- Add item border
+    local itemBorder = itemTexture:CreateTexture(nil, "OVERLAY")
+    itemBorder:SetPoint("TOPLEFT", itemTexture, "TOPLEFT", -2, 2)
+    itemBorder:SetPoint("BOTTOMRIGHT", itemTexture, "BOTTOMRIGHT", 2, -2)
+    itemBorder:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+    itemBorder:SetBlendMode("ADD")
+    itemBorder:SetAlpha(0.8)
     
     -- Item icon texture
     local itemIcon = itemTexture:CreateTexture(nil, "ARTWORK")
     itemIcon:SetAllPoints()
     itemIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+    
+    -- Add tooltip to item icon
+    itemTexture:SetScript("OnEnter", function(self)
+        if Auctionator.currentSellItem then
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetHyperlink(Auctionator.currentSellItem.link)
+            GameTooltip:Show()
+        end
+    end)
+    
+    itemTexture:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+    end)
     
     self.itemIcon = itemIcon
     
@@ -776,8 +1558,665 @@ function Auctionator:CreateSellTab()
     self.scanScrollFrame = scanScrollFrame
     self.scanScrollChild = scanScrollChild
     
+    -- Create the bag view
+    self:CreateBagView()
+    
     -- Hide the tab by default
     self.sellTabFrame:Hide()
+end
+
+-- Create the bag view interface for selling
+function Auctionator:CreateBagView()
+    -- Right side - Bag items
+    local bagViewFrame = CreateFrame("Frame", nil, self.sellTabFrame)
+    bagViewFrame:SetPoint("TOPLEFT", self.sellTabFrame, "TOPRIGHT", -265, -5)
+    bagViewFrame:SetPoint("BOTTOMRIGHT", self.sellTabFrame, "BOTTOMRIGHT", -5, 5)
+    
+    -- Bag view heading
+    local bagViewHeading = bagViewFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    bagViewHeading:SetPoint("TOPLEFT", bagViewFrame, "TOPLEFT", 5, -5)
+    bagViewHeading:SetText("Items in Bags")
+    
+    -- Create filter row
+    local filterFrame = CreateFrame("Frame", nil, bagViewFrame)
+    filterFrame:SetPoint("TOPLEFT", bagViewHeading, "BOTTOMLEFT", 0, -10)
+    filterFrame:SetPoint("RIGHT", bagViewFrame, "RIGHT", -5, 0)
+    filterFrame:SetHeight(25)
+    
+    local filterLabel = filterFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    filterLabel:SetPoint("TOPLEFT", filterFrame, "TOPLEFT", 5, 0)
+    filterLabel:SetText("Filter:")
+    
+    local filterBox = CreateFrame("EditBox", nil, filterFrame, "SearchBoxTemplate")
+    filterBox:SetPoint("LEFT", filterLabel, "RIGHT", 5, 0)
+    filterBox:SetPoint("RIGHT", filterFrame, "RIGHT", -5, 0)
+    filterBox:SetHeight(20)
+    filterBox:SetAutoFocus(false)
+    
+    filterBox:SetScript("OnTextChanged", function(self)
+        Auctionator:UpdateBagView(self:GetText())
+    end)
+    
+    self.bagFilterBox = filterBox
+    
+    -- Create category filter buttons
+    local categoryFrame = CreateFrame("Frame", nil, bagViewFrame)
+    categoryFrame:SetPoint("TOPLEFT", filterFrame, "BOTTOMLEFT", 0, -5)
+    categoryFrame:SetPoint("RIGHT", bagViewFrame, "RIGHT", -5, 0)
+    categoryFrame:SetHeight(25)
+    
+    local categoryButtons = {}
+    local categories = {
+        {id = 0, name = "All"},
+        {id = 1, name = "Weapons"},
+        {id = 2, name = "Armor"},
+        {id = 3, name = "Trade Goods"},
+        {id = 4, name = "Consumables"}
+    }
+    
+    local buttonWidth = (categoryFrame:GetWidth() / #categories) - 5
+    for i, category in ipairs(categories) do
+        local button = CreateFrame("Button", nil, categoryFrame)
+        button:SetPoint("TOPLEFT", categoryFrame, "TOPLEFT", (i-1) * (buttonWidth + 5), 0)
+        button:SetSize(buttonWidth, 20)
+        button:SetText(category.name)
+        button:SetNormalFontObject("GameFontNormalSmall")
+        
+        -- Create background
+        local bg = button:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints()
+        bg:SetColorTexture(0.1, 0.1, 0.1, 0.5)
+        
+        button.categoryId = category.id
+        button.bg = bg
+        
+        button:SetScript("OnClick", function(self)
+            -- Update selected category filter
+            Auctionator.selectedBagCategory = self.categoryId
+            
+            -- Update button visuals
+            for _, btn in ipairs(categoryButtons) do
+                if btn == self then
+                    btn.bg:SetColorTexture(0.2, 0.2, 0.2, 0.8)
+                    btn:SetNormalFontObject("GameFontHighlightSmall")
+                else
+                    btn.bg:SetColorTexture(0.1, 0.1, 0.1, 0.5)
+                    btn:SetNormalFontObject("GameFontNormalSmall")
+                end
+            end
+            
+            -- Update bag display with filter
+            Auctionator:UpdateBagView(Auctionator.bagFilterBox:GetText())
+        end)
+        
+        table.insert(categoryButtons, button)
+    end
+    
+    -- Set default selected category
+    categoryButtons[1].bg:SetColorTexture(0.2, 0.2, 0.2, 0.8)
+    categoryButtons[1]:SetNormalFontObject("GameFontHighlightSmall")
+    self.selectedBagCategory = 0
+    self.categoryButtons = categoryButtons
+    
+    -- Create scroll frame for bag items
+    local scrollFrame = CreateFrame("ScrollFrame", nil, bagViewFrame, "HybridScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", categoryFrame, "BOTTOMLEFT", 0, -5)
+    scrollFrame:SetPoint("BOTTOMRIGHT", bagViewFrame, "BOTTOMRIGHT", -30, 5)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollFrame:SetScrollChild(scrollChild)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 1) -- Height will be set dynamically
+    
+    local scrollBar = CreateFrame("Slider", nil, scrollFrame, "HybridScrollBarTemplate")
+    scrollBar:SetPoint("TOPLEFT", scrollFrame, "TOPRIGHT", 1, -16)
+    scrollBar:SetPoint("BOTTOMLEFT", scrollFrame, "BOTTOMRIGHT", 1, 16)
+    scrollFrame.scrollBar = scrollBar
+    
+    self.bagScrollFrame = scrollFrame
+    self.bagScrollChild = scrollChild
+    self.bagItemButtons = {}
+    
+    self.bagViewFrame = bagViewFrame
+    
+    -- Store bag data for reference
+    self.bagItems = {}
+    
+    -- Allow hiding the bag view
+    local toggleBagViewButton = CreateFrame("Button", nil, bagViewFrame, "UIPanelButtonTemplate")
+    toggleBagViewButton:SetPoint("BOTTOMRIGHT", bagViewFrame, "BOTTOMRIGHT", -5, 5)
+    toggleBagViewButton:SetSize(24, 24)
+    toggleBagViewButton:SetText("<")
+    
+    toggleBagViewButton:SetScript("OnClick", function()
+        if bagViewFrame:IsVisible() then
+            bagViewFrame:Hide()
+            toggleBagViewButton:SetText(">")
+            toggleBagViewButton:SetPoint("BOTTOMRIGHT", self.sellTabFrame, "BOTTOMRIGHT", -5, 5)
+        else
+            bagViewFrame:Show()
+            toggleBagViewButton:SetText("<")
+            toggleBagViewButton:SetPoint("BOTTOMRIGHT", bagViewFrame, "BOTTOMRIGHT", -5, 5)
+        end
+    end)
+    
+    self.toggleBagViewButton = toggleBagViewButton
+end
+
+-- Update the bag view with current bag contents
+function Auctionator:UpdateBagView(filterText)
+    if not self.bagScrollChild then return end
+    
+    -- Clear the current items in the bag view
+    for i, button in ipairs(self.bagItemButtons) do
+        button:Hide()
+        button:SetParent(nil)
+    end
+    
+    -- Refresh bag content data
+    self:ScanBagContents()
+    
+    -- Filter and display items
+    local yOffset = -5
+    local itemHeight = 40
+    local itemPadding = 5
+    local itemsPerRow = 5
+    local buttonSize = ((self.bagScrollChild:GetWidth() - (itemsPerRow + 1) * itemPadding) / itemsPerRow)
+    
+    local filteredItems = {}
+    
+    -- Apply filters (category and text)
+    for i, item in ipairs(self.bagItems) do
+        -- Check category filter
+        local categoryMatch = (self.selectedBagCategory == 0) or (item.categoryId == self.selectedBagCategory)
+        
+        -- Check text filter
+        local textMatch = true
+        if filterText and filterText ~= "" then
+            textMatch = item.name:lower():find(filterText:lower()) ~= nil
+        end
+        
+        if categoryMatch and textMatch then
+            table.insert(filteredItems, item)
+        end
+    end
+    
+    -- Create/update buttons for the filtered items
+    local itemCount = #filteredItems
+    local xOffset = itemPadding
+    local row = 0
+    local column = 0
+    
+    for i, item in ipairs(filteredItems) do
+        -- Calculate position
+        local x = xOffset + column * (buttonSize + itemPadding)
+        local y = yOffset - row * (buttonSize + itemPadding)
+        
+        -- Get or create button
+        local button
+        if i <= #self.bagItemButtons then
+            button = self.bagItemButtons[i]
+        else
+            button = CreateFrame("Button", nil, self.bagScrollChild)
+            button:SetSize(buttonSize, buttonSize)
+            
+            -- Create item border
+            local border = button:CreateTexture(nil, "OVERLAY")
+            border:SetPoint("TOPLEFT", button, "TOPLEFT", -2, 2)
+            border:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 2, -2)
+            border:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+            border:SetBlendMode("ADD")
+            border:SetAlpha(0.8)
+            border:Hide()
+            
+            -- Create item icon
+            local icon = button:CreateTexture(nil, "ARTWORK")
+            icon:SetAllPoints()
+            
+            -- Create item count text
+            local count = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+            count:SetPoint("BOTTOMRIGHT", -2, 2)
+            count:SetJustifyH("RIGHT")
+            
+            -- Create quality overlay
+            local quality = button:CreateTexture(nil, "OVERLAY")
+            quality:SetPoint("TOPLEFT", button, "TOPLEFT", -1, 1)
+            quality:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 1, -1)
+            quality:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+            quality:SetBlendMode("ADD")
+            quality:SetAlpha(0.5)
+            
+            button.icon = icon
+            button.count = count
+            button.border = border
+            button.quality = quality
+            
+            -- Add tooltip
+            button:SetScript("OnEnter", function(self)
+                if self.link then
+                    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                    GameTooltip:SetHyperlink(self.link)
+                    GameTooltip:Show()
+                end
+            end)
+            
+            button:SetScript("OnLeave", function()
+                GameTooltip:Hide()
+            end)
+            
+            -- Add click handler to select item
+            button:SetScript("OnClick", function(self)
+                Auctionator:SelectBagItem(self.bagID, self.slotID)
+            end)
+            
+            table.insert(self.bagItemButtons, button)
+        end
+        
+        -- Update button with item data
+        button:SetParent(self.bagScrollChild)
+        button:ClearAllPoints()
+        button:SetPoint("TOPLEFT", self.bagScrollChild, "TOPLEFT", x, y)
+        button:Show()
+        
+        button.icon:SetTexture(item.texture)
+        button.count:SetText(item.count > 1 and item.count or "")
+        button.bagID = item.bagID
+        button.slotID = item.slotID
+        button.link = item.link
+        
+        -- Color based on quality
+        if item.quality and item.quality > 1 then
+            local r, g, b = GetItemQualityColor(item.quality)
+            button.quality:SetVertexColor(r, g, b)
+            button.quality:Show()
+        else
+            button.quality:Hide()
+        end
+        
+        -- Increment position counters
+        column = column + 1
+        if column >= itemsPerRow then
+            column = 0
+            row = row + 1
+        end
+    end
+    
+    -- Calculate total height
+    local totalRows = math.ceil(itemCount / itemsPerRow)
+    local totalHeight = totalRows * (buttonSize + itemPadding) + itemPadding
+    
+    -- Adjust scroll child height
+    self.bagScrollChild:SetHeight(math.max(totalHeight, self.bagScrollFrame:GetHeight()))
+end
+
+-- Scan current bag contents
+function Auctionator:ScanBagContents()
+    self.bagItems = {}
+    
+    -- Loop through all bags
+    for bagID = 0, 4 do
+        local slots = GetContainerNumSlots(bagID)
+        for slotID = 1, slots do
+            local texture, count, locked, quality, readable, lootable, link = GetContainerItemInfo(bagID, slotID)
+            
+            if texture then
+                local name, _, itemQuality, itemLevel, _, itemType, itemSubType, _, equipLoc, _, vendorPrice = GetItemInfo(link)
+                
+                if name then
+                    -- Determine category
+                    local categoryId = 0
+                    if itemType == "Weapon" then
+                        categoryId = 1
+                    elseif itemType == "Armor" then
+                        categoryId = 2
+                    elseif itemType == "Trade Goods" then
+                        categoryId = 3
+                    elseif itemType == "Consumable" then
+                        categoryId = 4
+                    end
+                    
+                    -- Add item to list
+                    table.insert(self.bagItems, {
+                        name = name,
+                        texture = texture,
+                        count = count,
+                        quality = itemQuality,
+                        level = itemLevel,
+                        type = itemType,
+                        subType = itemSubType,
+                        link = link,
+                        bagID = bagID,
+                        slotID = slotID,
+                        categoryId = categoryId
+                    })
+                end
+            end
+        end
+    end
+    
+    -- Sort by quality and name
+    table.sort(self.bagItems, function(a, b)
+        if a.quality == b.quality then
+            return a.name < b.name
+        else
+            return a.quality > b.quality
+        end
+    end)
+end
+
+-- Select an item from bags
+function Auctionator:SelectBagItem(bagID, slotID)
+    if not bagID or not slotID then return end
+    
+    local texture, count, locked, quality, readable, lootable, link = GetContainerItemInfo(bagID, slotID)
+    
+    if not link then return end
+    
+    local name, _, _, _, _, _, _, stackCount = GetItemInfo(link)
+    
+    if not name then return end
+    
+    -- Set the sell item
+    self.currentSellItem = {
+        name = name,
+        texture = texture,
+        count = count,
+        link = link,
+        bagID = bagID,
+        slotID = slotID,
+        stackCount = stackCount
+    }
+    
+    -- Update the UI
+    self.itemIcon:SetTexture(texture)
+    self.itemName:SetText(name)
+    
+    -- Set default stack size (full stack or count if less)
+    stackCount = stackCount or 1
+    self.stackInput:SetText(math.min(count, stackCount))
+    self.quantityInput:SetText("1")
+    
+    -- Get price data if available
+    self:GetPriceData(link)
+end
+
+-- Get price data for an item
+function Auctionator:GetPriceData(itemLink)
+    if not itemLink then return end
+    
+    local itemID = GetItemInfoInstant(itemLink)
+    if not itemID then return end
+    
+    -- Check if we have price data for this item
+    if self.itemPriceData[itemID] then
+        local priceData = self.itemPriceData[itemID]
+        
+        -- Set price suggestion
+        if priceData.minBuyout then
+            local gold = math.floor(priceData.minBuyout / 10000)
+            local silver = math.floor((priceData.minBuyout % 10000) / 100)
+            local copper = priceData.minBuyout % 100
+            
+            -- Apply undercut
+            local undercut = VUI.db.profile.modules.auctionator.undercut or 5
+            local undercutAmount = math.floor(priceData.minBuyout * (undercut / 100))
+            local suggestedPrice = priceData.minBuyout - undercutAmount
+            
+            -- Format gold/silver/copper
+            local sugGold = math.floor(suggestedPrice / 10000)
+            local sugSilver = math.floor((suggestedPrice % 10000) / 100)
+            local sugCopper = suggestedPrice % 100
+            
+            -- Set price input fields
+            self.goldInput:SetText(sugGold)
+            self.silverInput:SetText(sugSilver)
+            self.copperInput:SetText(sugCopper)
+            
+            -- Show price data in the scan section
+            self:UpdatePriceScan(itemLink)
+        end
+    else
+        -- No price data, clear the scan section
+        self:UpdatePriceScan(itemLink)
+    end
+end
+
+-- Update the price scan section with current auctions
+function Auctionator:UpdatePriceScan(itemLink)
+    if not self.scanScrollChild then return end
+    
+    -- Clear existing entries
+    self.scanScrollChild:SetHeight(1)
+    for i, child in ipairs({self.scanScrollChild:GetChildren()}) do
+        child:Hide()
+        child:SetParent(nil)
+    end
+    
+    -- Skip if no item link
+    if not itemLink then return end
+    
+    -- In a real implementation, this would query the auction house API
+    -- For now, we'll show a "Loading..." message
+    local loadingText = self.scanScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    loadingText:SetPoint("TOPLEFT", self.scanScrollChild, "TOPLEFT", 10, -10)
+    loadingText:SetText("Searching for auctions...")
+    
+    -- Simulate loading auction data
+    C_Timer.After(1.5, function()
+        loadingText:Hide()
+        
+        -- Get item info
+        local name, _, quality, iLevel, _, _, subtype, _, _, _, _ = GetItemInfo(itemLink)
+        if not name then return end
+        
+        -- Generate some sample auction data
+        local auctions = {}
+        local numAuctions = math.random(3, 8)
+        local basePrice = 10000 + math.random(1, 5000) -- 1g+ base price
+        
+        for i = 1, numAuctions do
+            -- Random price variation
+            local variation = math.random(-1000, 1000)
+            local price = basePrice + variation
+            
+            -- Random stack size
+            local stackSize = math.random(1, 5)
+            
+            -- Random seller name
+            local sellers = {"Auctioneer", "Merchant", "Trader", "Goblin", "Vendor", "Broker", "Dealer"}
+            local seller = sellers[math.random(1, #sellers)] .. math.random(1, 999)
+            
+            -- Add auction
+            table.insert(auctions, {
+                seller = seller,
+                stackSize = stackSize,
+                buyout = price,
+                buyoutPer = math.floor(price / stackSize)
+            })
+        end
+        
+        -- Sort by price per item
+        table.sort(auctions, function(a, b) return a.buyoutPer < b.buyoutPer end)
+        
+        -- Display the auctions
+        local yOffset = -5
+        local itemHeight = 25
+        
+        -- Add column headers
+        local headerFrame = CreateFrame("Frame", nil, self.scanScrollChild)
+        headerFrame:SetPoint("TOPLEFT", self.scanScrollChild, "TOPLEFT", 5, yOffset)
+        headerFrame:SetPoint("RIGHT", self.scanScrollChild, "RIGHT", -5, 0)
+        headerFrame:SetHeight(itemHeight)
+        
+        local sellerHeader = headerFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        sellerHeader:SetPoint("LEFT", headerFrame, "LEFT", 5, 0)
+        sellerHeader:SetWidth(100)
+        sellerHeader:SetText("Seller")
+        sellerHeader:SetJustifyH("LEFT")
+        
+        local stackHeader = headerFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        stackHeader:SetPoint("LEFT", sellerHeader, "RIGHT", 5, 0)
+        stackHeader:SetWidth(50)
+        stackHeader:SetText("Stack")
+        stackHeader:SetJustifyH("CENTER")
+        
+        local buyoutHeader = headerFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        buyoutHeader:SetPoint("LEFT", stackHeader, "RIGHT", 5, 0)
+        buyoutHeader:SetWidth(100)
+        buyoutHeader:SetText("Buyout")
+        buyoutHeader:SetJustifyH("RIGHT")
+        
+        local perItemHeader = headerFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        perItemHeader:SetPoint("LEFT", buyoutHeader, "RIGHT", 5, 0)
+        perItemHeader:SetWidth(100)
+        perItemHeader:SetText("Per Item")
+        perItemHeader:SetJustifyH("RIGHT")
+        
+        yOffset = yOffset - itemHeight - 5
+        
+        -- Create auction listings
+        for i, auction in ipairs(auctions) do
+            local itemFrame = CreateFrame("Frame", nil, self.scanScrollChild)
+            itemFrame:SetPoint("TOPLEFT", self.scanScrollChild, "TOPLEFT", 5, yOffset)
+            itemFrame:SetPoint("RIGHT", self.scanScrollChild, "RIGHT", -5, 0)
+            itemFrame:SetHeight(itemHeight)
+            
+            -- Item background
+            local bg = itemFrame:CreateTexture(nil, "BACKGROUND")
+            bg:SetAllPoints()
+            
+            -- Alternate row colors
+            if i % 2 == 0 then
+                bg:SetColorTexture(0.1, 0.1, 0.1, 0.3)
+            else
+                bg:SetColorTexture(0.15, 0.15, 0.15, 0.3)
+            end
+            
+            -- Seller text
+            local sellerText = itemFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            sellerText:SetPoint("LEFT", itemFrame, "LEFT", 5, 0)
+            sellerText:SetWidth(100)
+            sellerText:SetText(auction.seller)
+            sellerText:SetJustifyH("LEFT")
+            
+            -- Stack text
+            local stackText = itemFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            stackText:SetPoint("LEFT", sellerText, "RIGHT", 5, 0)
+            stackText:SetWidth(50)
+            stackText:SetText(auction.stackSize)
+            stackText:SetJustifyH("CENTER")
+            
+            -- Buyout text
+            local buyoutText = itemFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            buyoutText:SetPoint("LEFT", stackText, "RIGHT", 5, 0)
+            buyoutText:SetWidth(100)
+            buyoutText:SetText(GetCoinTextureString(auction.buyout))
+            buyoutText:SetJustifyH("RIGHT")
+            
+            -- Per item text
+            local perItemText = itemFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            perItemText:SetPoint("LEFT", buyoutText, "RIGHT", 5, 0)
+            perItemText:SetWidth(100)
+            perItemText:SetText(GetCoinTextureString(auction.buyoutPer))
+            perItemText:SetJustifyH("RIGHT")
+            
+            -- Undercut button (for the lowest price only)
+            if i == 1 then
+                local undercutButton = CreateFrame("Button", nil, itemFrame, "UIPanelButtonTemplate")
+                undercutButton:SetPoint("RIGHT", itemFrame, "RIGHT", -5, 0)
+                undercutButton:SetSize(70, 20)
+                undercutButton:SetText("Undercut")
+                
+                undercutButton:SetScript("OnClick", function()
+                    -- Apply undercut
+                    local undercut = VUI.db.profile.modules.auctionator.undercut or 5
+                    local undercutAmount = math.floor(auction.buyoutPer * (undercut / 100))
+                    local suggestedPrice = auction.buyoutPer - undercutAmount
+                    
+                    -- Format gold/silver/copper
+                    local sugGold = math.floor(suggestedPrice / 10000)
+                    local sugSilver = math.floor((suggestedPrice % 10000) / 100)
+                    local sugCopper = suggestedPrice % 100
+                    
+                    -- Set price input fields
+                    Auctionator.goldInput:SetText(sugGold)
+                    Auctionator.silverInput:SetText(sugSilver)
+                    Auctionator.copperInput:SetText(sugCopper)
+                end)
+            end
+            
+            yOffset = yOffset - itemHeight
+        end
+        
+        -- Save minimum price data
+        if #auctions > 0 then
+            local itemID = GetItemInfoInstant(itemLink)
+            if itemID then
+                -- Store price data
+                Auctionator.itemPriceData[itemID] = {
+                    minBuyout = auctions[1].buyoutPer,
+                    lastSeen = time(),
+                    numAuctions = #auctions
+                }
+            end
+        end
+        
+        -- Adjust scroll child height
+        local totalHeight = math.abs(yOffset) + 5
+        Auctionator.scanScrollChild:SetHeight(math.max(totalHeight, Auctionator.scanScrollFrame:GetHeight()))
+    end)
+end
+
+-- Post an auction to the auction house
+function Auctionator:PostAuction()
+    if not self.currentSellItem then
+        self:Print("No item selected.")
+        return
+    end
+    
+    -- Get price
+    local gold = tonumber(self.goldInput:GetText()) or 0
+    local silver = tonumber(self.silverInput:GetText()) or 0
+    local copper = tonumber(self.copperInput:GetText()) or 0
+    
+    local price = gold * 10000 + silver * 100 + copper
+    
+    if price <= 0 then
+        self:Print("Please enter a valid price.")
+        return
+    end
+    
+    -- Get stack size and quantity
+    local stackSize = tonumber(self.stackInput:GetText()) or 1
+    local quantity = tonumber(self.quantityInput:GetText()) or 1
+    
+    if stackSize <= 0 or quantity <= 0 then
+        self:Print("Please enter valid stack size and quantity.")
+        return
+    end
+    
+    -- In a real implementation, this would use AuctionHouseFrame API
+    -- For now, just show a message
+    self:Print("Posting " .. quantity .. " stack(s) of " .. stackSize .. " " .. self.currentSellItem.name .. " for " .. GetCoinTextureString(price) .. " each.")
+    
+    -- Remember item settings if enabled
+    if VUI.db.profile.modules.auctionator.rememberLastSellSettings then
+        local itemID = GetItemInfoInstant(self.currentSellItem.link)
+        if itemID then
+            if not self.lastSellSettings then self.lastSellSettings = {} end
+            self.lastSellSettings[itemID] = {
+                stackSize = stackSize,
+                price = price,
+                duration = self.selectedDuration
+            }
+        end
+    end
+end
+
+-- Print a message
+function Auctionator:Print(msg)
+    if DEFAULT_CHAT_FRAME then
+        DEFAULT_CHAT_FRAME:AddMessage("|cFF33FF99VUI Auctionator|r: " .. (msg or ""))
+    end
 end
 
 -- Create the Cancel tab UI
@@ -908,10 +2347,35 @@ end
 
 function Auctionator:PLAYER_LOGOUT()
     -- Save data before logout
-    if VUI.charDB and VUI.charDB.profile.modules.auctionator then
-        VUI.charDB.profile.modules.auctionator.favorites = self.favorites
-        VUI.charDB.profile.modules.auctionator.recentSearches = self.recentSearches
-        VUI.charDB.profile.modules.auctionator.lastScan = self.lastScan
+    if VUI.charDB then
+        VUI.charDB.profile.modules.auctionator = VUI.charDB.profile.modules.auctionator or {}
+        
+        -- Save basic search data
+        VUI.charDB.profile.modules.auctionator.favorites = self.favorites or {}
+        VUI.charDB.profile.modules.auctionator.recentSearches = self.recentSearches or {}
+        VUI.charDB.profile.modules.auctionator.lastScan = self.lastScan or 0
+        
+        -- Save shopping lists
+        VUI.charDB.profile.modules.auctionator.shoppingLists = self.shoppingLists or {}
+        
+        -- Save price data (limit to recent and reasonable size)
+        local prunedPriceData = {}
+        local currentTime = time()
+        local maxAge = 60 * 60 * 24 * 30 -- 30 days
+        local count = 0
+        local maxItems = 1000 -- Limit to 1000 items to prevent database bloat
+        
+        for itemID, data in pairs(self.itemPriceData or {}) do
+            if currentTime - (data.lastSeen or 0) < maxAge and count < maxItems then
+                prunedPriceData[itemID] = data
+                count = count + 1
+            end
+        end
+        
+        VUI.charDB.profile.modules.auctionator.itemPriceData = prunedPriceData
+        
+        -- Save last sell settings
+        VUI.charDB.profile.modules.auctionator.lastSellSettings = self.lastSellSettings or {}
     end
 end
 
