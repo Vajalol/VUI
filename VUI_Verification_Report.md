@@ -78,10 +78,18 @@ All modules comply with the established development standards:
 - Proper version information
 - Theme integration
 
+## Library Loading Optimization
+
+- Fixed AceDBOptions-3.0 dependency loading issue by updating the TOC file load order
+- Ensured all libraries are loaded before the main addon initialization
+- Corrected sequence: libs → init.lua → media → core → modules 
+
 ## Conclusion
 
 The VUI addon is fully compliant with the established development standards. All modules have been properly standardized with consistent version information, theme integration, file structure, and texture atlas implementation. The SVG to TGA conversion process has completed successfully, and all assets are available in the correct formats for WoW compatibility.
 
 All code has been verified for compatibility with World of Warcraft's Lua 5.1 environment, with special attention given to eliminating Lua 5.2 features (goto/labels) that would cause syntax errors. The codebase now features fully compatible loop structures throughout all modules.
+
+Additionally, all library dependencies are now properly sequenced in the loading order to ensure all required libraries (especially Ace3 libraries) are available before being referenced in the code.
 
 The codebase is ready for final user testing and deployment.

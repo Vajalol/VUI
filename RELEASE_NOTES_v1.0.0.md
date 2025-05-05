@@ -8,6 +8,7 @@ We're excited to announce the official 1.0.0 release of VUI - the comprehensive 
 - **Performance Optimization**: Significant memory and CPU optimization for smooth gameplay even in demanding scenarios
 - **Enhanced User Experience**: Intuitive centralized configuration system for managing all addon settings
 - **Five Comprehensive Themes**: Phoenix Flame, Thunder Storm, Arcane Mystic, Fel Energy, and Class Color
+- **Robust Compatibility**: Full compatibility with WoW's Lua 5.1 environment and optimized library loading
 
 ## Key Features
 
