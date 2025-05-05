@@ -8,7 +8,7 @@ local ArcaneMystic = Module:NewTheme('ArcaneMystic', {
     name = L['Arcane Mystic'],
     desc = L['An elegant, magical theme with arcane runes and violet accents.'],
     author = 'VortexQ8',
-    version = '1.0',
+    version = '1.0.0',
     mediaPath = 'Interface\\AddOns\\VUI\\media\\textures\\arcanemystic\\',
 })
 

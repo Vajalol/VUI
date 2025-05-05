@@ -6,7 +6,7 @@ local InfoFrame = {
     name = "infoframe",
     title = "VUI Info Frame",
     desc = "Enhanced information display with player stats, spec, and important cooldowns",
-    version = "1.0",
+    version = "1.0.0",
     author = "VortexQ8",
 }
 

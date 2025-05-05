@@ -6,7 +6,7 @@ local Tooltip = {
     name = "tooltip",
     title = "VUI Tooltip",
     desc = "Enhanced tooltips with targeting information, mount details, and item/spell identifiers",
-    version = "1.0",
+    version = "1.0.0",
     author = "VortexQ8",
 }
 

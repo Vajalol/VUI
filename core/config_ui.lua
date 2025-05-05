@@ -115,7 +115,7 @@ function ConfigUI:SetupFrame()
     -- Version text
     local version = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     version:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -16, -16)
-    version:SetText("v" .. (VUI.version or "0.0.1"))
+    version:SetText("v" .. (VUI.version or "1.0.0"))
     
     -- Description text
     local desc = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")

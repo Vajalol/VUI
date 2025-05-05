@@ -38,6 +38,9 @@ This document tracks significant changes to the VUI addon suite.
 - Fixed missing initialization functions in InfoFrame and Tooltip modules
 - Added proper ThemeIntegration for PremadeGroupFinder module
 - Ensured all modules have correct initialization and theme integration
+- Standardized version numbering across all modules to 1.0.0 (castbar, infoframe, tooltip)
+- Updated core module version from 0.3.0 to 1.0.0 for consistent versioning
+- Standardized theme version numbering to 1.0.0 (thunderstorm, arcanemystic, felenergy, phoenixflame)
 - Completed comprehensive Module-by-Module verification with automated verification script
 - Enhanced profile management with advanced features:
   - Created profile export/import functionality with string encoding

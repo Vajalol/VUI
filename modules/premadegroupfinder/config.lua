@@ -133,7 +133,7 @@ function PGF:CreateGeneralTab(container)
     
     -- Version info
     local versionText = AceGUI:Create("Label")
-    versionText:SetText("Version: " .. (VUI.version or "0.0.1"))
+    versionText:SetText("Version: " .. (VUI.version or "1.0.0"))
     versionText:SetFullWidth(true)
     container:AddChild(versionText)
 end

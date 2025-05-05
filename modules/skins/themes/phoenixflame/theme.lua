@@ -11,7 +11,7 @@ Skins.themes.phoenixflame = PhoenixFlame
 PhoenixFlame.name = "Phoenix Flame"
 PhoenixFlame.description = "A fiery theme inspired by the phoenix, with warm colors and flame effects"
 PhoenixFlame.author = "VortexQ8"
-PhoenixFlame.version = "1.0"
+PhoenixFlame.version = "1.0.0"
 
 -- Color scheme
 PhoenixFlame.colors = {

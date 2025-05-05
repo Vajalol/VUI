@@ -8,7 +8,7 @@ local FelEnergy = Module:NewTheme('FelEnergy', {
     name = L['Fel Energy'],
     desc = L['A demonic, corrupting theme with fel energy and toxic green accents.'],
     author = 'VortexQ8',
-    version = '1.0',
+    version = '1.0.0',
     mediaPath = 'Interface\\AddOns\\VUI\\media\\textures\\felenergy\\',
 })
 

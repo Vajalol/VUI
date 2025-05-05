@@ -314,8 +314,20 @@ function Help:InitializeHelpDatabase()
         
         -- New features by version
         newFeatures = {
+            ["1.0.0"] = {
+                title = "What's New in VUI 1.0.0",
+                features = {
+                    "Standardized version numbering across all modules",
+                    "Enhanced theme integration for all modules",
+                    "Complete module verification and validation",
+                    "Fixed initialization functions in InfoFrame and Tooltip modules",
+                    "Improved theme preview with all five theme options",
+                    "Streamlined configuration panel with better organization",
+                    "Fixed DetailsSkin module graphs and functionality"
+                }
+            },
             ["0.3.0"] = {
-                title = "What's New in VUI 0.3.0",
+                title = "Previous Release: VUI 0.3.0",
                 features = {
                     "Comprehensive documentation system",
                     "Enhanced configuration tooltips",
@@ -327,7 +339,7 @@ function Help:InitializeHelpDatabase()
                 }
             },
             ["0.2.0"] = {
-                title = "What's New in VUI 0.2.0",
+                title = "Previous Release: VUI 0.2.0",
                 features = {
                     "Performance optimization systems",
                     "Accessibility improvements",

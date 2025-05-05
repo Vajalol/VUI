@@ -4,7 +4,7 @@ local addonName, VUI = ...
 
 -- Create the Module Verifier namespace
 VUI.ModuleVerifier = {
-    version = "0.2.0",
+    version = "1.0.0",
     author = "VUI Team",
     results = {},
     options = {

@@ -8,7 +8,7 @@ local ThunderStorm = Module:NewTheme('ThunderStorm', {
     name = L['Thunder Storm'],
     desc = L['An electric, stormy theme with lightning effects and deep blue colors.'],
     author = 'VortexQ8',
-    version = '1.0',
+    version = '1.0.0',
     mediaPath = 'Interface\\AddOns\\VUI\\media\\textures\\thunderstorm\\',
 })
 

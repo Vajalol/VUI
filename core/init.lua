@@ -1,6 +1,6 @@
 -- VUI Core Initialization
 -- Author: VortexQ8
--- Version: 0.3.0
+-- Version: 1.0.0
 
 local addonName, VUI = ...
 _G["VUI"] = VUI
@@ -10,7 +10,7 @@ VUI = LibStub("AceAddon-3.0"):NewAddon(VUI, addonName, "AceConsole-3.0", "AceEve
 
 -- Global constants
 VUI.name = "VUI"
-VUI.version = "0.3.0"
+VUI.version = "1.0.0"
 VUI.author = "VortexQ8"
 VUI.CLASSCOLOR = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 

@@ -496,7 +496,7 @@ function Dashboard:CreateStatusDisplay()
     -- Version info
     local versionText = statusBar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     versionText:SetPoint("LEFT", statusBar, "LEFT", 10, 0)
-    versionText:SetText("VUI v" .. (VUI.version or "0.0.1"))
+    versionText:SetText("VUI v" .. (VUI.version or "1.0.0"))
     
     -- Active modules count
     local activeModules = 0

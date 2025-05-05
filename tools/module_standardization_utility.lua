@@ -4,7 +4,7 @@ local addonName, VUI = ...
 
 -- Create the Module Standardization Utility namespace
 VUI.ModuleStandardizationUtility = {
-    version = "0.2.0",
+    version = "1.0.0",
     author = "VUI Team",
     
     -- Tracking status
@@ -266,7 +266,7 @@ function Utility:GenerateInitFile(moduleName, moduleInfo)
     
     -- Default values
     local description = info.description or "VUI module: " .. moduleName
-    local version = info.version or "0.1.0"
+    local version = info.version or "1.0.0"
     local author = info.author or "VUI Team"
     local category = info.category or "Uncategorized"
     
@@ -495,7 +495,7 @@ function Utility:CreateStandardizedModule(moduleName, moduleInfo)
             local metadata = {
                 name = moduleName,
                 description = info.description or "VUI module: " .. moduleName,
-                version = info.version or "0.1.0",
+                version = info.version or "1.0.0",
                 author = info.author or "VUI Team",
                 category = info.category or "Uncategorized"
             }
@@ -529,7 +529,7 @@ function Utility:ConvertExistingModule(moduleName)
     -- Extract module information
     local info = {
         description = module.description or "VUI module: " .. moduleName,
-        version = module.version or "0.1.0",
+        version = module.version or "1.0.0",
         author = module.author or "VUI Team",
         category = self:DetermineModuleCategory(moduleName, module),
         settings = {}
