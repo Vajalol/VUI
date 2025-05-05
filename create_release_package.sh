@@ -35,6 +35,9 @@ cp init.lua $TEMP_DIR/
 cp VUI.toc $TEMP_DIR/
 cp README.md $TEMP_DIR/
 cp CHANGES.md $TEMP_DIR/
+cp RELEASE_NOTES_v1.0.0.md $TEMP_DIR/
+cp VUI_Verification_Report.md $TEMP_DIR/
+cp ROADMAP.md $TEMP_DIR/
 cp generated-icon.png $TEMP_DIR/
 cp LICENSE $TEMP_DIR/
 
