@@ -292,5 +292,28 @@ function VUI.TransformColorForColorblindness(color, colorblindType, intensity)
     return {r = newR, g = newG, b = newB}
 end
 
--- Register with VUI core
-VUI:RegisterScript("core/themes/colorblind.lua")
+-- Make functions available to VUI
+VUI.ColorblindHelper = {
+    TransformColor = TransformColor,
+    GetColorDeficiencyTypes = function() return COLOR_DEFICIENCY_TYPE end
+}
+
+-- Initialize colorblind support when VUI is ready
+if VUI.isInitialized and VUI.Theme and VUI.Theme.UpdateThemeCache then
+    -- If VUI is already initialized, make sure themes are properly updated
+    VUI.Theme:UpdateThemeCache()
+else
+    -- Hook into OnInitialize to ensure theme accessibility when core is ready
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Update theme cache if Theme module is ready
+        if self.Theme and self.Theme.UpdateThemeCache then
+            self.Theme:UpdateThemeCache()
+        end
+    end
+end

@@ -325,12 +325,24 @@ function DevStandards:GetStandardsFor(componentType)
     return standards
 end
 
--- Initialize standards if VUI system is available
-if VUI.OnInitialize then
-    DevStandards:Initialize()
-end
+-- Module export for VUI
+VUI.DevStandards = DevStandards
 
--- Register with VUI core if available
-if VUI.RegisterScript then
-    VUI:RegisterScript("core/development_standards.lua")
+-- Initialize on VUI ready
+if VUI.isInitialized then
+    DevStandards:Initialize()
+else
+    -- Instead of using RegisterScript, we'll hook into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize module after VUI is initialized
+        if DevStandards.Initialize then
+            DevStandards:Initialize()
+        end
+    end
 end

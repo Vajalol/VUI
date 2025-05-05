@@ -1712,5 +1712,24 @@ function KeyboardNavigation:GetNavigationModes()
     return NAV_MODE
 end
 
--- Register with VUI core
-VUI:RegisterScript("core/keyboard_navigation.lua")
+-- Module export for VUI
+VUI.KeyboardNavigation = KeyboardNavigation
+
+-- Initialize on VUI ready
+if VUI.isInitialized then
+    KeyboardNavigation:Initialize()
+else
+    -- Instead of using RegisterScript, we'll hook into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize module after VUI is initialized
+        if KeyboardNavigation.Initialize then
+            KeyboardNavigation:Initialize()
+        end
+    end
+end

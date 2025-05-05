@@ -1149,5 +1149,24 @@ function UIScaling:GetElementCategories()
     return ELEMENT_CATEGORY
 end
 
--- Register with VUI core
-VUI:RegisterScript("core/ui_scaling.lua")
+-- Module export for VUI
+VUI.UIScaling = UIScaling
+
+-- Initialize on VUI ready
+if VUI.isInitialized then
+    UIScaling:Initialize()
+else
+    -- Instead of using RegisterScript, we'll hook into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize module after VUI is initialized
+        if UIScaling.Initialize then
+            UIScaling:Initialize()
+        end
+    end
+end

@@ -1252,5 +1252,24 @@ function AudioFeedback:GetConfigOptions()
     return options
 end
 
--- Register with VUI core
-VUI:RegisterScript("core/audio_feedback.lua")
+-- Module export for VUI
+VUI.AudioFeedback = AudioFeedback
+
+-- Initialize on VUI ready
+if VUI.isInitialized then
+    AudioFeedback:Initialize()
+else
+    -- Instead of using RegisterScript, we'll hook into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize module after VUI is initialized
+        if AudioFeedback.Initialize then
+            AudioFeedback:Initialize()
+        end
+    end
+end

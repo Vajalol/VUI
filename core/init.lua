@@ -38,7 +38,20 @@ function VUI:RegisterModule(name, module)
         module.frames = {}
     end
     
-    -- Initialize module options
+    -- Initialize module options, ensuring VUI.options exists
+    if not VUI.options then
+        VUI.options = {
+            type = "group",
+            name = "VUI v" .. VUI.version,
+            handler = VUI,
+            args = {}
+        }
+    end
+    
+    if not VUI.options.args then
+        VUI.options.args = {}
+    end
+    
     if not VUI.options.args.modules then
         VUI.options.args.modules = {
             type = "group",

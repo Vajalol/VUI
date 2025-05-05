@@ -124,5 +124,21 @@ end
 -- Register high contrast theme
 VUI.Theme:RegisterTheme(highContrastTheme)
 
--- Register with VUI core
-VUI:RegisterScript("core/themes/highcontrast.lua")
+-- Initialize high contrast theme when VUI is ready
+if VUI.isInitialized and VUI.Theme and VUI.Theme.UpdateThemeCache then
+    VUI.Theme:UpdateThemeCache()
+else
+    -- Hook into OnInitialize to register theme when core is ready
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Update theme cache if Theme module is ready
+        if self.Theme and self.Theme.UpdateThemeCache then
+            self.Theme:UpdateThemeCache()
+        end
+    end
+end

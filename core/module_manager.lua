@@ -420,5 +420,24 @@ function ModuleManager:GetConfigOptions()
     return options
 end
 
--- Register with VUI core
-VUI:RegisterScript("core/module_manager.lua")
+-- Module export for VUI
+VUI.ModuleManager = ModuleManager
+
+-- Initialize on VUI ready
+if VUI.isInitialized then
+    ModuleManager:Initialize()
+else
+    -- Instead of using RegisterScript, we'll hook into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize module after VUI is initialized
+        if ModuleManager.Initialize then
+            ModuleManager:Initialize()
+        end
+    end
+end

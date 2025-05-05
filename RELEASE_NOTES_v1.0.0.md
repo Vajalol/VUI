@@ -9,6 +9,7 @@ We're excited to announce the official 1.0.0 release of VUI - the comprehensive 
 - **Enhanced User Experience**: Intuitive centralized configuration system for managing all addon settings
 - **Five Comprehensive Themes**: Phoenix Flame, Thunder Storm, Arcane Mystic, Fel Energy, and Class Color
 - **Robust Compatibility**: Full compatibility with WoW's Lua 5.1 environment and optimized library loading
+- **Improved Stability**: Comprehensive fixes for initialization errors and library dependency issues
 
 ## Key Features
 
@@ -45,6 +46,14 @@ We're excited to announce the official 1.0.0 release of VUI - the comprehensive 
 ## Requirements
 - World of Warcraft: The War Within (Season 2)
 - WoW Client Version: 10.2.5 or higher
+
+## Bug Fixes and Technical Improvements
+- **Initialization Sequence**: Fixed module loading and initialization sequence to properly handle dependencies
+- **Library Compatibility**: Resolved all Lua 5.1 compatibility issues, removing Lua 5.2 features (goto statements)
+- **Dependency Resolution**: Fixed AceConfig component loading order to ensure reliable operation
+- **Error Prevention**: Added defensive programming to avoid nil value access during component initialization
+- **Theme Integration**: Improved theme switching stability with proper callback registration
+- **Resource Cleanup**: Enhanced memory management with more reliable cleanup timing
 
 ## Support and Community
 - Join our community: [Discord](https://discord.gg/z5W3EWUrwu)

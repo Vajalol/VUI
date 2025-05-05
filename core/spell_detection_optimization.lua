@@ -1015,5 +1015,24 @@ function SpellDetectionOptimization:IntegrateConfigOptions()
     end
 end
 
--- Register with VUI Module
-VUI:RegisterScript("core/spell_detection_optimization.lua")
+-- Module export for VUI
+VUI.SpellDetectionOptimization = SpellDetectionOptimization
+
+-- Initialize on VUI ready
+if VUI.isInitialized then
+    SpellDetectionOptimization:Initialize()
+else
+    -- Instead of using RegisterScript, we'll hook into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize module after VUI is initialized
+        if SpellDetectionOptimization.Initialize then
+            SpellDetectionOptimization:Initialize()
+        end
+    end
+end

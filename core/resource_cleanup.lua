@@ -853,9 +853,19 @@ VUI.ResourceCleanup = ResourceCleanup
 if VUI.isInitialized then
     ResourceCleanup:Initialize()
 else
-    VUI:RegisterCallback("OnInitialized", function()
-        ResourceCleanup:Initialize()
-    end)
+    -- Instead of using RegisterCallback, we'll hook into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize resource cleanup after VUI is initialized
+        if ResourceCleanup.Initialize then
+            ResourceCleanup:Initialize()
+        end
+    end
 end
 
 -- Return the module

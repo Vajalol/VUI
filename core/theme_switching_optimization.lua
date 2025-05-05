@@ -408,10 +408,19 @@ end
 
 -- Hook into the theme element registration if we're initializing after VUI
 if not VUI.SwitchTheme then
-    -- Wait for VUI to be initialized
-    VUI:RegisterCallback("OnInitialized", function()
-        ThemeOpt:Initialize()
-    end)
+    -- Wait for VUI to be initialized by hooking into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original OnInitialize first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize our theme optimization
+        if ThemeOpt and ThemeOpt.Initialize then
+            ThemeOpt:Initialize()
+        end
+    end
 else
     -- Initialize now
     ThemeOpt:Initialize()

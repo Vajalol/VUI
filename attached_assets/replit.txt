@@ -1,0 +1,971 @@
+1x VUI/init.lua:12: Cannot find a library instance of "AceDBOptions-3.0".
+[C]: in function 'error'
+[BugSack/Libs/LibStub/LibStub.lua]:38: in function 'LibStub'
+[VUI/init.lua]:12: in main chunk
+
+Locals:
+(*temporary) = "Cannot find a library instance of "AceDBOptions-3.0"."
+
+1x VUI/libs/Ace3/AceConfig-3.0/AceConfig-3.0.lua:15: Cannot find a library instance of "AceConfigRegistry-3.0".
+[C]: in function 'error'
+[BugSack/Libs/LibStub/LibStub.lua]:38: in function 'LibStub'
+[VUI/libs/Ace3/AceConfig-3.0/AceConfig-3.0.lua]:15: in main chunk
+
+Locals:
+(*temporary) = "Cannot find a library instance of "AceConfigRegistry-3.0"."
+
+3x VUI/core/init.lua:42: attempt to index field 'options' (a nil value)
+[VUI/core/init.lua]:42: in function 'RegisterModule'
+[VUI/core/atlas.lua]:717: in main chunk
+
+Locals:
+self = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ hooks = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ defaultModuleLibraries = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+}
+name = "Atlas"
+module = <table> {
+ stats = <table> {
+ }
+ loaded = <table> {
+ }
+ frames = <table> {
+ }
+ coordinates = <table> {
+ }
+ atlases = <table> {
+ }
+ files = <table> {
+ }
+ moduleName = "Atlas"
+}
+(*temporary) = nil
+(*temporary) = nil
+(*temporary) = nil
+(*temporary) = "attempt to index field 'options' (a nil value)"
+VUI = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ hooks = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ defaultModuleLibraries = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+}
+
+
+
+1x VUI/core/resource_cleanup.lua:856: attempt to call method 'RegisterCallback' (a nil value)
+[VUI/core/resource_cleanup.lua]:856: in main chunk
+
+Locals:
+addonName = "VUI"
+VUI = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ utils = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+}
+ResourceCleanup = <table> {
+ state = <table> {
+ }
+ config = <table> {
+ }
+ name = "ResourceCleanup"
+}
+(*temporary) = nil
+(*temporary) = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ utils = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+}
+(*temporary) = "OnInitialized"
+(*temporary) = "attempt to call method 'RegisterCallback' (a nil value)"
+
+
+1x VUI/core/resource_cleanup.lua:856: attempt to call method 'RegisterCallback' (a nil value)
+[VUI/core/resource_cleanup.lua]:856: in main chunk
+
+Locals:
+addonName = "VUI"
+VUI = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ utils = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+}
+ResourceCleanup = <table> {
+ state = <table> {
+ }
+ config = <table> {
+ }
+ name = "ResourceCleanup"
+}
+(*temporary) = nil
+(*temporary) = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ utils = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+}
+(*temporary) = "OnInitialized"
+(*temporary) = "attempt to call method 'RegisterCallback' (a nil value)"
+
+1x ...aceVUI/core/spell_detection_optimization.lua:1019: attempt to call method 'RegisterScript' (a nil value)
+[VUI/core/spell_detection_optimization.lua]:1019: in main chunk
+
+Locals:
+_ = "VUI"
+VUI = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ utils = <table> {
+ }
+ SpellDetectionOptimization = <table> {
+ }
+ DatabaseOptimization = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+}
+L = nil
+SpellDetectionOptimization = <table> {
+}
+Config = <table> {
+ adaptiveThrottling = true
+ lowFpsThrottleMultiplier = 2
+ throttleInterval = 0.100000
+ enabledByDefault = true
+ priorityScanEnabled = true
+ minProcessingInterval = 0.050000
+ combatThrottling = true
+ cacheSize = 1500
+ groupSyncEnabled = true
+ lowFpsThreshold = 20
+ predictiveLoadingEnabled = true
+}
+Metrics = <table> {
+ spellsProcessed = 0
+ spellIconsOptimized = 0
+ enabled = false
+ predictiveLoads = 0
+ cacheHits = 0
+ eventsFiltered = 0
+ cacheMisses = 0
+ lastReset = 429653.903000
+}
+SpellCache = <table> {
+ byID = <table> {
+ }
+ byName = <table> {
+ }
+ priorityList = <table> {
+ }
+ lastUsed = <table> {
+ }
+ byType = <table> {
+ }
+}
+PrioritySpellTypes = <table> {
+ SPELL_STEAL = true
+ SPELL_CAST_SUCCESS = 0.500000
+ SPELL_AURA_APPLIED = 0.750000
+ SPELL_INTERRUPT = true
+ SPELL_DISPEL = true
+}
+(*temporary) = nil
+(*temporary) = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ utils = <table> {
+ }
+ SpellDetectionOptimization = <table> {
+ }
+ DatabaseOptimization = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+}
+(*temporary) = "core/spell_detection_optimization.lua"
+(*temporary) = "attempt to call method 'RegisterScript' (a nil value)"
+
+1x VUI/core/module_manager.lua:424: attempt to call method 'RegisterScript' (a nil value)
+[VUI/core/module_manager.lua]:424: in main chunk
+
+Locals:
+_ = "VUI"
+VUI = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ utils = <table> {
+ }
+ SpellDetectionOptimization = <table> {
+ }
+ DatabaseOptimization = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+ ModuleManager = <table> {
+ }
+}
+L = nil
+ModuleManager = <table> {
+}
+moduleCache = <table> {
+}
+settings = <table> {
+ enabled = true
+ trackUsageStats = false
+ autoCleanupInterval = 300
+ debugMode = false
+}
+moduleStats = <table> {
+ dependencies = <table> {
+ }
+ accessCount = <table> {
+ }
+ lastAccess = <table> {
+ }
+}
+(*temporary) = nil
+(*temporary) = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ utils = <table> {
+ }
+ SpellDetectionOptimization = <table> {
+ }
+ DatabaseOptimization = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+ ModuleManager = <table> {
+ }
+}
+(*temporary) = "core/module_manager.lua"
+(*temporary) = "attempt to call method 'RegisterScript' (a nil value)"
+
+1x VUI/core/theme_helpers.lua:740: attempt to call method 'RegisterThemeChangeCallback' (a nil value)
+[VUI/core/theme_helpers.lua]:740: in main chunk
+
+Locals:
+_ = "VUI"
+VUI = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ Integration = <table> {
+ }
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ Performance = <table> {
+ }
+ ModuleTemplate = <table> {
+ }
+ ThemeIntegration = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ ThemeHelpers = <table> {
+ }
+ ModuleIcons = <table> {
+ }
+ SpellDetectionOptimization = <table> {
+ }
+ utils = <table> {
+ }
+ Widgets = <table> {
+ }
+ ModuleAPI = <table> {
+ }
+ DatabaseOptimization = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ UI = <table> {
+ }
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+ ModuleManager = <table> {
+ }
+}
+themeColors = <table> {
+ felenergy = <table> {
+ }
+ phoenixflame = <table> {
+ }
+ arcanemystic = <table> {
+ }
+ thunderstorm = <table> {
+ }
+}
+currentThemeData = <table> {
+}
+registeredPanels = <table> {
+}
+registeredButtons = <table> {
+}
+registeredCheckboxes = <table> {
+}
+registeredSliders = <table> {
+}
+registeredDropdowns = <table> {
+}
+registeredTabSystems = <table> {
+}
+(*temporary) = nil
+(*temporary) = <table> {
+ callbacks = <table> {
+ }
+}
+(*temporary) = "attempt to call method 'RegisterThemeChangeCallback' (a nil value)"
+
+1x ...aceVUI/core/theme_switching_optimization.lua:412: attempt to call method 'RegisterCallback' (a nil value)
+[VUI/core/theme_switching_optimization.lua]:412: in main chunk
+
+Locals:
+_ = "VUI"
+VUI = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ Integration = <table> {
+ }
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ ThemeSwitchingOptimization = <table> {
+ }
+ Performance = <table> {
+ }
+ ModuleTemplate = <table> {
+ }
+ ThemeEditor = <table> {
+ }
+ ThemeIntegration = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ ThemeHelpers = <table> {
+ }
+ ModuleIcons = <table> {
+ }
+ SpellDetectionOptimization = <table> {
+ }
+ utils = <table> {
+ }
+ Widgets = <table> {
+ }
+ ModuleAPI = <table> {
+ }
+ DatabaseOptimization = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ UI = <table> {
+ }
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+ ModuleManager = <table> {
+ }
+}
+ThemeOpt = <table> {
+ state = <table> {
+ }
+ config = <table> {
+ }
+}
+(*temporary) = nil
+(*temporary) = <table> {
+ defaults = <table> {
+ }
+ modules = <table> {
+ }
+ charDefaults = <table> {
+ }
+ defaultModuleState = true
+ Integration = <table> {
+ }
+ frames = <table> {
+ }
+ CombatPerformance = <table> {
+ }
+ hooks = <table> {
+ }
+ ThemeSwitchingOptimization = <table> {
+ }
+ Performance = <table> {
+ }
+ ModuleTemplate = <table> {
+ }
+ ThemeEditor = <table> {
+ }
+ ThemeIntegration = <table> {
+ }
+ enabledState = true
+ author = "VortexQ8"
+ ThemeHelpers = <table> {
+ }
+ ModuleIcons = <table> {
+ }
+ SpellDetectionOptimization = <table> {
+ }
+ utils = <table> {
+ }
+ Widgets = <table> {
+ }
+ ModuleAPI = <table> {
+ }
+ DatabaseOptimization = <table> {
+ }
+ defaultModuleLibraries = <table> {
+ }
+ Util = <table> {
+ }
+ Utils = <table> {
+ }
+ Atlas = <table> {
+ }
+ version = "1.0.0"
+ UI = <table> {
+ }
+ orderedModules = <table> {
+ }
+ EventOptimization = <table> {
+ }
+ ResourceCleanup = <table> {
+ }
+ name = "VUI"
+ CLASSCOLOR = <table> {
+ }
+ ModuleManager = <table> {
+ }
+}
+(*temporary) = "OnInitialized"
+(*temporary) = "attempt to call method 'RegisterCallback' (a nil value)"
+
+1x VUI/core/index.xml:17 Error loading VUI/dynamic_module_loading.lua
+
+1x VUI/core/index.xml:27 Error loading VUI/module_registry.lua
+1x VUI/core/index.xml:28 Error loading VUI/module_dashboard.lua
+1x VUI/core/index.xml:29 Error loading VUI/module_init_template.lua
+1x VUI/core/index.xml:30 Error loading VUI/module_config_template.lua
+1x VUI/core/index.xml:31 Error loading VUI/module_standardizer.lua
+1x VUI/modules/paperdoll/index.xml:5 Error loading VUI/config.lua
+1x VUI/modules/visualconfig/index.xml:6 Error loading VUI/config.lua
+1x VUI/modules/skins/blizzard/index.xml:4 Error loading VUI/actionbars.lua
+1x ...UI/modules/skins/themes/phoenixflame/integration.lua:149: 'for' limit must be a number
+[VUI/modules/skins/themes/phoenixflame/integration.lua]:149: in function <...UI/modules/skins/themes/phoenixflame/integration.lua:10>
+[VUI/modules/skins/themes/phoenixflame/integration.lua]:334: in function 'ApplyTheme'
+[VUI/modules/skins/themes/phoenixflame/integration.lua]:389: in function <...UI/modules/skins/themes/phoenixflame/integration.lua:388>
+
+Locals:
+(for index) = 1
+(for limit) = nil
+(for step) = 1
+(*temporary) = 12
+(*temporary) = 12
+(*temporary) = 12
+(*temporary) = 1
+(*temporary) = 12
+(*temporary) = MultiBarBottomLeftButton12 {
+ BorderShadow = Texture {
+ }
+ bar = MultiBarBottomLeft {
+ }
+ CooldownFlash = Frame {
+ }
+ Count = MultiBarBottomLeftButton12Count {
+ }
+ arrowDownTexture = "UI-HUD-ActionBar-Flyout-Down"
+ LevelLinkLockIcon = Texture {
+ }
+ Flash = MultiBarBottomLeftButton12Flash {
+ }
+ QuickKeybindHighlightTexture = Texture {
+ }
+ action = 72
+ SpellHighlightTexture = Texture {
+ }
+ bindingAction = "MULTIACTIONBAR1BUTTON12"
+ cooldown = MultiBarBottomLeftButton12Cooldown {
+ }
+ popupDirection = "UP"
+ NewActionTexture = Texture {
+ }
+ icon = MultiBarBottomLeftButton12Icon {
+ }
+ SlotArt = Texture {
+ }
+ closedArrowOffset = 4
+ HotKey = MultiBarBottomLeftButton12HotKey {
+ }
+ buttonType = "MULTIACTIONBAR1BUTTON"
+ IconMask = MaskTexture {
+ }
+ arrowMainAxisSize = 18
+ commandName = "MULTIACTIONBAR1BUTTON12"
+ SpellHighlightAnim = AnimationGroup {
+ }
+ index = 12
+ container = MultiBarBottomLeftButtonContainer12 {
+ }
+ feedback_action = 72
+ PushedTexture = Texture {
+ }
+ glowShowing = false
+ Name = MultiBarBottomLeftButton12Name {
+ }
+ flashing = 0
+ HighlightTexture = Texture {
+ }
+ CheckedTexture = Texture {
+ }
+ NormalTexture = MultiBarBottomLeftButton12NormalTexture {
+ }
+ AutoCastOverlay = Frame {
+ }
+ Border = MultiBarBottomLeftButton12Border {
+ }
+ TextOverlayContainer = Frame {
+ }
+ openArrowOffset = 2
+ arrowNormalTexture = "UI-HUD-ActionBar-Flyout"
+ flashtime = 0
+ Arrow = Texture {
+ }
+ SpellCastAnimFrame = Frame {
+ }
+ TargetReticleAnimFrame = Frame {
+ }
+ InterruptDisplay = Frame {
+ }
+ backdrop = Frame {
+ }
+ arrowOverTexture = "UI-HUD-ActionBar-Flyout-Mouseover"
+ popupOffset = -4
+ arrowCrossAxisSize = 7
+ eventsRegistered = true
+ popupCrossAxisSize = 47
+ SlotBackground = Texture {
+ }
+}
+(*temporary) = true
+(*temporary) = "MultiBarBottomLeftButton12"
+(*temporary) = "12"
+(*temporary) = nil
+(*temporary) = "'for' limit must be a number"
+skinnedFrames = <table> {
+ ContainerFrame4 = true
+ ContainerFrame6 = true
+ ActionButton7 = true
+ MultiBarBottomRightButton4 = true
+ CharacterFrame = true
+ ActionButton10 = true
+ MultiBarBottomLeftButton12 = true
+ ContainerFrame12 = true
+ MultiBarRightButton5 = true
+ MultiBarLeftButton8 = true
+ MultiBarRightButton2 = true
+ ChatFrame7 = true
+ MultiBarBottomLeftButton10 = true
+ MultiBarBottomLeftButton4 = true
+ ActionButton4 = true
+ MultiBarLeftButton7 = true
+ MultiBarBottomRightButton7 = true
+ MultiBarBottomLeftButton3 = true
+ ContainerFrame1 = true
+ MultiBarRightButton7 = true
+ MultiBarRightButton6 = true
+ FriendsFrame = true
+ MultiBarLeftButton6 = true
+ ChatFrame5 = true
+ ContainerFrame11 = true
+ WorldMapFrame = true
+ ChatFrame6 = true
+ MultiBarLeftButton4 = true
+ MultiBarLeftButton5 = true
+ ChatFrame1 = true
+ ChatFrame3 = true
+ ContainerFrame13 = true
+ MultiBarLeftButton12 = true
+ ChatFrame2 = true
+ ActionButton12 = true
+ MultiBarBottomLeftButton11 = true
+ MailFrame = true
+ MultiBarBottomLeftButton1 = true
+ ActionButton3 = true
+ MultiBarBottomRightButton6 = true
+ MultiBarBottomRightButton2 = true
+ MultiBarBottomRightButton11 = true
+ ContainerFrame9 = true
+ ContainerFrame3 = true
+ MultiBarRightButton9 = true
+ MultiBarRightButton4 = true
+ MainMenuBar = true
+ MultiBarRightButton11 = true
+ MultiBarRightButton8 = true
+ MultiBarBottomLeftButton7 = true
+ ActionButton5 = true
+ ContainerFrame5 = true
+ MultiBarBottomRightButton9 = true
+ MultiBarLeftButton10 = true
+ MultiBarRightButton10 = true
+ ChatFrame8 = true
+ MultiBarRightButton3 = true
+ ActionButton1 = true
+ MultiBarBottomLeftButton9 = true
+ MultiBarLeftButton9 = true
+ ActionButton9 = true
+ ActionButton2 = true
+ MultiBarBottomLeftButton8 = true
+ MultiBarBottomRightButton8 = true
+ ContainerFrame8 = true
+ ContainerFrame2 = true
+ MultiBarBottomRightButton3 = true
+ MultiBarBottomLeftButton6 = true
+ ActionButton11 = true
+ BankFrame = true
+ MultiBarLeftButton11 = true
+ MultiBarBottomLeftButton2 = true
+ MultiBarBottomRightButton5 = true
+ MultiBarBottomRightButton10 = true
+ MultiBarRightButton1 = true
+ ItemTextFrame =

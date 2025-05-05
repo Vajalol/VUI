@@ -736,10 +736,33 @@ function VUI.ThemeHelpers:UpdateAllThemes()
     end
 end
 
--- Register for theme changes
-VUI.ThemeIntegration:RegisterThemeChangeCallback(function(newTheme)
-    VUI.ThemeHelpers:UpdateAllThemes()
-end)
+-- Create a function to handle theme registration that will be called later
+local function RegisterThemeCallbacks()
+    -- Make sure ThemeIntegration exists and has RegisterThemeChangeCallback method
+    if VUI.ThemeIntegration and VUI.ThemeIntegration.RegisterThemeChangeCallback then
+        VUI.ThemeIntegration:RegisterThemeChangeCallback(function(newTheme)
+            VUI.ThemeHelpers:UpdateAllThemes()
+        end)
+    end
+end
 
--- Initialize themes on load
-VUI.ThemeHelpers:UpdateCurrentTheme()
+-- Initialize themes on load if possible, otherwise wait for OnInitialize
+if VUI.isInitialized then
+    VUI.ThemeHelpers:UpdateCurrentTheme()
+    RegisterThemeCallbacks()
+else
+    -- Hook into OnInitialize
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call the original function first
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize themes and register callbacks after VUI is initialized
+        if VUI.ThemeHelpers then
+            VUI.ThemeHelpers:UpdateCurrentTheme()
+            RegisterThemeCallbacks()
+        end
+    end
+end
