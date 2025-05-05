@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.librsvg
     pkgs.imagemagick
     pkgs.zip
     pkgs.wget
