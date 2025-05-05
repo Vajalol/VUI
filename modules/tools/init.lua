@@ -49,6 +49,11 @@ function TOOLS:Initialize()
         self:InitMouseTrail()
     end
     
+    -- Initialize theme integration
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
+    
     -- Module successfully loaded
     self:Print("Tools module loaded")
 end

@@ -650,6 +650,11 @@ function Skins:Initialize()
     self.activeSkins = {}
     self.hooked = {}
     
+    -- Initialize theme integration
+    if self.ThemeIntegration and self.ThemeIntegration.Initialize then
+        self.ThemeIntegration:Initialize()
+    end
+    
     -- Initialize skin function tables
     self.blizzardSkinFuncs = {
         ["minimap"] = function()
