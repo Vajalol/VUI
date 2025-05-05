@@ -1602,7 +1602,6 @@ function DS.Graphs:StyleCustomDisplays(instance, colors, settings, theme)
             end
         end
     end
-}
 
 -- Apply custom tooltips for graph elements
 function DS.Graphs:ApplyCustomTooltips(instance, colors, settings, theme)
@@ -1774,7 +1773,7 @@ function DS.Graphs:ApplyAnimationPreset(instance, presetName, theme)
             }, preset)
         end
     end
-}
+end
 
 -- Apply animation to bar elements
 function DS.Graphs:ApplyBarAnimation(bar, index, settings, preset)
@@ -1927,7 +1926,7 @@ function DS.Graphs:RegisterGraphRefreshHooks(instance)
             end)
         end)
     end
-}
+end
 
 -- Track graph usage for performance metrics
 function DS.Graphs:TrackGraph(graph, graphType)
@@ -2053,7 +2052,7 @@ function DS.Graphs:UpdatePerformanceMetrics()
             )
         )
     end
-}
+end
 
 -- Track performance of all graph instances
 function DS.Graphs:TrackGraphPerformance(instance)
@@ -2080,7 +2079,7 @@ function DS.Graphs:TrackGraphPerformance(instance)
             self:TrackGraph(instance, GRAPH_TYPES.BAR)
         end
     end
-}
+end
 
 -- Apply styles to Details DpsGraph plugin if present
 function DS.Graphs:ApplyToDetailsDpsGraphPlugin(theme)
@@ -2165,7 +2164,7 @@ function DS.Graphs:ApplyToDetailsDpsGraphPlugin(theme)
     if Details.DpsGraphs.RefreshAllGraphs then
         Details.DpsGraphs:RefreshAllGraphs()
     end
-}
+end
 
 -- Get theme-specific pie chart colors
 function DS.Graphs:GetPieChartColors(theme, count)
@@ -2284,4 +2283,7 @@ function DS.Graphs:Log(message)
     if DS.GetSettings().debugGraphs then
         print("|cff1784d1VUI DetailsSkin Graphs|r: " .. message)
     end
+end
+
+-- Close the StyleCustomDisplays function from line 1373
 end
