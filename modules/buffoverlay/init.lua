@@ -1,7 +1,13 @@
 local _, VUI = ...
 
 -- Create the BuffOverlay module
-local BuffOverlay = {}
+local BuffOverlay = {
+    name = "buffoverlay",
+    title = "VUI BuffOverlay",
+    desc = "Enhanced buff and debuff tracking with customizable filters and display options",
+    version = "1.0.0",
+    author = "VortexQ8"
+}
 VUI:RegisterModule("buffoverlay", BuffOverlay)
 
 -- Get configuration options for main UI integration

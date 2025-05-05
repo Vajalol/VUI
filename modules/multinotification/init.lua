@@ -5,6 +5,9 @@ local L = VUI.L
 
 -- Create module
 local MultiNotification = VUI:NewModule("MultiNotification", "AceEvent-3.0")
+MultiNotification.version = "1.0.0"
+MultiNotification.author = "VortexQ8"
+MultiNotification.desc = "Unified notification system for spells, events, and alerts with customizable appearance"
 VUI.MultiNotification = MultiNotification
 
 -- Default settings

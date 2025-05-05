@@ -1,7 +1,13 @@
 local _, VUI = ...
 
 -- Create the TrufiGCD module
-local TrufiGCD = {}
+local TrufiGCD = {
+    name = "trufigcd",
+    title = "VUI TrufiGCD",
+    desc = "Spell cast tracking with customizable appearance and icon display",
+    version = "1.0.0",
+    author = "VortexQ8"
+}
 VUI:RegisterModule("trufigcd", TrufiGCD)
 
 -- Get configuration options for main UI integration

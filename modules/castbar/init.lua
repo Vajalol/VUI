@@ -9,6 +9,9 @@ VUI.Castbar = VUI.Castbar or {}
 local Castbar = VUI.Castbar
 local ModuleAPI = VUI.ModuleAPI
 
+-- Add explicit version field
+Castbar.version = "1.0.0"
+
 -- Get configuration options for main UI integration
 function Castbar:GetConfig()
     local config = {

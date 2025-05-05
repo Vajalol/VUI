@@ -11,8 +11,8 @@ local Details = _G.Details
 -- Module information
 DetailsSkin.name = "DetailsSkin"
 DetailsSkin.description = "Skins the Details! damage meter with VUI's theme."
-DetailsSkin.version = VUI.version
-DetailsSkin.author = "VUI Team"
+DetailsSkin.version = "1.0.0"
+DetailsSkin.author = "VortexQ8"
 
 -- Internal state
 local initialSkinComplete = false

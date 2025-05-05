@@ -2,7 +2,11 @@
 local _, VUI = ...
 
 -- Create module
-VUI.angrykeystone = {}
+VUI.angrykeystone = {
+    version = "1.0.0",
+    author = "VortexQ8",
+    desc = "Enhanced Mythic+ dungeon information display with timer tracking"
+}
 
 -- Default settings
 VUI.angrykeystone.defaults = {

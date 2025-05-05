@@ -1,7 +1,13 @@
 local _, VUI = ...
 
 -- Create the Auctionator module
-local Auctionator = {}
+local Auctionator = {
+    name = "auctionator",
+    title = "VUI Auctionator",
+    desc = "Enhanced auction house functionality with improved buying and selling interfaces",
+    version = "1.0.0", 
+    author = "VortexQ8",
+}
 VUI:RegisterModule("auctionator", Auctionator)
 
 -- Get configuration options for main UI integration
