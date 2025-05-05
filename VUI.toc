@@ -1,4 +1,4 @@
-## Interface: 100205
+## Interface: 110500
 ## Title: |cff0D9DE6V|cff0A0A1AUI|r - Vortex UI
 ## Notes: A comprehensive WoW addon suite with advanced UI customization, modular notification system, and performance optimization
 ## Author: VortexQ8
