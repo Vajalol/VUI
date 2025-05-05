@@ -1249,10 +1249,7 @@ function VisualConfig:EnhanceColorPicker()
                 
                 -- Get the color
                 local color = RAID_CLASS_COLORS[classToken]
-                if not color then
-                    -- Skip if color not found
-                    goto continue
-                end
+                if color then
                 
                 local swatch = CreateFrame("Button", nil, classFrame)
                 swatch:SetSize(swatchSize, swatchSize)
@@ -1299,8 +1296,7 @@ function VisualConfig:EnhanceColorPicker()
                 
                 -- Add to swatches
                 swatches[i] = swatch
-                
-                ::continue::
+                end -- End of if color
             end
             
             -- Store it

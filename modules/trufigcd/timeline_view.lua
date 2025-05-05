@@ -779,33 +779,30 @@ function Timeline:DisplaySpells()
             rowIndex = 1
         end
         
-        -- Skip if row is not available
-        if not self.rows[rowIndex] then
-            goto continue
+        -- Only process if row is available
+        if self.rows[rowIndex] then
+            -- Calculate position on timeline
+            local relativeTime = spell.time - self.timeStart
+            local position = relativeTime / timeRange
+            local xPos = position * timelineWidth
+            
+            -- Create or reuse icon
+            local icon = self:GetSpellIcon(rowIndex)
+            local row = self.rows[rowIndex]
+            
+            -- Set icon texture
+            icon.texture:SetTexture(spell.icon)
+            
+            -- Position icon
+            icon:SetPoint("LEFT", row.timeline, "LEFT", xPos - (self.settings.iconSize / 2), 0)
+            
+            -- Apply styling based on spell category
+            self:ApplyIconStyling(icon, spell)
+            
+            -- Show the icon
+            icon:Show()
         end
-        
-        -- Calculate position on timeline
-        local relativeTime = spell.time - self.timeStart
-        local position = relativeTime / timeRange
-        local xPos = position * timelineWidth
-        
-        -- Create or reuse icon
-        local icon = self:GetSpellIcon(rowIndex)
-        local row = self.rows[rowIndex]
-        
-        -- Set icon texture
-        icon.texture:SetTexture(spell.icon)
-        
-        -- Position icon
-        icon:SetPoint("LEFT", row.timeline, "LEFT", xPos - (self.settings.iconSize / 2), 0)
-        
-        -- Apply styling based on spell category
-        self:ApplyIconStyling(icon, spell)
-        
-        -- Show the icon
-        icon:Show()
-        
-        ::continue::
+        -- No need for goto/continue in Lua 5.1
     end
 end
 

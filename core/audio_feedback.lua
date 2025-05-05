@@ -343,19 +343,16 @@ function AudioFeedback:RegisterWithExistingFrames()
     
     -- Register with VUI modules
     for name, module in VUI:IterateModules() do
-        -- Skip modules without frames
-        if not module.frame then
-            goto continue
+        -- Only register modules with frames
+        if module.frame then
+            -- Register the main module frame
+            self:RegisterElement(module.frame, {
+                category = AUDIO_CATEGORY.NAVIGATION,
+                hoverSound = SOUND_TYPES.BUTTON_HOVER,
+                clickSound = SOUND_TYPES.BUTTON_CLICK
+            })
         end
-        
-        -- Register the main module frame
-        self:RegisterElement(module.frame, {
-            category = AUDIO_CATEGORY.NAVIGATION,
-            hoverSound = SOUND_TYPES.BUTTON_HOVER,
-            clickSound = SOUND_TYPES.BUTTON_CLICK
-        })
-        
-        ::continue::
+        -- No need for goto/continue in Lua 5.1
     end
 end
 

@@ -236,26 +236,23 @@ function CombatPerf:ProcessUpdateQueue(maxTimeMS)
     -- Process frames by priority
     for priority = 1, 4 do -- From highest to lowest priority
         for frame, info in pairs(self.state.throttledFrames) do
-            -- Skip if already processed in this round or not this priority
-            if info.priority ~= priority then
-                goto continue
+            -- Only process if this is the right priority
+            if info.priority == priority then
+                -- Check if we've spent too much time updating frames
+                if maxTimeMS and (debugprofilestop() - startTime) > maxTimeMS then
+                    return processed
+                end
+                
+                -- Update if needed based on time since last update
+                local timeSinceUpdate = currentTime - info.lastUpdate
+                local updateNeeded = timeSinceUpdate >= info.minUpdateRate
+                
+                if updateNeeded then
+                    self:UpdateThrottledFrame(frame)
+                    processed = processed + 1
+                end
             end
-            
-            -- Check if we've spent too much time updating frames
-            if maxTimeMS and (debugprofilestop() - startTime) > maxTimeMS then
-                return processed
-            end
-            
-            -- Update if needed based on time since last update
-            local timeSinceUpdate = currentTime - info.lastUpdate
-            local updateNeeded = timeSinceUpdate >= info.minUpdateRate
-            
-            if updateNeeded then
-                self:UpdateThrottledFrame(frame)
-                processed = processed + 1
-            end
-            
-            ::continue::
+            -- No need for continue in Lua 5.1, just let the loop continue naturally
         end
     end
     

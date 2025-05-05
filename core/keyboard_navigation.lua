@@ -494,32 +494,36 @@ function KeyboardNavigation:FindElementInDirection(currentElement, group, direct
             local deltaX = centerX - currentCenterX
             local deltaY = centerY - currentCenterY
             
-            -- Skip elements that are not in the correct direction
+            -- Process elements in the correct direction
+            local isCorrectDirection = true
+            
+            -- Check if element is in the wrong direction
             if (direction == "UP" and deltaY <= 0) or
                (direction == "DOWN" and deltaY >= 0) or
                (direction == "LEFT" and deltaX <= 0) or
                (direction == "RIGHT" and deltaX >= 0) then
-                goto continue
+                isCorrectDirection = false
             end
             
-            -- Calculate score based on distance and alignment
-            local score = 0
-            
-            if direction == "UP" or direction == "DOWN" then
-                -- For vertical movement, prefer elements that are aligned horizontally
-                score = math.abs(deltaX) * 2 + math.abs(deltaY)
-            else
-                -- For horizontal movement, prefer elements that are aligned vertically
-                score = math.abs(deltaY) * 2 + math.abs(deltaX)
+            -- Only process elements in the correct direction
+            if isCorrectDirection then
+                -- Calculate score based on distance and alignment
+                local score = 0
+                
+                if direction == "UP" or direction == "DOWN" then
+                    -- For vertical movement, prefer elements that are aligned horizontally
+                    score = math.abs(deltaX) * 2 + math.abs(deltaY)
+                else
+                    -- For horizontal movement, prefer elements that are aligned vertically
+                    score = math.abs(deltaY) * 2 + math.abs(deltaX)
+                end
+                
+                -- Update best match if this element has a better score
+                if score < bestScore then
+                    bestMatch = element
+                    bestScore = score
+                end
             end
-            
-            -- Update best match if this element has a better score
-            if score < bestScore then
-                bestMatch = element
-                bestScore = score
-            end
-            
-            ::continue::
         end
     end
     
@@ -966,23 +970,20 @@ end
 function KeyboardNavigation:RegisterWithExistingFrames()
     -- Register with all VUI modules
     for name, module in VUI:IterateModules() do
-        -- Skip modules without frames
-        if not module.frame then
-            goto continue
+        -- Only register modules with frames
+        if module.frame then
+            -- Create a focus group for the module
+            local groupName = "VUI_" .. name
+            local group = self:GetOrCreateFocusGroup(groupName)
+            
+            -- Register the main module frame
+            self:RegisterElement(module.frame, {
+                group = groupName,
+                priority = 100,  -- High priority for main module frames
+                navigable = true
+            })
         end
-        
-        -- Create a focus group for the module
-        local groupName = "VUI_" .. name
-        local group = self:GetOrCreateFocusGroup(groupName)
-        
-        -- Register the main module frame
-        self:RegisterElement(module.frame, {
-            group = groupName,
-            priority = 100,  -- High priority for main module frames
-            navigable = true
-        })
-        
-        ::continue::
+        -- No need for goto/continue in Lua 5.1
     end
     
     -- Register with WoW UI elements that we want to make navigable

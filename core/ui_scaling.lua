@@ -500,21 +500,15 @@ end
 function UIScaling:RegisterWithModules()
     -- Get all loaded modules
     for name, module in VUI:IterateModules() do
-        -- Skip modules without frames
+        -- Skip modules without frames or already registered ones
         if not module.frame then
             if VUI.debug then
                 VUI:Print("Module " .. name .. " has no frame, skipping UI scaling registration.")
             end
-            goto continue
-        end
-        
-        -- Register the main module frame if not already registered
-        local category = ELEMENT_CATEGORY.IMPORTANT -- Default category for module frames
-        
-        -- Skip if already registered
-        if moduleFrames[name] then
-            goto continue
-        end
+        -- Skip to next iteration without using goto (not available in WoW's Lua 5.1)
+        elseif not moduleFrames[name] then
+            -- Register the main module frame if not already registered
+            local category = ELEMENT_CATEGORY.IMPORTANT -- Default category for module frames
         
         -- Determine the appropriate category based on module type
         if name == "UnitFrames" or name == "ActionBars" then
@@ -537,8 +531,7 @@ function UIScaling:RegisterWithModules()
         
         -- Track module frames
         moduleFrames[name] = module.frame
-        
-        ::continue::
+        end
     end
 end
 

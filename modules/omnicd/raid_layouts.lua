@@ -322,10 +322,8 @@ function OmniCD:ApplyClassGroupLayout()
     for _, className in ipairs(sortedClasses) do
         local players = classGroups[className]
         
-        -- Skip empty classes
-        if #players == 0 then
-            goto continue
-        end
+        -- Only process non-empty classes
+        if #players > 0 then
         
         -- Create/update class header
         local headerHeight = classSettings.showHeaders and classSettings.headerHeight or 0
@@ -387,8 +385,7 @@ function OmniCD:ApplyClassGroupLayout()
         
         -- Update Y position for next class group
         currentYOffset = currentYOffset + (rows * (iconSize + spacing)) + spacing
-        
-        ::continue::
+        end -- End of if #players > 0
     end
     
     -- Size the container
@@ -417,10 +414,8 @@ function OmniCD:ApplyRoleLayout()
     for _, role in ipairs(roleOrder) do
         local players = roleGroups[role] or {}
         
-        -- Skip empty roles
-        if #players == 0 then
-            goto continue
-        end
+        -- Only process non-empty roles
+        if #players > 0 then
         
         -- Create/update role header
         local headerHeight = roleSettings.showHeaders and roleSettings.headerHeight or 0
@@ -488,8 +483,7 @@ function OmniCD:ApplyRoleLayout()
         
         -- Update Y position for next role group
         currentYOffset = currentYOffset + (rows * (iconSize + spacing)) + spacing
-        
-        ::continue::
+        end -- End of if #players > 0
     end
     
     -- Size the container
@@ -1008,10 +1002,8 @@ function OmniCD:UpdateAllRaidCooldowns()
     
     -- Process each player in the raid
     for guid, frame in pairs(self.raidCooldownFrames) do
-        -- Skip priority frames
-        if type(guid) ~= "string" or guid:sub(1, 9) == "priority_" then
-            goto continue
-        end
+        -- Only process non-priority frames
+        if type(guid) == "string" and guid:sub(1, 9) ~= "priority_" then
         
         -- Get this player's cooldowns
         local unitCooldowns = self.activeCooldowns and self.activeCooldowns[guid] or {}
@@ -1021,8 +1013,7 @@ function OmniCD:UpdateAllRaidCooldowns()
         
         -- Update cooldown icons for this player
         self:UpdatePlayerRaidCooldowns(guid, filteredCooldowns)
-        
-        ::continue::
+        end -- End of if type(guid) == "string" and guid:sub(1, 9) ~= "priority_"
     end
 end
 
@@ -1165,8 +1156,8 @@ function OmniCD:ApplyThemeToRaidFrames()
     
     -- Apply theme to all frames
     for frameKey, frame in pairs(self.raidCooldownFrames) do
-        -- Skip non-existent frames
-        if not frame or not frame.border then goto continue end
+        -- Only process frames that exist
+        if frame and frame.border then
         
         -- Apply theme colors to frame elements
         if frame.nameBackground then
@@ -1188,7 +1179,7 @@ function OmniCD:ApplyThemeToRaidFrames()
             end
         end
         
-        ::continue::
+        end -- End of if frame and frame.border
     end
     
     -- Apply theme to headers
