@@ -1,5 +1,6 @@
 -- Phoenix Flame Theme Textures
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local LSM = LibStub("LibSharedMedia-3.0")
 local Skins = VUI:GetModule('skins')
 local PhoenixFlame = Skins.themes.phoenixflame

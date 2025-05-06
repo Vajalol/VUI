@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Spell Tracker Module - Optimized spell detection and tracking system
 VUI.SpellTracker = VUI.SpellTracker or {}

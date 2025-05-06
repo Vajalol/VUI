@@ -1,5 +1,6 @@
 -- VUI idTip Core Implementation
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local idTip = VUI.idtip
 
 -- Cache globals

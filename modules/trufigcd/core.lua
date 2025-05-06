@@ -1,6 +1,7 @@
 -- TrufiGCD Core Implementation
 -- This file contains the core logic for the TrufiGCD module
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local TrufiGCD = VUI.modules.trufigcd
 
 -- Utility Functions

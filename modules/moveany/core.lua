@@ -1,6 +1,7 @@
 -- MoveAny Core Implementation
 -- This file contains the core logic for the MoveAny module
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local MoveAny = VUI.modules.moveany
 
 -- Utility Functions

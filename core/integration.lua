@@ -1,6 +1,7 @@
 -- VUI Integration
 -- This file ensures that all modules and systems properly integrate with each other
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create integrations namespace
 VUI.Integration = {}

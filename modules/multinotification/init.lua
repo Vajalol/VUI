@@ -1,6 +1,7 @@
 -- VUI Multi-Notification System
 -- Provides unified notification management across modules
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local L = VUI.L
 
 -- Create module

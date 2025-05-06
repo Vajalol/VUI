@@ -1,6 +1,7 @@
 -- VUI Module Standardization Utility
 -- Helps convert existing modules to the new standardized format
 local addonName, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create the Module Standardization Utility namespace
 VUI.ModuleStandardizationUtility = {

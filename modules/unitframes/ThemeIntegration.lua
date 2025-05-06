@@ -5,6 +5,7 @@
 ]]
 
 local addonName, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 if not VUI.UnitFrames then return end
 

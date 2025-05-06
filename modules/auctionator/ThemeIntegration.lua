@@ -5,6 +5,7 @@
 -------------------------------------------------------------------------------
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Auctionator = VUI.modules.auctionator
 
 -- Skip if Auctionator module is not available

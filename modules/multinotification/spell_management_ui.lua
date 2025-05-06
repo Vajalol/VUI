@@ -7,6 +7,7 @@
 ]]
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local MultiNotification = VUI:GetModule("MultiNotification")
 local AceGUI = LibStub("AceGUI-3.0")
 

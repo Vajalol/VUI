@@ -1,5 +1,6 @@
 -- Database Optimization Configuration
 local addonName, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Configuration options for Database Optimization module
 function VUI.DatabaseOptimization:GetConfig()

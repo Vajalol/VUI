@@ -1,4 +1,5 @@
 local addonName, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create a module using the ModuleAPI
 local moduleName = "bags"

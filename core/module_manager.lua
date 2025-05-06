@@ -6,7 +6,10 @@
     interface for managing modules and their dependencies with optimized caching.
 ]]
 
+-- Get addon environment
 local _, VUI = ...
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local L = VUI.L
 
 -- Create the ModuleManager

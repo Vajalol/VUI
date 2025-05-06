@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Font Integration System
 -- Enhanced with font atlas, caching, and performance optimizations

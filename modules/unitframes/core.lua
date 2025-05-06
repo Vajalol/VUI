@@ -1,5 +1,6 @@
 -- VUI UnitFrames Module - Core Functionality
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local UnitFrames = VUI.unitframes
 local LSM = LibStub("LibSharedMedia-3.0")
 

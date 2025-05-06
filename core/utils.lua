@@ -1,6 +1,7 @@
 -- VUI Utils
 -- This file contains utility functions for the UI framework
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create utilities namespace
 VUI.Utils = {}

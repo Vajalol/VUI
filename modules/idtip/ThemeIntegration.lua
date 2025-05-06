@@ -1,5 +1,6 @@
 -- VUI idTip Theme Integration
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local IdTip = VUI.idtip
 local Media = VUI.Media
 

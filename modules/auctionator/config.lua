@@ -1,6 +1,7 @@
 -- Auctionator Config Implementation
 -- This file contains the configuration options for the Auctionator module
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Auctionator = VUI.modules.auctionator
 local AceGUI = LibStub("AceGUI-3.0")
 

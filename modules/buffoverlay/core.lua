@@ -1,6 +1,7 @@
 -- BuffOverlay Core Implementation
 -- This file contains the core logic for the BuffOverlay module
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local BuffOverlay = VUI.modules.buffoverlay
 
 -- Utility Functions

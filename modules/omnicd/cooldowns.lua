@@ -1,5 +1,6 @@
 -- VUI OmniCD Cooldown Management
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local OmniCD = VUI.omnicd
 
 -- Initialize cooldowns tracking

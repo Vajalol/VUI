@@ -1,6 +1,7 @@
 -- VUI Module Verifier Tool
 -- Verifies that modules comply with the standardization guidelines
 local addonName, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create the Module Verifier namespace
 VUI.ModuleVerifier = {

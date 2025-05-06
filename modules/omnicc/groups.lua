@@ -1,5 +1,6 @@
 -- VUI OmniCC Cooldown Groups
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local OmniCC = VUI.omnicc
 
 -- Default cooldown groups

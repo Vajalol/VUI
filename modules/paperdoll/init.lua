@@ -4,7 +4,10 @@
     Author: VortexQ8
 ]]
 
+-- Get addon environment
 local addonName, VUI = ...
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create the paperdoll module if it doesn't exist
 if not VUI.modules then VUI.modules = {} end

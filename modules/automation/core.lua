@@ -1,5 +1,6 @@
 -- VUI Automation Module - Core Functionality
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Automation = VUI.automation
 
 -- Create event frame if it doesn't exist

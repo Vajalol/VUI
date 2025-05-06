@@ -1,5 +1,6 @@
 -- VUI MoveAny Theme Integration
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local MoveAny = VUI.moveany
 local Media = VUI.Media
 

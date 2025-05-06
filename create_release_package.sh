@@ -45,9 +45,13 @@ echo -e "${GREEN}Step 2:${NC} Removing development and debug files..."
 
 # Remove debug and development files
 find $TEMP_DIR -name "*_debug.lua" -delete
-find $TEMP_DIR -name "test_*.lua" -delete
+# Keep test_modules.lua but remove other test files
+find $TEMP_DIR -name "test_*.lua" ! -name "test_modules.lua" -delete
 find $TEMP_DIR -name "*.bak" -delete
 find $TEMP_DIR -name "*.ds_store" -delete -ignore_readdir_race
+
+# Copy test_modules.lua to release package for developer use
+cp test_modules.lua $TEMP_DIR/
 
 # Remove any .git related files that might have been copied
 find $TEMP_DIR -name ".git*" -delete -ignore_readdir_race

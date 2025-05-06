@@ -8,6 +8,7 @@
 ]]
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local DS = VUI.detailsskin or {}
 VUI.detailsskin = DS
 

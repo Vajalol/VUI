@@ -3,6 +3,7 @@
 -- Not used during normal addon operation - only for development and maintenance.
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Atlas Generator
 VUI.AtlasGenerator = {

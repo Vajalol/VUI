@@ -1,3 +1,8 @@
+-- Get addon environment
+local _, VUI = ...
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
+
 local VUI, E, L = unpack(select(2, ...))
 
 -- Create the Tools module

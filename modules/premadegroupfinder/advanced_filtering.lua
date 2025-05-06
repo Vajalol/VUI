@@ -5,6 +5,7 @@
 -------------------------------------------------------------------------------
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local PGF = VUI.modules.premadegroupfinder or {}
 
 -- Skip if premadegroupfinder module is not available

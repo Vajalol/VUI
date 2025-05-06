@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Initialize the DetailsSkin module
 local DetailsSkin = VUI.detailsskin or {}

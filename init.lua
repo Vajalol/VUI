@@ -1,3 +1,8 @@
+-- Get addon environment
+local _, VUI = ...
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
+
 -- VUI - Unified World of Warcraft Addon Suite
 -- Author: VortexQ8
 -- Version: 1.0.0

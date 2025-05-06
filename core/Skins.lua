@@ -1,6 +1,7 @@
 -- VUI Skinning System
 -- Provides comprehensive UI skinning similar to SUI with theme and class color support
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create Skins namespace
 VUI.Skins = {}

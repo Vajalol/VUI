@@ -1,5 +1,6 @@
 -- VUI Dashboard Main Panel
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create the Dashboard module
 VUI.Dashboard = {}

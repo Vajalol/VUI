@@ -1,5 +1,6 @@
 -- VUI Skins Module - Blizzard UI Core Skinning
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Skins = VUI.skins
 
 -- Registry for Blizzard skinning functions

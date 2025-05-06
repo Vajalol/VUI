@@ -1,5 +1,6 @@
 -- Phoenix Flame Theme Integration
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Skins = VUI:GetModule('skins')
 local PhoenixFlame = Skins.themes.phoenixflame
 

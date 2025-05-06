@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Spell Data Module - Centralized repository of categorized spell data
 VUI.spellData = VUI.spellData or {}

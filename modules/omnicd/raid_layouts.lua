@@ -1,5 +1,6 @@
 -- VUI OmniCD Raid Layouts
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local OmniCD = VUI.omnicd
 
 -- Layout types

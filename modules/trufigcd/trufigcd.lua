@@ -2,7 +2,10 @@
 -- Adapted from: https://github.com/Trufi/TrufiGCD
 -- Author: VortexQ8
 
+-- Get addon environment
 local _, VUI = ...
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create the namespace if it doesn't exist
 if not VUI.TrufiGCD then

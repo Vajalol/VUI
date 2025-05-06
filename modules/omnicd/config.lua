@@ -1,6 +1,7 @@
 -- OmniCD Config Implementation
 -- This file contains the configuration options for the OmniCD module
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local OmniCD = VUI.omnicd
 local AceGUI = LibStub("AceGUI-3.0")
 

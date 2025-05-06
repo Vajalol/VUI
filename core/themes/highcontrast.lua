@@ -7,6 +7,7 @@
 ]]
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Only proceed if Theme system is available
 if not VUI.Theme then return end

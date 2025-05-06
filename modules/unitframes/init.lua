@@ -1,5 +1,6 @@
 -- VUI UnitFrames Module - Initialization
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create the module using the module API
 local UnitFrames = VUI.ModuleAPI:CreateModule("unitframes")

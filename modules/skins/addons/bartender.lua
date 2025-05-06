@@ -1,5 +1,6 @@
 -- VUI Skins Module - Bartender Addon Skinning
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Skins = VUI.skins
 
 -- Register the skin module

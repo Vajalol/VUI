@@ -1,5 +1,6 @@
 -- VUI InfoFrame Module Initialization
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create the module
 local InfoFrame = {

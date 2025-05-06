@@ -1,6 +1,7 @@
 -- BuffOverlay Config Implementation
 -- This file contains the configuration options for the BuffOverlay module
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local BuffOverlay = VUI.modules.buffoverlay
 local AceGUI = LibStub("AceGUI-3.0")
 

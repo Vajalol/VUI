@@ -5,6 +5,7 @@
 ]]
 
 local addonName, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create the Help module if it doesn't exist
 if not VUI.modules then VUI.modules = {} end

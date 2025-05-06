@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Event Optimization System
 -- Provides optimized event handling and registration to reduce overhead

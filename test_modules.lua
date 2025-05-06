@@ -3,6 +3,7 @@
 
 -- Set up addon environment
 local addon_name, VUI = "VUI", {}
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 _G["VUI"] = VUI
 
 -- Mock WoW API functions
@@ -57,19 +58,22 @@ end
 local function TestBuffOverlay()
     print("\nTesting BuffOverlay module...")
     local status, err = pcall(function()
-        if not VUI.buffoverlay then
-            print("Creating VUI.buffoverlay namespace")
-            VUI.buffoverlay = {}
-        end
-        
-        if not VUI.BuffOverlay then
-            print("Creating VUI.BuffOverlay namespace")
-            VUI.BuffOverlay = VUI.buffoverlay
-        end
-        
         -- Add debug db for buffoverlay
         if not VUI.db.profile.modules.buffoverlay then
-            VUI.db.profile.modules.buffoverlay = {}
+            VUI.db.profile.modules.buffoverlay = {
+                position = {"CENTER", UIParent, "CENTER", 0, 0},
+                size = 30,
+                scale = 1.0,
+                alpha = 1.0
+            }
+        end
+        
+        -- Ensure the namespaces exist
+        if not VUI.buffoverlay then
+            VUI.buffoverlay = {}
+        end
+        if not VUI.BuffOverlay then
+            VUI.BuffOverlay = VUI.buffoverlay
         end
         
         print("Loading buffoverlay.lua...")
@@ -91,17 +95,13 @@ end
 local function TestTrufiGCD()
     print("\nTesting TrufiGCD module...")
     local status, err = pcall(function()
-        if not VUI.TrufiGCD then
-            print("Creating VUI.TrufiGCD namespace")
-            VUI.TrufiGCD = {}
-        end
-        
         -- Add debug db for TrufiGCD
         if not VUI.db.profile.modules.trufigcd then
             VUI.db.profile.modules.trufigcd = {
                 position = {"CENTER", UIParent, "CENTER", 0, 0},
                 size = 40,
-                orientation = "HORIZONTAL"
+                orientation = "HORIZONTAL",
+                maxIcons = 5
             }
         end
         
@@ -110,6 +110,11 @@ local function TestTrufiGCD()
             PreloadAtlas = function() end,
             ApplyTextureCoordinates = function() end
         }
+        
+        -- Ensure the namespace exists
+        if not VUI.TrufiGCD then
+            VUI.TrufiGCD = {}
+        end
         
         print("Loading trufigcd.lua...")
         dofile("modules/trufigcd/trufigcd.lua")
@@ -132,11 +137,57 @@ local function TestTrufiGCD()
     end
 end
 
+-- Test Castbar module
+local function TestCastbar()
+    print("\nTesting Castbar module...")
+    local status, err = pcall(function()
+        -- Create and initialize namespaces
+        if not VUI.Castbar then
+            VUI.Castbar = {}
+        end
+        
+        print("Loading castbar/themes.lua...")
+        dofile("modules/castbar/themes.lua")
+        
+        print("Castbar namespace exists:", VUI.Castbar ~= nil)
+    end)
+    
+    if status then
+        print("Castbar module loaded successfully")
+    else
+        print("Error loading Castbar module:", err)
+    end
+end
+
+-- Test Paperdoll module
+local function TestPaperdoll()
+    print("\nTesting Paperdoll module...")
+    local status, err = pcall(function()
+        -- Create and initialize namespaces
+        if not VUI.modules then
+            VUI.modules = {}
+        end
+        
+        print("Loading paperdoll/init.lua...")
+        dofile("modules/paperdoll/init.lua")
+        
+        print("Paperdoll namespace exists:", VUI.modules.paperdoll ~= nil)
+    end)
+    
+    if status then
+        print("Paperdoll module loaded successfully")
+    else
+        print("Error loading Paperdoll module:", err)
+    end
+end
+
 -- Run all tests
 local function RunAllTests()
     InitTestEnvironment()
     TestBuffOverlay()
     TestTrufiGCD()
+    TestCastbar()
+    TestPaperdoll()
     print("\nAll tests completed")
 end
 

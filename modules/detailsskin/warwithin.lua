@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- The War Within Skin Module for DetailsSkin
 local DetailsSkin = VUI.detailsskin

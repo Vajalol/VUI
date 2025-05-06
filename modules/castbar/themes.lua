@@ -4,7 +4,10 @@
     Author: VortexQ8
 ]]
 
+-- Get addon environment
 local addonName, VUI = ...
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local Castbar = VUI.Castbar
 local MediaPath = "Interface\\AddOns\\VUI\\media\\"
 

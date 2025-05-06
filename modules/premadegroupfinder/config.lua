@@ -1,5 +1,6 @@
 -- VUI Premade Group Finder Module - Configuration Panel
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local PGF = VUI.premadegroupfinder
 local AceGUI = LibStub("AceGUI-3.0")
 

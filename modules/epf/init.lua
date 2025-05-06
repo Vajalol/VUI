@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Enhanced Player Frame Module based on EPF-Enhanced from Wago.io
 local EPF = {

@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Nameplates = VUI.nameplates
 
 -- Event hooks for VUI Plater

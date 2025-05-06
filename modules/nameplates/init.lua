@@ -1,4 +1,5 @@
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- VUI Plater Nameplates Module (inspired by WhiiskeyZ Plater profile)
 local Nameplates = {

@@ -10,7 +10,10 @@
     - Integrated with existing spell categorization system
 ]]
 
+-- Get addon environment
 local _, VUI = ...
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create the TrufiGCD namespace if it doesn't exist
 if not VUI.TrufiGCD then

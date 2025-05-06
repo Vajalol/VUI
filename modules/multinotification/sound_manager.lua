@@ -2,6 +2,7 @@
 -- Sound customization system for MultiNotification module
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local MultiNotification = VUI.modules.multinotification
 local AceGUI = LibStub("AceGUI-3.0")
 

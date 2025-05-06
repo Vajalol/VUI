@@ -1,6 +1,7 @@
 -- VUI Module API
 -- This file provides a standardized API for modules to interact with the VUI framework
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create the Module API namespace
 VUI.ModuleAPI = {}

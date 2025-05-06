@@ -11,6 +11,7 @@
 ]]
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 if not VUI.modules.trufigcd then return end
 

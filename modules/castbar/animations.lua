@@ -5,6 +5,7 @@
 ]]
 
 local addonName, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Castbar = VUI.Castbar
 local MediaPath = "Interface\\AddOns\\VUI\\media\\"
 

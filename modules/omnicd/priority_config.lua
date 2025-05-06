@@ -11,6 +11,7 @@
 ]]
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local OmniCD = VUI.omnicd
 local PS = OmniCD.PrioritySystem
 local L = VUI.L or {}  -- Localization

@@ -1,6 +1,7 @@
 -- VUI MultiNotification Theme Integration
 -- Provides theme support for the MultiNotification module
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Get module reference
 local module = VUI:GetModule("MultiNotification")

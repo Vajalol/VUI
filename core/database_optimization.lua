@@ -4,6 +4,7 @@
 -- ===================================================================================================================
 
 local addonName, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create module
 local DBOpt = VUI:NewModule("DatabaseOptimization", "AceEvent-3.0", "AceTimer-3.0")

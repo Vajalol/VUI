@@ -1,6 +1,7 @@
 -- VUI UI Framework
 -- This file provides a toolkit for creating consistent UI elements across the addon
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 -- Create UI namespace
 VUI.UI = {}

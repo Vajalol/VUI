@@ -2,6 +2,7 @@
 -- Standardized theme integration for the VUI tooltip module
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 
 if not VUI.tooltip then return end
 

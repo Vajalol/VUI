@@ -2,6 +2,7 @@
 -- This file implements advanced visual effects for important buffs/debuffs
 
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 -- Safety check in case unpack isn't available
 if not VUI.buffoverlay then
     VUI.buffoverlay = {}

@@ -1,5 +1,6 @@
 -- VUI Tooltip Module - Core Functionality
 local _, VUI = ...
+-- Fallback for test environmentsif not VUI then VUI = _G.VUI end
 local Tooltip = VUI.modules.tooltip
 
 -- Cache frequently used globals
