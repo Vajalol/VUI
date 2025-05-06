@@ -10,23 +10,14 @@ local _, VUI = ...
 -- Fallback for test environments
 if not VUI then VUI = _G.VUI end
 
--- Create buffoverlay namespace(s)
-if not VUI.buffoverlay then
-    VUI.buffoverlay = {}
+-- Standardize on a single namespace (CamelCase) for consistency
+if not VUI.BuffOverlay then
+    VUI.BuffOverlay = {}
 end
 
--- Ensure we have the BuffOverlay namespace (CamelCase version)
-if not VUI.BuffOverlay then
-    VUI.BuffOverlay = VUI.buffoverlay
-else
-    -- If both exist, merge them to ensure consistency
-    for k, v in pairs(VUI.BuffOverlay) do
-        VUI.buffoverlay[k] = v
-    end
-    for k, v in pairs(VUI.buffoverlay) do
-        VUI.BuffOverlay[k] = v
-    end
-end
+-- Create a consistent reference to the lowercase version for backward compatibility
+-- This ensures all references to buffoverlay point to BuffOverlay
+VUI.buffoverlay = VUI.BuffOverlay
 
 -- Create a local reference for easier access
 local BuffOverlay = VUI.BuffOverlay
@@ -74,23 +65,47 @@ local ENHANCED_DEFAULTS = {
 
 -- Initialize the module
 function VUI.BuffOverlay:Initialize()
+    -- First, ensure the module name is standardized in enabledModules
+    if VUI.enabledModules.buffoverlay and not VUI.enabledModules.BuffOverlay then
+        VUI.enabledModules.BuffOverlay = VUI.enabledModules.buffoverlay
+    end
+    
+    -- Return if the module is disabled
     if not VUI.enabledModules.BuffOverlay then return end
     
+    -- Ensure we have both camelCase and lowercase db paths for backward compatibility
+    if not VUI.db.profile.modules.BuffOverlay then
+        VUI.db.profile.modules.BuffOverlay = {}
+    end
+    
+    -- Standardize database paths by copying existing data to camelCase version
+    if VUI.db.profile.modules.buffoverlay then
+        for k, v in pairs(VUI.db.profile.modules.buffoverlay) do
+            VUI.db.profile.modules.BuffOverlay[k] = v
+        end
+    end
+    
+    -- Create reference for backward compatibility
+    VUI.db.profile.modules.buffoverlay = VUI.db.profile.modules.BuffOverlay
+    
+    -- Get direct reference to DB for cleaner code
+    local dbProfile = VUI.db.profile.modules.BuffOverlay
+    
     -- Initialize enhanced display defaults if not set
-    if not VUI.db.profile.modules.buffoverlay.enhancedDisplay then
-        VUI.db.profile.modules.buffoverlay.enhancedDisplay = ENHANCED_DEFAULTS.enableEnhancedDisplay
+    if not dbProfile.enhancedDisplay then
+        dbProfile.enhancedDisplay = ENHANCED_DEFAULTS.enableEnhancedDisplay
     end
     
-    if not VUI.db.profile.modules.buffoverlay.maxAurasPerUnit then
-        VUI.db.profile.modules.buffoverlay.maxAurasPerUnit = ENHANCED_DEFAULTS.maxAurasPerUnit
+    if not dbProfile.maxAurasPerUnit then
+        dbProfile.maxAurasPerUnit = ENHANCED_DEFAULTS.maxAurasPerUnit
     end
     
-    if not VUI.db.profile.modules.buffoverlay.showCooldownSpiral then
-        VUI.db.profile.modules.buffoverlay.showCooldownSpiral = ENHANCED_DEFAULTS.showCooldownSpiral
+    if not dbProfile.showCooldownSpiral then
+        dbProfile.showCooldownSpiral = ENHANCED_DEFAULTS.showCooldownSpiral
     end
     
-    if not VUI.db.profile.modules.buffoverlay.showCooldownNumbers then
-        VUI.db.profile.modules.buffoverlay.showCooldownNumbers = ENHANCED_DEFAULTS.showCooldownNumbers
+    if not dbProfile.showCooldownNumbers then
+        dbProfile.showCooldownNumbers = ENHANCED_DEFAULTS.showCooldownNumbers
     end
     
     -- Create frame for buff tracking
@@ -103,7 +118,7 @@ function VUI.BuffOverlay:Initialize()
     self:ApplySettings()
     
     -- Initialize the enhanced display if enabled
-    if VUI.db.profile.modules.buffoverlay.enhancedDisplay then
+    if dbProfile.enhancedDisplay then
         self:InitializeEnhancedDisplay()
     end
     

@@ -2,7 +2,8 @@
 -- This file provides a standard template for modules to connect to the VUI framework
 -- Enhanced with deeper Ace3 integration while maintaining SUI design approach
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create the module template
 VUI.ModuleTemplate = {}

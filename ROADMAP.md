@@ -1,375 +1,154 @@
-# VUI Master Plan
+# VUI Critical Recovery Roadmap 2.0
 
 ## Overview
-VUI (Version 1.0.0) is a comprehensive World of Warcraft addon suite designed for The WarWithin Season 2. The project aims to combine multiple popular addons into a single cohesive package with unified styling, configuration, and functionality.
+VUI (Version 1.0.0) is a comprehensive World of Warcraft addon suite for The WarWithin Season 2. This roadmap outlines the necessary steps to address critical functionality issues and improve user experience.
 
 **Author:** VortexQ8
 
-## Core Philosophy
-VUI follows the approach of enhancing the existing Blizzard UI frames rather than completely replacing them. This ensures compatibility with game updates while providing extensive customization options.
+## Core Recovery Priorities
 
-## Modules Integrated
+### Phase 1: Module Initialization Framework (Critical)
+- [ ] Implement dependency-based loading priority system
+- [ ] Fix namespace inconsistencies and initialization sequence
+- [ ] Create consistent module API for initialization
+- [ ] Add fallback protection for all core methods
+- [ ] Implement startup error prevention system
 
-| Module | Status | Features |
-|--------|--------|----------|
-| BuffOverlay | ✓ | Enhanced buff tracking with customizable filters |
-| TrufiGCD | ✓ | Spell cast tracking with customizable appearance |
-| MoveAny | ✓ | Frame repositioning with memory |
-| Auctionator | ✓ | Auction house enhancements |
-| AngryKeystones | ✓ | M+ dungeon information display |
-| OmniCC | ✓ | Cooldown count display |
-| OmniCD | ✓ | Party cooldown tracking |
-| idTip | ✓ | Displays spell and item IDs in tooltips |
-| Premade Group Finder | ✓ | Advanced group finder filtering |
-| SpellNotifications | ✓ | Important spell alerts |
-| DetailsSkin | ✓ | Damage meter styling |
-| MikScrollingBattleText | ✓ | Combat text customization |
+### Phase 2: Default Configuration (High Priority)
+- [ ] Create comprehensive default settings for all modules
+- [ ] Implement first-time user setup wizard
+- [ ] Create profile templates for different play styles (DPS, Tank, Healer)
+- [ ] Add configuration validation to prevent settings corruption
+- [ ] Build recovery system for damaged configuration data
 
-## Theme System
-VUI includes five comprehensive UI themes:
+### Phase 3: Module-Specific Fixes (Critical)
+- [ ] Fix BuffOverlay namespace and initialization issues 
+- [ ] Repair TrufiGCD initialization sequence
+- [ ] Correct Paperdoll RegisterCallback issues
+- [ ] Add fallback handling for EventManager in castbar module
+- [ ] Fix unit frame db initialization in module_api.lua
+- [ ] Implement event optimization Debug method fallback
 
-1. **Phoenix Flame**
-   - Dark red/brown backgrounds (#1A0A05)
-   - Fiery orange borders (#E64D0D)
-   - Amber highlights (#FFA31A)
+### Phase 4: User Experience Improvements (High Priority)
+- [ ] Create module enable/disable interface with dependency warnings
+- [ ] Add configuration backup and restore functionality
+- [ ] Create simplified "lite mode" for better performance
+- [ ] Improve help system with tooltips and contextual guidance
+- [ ] Add upgrade migration path for future versions
 
-2. **Thunder Storm** (Default)
-   - Deep blue backgrounds (#0A0A1A)
-   - Electric blue borders (#0D9DE6)
-   - Light blue highlights (#66CCFF)
+### Phase 5: Performance Optimization (Medium Priority)
+- [ ] Implement selective module loading based on character class
+- [ ] Add frame throttling during high-activity periods
+- [ ] Optimize texture atlas usage for memory efficiency
+- [ ] Add combat performance mode that reduces non-essential features
+- [ ] Improve garbage collection during combat
 
-3. **Arcane Mystic**
-   - Deep purple backgrounds (#1A0A2F)
-   - Violet borders (#9D0DE6)
-   - Pink highlights (#FF66FF)
+## Module Status Overview
 
-4. **Fel Energy**
-   - Dark green backgrounds (#0A1A0A)
-   - Fel green borders (#1AFF1A)
-   - Lime highlights (#BFFF00)
+| Module | Current Status | Priority Fix |
+|--------|---------------|--------------|
+| BuffOverlay | ⚠️ Namespace errors | Standardize BuffOverlay vs buffoverlay namespace |
+| TrufiGCD | ⚠️ Initialization failure | Fix module reference and loading sequence |
+| Paperdoll | ⚠️ Missing callback | Implement RegisterCallback method with fallback |
+| Castbar | ⚠️ Missing EventManager | Create EventManager or add fallback handling |
+| UnitFrames | ⚠️ DB initialization | Fix db field access in module_api.lua |
+| Core Events | ⚠️ Debug method missing | Implement Debug method or add fallback |
+| Theme System | ✓ Functional | N/A |
+| Configuration | ✓ Functional | Improve defaults |
 
-5. **Class Color**
-   - Dynamically generated based on character's class colors
-   - Coordinated accent colors
+## Comprehensive Module Fix Plan
 
-## Sound Categories
-- Interrupt
-- Dispel
-- Important
-- Spell_notification
+### Core Infrastructure
+1. **Initialization System Update**
+   - Create priority-based initialization queue
+   - Add dependency check before module init
+   - Implement recovery for circular dependencies
+   - Add timeout detection for hung initialization
 
-## Control Panel
-- Unified settings panel
-- Module-specific configurations
-- Theme selection and customization
-- Custom spell importance settings
+2. **Namespace Standardization**
+   - Ensure consistent case for all module namespaces
+   - Create accessor functions for cross-module references
+   - Add validation for critical namespace paths
+   - Implement global namespace recovery system
 
-# VUI Development Roadmap
+3. **Method Protection System**
+   - Add pre-check handlers for all critical methods
+   - Create method stubs for all optional functionality
+   - Implement safe call wrapper for external libraries
+   - Add callback verification before registration
 
-This section outlines the development phases, current status, and upcoming work for the VUI addon suite.
+### Module-Specific Solutions
 
-## Phase 1: Initial Setup (Completed) ✓
-- Core framework implementation ✓
-- Basic module integration ✓
-- Addon structure and file organization ✓
-- Initial package structure ✓
-- Base configuration system ✓
+1. **BuffOverlay Module**
+   - Fix namespace inconsistency (BuffOverlay vs buffoverlay)
+   - Implement proper unpack method fallback
+   - Add initialization sequence validation
+   - Create recovery system for category data
 
-## Phase 2: Module Standardization (Completed) ✓
-- Standardized configuration panels ✓
-- Module standardization:
-  - MSBT Module ✓
-  - Auctionator Module ✓
-  - AngryKeystones Module ✓
-  - BuffOverlay Module enhancement ✓
-  - OmniCC/OmniCD Integration ✓
-  - DetailsSkin Module ✓
-  - Custom Important Spell List ✓
-  - TrufiGCD Module ✓
-  - SpellNotifications Module ✓
-  - PGFinder Module enhancement ✓
-  - MoveAny Module standardization ✓
-  - idTip Module standardization ✓
-  - nameplates Module standardization ✓
-  - tooltip Module standardization ✓
-  - bags Module standardization ✓
-  - castbar Module standardization ✓
-  - actionbars Module standardization ✓
-  - unitframes Module standardization ✓
-  - infoframe Module standardization ✓
-  - Paperdoll Module standardization ✓
-  - EPF (Enhanced Profile Frames) Module standardization ✓
-  - Profiles Module standardization ✓
-  - Skins Module standardization ✓
-  - Tools Module standardization ✓
-  - VisualConfig Module standardization ✓
-  - Multi-Notification Support ✓
-- Unified logging system ✓
-- Common API for module interactions ✓
-- Theme foundation system ✓
-- Shared utility functions ✓
-- Module dependency management ✓
-- Remove duplicate files ✓
-- Ensure one-file-per-purpose structure ✓
-- Merge enhanced functionality into core files ✓
+2. **TrufiGCD Module**
+   - Fix initialization sequence and dependencies
+   - Add fallback for missing TrufiGCD table
+   - Correct timeline view initialization timing
+   - Implement namespace standardization
 
-## Phase 3: Theme Enhancement (Completed) ✓
-- Implementing all themes across modules with the standardized ThemeIntegration system ✓
-- Developing the custom theme editor for user-created themes ✓
-- Improving media management for better performance ✓
-  - Texture caching system implemented ✓
-  - Lazy loading for non-essential textures ✓ 
-  - Memory optimization through cache clearing ✓
-  - Preloading functionality for theme assets ✓
-  - Media Stats tab added to Theme Editor ✓
-- Enhancing user experience with smoother transitions and feedback ✓
-  - Comprehensive animation framework implemented ✓
-  - Fade, slide, scale, flash, glow, and shine effects added ✓
-  - Smooth transitions for theme changes ✓
-  - Animated dashboard modules and buttons ✓
-  - Performance-aware animations (FPS-based disabling) ✓
-- Theme-aware module integration ✓
-- Runtime theme switching system ✓
-- Theme element inheritance ✓
-- Comprehensive color schemes ✓
-- Visual consistency across all modules ✓
-- Integrating the Multi-Notification system with existing notification modules ✓
+3. **Paperdoll Module**
+   - Add RegisterCallback method implementation
+   - Fix initialization dependency chain
+   - Create fallback for OnInitialized events
+   - Add error handling for callback failure
 
-## Phase 4: Performance Optimization (Completed) ✓
+4. **Castbar Module**
+   - Implement EventManager or add fallback
+   - Fix theme integration dependency path
+   - Create error recovery for animation system
+   - Add initialization retry logic
 
-### Completed Optimizations ✓
-- Texture Atlas System Core Framework ✓
-  - Atlas framework implementation ✓
-  - Atlas texture mapping and coordinates system ✓
-  - UI integration helpers for atlas textures ✓
-  - Atlas generator tools for development ✓
-  - Media system integration ✓
-  - Statistics tracking in Theme Editor ✓
-  - Module-specific atlas implementations:
-    - MultiNotification atlas implementation ✓
-    - BuffOverlay atlas implementation ✓ 
-    - TrufiGCD atlas implementation ✓
-- Frame Pooling for Dynamic UI Elements ✓
-- Smart Event Registration ✓
-- Media Loading Optimization ✓
-- Memory Usage Monitoring ✓
-- Frame Creation Efficiency ✓
-- Performance metrics documentation ✓
+5. **Core Module API**
+   - Fix db field access patterns
+   - Add database initialization verification
+   - Create default recovery values for missing settings
+   - Implement module settings validation
 
-### Completed Optimizations ✓
-- OmniCD Texture Atlas Implementation ✓
-- MoveAny Texture Atlas Implementation ✓
-- DetailsSkin Texture Atlas Implementation ✓
-- Frame Throttling During Combat ✓
-- Reducing memory footprint during combat ✓
-- Event handling optimization ✓
-- Atlas-Based Theme Switching Performance ✓
-- Resource Cleanup During Idle ✓
-- Global Font System Optimization ✓
+## Implementation Timeline
 
-### All Optimizations Completed ✓
-- Database Access Optimization ✓
-- Spell Detection Logic Enhancement ✓
-- REMOVED: Dynamic Module Loading (not needed) ✗
-- REMOVED: Frame rate based throttling (not needed) ✗
+### Week 1: Critical Infrastructure
+- [ ] Create enhanced module initialization system
+- [ ] Fix core namespace inconsistencies
+- [ ] Implement method protection wrappers
+- [ ] Add fallback handlers for critical methods
 
-## Phase 5: Accessibility Enhancements (Completed) ✓
-- High contrast mode ✓
-- UI scaling options ✓
-- Colorblind-friendly theme variants ✓
-- Keyboard navigation enhancement ✓
-- Audio feedback options ✓
-- Profile management improvements ✓
+### Week 2: Module-Specific Fixes
+- [ ] Fix BuffOverlay module namespace and initialization
+- [ ] Repair TrufiGCD module loading sequence
+- [ ] Add missing methods to Paperdoll module
+- [ ] Implement EventManager system for Castbar
+- [ ] Fix database access in module API
 
-## Phase 6: Context-Sensitive UI (Deferred) ✗
-- Situation-aware information panels ☐
-- Combat state reactive frames ☐
-- Role-specific UI adaptations ☐
-- Specialization-based layouts ☐
-- Dungeon/Raid specific enhancements ☐
-- PvP-optimized interfaces ☐
+### Week 3: User Experience & Defaults
+- [ ] Create comprehensive default settings
+- [ ] Implement first-time setup wizard
+- [ ] Add profile templates for different roles
+- [ ] Create configuration validation system
+- [ ] Improve help system and documentation
 
-## Module-Specific Roadmap
+### Week 4: Testing & Validation
+- [ ] Comprehensive testing across all modules
+- [ ] Configuration validation checks
+- [ ] Performance optimization validation
+- [ ] Lua error monitoring and prevention
+- [ ] Final polish and release preparation
 
-### Auctionator
-- ✓ Core auction house functionality
-- ✓ Theme integration
-- ✓ Enhanced selling interface with bag view
-- ✓ Smart undercut suggestions
-- ✓ Price history tracking
-- ✓ Advanced shopping lists system
-- ✓ Full auction house scanning
-- ✓ Category filtering system
-- ✓ Advanced search options
-- ✓ Item favorites management
-- ✓ Configuration integration
+## Quality Standards
+- Zero tolerance for initialization failures
+- All modules must have fallback protection
+- Every critical method needs safety wrapper
+- Comprehensive default settings for first-time users
+- Clear error messages for troubleshooting
 
-### MultiNotification
-- ✓ Core notification system
-- ✓ Spell event tracking
-- ✓ Theme integration
-- ✓ Texture atlas implementation
-- ✓ Frame pooling optimization
-- ✓ Priority system enhancement
-- ✓ Customizable positioning
-- ✓ Animation variations
-- ✓ Sound customization
-
-### BuffOverlay
-- ✓ Core buff tracking
-- ✓ Theme integration  
-- ✓ Texture atlas implementation
-- ✓ Frame pooling optimization
-- ✓ Enhanced visibility options
-- ✓ Diminishing returns tracking
-- ✓ Buff group categorization
-- ✓ Special effects for important buffs
-
-### TrufiGCD
-- ✓ Core ability tracking
-- ✓ Theme integration
-- ✓ Texture atlas implementation
-- ✓ Enhanced icon customization
-- ✓ Advanced filtering options
-- ✓ Spell categorization
-- ✓ Timeline view option
-
-### OmniCD
-- ✓ Core cooldown tracking
-- ✓ Theme integration
-- ✓ Texture atlas implementation
-- ✓ Enhanced party frame integration
-- ✓ Priority system
-- ✓ Specialized raid layouts
-
-### DetailsSkin
-- ✓ Core damage meter styling
-- ✓ Theme integration
-- ✓ Texture atlas implementation
-- ✓ Dynamic texture loading
-- ✓ Performance statistics tracking
-- ✓ Skin registry system
-- ✓ War Within skin integration
-- ✓ Skin selection UI
-- ✓ Enhanced graph styling
-- ✓ Custom report templates
-
-## Development Standards
-
-### File Organization
-- All files must follow one-file-per-purpose principle
-- Module structure must be consistent across all modules
-- Enhanced functionality should be merged into original files
-
-### Coding Standards
-- Clear commenting required
-- Performance optimization is prioritized
-- Local function caching for frequent WoW API calls
-- Consistent formatting
-
-### Media Management
-- All original textures, sounds, and media files must be included
-- Media quality is critical for addon presentation
-- SVG assets converted to TGA format for WoW compatibility
-
-### Module Naming
-- Must use existing module names exactly as specified
-- Enhancing existing modules rather than creating new ones
-
-## Phase 7: Comprehensive Review and Quality Assurance ✓
-
-### Core Framework Review ✓
-- ✓ Core files structure and organization
-- ✓ Module registration system
-- ✓ Initialization sequence
-- ✓ Theme integration system
-- ✓ Configuration management
-- ✓ Error handling and logging
-- ✓ Version consistency
-
-### Module-by-Module Verification ✓
-- ✓ Proper initialization for Auctionator module
-- ✓ Theme integration implementation for Auctionator
-- ✓ Configuration integration for Auctionator
-- ✓ Version consistency for Auctionator
-- ✓ Required dependencies for Auctionator
-- ✓ Error handling for Auctionator
-- ✓ Proper initialization for remaining modules
-- ✓ Theme integration implementation for remaining modules
-- ✓ Configuration integration for remaining modules
-- ✓ Version consistency for remaining modules
-- ✓ Required dependencies for remaining modules
-- ✓ Error handling for remaining modules
-
-### Theme System Verification ✓
-- ✓ All themes properly defined (Phoenix Flame, Thunder Storm, Arcane Mystic, Fel Energy, Class Color)
-- ✓ Color scheme consistency across modules
-- ✓ Theme switching functionality
-- ✓ Theme asset loading
-
-### Media Files Verification ✓
-- ✓ All required textures present
-- ✓ All required sounds present
-- ✓ Media properly registered with LibSharedMedia
-- ✓ Atlas texture optimization
-
-### Configuration Panel Check ✓
-- ✓ All modules appear in config
-- ✓ Module settings correctly loaded/saved
-- ✓ UI layout and organization
-- ✓ Preset system functionality
-
-### Performance Review ✓
-- ✓ Throttling applied to high-frequency functions
-- ✓ Memory optimization techniques
-- ✓ Frame pooling implementation
-- ✓ Event registration efficiency
-
-### Syntax and Error Check ✓
-- ✓ Lua syntax validation
-- ✓ Common error patterns review
-- ✓ Defensive programming practices
-
-## Legend
-- ✓ Completed
-- ⟳ In Progress
-- ☐ Planned
-- ✗ Deferred
-
-## Configuration Approach
-- Tabbed interface for better organization of settings
-- Intuitive controls for each module
-- Preset configurations for common use cases
-- Extensive tooltip documentation
-
-## Documentation
-- In-game help system
-- Comprehensive configuration guide
-- Module-specific documentation
-- Theme customization guide
-
-## Phase 8: Code Quality and Stability (Completed) ✓
-
-### Environment Compatibility ✓
-- ✓ Environment fallback pattern implementation in all modules 
-- ✓ Test environment creation with test_modules.lua 
-- ✓ All module namespaces standardized
-
-### Testing Framework ✓
-- ✓ Lua syntax validation with luac
-- ✓ Module loading verification
-- ✓ Namespace consistency checks
-- ✓ Initialization function verification
-
-### Developer Tools ✓
-- ✓ find_namespace_issues.sh utility
-- ✓ add_fallback_pattern.sh utility
-- ✓ verify_module_namespace.sh advanced verification tool
-- ✓ remove_debug_statements.sh utility
-
-### Direct Issue Resolution Approach ✓
-- ✓ Focus on fixing root causes rather than managing errors
-- ✓ Proactive code quality improvements
-- ✓ Removing debug code for cleaner releases
-- ✓ Compatibility with existing WoW error tools like BugSack/BugGrabber
+## Final Deliverables
+- Stable, error-free addon suite
+- First-time user wizard with role templates
+- Comprehensive default configuration
+- Improved module dependency system
+- Enhanced error prevention and recovery
 

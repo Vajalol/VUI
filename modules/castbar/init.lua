@@ -195,10 +195,51 @@ function Castbar:OnInitialize()
 end
 
 -- Register for VUI Core events
+-- Create local EventManager fallback if needed
+if not VUI.EventManager then
+    VUI.EventManager = {
+        callbacks = {},
+        
+        -- Fallback RegisterCallback function
+        RegisterCallback = function(self, event, callback)
+            if not self.callbacks[event] then
+                self.callbacks[event] = {}
+            end
+            table.insert(self.callbacks[event], callback)
+        end,
+        
+        -- Fallback TriggerCallback function
+        TriggerCallback = function(self, event, ...)
+            if self.callbacks[event] then
+                for _, callback in ipairs(self.callbacks[event]) do
+                    callback(...)
+                end
+            end
+        end
+    }
+    
+    -- Add to global events to capture initialization
+    if not VUI.RegisteredEvents then VUI.RegisteredEvents = {} end
+    table.insert(VUI.RegisteredEvents, function()
+        VUI.EventManager:TriggerCallback("VUI_CONFIG_LOADED")
+    end)
+    
+    -- Hook into VUI's theme system
+    if VUI.RegisterCallback then
+        VUI:RegisterCallback("ThemeChanged", function(_, theme)
+            VUI.EventManager:TriggerCallback("VUI_THEME_CHANGED", theme)
+        end)
+    end
+    
+    VUI:Print("Created EventManager fallback for Castbar module")
+end
+
+-- Register initialization callback
 VUI.EventManager:RegisterCallback("VUI_CONFIG_LOADED", function()
     Castbar:Initialize()
 end)
 
+-- Register theme change callback
 VUI.EventManager:RegisterCallback("VUI_THEME_CHANGED", function(theme)
     if Castbar:IsEnabled() and Castbar.settings.animations.themeIntegration then
         if Castbar.ThemeIntegration and Castbar.ThemeIntegration.ApplyTheme then
@@ -208,3 +249,8 @@ VUI.EventManager:RegisterCallback("VUI_THEME_CHANGED", function(theme)
         end
     end
 end)
+
+-- Initialize immediately if VUI is already loaded
+if VUI.isInitialized then
+    Castbar:Initialize()
+end

@@ -12,12 +12,47 @@ if not VUI.TrufiGCD then
     VUI.TrufiGCD = {}
 end
 
+-- Create lowercase reference for backward compatibility
+if not VUI.trufigcd then
+    VUI.trufigcd = VUI.TrufiGCD
+end
+
 -- Create a local reference for easier access
 local TrufiGCD = VUI.TrufiGCD
+
+-- Default settings
+TrufiGCD.defaults = {
+    enabled = true,
+    size = 30,
+    maxIcons = 5,
+    orientation = "HORIZONTAL",
+    direction = "RIGHT",
+    position = {"CENTER", UIParent, "CENTER", 0, -200},
+    fadeOutTime = 1.5,
+    showSpellName = true,
+    showCooldown = true,
+    hideCooldownNumbers = false,
+    hideInPetBattle = true,
+    hideOutOfCombat = false,
+    blacklist = {},
+    showTooltip = true,
+    scale = 1.0,
+    alpha = 1.0,
+    showBorder = true,
+    borderColor = {r = 0, g = 0, b = 0, a = 1},
+    backgroundColor = {r = 0, g = 0, b = 0, a = 0.5},
+    theme = "thunderstorm" -- Default theme
+}
 
 -- Initialize the module
 function VUI.TrufiGCD:Initialize()
     if not VUI.enabledModules.TrufiGCD then return end
+    
+    -- Initialize database reference
+    self:InitializeDB()
+    
+    -- Spell queue
+    self.spellQueue = {}
     
     -- Preload the atlas textures for optimization
     self:PreloadAtlasTextures()
@@ -31,9 +66,6 @@ function VUI.TrufiGCD:Initialize()
     -- Apply settings
     self:ApplySettings()
     
-    -- Initialize spell queue
-    self.spellQueue = {}
-    
     -- Initialize tracked spells
     self:InitializeSpellList()
     
@@ -41,10 +73,39 @@ function VUI.TrufiGCD:Initialize()
     self:RegisterThemeHooks()
     
     -- Apply current theme
-    self:ApplyTheme()
+    self:ApplyTheme(self.db.profile.theme or "thunderstorm")
     
     -- Log initialization
     VUI:Print("TrufiGCD module initialized with Atlas texture optimization")
+end
+
+-- Initialize database
+function VUI.TrufiGCD:InitializeDB()
+    -- Ensure we have both camelCase and lowercase db paths for backward compatibility
+    if not VUI.db.profile.modules.TrufiGCD then
+        VUI.db.profile.modules.TrufiGCD = {}
+    end
+    
+    -- Standardize database paths by copying existing data to camelCase version
+    if VUI.db.profile.modules.trufigcd then
+        for k, v in pairs(VUI.db.profile.modules.trufigcd) do
+            VUI.db.profile.modules.TrufiGCD[k] = v
+        end
+    end
+    
+    -- Create reference for backward compatibility
+    VUI.db.profile.modules.trufigcd = VUI.db.profile.modules.TrufiGCD
+    
+    -- Create a direct reference
+    self.db = {}
+    self.db.profile = VUI.db.profile.modules.TrufiGCD
+    
+    -- Apply defaults for missing values
+    for k, v in pairs(self.defaults) do
+        if self.db.profile[k] == nil then
+            self.db.profile[k] = v
+        end
+    end
 end
 
 -- Preload the atlas textures for better performance
@@ -786,5 +847,76 @@ end
 function VUI.TrufiGCD:Disable()
     if self.frame then
         self.frame:Hide()
+    end
+end
+
+-- Register theme hooks
+function VUI.TrufiGCD:RegisterThemeHooks()
+    -- Register with theme system if available
+    if VUI.ThemeIntegration and VUI.ThemeIntegration.RegisterModule then
+        VUI.ThemeIntegration:RegisterModule("TrufiGCD", self)
+    elseif VUI.RegisterThemeableModule then
+        VUI:RegisterThemeableModule("TrufiGCD", self)
+    end
+    
+    -- Listen for theme changes
+    if VUI.RegisterCallback then
+        VUI:RegisterCallback("ThemeChanged", function(_, theme)
+            self:ApplyTheme(theme)
+        end)
+    end
+end
+
+-- Apply a theme to the module
+function VUI.TrufiGCD:ApplyTheme(theme)
+    if not theme then 
+        theme = self.db.profile.theme or "thunderstorm"
+    end
+    
+    -- Save the current theme
+    self.db.profile.theme = theme
+    
+    -- Get theme colors
+    local colors = VUI.ThemeColors and VUI.ThemeColors[theme] or {
+        -- Default colors if theme system is not available
+        primary = {r = 0.4, g = 0.4, b = 0.95, a = 1.0},
+        secondary = {r = 0.2, g = 0.2, b = 0.7, a = 1.0},
+        background = {r = 0, g = 0, b = 0.2, a = 0.8},
+        border = {r = 0.1, g = 0.1, b = 0.4, a = 1.0},
+        highlight = {r = 0.7, g = 0.7, b = 1.0, a = 1.0}
+    }
+    
+    -- Apply theme colors to UI elements
+    if self.container and self.container.border then
+        self.container.border:SetVertexColor(
+            colors.border.r, colors.border.g, colors.border.b, colors.border.a
+        )
+    end
+    
+    if self.container and self.container.background then
+        self.container.background:SetVertexColor(
+            colors.background.r, colors.background.g, colors.background.b, colors.background.a
+        )
+    end
+    
+    -- Apply to icon frames
+    for _, frame in pairs(self.iconFrames or {}) do
+        if frame.border then
+            frame.border:SetVertexColor(
+                colors.border.r, colors.border.g, colors.border.b, colors.border.a
+            )
+        end
+        
+        if frame.background then
+            frame.background:SetVertexColor(
+                colors.background.r, colors.background.g, colors.background.b, colors.background.a * 0.7
+            )
+        end
+        
+        if frame.iconFrame then
+            frame.iconFrame:SetVertexColor(
+                colors.secondary.r, colors.secondary.g, colors.secondary.b, colors.secondary.a
+            )
+        end
     end
 end

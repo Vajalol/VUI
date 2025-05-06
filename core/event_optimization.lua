@@ -1,5 +1,6 @@
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Event Optimization System
 -- Provides optimized event handling and registration to reduce overhead
@@ -118,6 +119,40 @@ function EventOpt:Initialize()
     self.frame:RegisterEvent("PLAYER_REGEN_DISABLED")
     self.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
     
+    -- Add Debug method if it doesn't exist with comprehensive fallbacks
+    if not VUI.Debug then
+        VUI.Debug = function(self, msg)
+            -- Create a multi-level fallback system
+            if VUI.db and VUI.db.profile and VUI.db.profile.debugging and VUI.db.profile.debugging.enabled then
+                -- If debugging is explicitly enabled, print to chat
+                print("|cff00aaff[VUI Debug]|r " .. tostring(msg))
+            elseif VUI.debugLog then
+                -- If we have a debug log table, append to it
+                table.insert(VUI.debugLog, {
+                    time = GetTime(),
+                    message = tostring(msg),
+                    system = "EventOptimization"
+                })
+                -- Keep log size reasonable
+                if #VUI.debugLog > 1000 then
+                    table.remove(VUI.debugLog, 1)
+                end
+            end
+            
+            -- Always record the last few debug messages for crash diagnostics
+            if not VUI.lastDebugMessages then
+                VUI.lastDebugMessages = {}
+            end
+            table.insert(VUI.lastDebugMessages, {
+                time = GetTime(),
+                message = tostring(msg)
+            })
+            if #VUI.lastDebugMessages > 50 then
+                table.remove(VUI.lastDebugMessages, 1)
+            end
+        end
+    end
+    
     -- Register the system with VUI
     if VUI.RegisterModule then
         VUI:RegisterModule("EventOptimization", self)
@@ -125,16 +160,14 @@ function EventOpt:Initialize()
     
     -- Use safe way to log initialization
     if type(VUI.Debug) == "function" then
-        -- Call as function
-
+        VUI:Debug("Event Optimization System initialized")
     elseif VUI.Debug then
-        -- Try method call if it exists but isn't a direct function
-
-    else
-        -- Fallback if Debug not available
-        if VUI.db and VUI.db.profile and VUI.db.profile.debugging then
-            print("|cff00aaff[VUI]|r Event Optimization System initialized")
-        end
+        VUI.Debug("Event Optimization System initialized")
+    end
+    
+    -- Normal initialization continues
+    if VUI.db and VUI.db.profile and VUI.db.profile.debugging then
+        print("|cff00aaff[VUI]|r Event Optimization System initialized")
     end
 end
 
@@ -176,9 +209,9 @@ function EventOpt:RegisterEvent(event, callback, module, priority)
     
     -- Safe debug call
     if type(VUI.Debug) == "function" then
-
+        VUI:Debug("Registered event: " .. event)
     elseif VUI.Debug then
-
+        VUI.Debug("Registered event: " .. event)
     end
 end
 
@@ -250,10 +283,14 @@ function EventOpt:ProcessEvent(event, ...)
     -- Combat status events always processed immediately
     if event == "PLAYER_REGEN_DISABLED" then
         self.state.inCombat = true
-
+        if type(VUI.Debug) == "function" then
+            VUI:Debug("Combat started")
+        end
     elseif event == "PLAYER_REGEN_ENABLED" then
         self.state.inCombat = false
-
+        if type(VUI.Debug) == "function" then
+            VUI:Debug("Combat ended")
+        end
     end
     
     -- Update high frequency event tracking
@@ -262,7 +299,9 @@ function EventOpt:ProcessEvent(event, ...)
         self.state.highFrequencyEvents[event] = (self.state.highFrequencyEvents[event] or 0) + 1
         if self.state.highFrequencyEvents[event] > 10 and not self.state.eventThrottled[event] then
             self.state.eventThrottled[event] = true
-
+            if type(VUI.Debug) == "function" then
+                VUI:Debug("Throttling high frequency event: " .. event)
+            end
         end
     else
         -- Reset counter for low frequency events
@@ -270,7 +309,9 @@ function EventOpt:ProcessEvent(event, ...)
             self.state.highFrequencyEvents[event] = self.state.highFrequencyEvents[event] - 1
             if self.state.highFrequencyEvents[event] <= 5 and self.state.eventThrottled[event] then
                 self.state.eventThrottled[event] = false
-
+                if type(VUI.Debug) == "function" then
+                    VUI:Debug("Unthrottling event: " .. event)
+                end
             end
         end
     end
@@ -391,23 +432,25 @@ end
 
 -- Frame update handler
 function EventOpt:OnUpdate(elapsed)
+    if not self.config.enabled then return end
+    
     local currentTime = GetTime()
     
-    -- Process batched events on interval
-    if self.config.batchingEnabled and
+    -- Check if it's time to process batches
+    if self.config.batchingEnabled and 
+       not self.state.processingBatch and 
        (currentTime - self.state.lastBatchProcess) >= self.config.batchInterval then
         self:ProcessBatches()
     end
     
-    -- Update combat state if needed
-    if (currentTime - self.state.lastCombatCheck) >= 0.5 then
+    -- Update combat state occasionally
+    if (currentTime - self.state.lastCombatCheck) >= 1.0 then
         local inCombat = UnitAffectingCombat("player")
         if inCombat ~= self.state.inCombat then
             self.state.inCombat = inCombat
-
-            
-            -- Notify other systems of combat state change
-            VUI:SendMessage("VUI_COMBAT_STATE_CHANGED", inCombat)
+            if type(VUI.Debug) == "function" then
+                VUI:Debug("Combat state updated: " .. (inCombat and "In Combat" or "Out of Combat"))
+            end
         end
         self.state.lastCombatCheck = currentTime
     end
@@ -415,38 +458,63 @@ end
 
 -- Get performance statistics
 function EventOpt:GetStats()
-    local stats = {
+    return {
         registered = self.state.eventCount.registered,
         processed = self.state.eventCount.processed,
         throttled = self.state.eventCount.throttled,
         batched = self.state.eventCount.batched,
         skipped = self.state.eventCount.skipped,
-        highFrequency = 0
+        highFrequency = self.state.highFrequencyEvents
     }
-    
-    -- Count high frequency events
-    for event, count in pairs(self.state.highFrequencyEvents) do
-        if count > 5 then
-            stats.highFrequency = stats.highFrequency + 1
+end
+
+-- Reset statistics
+function EventOpt:ResetStats()
+    self.state.eventCount = {
+        registered = self.state.eventCount.registered, -- Keep registration count
+        processed = 0,
+        throttled = 0,
+        batched = 0,
+        skipped = 0
+    }
+    return true
+end
+
+-- Load configuration from profile
+function EventOpt:LoadConfig()
+    if VUI.db and VUI.db.profile and VUI.db.profile.eventOptimization then
+        local dbConfig = VUI.db.profile.eventOptimization
+        -- Update configuration with saved values
+        for k, v in pairs(dbConfig) do
+            if self.config[k] ~= nil then
+                self.config[k] = v
+            end
         end
     end
-    
-    -- Count events by priority
-    stats.byPriority = {0, 0, 0, 0}
-    for event, priority in pairs(self.state.eventPriority) do
-        stats.byPriority[priority] = stats.byPriority[priority] + 1
-    end
-    
-    -- Count events by module
-    stats.byModule = {}
-    for module, events in pairs(self.state.moduleEvents) do
-        stats.byModule[module] = 0
-        for _ in pairs(events) do
-            stats.byModule[module] = stats.byModule[module] + 1
+end
+
+-- Save configuration to profile
+function EventOpt:SaveConfig()
+    if VUI.db and VUI.db.profile then
+        -- Make sure the table exists
+        VUI.db.profile.eventOptimization = VUI.db.profile.eventOptimization or {}
+        -- Save current config
+        for k, v in pairs(self.config) do
+            if type(v) ~= "table" then -- Don't save nested tables
+                VUI.db.profile.eventOptimization[k] = v
+            end
         end
     end
+end
+
+-- This will be called when VUI is fully initialized
+function EventOpt:OnInitialize()
+    self:LoadConfig()
     
-    return stats
+    -- Notify other systems that the event system is ready
+    if VUI.TriggerCallback then
+        VUI:TriggerCallback("EVENT_SYSTEM_READY", self)
+    end
 end
 
 -- Register with VUI

@@ -1,11 +1,12 @@
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Theme helpers module
-VUI.ThemeHelpers = {}
+VUI.ThemeHelpers = VUI.ThemeHelpers or {}
 
--- Store theme data for reuse
-local themeColors = {
+-- Store theme data for reuse (make it accessible to ThemeIntegration)
+VUI.ThemeHelpers.themeColors = {
     ["thunderstorm"] = {
         backdrop = {r=0.04, g=0.04, b=0.1, a=0.9},
         border = {r=0.05, g=0.62, b=0.9, a=1},
@@ -29,16 +30,51 @@ local themeColors = {
         border = {r=0.1, g=1.0, b=0.1, a=1},
         highlight = {r=0.2, g=1, b=0.2, a=0.3},
         header = "|cff1AFF1A" -- Fel green
+    },
+    ["classcolor"] = {
+        backdrop = {r=0.05, g=0.05, b=0.05, a=0.9},
+        border = {r=0.7, g=0.7, b=0.7, a=1},
+        highlight = {r=0.8, g=0.8, b=0.8, a=0.3},
+        header = "|cffCCCCCC" -- Default gray until class is known
     }
 }
 
 -- Cache the current theme data
 local currentThemeData = {}
 
+-- Tables to track UI elements that need theme updates
+local registeredPanels = {}
+local registeredButtons = {}
+local registeredCheckboxes = {}
+local registeredSliders = {}
+local registeredDropdowns = {}
+local registeredTabSystems = {}
+
+-- Local helper functions
+local function tContains(table, item)
+    for _, value in ipairs(table) do
+        if value == item then
+            return true
+        end
+    end
+    return false
+end
+
+local function tinsert(table, value)
+    table[#table + 1] = value
+end
+
 -- Initialize the theme data based on current profile
 function VUI.ThemeHelpers:UpdateCurrentTheme()
-    local theme = VUI.db.profile.appearance.theme or "thunderstorm"
-    currentThemeData = themeColors[theme] or themeColors["thunderstorm"]
+    local theme = "thunderstorm"
+    
+    -- Get theme name from profile if available
+    if VUI.db and VUI.db.profile and VUI.db.profile.appearance then
+        theme = VUI.db.profile.appearance.theme or "thunderstorm"
+    end
+    
+    -- Update current theme data
+    currentThemeData = self.themeColors[theme] or self.themeColors["thunderstorm"]
 end
 
 -- Get current theme data
@@ -694,47 +730,81 @@ function VUI.ThemeHelpers:UpdateTabSystemTheme(tabSystem)
     end
 end
 
--- Update themes for all registered UI elements
+-- Forward declaration for the UpdateAllThemes function which is defined later
+-- This ensures the function is available when called before its full definition
+-- Full implementation is below
+
+-- Helper function for individual element updates
+local function updateElement(element)
+    if element and element.UpdateTheme then
+        element:UpdateTheme()
+    end
+end
+
+-- Update all registered UI elements with current theme
 function VUI.ThemeHelpers:UpdateAllThemes()
-    -- Update current theme data
+    -- Update current theme data first
     self:UpdateCurrentTheme()
     
-    -- Update all registered UI elements
+    -- Update all registered panels
     for _, panel in ipairs(registeredPanels) do
-        if panel.UpdateTheme then
+        if panel and panel.UpdateTheme then
             panel:UpdateTheme()
+        elseif panel then
+            self:UpdatePanelTheme(panel)
         end
     end
     
+    -- Update all registered buttons
     for _, button in ipairs(registeredButtons) do
-        if button.UpdateTheme then
+        if button and button.UpdateTheme then
             button:UpdateTheme()
+        elseif button then
+            self:UpdateButtonTheme(button)
         end
     end
     
+    -- Update all registered checkboxes
     for _, checkbox in ipairs(registeredCheckboxes) do
-        if checkbox.UpdateTheme then
+        if checkbox and checkbox.UpdateTheme then
             checkbox:UpdateTheme()
+        elseif checkbox then
+            self:UpdateCheckboxTheme(checkbox)
         end
     end
     
+    -- Update all registered sliders
     for _, slider in ipairs(registeredSliders) do
-        if slider.UpdateTheme then
+        if slider and slider.UpdateTheme then
             slider:UpdateTheme()
+        elseif slider then
+            self:UpdateSliderTheme(slider)
         end
     end
     
+    -- Update all registered dropdowns
     for _, dropdown in ipairs(registeredDropdowns) do
-        if dropdown.UpdateTheme then
+        if dropdown and dropdown.UpdateTheme then
             dropdown:UpdateTheme()
+        elseif dropdown then
+            self:UpdateDropdownTheme(dropdown)
         end
     end
     
+    -- Update all registered tab systems
     for _, tabSystem in ipairs(registeredTabSystems) do
-        if tabSystem.UpdateTheme then
+        if tabSystem and tabSystem.UpdateTheme then
             tabSystem:UpdateTheme()
+        elseif tabSystem then
+            self:UpdateTabSystemTheme(tabSystem)
         end
     end
+    
+    -- Notify other systems that themes have been updated
+    VUI:TriggerCallback("THEME_UPDATED", self:GetThemeData())
+    
+    -- Log update
+    VUI:Debug("Updated all UI elements with theme: " .. (VUI.db and VUI.db.profile and VUI.db.profile.appearance and VUI.db.profile.appearance.theme or "unknown"))
 end
 
 -- Create a function to handle theme registration that will be called later

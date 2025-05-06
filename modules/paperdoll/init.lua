@@ -64,7 +64,7 @@ end
 
 -- Register for theme changes
 if VUI.RegisterCallback then
-    VUI.RegisterCallback(Paperdoll, "ThemeChanged", function(_, newTheme)
+    VUI:RegisterCallback(Paperdoll, "ThemeChanged", function(_, newTheme)
         Paperdoll:OnThemeChanged(newTheme)
     end)
 else

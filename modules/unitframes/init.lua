@@ -350,6 +350,9 @@ local defaults = {
 -- Initialize module settings
 UnitFrames.settings = VUI.ModuleAPI:InitializeModuleSettings("unitframes", defaults)
 
+-- Create db reference for consistent API across modules
+UnitFrames.db = UnitFrames.settings
+
 -- Register module configuration
 local config = {
     type = "group",
@@ -487,6 +490,11 @@ end)
 function UnitFrames:Initialize()
     -- Register with VUI
     VUI:Print("UnitFrames module initialized")
+    
+    -- Ensure db reference is set up properly
+    if not self.db then
+        self.db = self.settings or {}
+    end
     
     -- Set up configuration for each frame type
     self:SetupConfig()

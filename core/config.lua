@@ -411,7 +411,6 @@ VUI.options = {
                     get = function() return VUI.db.profile.appearance.theme end,
                     set = function(_, value)
                         VUI.db.profile.appearance.theme = value
-                        VUI:ApplySettings()
                         
                         -- Set colors based on the selected theme
                         if value == "thunderstorm" then
@@ -438,6 +437,7 @@ VUI.options = {
                             -- Light theme colors
                             VUI.db.profile.appearance.backdropColor = {r = 0.8, g = 0.8, b = 0.8, a = 0.8}
                             VUI.db.profile.appearance.borderColor = {r = 0.5, g = 0.5, b = 0.5, a = 1}
+                        
                         elseif value == "classcolor" then
                             -- Apply Class Color theme
                             local classColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
@@ -460,6 +460,18 @@ VUI.options = {
                             VUI.db.profile.appearance.classColoredBorders = true
                             VUI.db.profile.skins.useClassColors = true
                         end
+                        
+                        -- Update theme helpers system
+                        if VUI.ThemeHelpers and VUI.ThemeHelpers.UpdateCurrentTheme then
+                            VUI.ThemeHelpers:UpdateCurrentTheme()
+                            -- Update all registered themed UI elements
+                            if VUI.ThemeHelpers.UpdateAllThemes then
+                                VUI.ThemeHelpers:UpdateAllThemes()
+                            end
+                        end
+                        
+                        -- Apply all settings
+                        VUI:ApplySettings()
                     end,
                 },
                 font = {
@@ -1813,6 +1825,15 @@ function VUI:UpdateAppearance()
     -- Set colors
     local backdrop = appearance.backdropColor
     local border = appearance.classColoredBorders and RAID_CLASS_COLORS[select(2, UnitClass("player"))] or appearance.borderColor
+    
+    -- Update theme helpers data based on current theme
+    if self.ThemeHelpers and self.ThemeHelpers.UpdateCurrentTheme then
+        self.ThemeHelpers:UpdateCurrentTheme()
+        -- Update all registered themed UI elements
+        if self.ThemeHelpers.UpdateAllThemes then
+            self.ThemeHelpers:UpdateAllThemes()
+        end
+    end
     
     -- Update all frames with the new appearance
     for _, frame in pairs(self.frames or {}) do
