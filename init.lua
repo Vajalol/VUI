@@ -581,6 +581,209 @@ function VUI:LoadDefaults()
         }
     }
     
+    -- Create a comprehensive startup error prevention system
+    self.ErrorPrevention = {
+        initialized = false,
+        errorCount = 0,
+        maxErrors = 50,
+        errors = {},
+        recoveryAttempts = {},
+        criticalPaths = {
+            "VUI.db",
+            "VUI.modules",
+            "VUI.ThemeIntegration",
+            "VUI.ModuleAPI",
+            "VUI.EventManager"
+        },
+        protectedMethods = {},
+        backupData = {}
+    }
+    
+    -- Initialize the error prevention system
+    function self.ErrorPrevention:Initialize()
+        if self.initialized then return end
+        
+        -- Create a recovery frame for deferred operations
+        self.recoveryFrame = CreateFrame("Frame")
+        self.recoveryFrame:Hide()
+        
+        -- Register for addon loading to perform verification
+        self.recoveryFrame:RegisterEvent("ADDON_LOADED")
+        self.recoveryFrame:SetScript("OnEvent", function(_, event, addonName)
+            if addonName == "VUI" then
+                self:VerifyCriticalPaths()
+            end
+        end)
+        
+        -- Set up a timer for retrying failed operations
+        self.recoveryFrame:SetScript("OnUpdate", function(_, elapsed)
+            self:ProcessRecoveryQueue(elapsed)
+        end)
+        
+        -- Mark as initialized
+        self.initialized = true
+    end
+    
+    -- Verify that all critical paths exist and create fallbacks if needed
+    function self.ErrorPrevention:VerifyCriticalPaths()
+        for _, path in ipairs(self.criticalPaths) do
+            local current = _G
+            local valid = true
+            
+            -- Split path into components
+            for segment in path:gmatch("[^%.]+") do
+                if current[segment] == nil then
+                    valid = false
+                    -- Create empty table as fallback
+                    current[segment] = {}
+                    -- Log the issue
+                    self:LogError("Created fallback for missing path: " .. path)
+                end
+                current = current[segment]
+            end
+        end
+    end
+    
+    -- Process recovery queue for any deferred operations
+    function self.ErrorPrevention:ProcessRecoveryQueue(elapsed)
+        for moduleName, attempts in pairs(self.recoveryAttempts) do
+            if attempts.delay then
+                attempts.delay = attempts.delay - elapsed
+                if attempts.delay <= 0 then
+                    attempts.delay = nil
+                    -- Attempt recovery
+                    if attempts.count < 3 and type(attempts.func) == "function" then
+                        attempts.count = attempts.count + 1
+                        local success, errorMsg = pcall(attempts.func)
+                        if success then
+                            -- Recovery succeeded, remove from queue
+                            self.recoveryAttempts[moduleName] = nil
+                        else
+                            -- Failed again, log and delay further
+                            self:LogError("Recovery attempt failed for " .. moduleName .. ": " .. tostring(errorMsg))
+                            attempts.delay = 1 * attempts.count -- Increasing delay for each attempt
+                        end
+                    else
+                        -- Too many attempts, give up
+                        self:LogError("Giving up recovery for " .. moduleName .. " after multiple attempts")
+                        self.recoveryAttempts[moduleName] = nil
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Log an error for tracking
+    function self.ErrorPrevention:LogError(errorMsg)
+        -- Prevent too many errors
+        if self.errorCount >= self.maxErrors then return end
+        
+        -- Add error info
+        table.insert(self.errors, {
+            message = errorMsg,
+            time = GetTime(),
+            trace = debugstack(3)
+        })
+        
+        self.errorCount = self.errorCount + 1
+        
+        -- Log to VUI debug if available
+        if VUI and VUI.Debug then
+            VUI:Debug("ERROR: " .. errorMsg)
+        end
+    end
+    
+    -- Create a safe wrapper for a method that might fail
+    function self.ErrorPrevention:ProtectMethod(objectPath, methodName, fallbackFunc)
+        -- Find the object and method
+        local current = _G
+        local pathParts = {}
+        
+        -- Split the path
+        for segment in objectPath:gmatch("[^%.]+") do
+            table.insert(pathParts, segment)
+            if current[segment] == nil then
+                self:LogError("Cannot protect method - path not found: " .. objectPath)
+                return false
+            end
+            current = current[segment]
+        end
+        
+        -- If the method doesn't exist, we can't wrap it
+        if type(current[methodName]) ~= "function" then
+            if type(fallbackFunc) == "function" then
+                -- Create the method using the fallback
+                current[methodName] = fallbackFunc
+                self:LogError("Created missing method " .. objectPath .. "." .. methodName .. " using fallback")
+                return true
+            else
+                self:LogError("Cannot protect method - not a function: " .. objectPath .. "." .. methodName)
+                return false
+            end
+        end
+        
+        -- Save original method
+        local originalMethod = current[methodName]
+        
+        -- Create a protected version
+        current[methodName] = function(...)
+            local success, result = pcall(originalMethod, ...)
+            if success then
+                return result
+            else
+                self:LogError("Protected method failed: " .. objectPath .. "." .. methodName .. " - " .. tostring(result))
+                
+                -- Use fallback if provided
+                if type(fallbackFunc) == "function" then
+                    local fbSuccess, fbResult = pcall(fallbackFunc, ...)
+                    if fbSuccess then
+                        return fbResult
+                    end
+                end
+                
+                -- Return nil if both original and fallback failed
+                return nil
+            end
+        end
+        
+        -- Store in protected methods
+        local key = objectPath .. "." .. methodName
+        self.protectedMethods[key] = {
+            object = current,
+            method = methodName,
+            original = originalMethod
+        }
+        
+        return true
+    end
+    
+    -- Schedule a recovery attempt for a module
+    function self.ErrorPrevention:ScheduleRecovery(moduleName, recoveryFunc)
+        if not self.recoveryAttempts[moduleName] then
+            self.recoveryAttempts[moduleName] = {
+                count = 0,
+                func = recoveryFunc,
+                delay = 0.5 -- Initial delay
+            }
+        end
+    end
+    
+    -- Create a backup of important data
+    function self.ErrorPrevention:BackupData(category, data)
+        self.backupData[category] = CopyTable(data)
+    end
+    
+    -- Restore from backup
+    function self.ErrorPrevention:RestoreData(category)
+        if self.backupData[category] then
+            return CopyTable(self.backupData[category])
+        end
+        return nil
+    end
+    
+    -- Initialize the error prevention system immediately
+    self.ErrorPrevention:Initialize()
+    
     -- Add a safe method for addon initialization errors
     self.safeInitFrames = {}
 end
@@ -719,6 +922,44 @@ function VUI:InitializeModules()
         return
     end
     
+    -- Activate error prevention system
+    if self.ErrorPrevention then
+        self:Debug("Activating startup error prevention system...")
+        
+        -- Protect critical initialization methods
+        self.ErrorPrevention:ProtectMethod("VUI", "Debug", function(self, msg)
+            -- Silent fallback for debug method
+        end)
+        
+        self.ErrorPrevention:ProtectMethod("VUI", "RegisterModule", function(self, name, module)
+            -- Emergency fallback for module registration
+            if not name or not module then return false end
+            if not self.modules then self.modules = {} end
+            if not self.modulesByName then self.modulesByName = {} end
+            if not self.enabledModules then self.enabledModules = {} end
+            
+            local lowerName = tostring(name):lower()
+            self.modulesByName[lowerName] = module
+            self[lowerName] = module
+            self.enabledModules[lowerName] = true
+            
+            return true
+        end)
+        
+        self.ErrorPrevention:ProtectMethod("VUI", "GetModule", function(self, name, silent)
+            -- Fallback to direct table access
+            if not name then return nil end
+            return self[name] or self[name:lower()]
+        end)
+        
+        -- Back up important data structures before initialization
+        self.ErrorPrevention:BackupData("modules", self.modules)
+        self.ErrorPrevention:BackupData("enabledModules", self.enabledModules)
+        
+        -- Set up recovery paths for circular dependencies
+        self.ErrorPrevention:VerifyCriticalPaths()
+    end
+    
     -- Performance timing
     local startTime = debugprofilestop()
     
@@ -852,6 +1093,18 @@ function VUI:InitializeModules()
                     local success, err = pcall(module.Initialize, module)
                     if not success then
                         self:Debug("Error initializing module " .. tostring(moduleName) .. ": " .. tostring(err))
+                        
+                        -- Add recovery attempt through error prevention system
+                        if self.ErrorPrevention then
+                            self:Debug("Scheduling recovery for module: " .. tostring(moduleName))
+                            self.ErrorPrevention:ScheduleRecovery(moduleName, function()
+                                if type(module.Initialize) == "function" then
+                                    return module:Initialize()
+                                end
+                                return true
+                            end)
+                        end
+                        
                         return false
                     end
                 elseif type(module.OnInitialize) == "function" then
