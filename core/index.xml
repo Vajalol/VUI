@@ -20,6 +20,7 @@
     <!-- Module system - critical for module loading -->
     <Script file="module_template.lua"/>
     <Script file="module_api.lua"/>
+    <Script file="module_init_api.lua"/>
     <Script file="module_manager.lua"/>
     <Script file="enhanced_module_system.lua"/>
     <Script file="dynamic_module_loading.lua"/>
