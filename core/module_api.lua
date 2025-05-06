@@ -663,62 +663,229 @@ function ModAPI:SortModulesByDependencies()
     local visited = {}
     local inProgress = {}
     local circular = {}
+    local circularDependencies = {}
+    local moduleWeight = {}
+    local modulePriority = {}
+    local maxRetries = 5
+    local startTime = debugprofilestop()
+    local timeoutThreshold = self.config.dependencyTimeout * 1000 -- Convert to ms
     
-    -- Build dependency graph
+    -- Reset dependency state tracking
+    self.state.dependencyState = {
+        resolvedModules = {},
+        unresolvedModules = {},
+        circularDependencies = {},
+        missingDependencies = {},
+        processingTime = 0,
+        success = false
+    }
+    
+    -- Define module priorities (higher numbers = higher priority)
+    local defaultPriorities = {
+        core = 1000,          -- Core systems load first
+        ui = 900,             -- UI frameworks load next
+        unitframes = 800,     -- Unit frames before most modules
+        combat = 700,         -- Combat systems after unit frames
+        data = 600,           -- Data modules
+        social = 500,         -- Social/group modules
+        utility = 400,        -- Utility modules
+        pve = 300,            -- PvE specific modules
+        pvp = 200,            -- PvP specific modules
+        addon = 100           -- Generic addons
+    }
+    
+    -- Assign priorities based on module type
+    for name, _ in pairs(self.state.registeredModules) do
+        local moduleType = self.state.moduleTypes[name] or "addon"
+        modulePriority[name] = defaultPriorities[moduleType] or defaultPriorities.addon
+        
+        -- Special case priorities for critical modules
+        if name == "ThemeIntegration" or name == "themeintegration" then
+            modulePriority[name] = 1100 -- Theme system loads very early
+        elseif name == "EventOptimization" or name == "eventoptimization" then
+            modulePriority[name] = 1050 -- Event system loads early
+        end
+        
+        -- Initialize module weights (will be adjusted based on dependencies)
+        moduleWeight[name] = modulePriority[name]
+    end
+    
+    -- Build enhanced dependency graph with weights
     for name, _ in pairs(self.state.registeredModules) do
         modules[name] = {}
         
         -- Add required dependencies
         if self.state.dependencyMap[name] and self.state.dependencyMap[name].required then
             for _, dep in ipairs(self.state.dependencyMap[name].required) do
+                -- Track the dependency with its priority
                 table.insert(modules[name], dep)
+                
+                -- Boost weight of dependency to ensure it loads before dependent module
+                if moduleWeight[dep] then
+                    -- Make this dependency slightly higher priority than the module that depends on it
+                    if moduleWeight[dep] <= moduleWeight[name] then
+                        moduleWeight[dep] = moduleWeight[name] + 10
+                    end
+                else
+                    -- Missing dependency - create placeholder entry
+                    moduleWeight[dep] = modulePriority[name] + 50
+                    self.state.dependencyState.missingDependencies[dep] = true
+                    self:LogWarning("Dependency not found: " .. dep .. " (required by " .. name .. ")")
+                end
+            end
+        end
+        
+        -- Also consider optional dependencies but with less weight
+        if self.state.dependencyMap[name] and self.state.dependencyMap[name].optional then
+            for _, dep in ipairs(self.state.dependencyMap[name].optional) do
+                -- Only consider available optional dependencies
+                if self.state.registeredModules[dep] then
+                    -- Make optional dependencies slightly higher priority
+                    if moduleWeight[dep] <= moduleWeight[name] then
+                        moduleWeight[dep] = moduleWeight[name] + 5
+                    end
+                end
             end
         end
     end
     
-    -- Topological sort implementation
-    local function visit(name)
-        if circular[name] then
-            self:LogError("Circular dependency detected for module: " .. name)
+    -- Enhanced topological sort with circular dependency detection and resolution
+    local function visit(name, depth, path)
+        -- Check for timeout to prevent hangs
+        if (debugprofilestop() - startTime) > timeoutThreshold then
+            self:LogError("Dependency resolution timeout after " .. 
+                          self.config.dependencyTimeout .. "s. Resolving with partial results.")
             return false
+        end
+        
+        -- Track the current path for better circular dependency reporting
+        path = path or {}
+        table.insert(path, name)
+        
+        if circular[name] then
+            -- Already detected as part of a circular dependency
+            local pathStr = table.concat(path, " -> ")
+            self:LogError("Circular dependency detected: " .. pathStr)
+            
+            -- Record for detailed reporting
+            table.insert(circularDependencies, pathStr)
+            self.state.dependencyState.circularDependencies[pathStr] = true
+            
+            -- Return true to continue processing despite circular dependency
+            return true
         end
         
         if visited[name] then return true end
         
         if inProgress[name] then
+            -- Found a circular dependency
+            local cycle = {}
+            local inCycle = false
+            
+            -- Extract the cycle from the path
+            for _, node in ipairs(path) do
+                if node == name then
+                    inCycle = true
+                end
+                
+                if inCycle then
+                    table.insert(cycle, node)
+                end
+            end
+            
+            -- Record the circular reference
             circular[name] = true
-            return false
+            local cycleStr = table.concat(cycle, " -> ") .. " -> " .. name
+            table.insert(circularDependencies, cycleStr)
+            self.state.dependencyState.circularDependencies[cycleStr] = true
+            self:LogWarning("Breaking circular dependency at: " .. cycleStr)
+            
+            -- Return true to allow processing to continue
+            return true
         end
         
         inProgress[name] = true
         
-        if modules[name] then
-            for _, dep in ipairs(modules[name]) do
-                if not visited[dep] and not visit(dep) then
-                    return false
+        -- Process dependencies with retry logic for complex circular dependencies
+        local retryCount = 0
+        local allDepsProcessed = false
+        
+        while not allDepsProcessed and retryCount < maxRetries do
+            allDepsProcessed = true
+            
+            if modules[name] then
+                for _, dep in ipairs(modules[name]) do
+                    if not visited[dep] and not circular[dep] then
+                        -- Pass along the current path to track the dependency chain
+                        local depProcessed = visit(dep, depth + 1, path)
+                        
+                        if not depProcessed then
+                            allDepsProcessed = false
+                        end
+                    end
                 end
             end
+            
+            retryCount = retryCount + 1
+            
+            -- If we had to retry, log it
+            if retryCount > 1 then
+                self:LogDebug("Required retry for module dependencies: " .. name .. " (attempt " .. retryCount .. ")")
+            end
         end
+        
+        -- Remove from current path before returning
+        table.remove(path)
         
         inProgress[name] = nil
         visited[name] = true
         table.insert(result, name)
+        self.state.dependencyState.resolvedModules[name] = true
         return true
     end
     
-    -- Process all modules
-    for name, _ in pairs(self.state.registeredModules) do
-        if not visited[name] then
-            visit(name)
+    -- First process modules with defined priorities, from highest to lowest
+    local sortedByPriority = {}
+    for name, priority in pairs(moduleWeight) do
+        table.insert(sortedByPriority, {name = name, priority = priority})
+    end
+    
+    table.sort(sortedByPriority, function(a, b) return a.priority > b.priority end)
+    
+    -- Then process modules in priority order
+    for _, info in ipairs(sortedByPriority) do
+        if not visited[info.name] and self.state.registeredModules[info.name] then
+            visit(info.name, 0)
         end
     end
     
-    -- Check for circular dependencies
-    for name, isCircular in pairs(circular) do
-        if isCircular then
-            self:LogError("Circular dependency chain including module: " .. name)
+    -- Record any modules that weren't resolved
+    for name, _ in pairs(self.state.registeredModules) do
+        if not visited[name] then
+            self.state.dependencyState.unresolvedModules[name] = true
+            self:LogWarning("Module not resolved in dependency sort: " .. name)
         end
     end
+    
+    -- Record processing time
+    self.state.dependencyState.processingTime = debugprofilestop() - startTime
+    self.state.dependencyState.success = true
+    
+    -- Show summary if there were issues
+    if next(circularDependencies) or next(self.state.dependencyState.missingDependencies) then
+        self:LogInfo("Dependency resolution completed with issues:")
+        if next(circularDependencies) then
+            self:LogInfo(" - Circular dependencies: " .. #circularDependencies)
+        end
+        if next(self.state.dependencyState.missingDependencies) then
+            local missing = 0
+            for _ in pairs(self.state.dependencyState.missingDependencies) do missing = missing + 1 end
+            self:LogInfo(" - Missing dependencies: " .. missing)
+        end
+    end
+    
+    -- Trigger callback with dependency resolution results
+    self:TriggerCallback("OnDependenciesResolved", result, self.state.dependencyState)
     
     return result
 end
@@ -727,18 +894,41 @@ function ModAPI:InitializeAllModules()
     -- Record start time for performance tracking
     self.state.initStartTime = debugprofilestop()
     self.state.initErrors = {}  -- Reset error tracking
+    self.state.initRetries = {}
+    self.state.moduleInitTimes = {}
+    self.state.initTimeouts = {}
+    self.state.initFailures = {}
+    self.state.initSkipped = {}
     
-    -- Trigger pre-initialization callback
+    -- Initialize tracking tables if not present
+    self.state.initStarted = self.state.initStarted or {}
+    self.state.initFinished = self.state.initFinished or {}
+    
+    -- Reset init tracking
+    for k, _ in pairs(self.state.initStarted) do
+        self.state.initStarted[k] = nil
+    end
+    for k, _ in pairs(self.state.initFinished) do
+        self.state.initFinished[k] = nil
+    end
+    
+    -- Define timeout limits (in ms)
+    local moduleTimeoutLimit = 500 -- ms per module initialization
+    local totalTimeoutLimit = 5000 -- total initialization process
+    
+    -- Trigger pre-initialization callback for other systems to prepare
     self:TriggerCallback("OnBeforeModulesInitialized")
     
-    -- Sort modules based on dependencies
+    -- Sort modules based on dependencies with our enhanced system
     local sortedModules = self:SortModulesByDependencies()
     
     -- Track initialization order for debugging
     self.state.initSequence = {}
     
+    self:LogInfo("Beginning initialization of " .. #sortedModules .. " modules...")
+    
     -- Initialize each module in dependency order
-    for _, name in ipairs(sortedModules) do
+    for i, name in ipairs(sortedModules) do
         local module = self.state.registeredModules[name]
         
         if module then
@@ -746,6 +936,15 @@ function ModAPI:InitializeAllModules()
             table.insert(self.state.initSequence, name)
             local moduleStartTime = debugprofilestop()
             self.state.initStarted[name] = true
+            
+            -- Check if total initialization is taking too long
+            if (debugprofilestop() - self.state.initStartTime) > totalTimeoutLimit then
+                self:LogError("Total initialization timeout after " .. #self.state.initSequence .. 
+                             " modules. Remaining modules will be initialized on-demand.")
+                self:TriggerCallback("OnInitializationTimeout", self.state.initSequence, 
+                                   sortedModules, i, #sortedModules)
+                break
+            end
             
             -- Check if we should initialize this module
             local shouldInit = true

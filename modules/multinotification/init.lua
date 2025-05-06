@@ -10,7 +10,16 @@ local MultiNotification = VUI:NewModule("MultiNotification", "AceEvent-3.0")
 MultiNotification.version = "1.0.0"
 MultiNotification.author = "VortexQ8"
 MultiNotification.desc = "Unified notification system for spells, events, and alerts with customizable appearance"
+
+-- Set both CamelCase and lowercase reference for consistency
 VUI.MultiNotification = MultiNotification
+VUI.multinotification = MultiNotification
+
+-- Register with ModuleAPI for both variants if it exists
+if VUI.ModuleAPI and VUI.ModuleAPI.RegisterModule then
+    VUI.ModuleAPI:RegisterModule("multinotification", MultiNotification)
+    VUI.ModuleAPI:RegisterModule("MultiNotification", MultiNotification)
+end
 
 -- Default settings
 MultiNotification.defaults = {

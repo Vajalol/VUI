@@ -10,7 +10,14 @@ local BuffOverlay = {
     version = "1.0.0",
     author = "VortexQ8"
 }
+-- Register with both lowercase and camelCase for consistency
 VUI:RegisterModule("buffoverlay", BuffOverlay)
+VUI:RegisterModule("BuffOverlay", BuffOverlay)
+
+-- Store reference to the proper namespace
+VUI.BuffOverlay = BuffOverlay
+-- Store lowercase reference for backward compatibility 
+VUI.buffoverlay = BuffOverlay
 
 -- Get configuration options for main UI integration
 function BuffOverlay:GetConfig()
@@ -92,8 +99,9 @@ function BuffOverlay:GetConfig()
     return config
 end
 
--- Register module config with the VUI ModuleAPI
+-- Register module config with the VUI ModuleAPI for both camelCase and lowercase variants
 VUI.ModuleAPI:RegisterModuleConfig("buffoverlay", BuffOverlay:GetConfig())
+VUI.ModuleAPI:RegisterModuleConfig("BuffOverlay", BuffOverlay:GetConfig())
 
 -- Performance optimization variables
 local lastUpdate = 0

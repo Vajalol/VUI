@@ -6,11 +6,16 @@ if not VUI then VUI = _G.VUI end
 -- Provides optimized event handling and registration to reduce overhead
 -- Implements smart event batching, throttling, and prioritization
 
--- Create a safe debug function
-
 -- Create namespace
 VUI.EventOptimization = {}
 local EventOpt = VUI.EventOptimization
+
+-- Add simple debug method reference that just points to main VUI debug if available
+-- This is a non-printing fallback that just prevents errors when Debug is called
+function EventOpt:Debug(message)
+    -- Just a silent fallback to prevent errors, doesn't actually print anything
+    -- The idea is to avoid nil function calls, not to add more debug output
+end
 
 -- Configuration
 EventOpt.config = {
