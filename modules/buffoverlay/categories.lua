@@ -1,8 +1,12 @@
 -- BuffOverlay Categories
 -- This file defines the buff/debuff categorization system
 
-local VUI, E = select(2, ...):unpack()
-local BuffOverlay = E.Modules.BuffOverlay
+local _, VUI = ...
+-- Safety check in case unpack isn't available
+if not VUI.buffoverlay then
+    VUI.buffoverlay = {}
+end
+local BuffOverlay = VUI.buffoverlay
 
 -- Define the buff/debuff categories
 BuffOverlay.Categories = {

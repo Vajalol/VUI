@@ -154,8 +154,30 @@ function Castbar:ApplyThemeCustomizations(themeName)
 end
 
 -- Hook to VUI theme changed event
-VUI.EventManager:RegisterCallback("VUI_THEME_CHANGED", function(themeName)
-    if Castbar:IsEnabled() then
-        Castbar:ApplyThemeCustomizations(themeName)
+-- Register for theme change callback
+if VUI.RegisterCallback then
+    VUI.RegisterCallback(Castbar, "ThemeChanged", function(_, themeName)
+        if Castbar and Castbar.IsEnabled and Castbar:IsEnabled() then
+            Castbar:ApplyThemeCustomizations(themeName)
+        elseif Castbar then
+            -- Fallback in case IsEnabled doesn't exist
+            Castbar:ApplyThemeCustomizations(themeName)
+        end
+    end)
+else
+    -- Create a basic callback system if not available
+    if not VUI.callbacks then
+        VUI.callbacks = {}
     end
-end)
+    if not VUI.callbacks.ThemeChanged then
+        VUI.callbacks.ThemeChanged = {}
+    end
+    table.insert(VUI.callbacks.ThemeChanged, function(themeName)
+        if Castbar and Castbar.IsEnabled and Castbar:IsEnabled() then
+            Castbar:ApplyThemeCustomizations(themeName)
+        elseif Castbar then
+            -- Fallback in case IsEnabled doesn't exist
+            Castbar:ApplyThemeCustomizations(themeName)
+        end
+    end)
+end

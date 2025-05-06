@@ -42,12 +42,37 @@ function Paperdoll:OnThemeChanged(theme)
     end
 end
 
--- Register for VUI initialization
-VUI:RegisterCallback("OnInitialized", function()
+-- Initialize when VUI is ready
+if VUI.isInitialized then
     Paperdoll:Initialize()
-end)
+else
+    -- Hook into VUI initialization
+    local originalOnInitialize = VUI.OnInitialize
+    VUI.OnInitialize = function(self, ...)
+        -- Call original function if it exists
+        if originalOnInitialize then
+            originalOnInitialize(self, ...)
+        end
+        
+        -- Initialize our module
+        Paperdoll:Initialize()
+    end
+end
 
 -- Register for theme changes
-VUI:RegisterCallback("ThemeChanged", function(newTheme)
-    Paperdoll:OnThemeChanged(newTheme)
-end)
+if VUI.RegisterCallback then
+    VUI.RegisterCallback(Paperdoll, "ThemeChanged", function(_, newTheme)
+        Paperdoll:OnThemeChanged(newTheme)
+    end)
+else
+    -- Create a fallback callback system if not available
+    if not VUI.callbacks then
+        VUI.callbacks = {}
+    end
+    if not VUI.callbacks.ThemeChanged then
+        VUI.callbacks.ThemeChanged = {}
+    end
+    table.insert(VUI.callbacks.ThemeChanged, function(newTheme)
+        Paperdoll:OnThemeChanged(newTheme)
+    end)
+end

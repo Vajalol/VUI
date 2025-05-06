@@ -5,6 +5,32 @@
 -- Enhanced with better performance and additional features
 -------------------------------------------------------------------------------
 
+-- Get addon environment
+local _, VUI = ...
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
+
+-- Create buffoverlay namespace(s)
+if not VUI.buffoverlay then
+    VUI.buffoverlay = {}
+end
+
+-- Ensure we have the BuffOverlay namespace (CamelCase version)
+if not VUI.BuffOverlay then
+    VUI.BuffOverlay = VUI.buffoverlay
+else
+    -- If both exist, merge them to ensure consistency
+    for k, v in pairs(VUI.BuffOverlay) do
+        VUI.buffoverlay[k] = v
+    end
+    for k, v in pairs(VUI.buffoverlay) do
+        VUI.BuffOverlay[k] = v
+    end
+end
+
+-- Create a local reference for easier access
+local BuffOverlay = VUI.BuffOverlay
+
 -- Performance optimization
 local GetTime = GetTime
 local UnitAura = UnitAura

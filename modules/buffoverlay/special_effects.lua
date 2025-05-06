@@ -1,8 +1,12 @@
 -- BuffOverlay Special Effects
 -- This file implements advanced visual effects for important buffs/debuffs
 
-local VUI, E = select(2, ...):unpack()
-local BuffOverlay = E.Modules.BuffOverlay
+local _, VUI = ...
+-- Safety check in case unpack isn't available
+if not VUI.buffoverlay then
+    VUI.buffoverlay = {}
+end
+local BuffOverlay = VUI.buffoverlay
 
 -- Table to store special effect definitions
 BuffOverlay.SpecialEffects = {

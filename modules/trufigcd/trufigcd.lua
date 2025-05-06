@@ -2,6 +2,16 @@
 -- Adapted from: https://github.com/Trufi/TrufiGCD
 -- Author: VortexQ8
 
+local _, VUI = ...
+
+-- Create the namespace if it doesn't exist
+if not VUI.TrufiGCD then
+    VUI.TrufiGCD = {}
+end
+
+-- Create a local reference for easier access
+local TrufiGCD = VUI.TrufiGCD
+
 -- Initialize the module
 function VUI.TrufiGCD:Initialize()
     if not VUI.enabledModules.TrufiGCD then return end

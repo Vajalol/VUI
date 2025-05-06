@@ -11,7 +11,18 @@
 ]]
 
 local _, VUI = ...
-local TrufiGCD = VUI.modules.trufigcd
+
+-- Create the TrufiGCD namespace if it doesn't exist
+if not VUI.TrufiGCD then
+    VUI.TrufiGCD = {}
+end
+
+local TrufiGCD = VUI.TrufiGCD
+
+-- Create the Categories namespace if it doesn't exist
+if not TrufiGCD.Categories then
+    TrufiGCD.Categories = {}
+end
 local Categories = TrufiGCD.Categories
 
 -- Create timeline namespace

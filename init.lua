@@ -8,6 +8,10 @@ VUI.name = "VUI"
 VUI.version = "1.0.0"
 VUI.author = "VortexQ8"
 
+-- Initialize hooks and callbacks tables
+VUI.hooks = {}
+VUI.callbacks = {}
+
 -- Define global library references that will be used throughout the addon
 local AceDBOptions = LibStub("AceDBOptions-3.0")
 
@@ -131,6 +135,60 @@ function VUI:Initialize()
     
     -- Print minimal initialization message with essential user guidance
     self:Print("v" .. self.version .. " loaded. Type |cff1784d1/vui|r for options.")
+    
+    -- Mark as initialized
+    self.isInitialized = true
+    
+    -- Trigger OnInitialize callbacks if registered
+    if self.OnInitialize then
+        self:OnInitialize()
+    end
+end
+
+-- Debug function that can be called safely even if debugging is off
+function VUI:Debug(msg)
+    if self.db and self.db.profile and self.db.profile.debugging then
+        if msg then
+            print("|cff00aaff[VUI Debug]|r " .. tostring(msg))
+        end
+    end
+end
+
+-- Callback system for VUI events
+function VUI:RegisterCallback(event, callback)
+    if not event or not callback then return end
+    
+    if not self.callbacks[event] then
+        self.callbacks[event] = {}
+    end
+    
+    table.insert(self.callbacks[event], callback)
+    return true
+end
+
+-- Trigger callbacks for an event
+function VUI:TriggerCallback(event, ...)
+    if not event or not self.callbacks[event] then return end
+    
+    for _, callback in ipairs(self.callbacks[event]) do
+        local success, err = pcall(callback, ...)
+        if not success then
+            self:Debug("Error in callback for " .. event .. ": " .. tostring(err))
+        end
+    end
+end
+
+-- Create EventManager if it doesn't exist (for theme change events etc.)
+VUI.EventManager = VUI.EventManager or {}
+
+-- Register a callback with the EventManager
+function VUI.EventManager:RegisterCallback(event, callback)
+    return VUI:RegisterCallback(event, callback)
+end
+
+-- Trigger an event through the EventManager
+function VUI.EventManager:TriggerCallback(event, ...)
+    return VUI:TriggerCallback(event, ...)
 end
 
 -- Framework for hooking into WoW events
@@ -152,6 +210,20 @@ end)
 function VUI:PreInitialize()
     -- Any setup that needs to happen before player login
     self:LoadDefaults()
+    
+    -- Initialize a basic db structure if it doesn't exist yet
+    -- This will be replaced by the proper AceDB initialization later
+    if not self.db then
+        self.db = {
+            profile = {
+                modules = {},
+                appearance = {
+                    theme = "thunderstorm"
+                },
+                debugging = false
+            }
+        }
+    end
 end
 
 -- Load media files

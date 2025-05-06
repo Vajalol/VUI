@@ -72,7 +72,24 @@ end
 function VUI.ModuleAPI:InitializeModuleSettings(name, defaults)
     name = name:lower()
     
+    -- Ensure db is initialized
+    if not VUI.db then
+        VUI.db = {
+            profile = {
+                modules = {},
+                appearance = {
+                    theme = "thunderstorm"
+                },
+                debugging = false
+            }
+        }
+    end
+    
     -- Create module entry in database if needed
+    if not VUI.db.profile then
+        VUI.db.profile = {}
+    end
+    
     if not VUI.db.profile.modules then
         VUI.db.profile.modules = {}
     end
