@@ -344,5 +344,5 @@ function TimerEnhancement:Initialize()
         end
     end)
     
-    -- Debug disabled in production release
+
 end

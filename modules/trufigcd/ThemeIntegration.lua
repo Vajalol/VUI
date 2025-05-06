@@ -65,7 +65,7 @@ function TrufiGCD:ApplyTheme()
         end
     end
     
-    -- Debug logs disabled in production release
+
 end
 
 -- Hook for theme changes

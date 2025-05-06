@@ -372,12 +372,12 @@ function Automation:AdjustCVarsBasedOnFPS(averageFPS)
             -- FPS is too low, reduce effects
             local newDensity = math.max(0.1, currentEffectDensity - 0.1)
             SetCVar("effectDensity", newDensity)
-            VUI:DebugPrint("Reduced effect density to " .. newDensity .. " (FPS: " .. averageFPS .. ")")
+
         elseif averageFPS > targetFPS * 1.2 and currentEffectDensity < 1.0 then
             -- FPS is high, can increase effects
             local newDensity = math.min(1.0, currentEffectDensity + 0.1)
             SetCVar("effectDensity", newDensity)
-            VUI:DebugPrint("Increased effect density to " .. newDensity .. " (FPS: " .. averageFPS .. ")")
+
         end
     end
     
@@ -389,12 +389,12 @@ function Automation:AdjustCVarsBasedOnFPS(averageFPS)
             -- FPS is too low, reduce view distance
             local newDistance = math.max(500, currentDistance - 100)
             SetCVar("farclip", newDistance)
-            VUI:DebugPrint("Reduced view distance to " .. newDistance .. " (FPS: " .. averageFPS .. ")")
+
         elseif averageFPS > targetFPS * 1.2 and currentDistance < 2000 then
             -- FPS is high, can increase view distance
             local newDistance = math.min(2000, currentDistance + 100)
             SetCVar("farclip", newDistance)
-            VUI:DebugPrint("Increased view distance to " .. newDistance .. " (FPS: " .. averageFPS .. ")")
+
         end
     end
 end

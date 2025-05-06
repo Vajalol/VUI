@@ -397,7 +397,7 @@ function VUI:RegisterMediaWithUI()
     end
     
     -- Notify about connection
-    self:Debug("Media connected to UI framework with enhanced performance management")
+
 end
 
 -- Helper function to create a color object from RGB values
@@ -834,9 +834,7 @@ function VUI:ClearUnusedMediaCache()
     -- Force garbage collection
     collectgarbage("collect")
     
-    -- Debug info
-    self:Debug("Media cache cleared. Kept " .. self:TableCount(texturesToKeep) .. " textures. Memory estimate: " .. 
-               string.format("%.2f", self.mediaStats.memoryUsage) .. " MB")
+    -- Debug info removed for production
 end
 
 -- Count table entries (helper function)
@@ -894,8 +892,6 @@ end
 -- Preload essential textures for the current theme
 function VUI:PreloadThemeTextures(themeName)
     themeName = themeName or self.db.profile.appearance.theme or "thunderstorm"
-    
-    self:Debug("Preloading textures for theme: " .. themeName)
     
     -- Preload theme assets
     if self.media.themes[themeName] then

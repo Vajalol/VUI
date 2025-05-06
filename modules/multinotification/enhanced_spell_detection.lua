@@ -37,7 +37,7 @@ local Config = {
     combatOptimization = true, -- Extra optimizations during combat
     eventMerging = true,       -- Merges similar events 
     predictiveLoading = true,  -- Preloads likely spells based on group composition
-    debugMode = false          -- Debug mode disabled in production release
+
 }
 
 -- Initialize enhanced spell detection
@@ -798,7 +798,7 @@ function MultiNotification:GetEnhancedSpellDetectionOptions()
             desc = "Debug mode disabled in production release",
             get = function() return false end,
             set = function(_, value) 
-                -- Debug mode always disabled in production
+
                 Config.debugMode = false 
             end,
             width = "full",

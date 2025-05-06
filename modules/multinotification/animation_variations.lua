@@ -202,7 +202,7 @@ function MultiNotification:InitializeAnimationVariations()
     self:RegisterAnimationOptions()
     
     -- Log initialization
-    -- Debug log disabled in production release
+
 end
 
 -- Update the animation performance state based on combat, group, etc.
@@ -955,14 +955,14 @@ if originalShowNotification then
         if self.db.profile.globalSettings.useFramePooling and self.FramePool then
             frame = self.FramePool:AcquireFrame("notification")
             if not frame then
-                -- Debug message disabled in production release
+
                 return
             end
         else
             -- Legacy frame acquisition
             frame = self:GetAvailableNotificationFrame()
             if not frame then
-                -- Debug message disabled in production release
+
                 return
             end
         end

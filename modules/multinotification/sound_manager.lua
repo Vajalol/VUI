@@ -134,7 +134,7 @@ function SoundManager:Initialize()
     -- Register theme changed callback to update sounds
     VUI.RegisterCallback(self, "ThemeChanged", "UpdateThemeSounds")
     
-    -- Debug logging disabled in production release
+
 end
 
 -- Update sound files based on theme

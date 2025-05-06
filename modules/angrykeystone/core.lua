@@ -110,7 +110,7 @@ function AngryKeystones:PlayCompletionSound()
     -- In a real addon, you would play the sound like this:
     -- PlaySoundFile(soundFile, "Master")
     
-    -- Debug disabled in production release
+
 end
 
 -- Hook keystone slotting to capture keystone level info
@@ -218,7 +218,7 @@ function AngryKeystones:CHALLENGE_MODE_START()
     -- Update displays
     self:UpdateDisplays()
     
-    -- Debug disabled in production release
+
 end
 
 -- Event: CHALLENGE_MODE_COMPLETED
@@ -228,7 +228,7 @@ function AngryKeystones:CHALLENGE_MODE_COMPLETED()
     -- Play completion sound
     self:PlayCompletionSound()
     
-    -- Debug disabled in production release
+
 end
 
 -- Event: CHALLENGE_MODE_RESET
@@ -238,7 +238,7 @@ function AngryKeystones:CHALLENGE_MODE_RESET()
     -- Update displays
     self:UpdateDisplays()
     
-    -- Debug disabled in production release
+
 end
 
 -- Event: PLAYER_ENTERING_WORLD
@@ -269,14 +269,14 @@ function AngryKeystones:ApplyHooks()
         self.ThemeIntegration:ApplyTheme()
     end
     
-    -- Debug disabled in production release
+
 end
 
 -- Remove hooks
 function AngryKeystones:RemoveHooks()
     -- In a real addon, we would unhook functions here if possible
     
-    -- Debug disabled in production release
+
 end
 
 -- Refresh settings based on configuration changes
@@ -286,5 +286,5 @@ function AngryKeystones:RefreshSettings()
     -- Update displays
     self:UpdateDisplays()
     
-    -- Debug disabled in production release
+
 end

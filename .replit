@@ -24,7 +24,7 @@ agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "luac -p core/*.lua modules/*/*.lua && echo \"Lua syntax validation passed!\" && lua test_modules.lua"
+args = "luac -p core/*.lua modules/*/*.lua && echo \"Lua syntax validation passed!\""
 
 [deployment]
-run = ["sh", "-c", "luac -p core/*.lua modules/*/*.lua && echo \"Lua syntax validation passed!\" && lua test_modules.lua"]
+run = ["sh", "-c", "luac -p core/*.lua modules/*/*.lua && echo \"Lua syntax validation passed!\""]

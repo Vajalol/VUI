@@ -6,15 +6,6 @@ local _, VUI = ...
 -- Implements smart event batching, throttling, and prioritization
 
 -- Create a safe debug function
-local function SafeDebug(message)
-    if type(VUI.Debug) == "function" then
-        VUI.Debug(message)
-    elseif VUI.Debug then
-        pcall(function() VUI:Debug(message) end)
-    elseif VUI.db and VUI.db.profile and VUI.db.profile.debugging then
-        print("|cff00aaff[VUI]|r " .. message)
-    end
-end
 
 -- Create namespace
 VUI.EventOptimization = {}
@@ -135,10 +126,10 @@ function EventOpt:Initialize()
     -- Use safe way to log initialization
     if type(VUI.Debug) == "function" then
         -- Call as function
-        VUI.Debug("Event Optimization System initialized")
+
     elseif VUI.Debug then
         -- Try method call if it exists but isn't a direct function
-        pcall(function() VUI:Debug("Event Optimization System initialized") end)
+
     else
         -- Fallback if Debug not available
         if VUI.db and VUI.db.profile and VUI.db.profile.debugging then
@@ -185,9 +176,9 @@ function EventOpt:RegisterEvent(event, callback, module, priority)
     
     -- Safe debug call
     if type(VUI.Debug) == "function" then
-        VUI.Debug("Registered event: " .. event .. " for module: " .. (module or "unknown") .. " with priority: " .. priority)
+
     elseif VUI.Debug then
-        pcall(function() VUI:Debug("Registered event: " .. event .. " for module: " .. (module or "unknown") .. " with priority: " .. priority) end)
+
     end
 end
 
@@ -232,14 +223,14 @@ function EventOpt:UnregisterEvent(event, callback, module)
         self.state.moduleEvents[module][event] = nil
     end
     
-    SafeDebug("Unregistered event: " .. event .. (module and (" for module: " .. module) or ""))
+
 end
 
 -- Set a module as exempt from throttling
 function EventOpt:SetModuleExempt(module, exempt)
     if not module then return end
     self.state.moduleExemptions[module] = exempt == true
-    SafeDebug("Module " .. module .. " is now " .. (exempt and "exempt from" or "subject to") .. " event throttling")
+
 end
 
 -- Process an event when it fires
@@ -259,10 +250,10 @@ function EventOpt:ProcessEvent(event, ...)
     -- Combat status events always processed immediately
     if event == "PLAYER_REGEN_DISABLED" then
         self.state.inCombat = true
-        SafeDebug("Combat started - adjusting event throttling")
+
     elseif event == "PLAYER_REGEN_ENABLED" then
         self.state.inCombat = false
-        SafeDebug("Combat ended - restoring normal event processing")
+
     end
     
     -- Update high frequency event tracking
@@ -271,7 +262,7 @@ function EventOpt:ProcessEvent(event, ...)
         self.state.highFrequencyEvents[event] = (self.state.highFrequencyEvents[event] or 0) + 1
         if self.state.highFrequencyEvents[event] > 10 and not self.state.eventThrottled[event] then
             self.state.eventThrottled[event] = true
-            SafeDebug("Auto-throttling high frequency event: " .. event)
+
         end
     else
         -- Reset counter for low frequency events
@@ -279,7 +270,7 @@ function EventOpt:ProcessEvent(event, ...)
             self.state.highFrequencyEvents[event] = self.state.highFrequencyEvents[event] - 1
             if self.state.highFrequencyEvents[event] <= 5 and self.state.eventThrottled[event] then
                 self.state.eventThrottled[event] = false
-                SafeDebug("Removed throttling for event: " .. event)
+
             end
         end
     end
@@ -363,7 +354,7 @@ function EventOpt:ExecuteEventCallbacks(event, args)
         if isExempt or not self.state.inCombat or cbInfo.priority <= self.config.priorityLevels.high then
             local success, err = pcall(cbInfo.func, unpack(args))
             if not success then
-                SafeDebug("Error executing event callback: " .. (err or "unknown error"))
+
             end
         else
             -- Skip lower priority callbacks during combat to save performance
@@ -413,7 +404,7 @@ function EventOpt:OnUpdate(elapsed)
         local inCombat = UnitAffectingCombat("player")
         if inCombat ~= self.state.inCombat then
             self.state.inCombat = inCombat
-            SafeDebug("Combat state changed to: " .. (inCombat and "in combat" or "out of combat"))
+
             
             -- Notify other systems of combat state change
             VUI:SendMessage("VUI_COMBAT_STATE_CHANGED", inCombat)

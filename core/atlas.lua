@@ -370,7 +370,7 @@ function Atlas:Initialize()
         self:PreloadAtlas("themes." .. newTheme)
     end)
     
-    VUI:Debug("Texture Atlas System initialized")
+
 end
 
 -- Register atlas textures with the VUI media system

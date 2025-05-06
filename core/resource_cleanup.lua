@@ -126,7 +126,7 @@ function ResourceCleanup:Initialize()
     -- Register for VUI messages
     VUI:RegisterMessage("MODULE_INITIALIZED", function(_, moduleName)
         if self.state.registeredModules[moduleName] then
-            VUI:Debug("ResourceCleanup: Module registered: " .. moduleName)
+
         end
     end)
     
@@ -153,7 +153,7 @@ function ResourceCleanup:Initialize()
     self.state.lastCleanupTime = GetTime()
     self.state.lastGCTime = GetTime()
     
-    VUI:Debug("ResourceCleanup system initialized")
+
 end
 
 -- Register required events
@@ -207,7 +207,7 @@ function ResourceCleanup:UpdateMemoryBaseline()
         UpdateAddOnMemoryUsage()
         self.state.baselineMemory = GetAddOnMemoryUsage(addonName) / 1024 -- Convert to MB
         
-        VUI:Debug(format("ResourceCleanup: Baseline memory: %.2f MB", self.state.baselineMemory))
+
     end)
 end
 
@@ -306,7 +306,7 @@ end
 -- Perform light cleanup (non-aggressive)
 function ResourceCleanup:PerformLightCleanup()
     if self.config.debugMode then
-        VUI:Debug("ResourceCleanup: Performing light cleanup")
+
     end
     
     -- Track memory before cleanup
@@ -341,14 +341,14 @@ function ResourceCleanup:PerformLightCleanup()
     end
     
     if self.config.debugMode then
-        VUI:Debug(format("ResourceCleanup: Light cleanup completed - Saved: %.2f MB", memorySaved))
+
     end
 end
 
 -- Perform deep cleanup (aggressive)
 function ResourceCleanup:PerformDeepCleanup()
     if self.config.debugMode then
-        VUI:Debug("ResourceCleanup: Performing deep cleanup")
+
     end
     
     -- Track memory before cleanup
@@ -386,7 +386,7 @@ function ResourceCleanup:PerformDeepCleanup()
     end
     
     if self.config.debugMode then
-        VUI:Debug(format("ResourceCleanup: Deep cleanup completed - Saved: %.2f MB", memorySaved))
+
     end
 end
 
@@ -439,7 +439,7 @@ function ResourceCleanup:CleanTextureCache(aggressive)
     self.state.cleanupStats.texturesCleaned = self.state.cleanupStats.texturesCleaned + cleanedCount
     
     if self.config.debugMode then
-        VUI:Debug(format("ResourceCleanup: Cleaned %d of %d textures", cleanedCount, currentCount))
+
     end
 end
 
@@ -492,7 +492,7 @@ function ResourceCleanup:CleanFontCache(aggressive)
     self.state.cleanupStats.fontsCleaned = self.state.cleanupStats.fontsCleaned + cleanedCount
     
     if self.config.debugMode then
-        VUI:Debug(format("ResourceCleanup: Cleaned %d of %d fonts", cleanedCount, currentCount))
+
     end
 end
 
@@ -545,7 +545,7 @@ function ResourceCleanup:CleanSoundCache(aggressive)
     self.state.cleanupStats.soundsCleaned = self.state.cleanupStats.soundsCleaned + cleanedCount
     
     if self.config.debugMode then
-        VUI:Debug(format("ResourceCleanup: Cleaned %d of %d sounds", cleanedCount, currentCount))
+
     end
 end
 
@@ -589,7 +589,7 @@ function ResourceCleanup:CleanWeakReferences(aggressive)
     self.state.cleanupStats.weakReferencesCleaned = self.state.cleanupStats.weakReferencesCleaned + cleanedCount
     
     if self.config.debugMode and cleanedCount > 0 then
-        VUI:Debug(format("ResourceCleanup: Cleaned %d of %d weak references", cleanedCount, currentCount))
+
     end
 end
 
@@ -660,7 +660,7 @@ function ResourceCleanup:TrimTextTables(aggressive)
     self.state.cleanupStats.tablesCleaned = self.state.cleanupStats.tablesCleaned + cleanedCount
     
     if self.config.debugMode and cleanedCount > 0 then
-        VUI:Debug(format("ResourceCleanup: Cleaned or trimmed %d text tables", cleanedCount))
+
     end
 end
 
@@ -699,7 +699,7 @@ function ResourceCleanup:TrimObjectPools(aggressive)
     self.state.cleanupStats.totalFramesReclaimed = self.state.cleanupStats.totalFramesReclaimed + cleanedCount
     
     if self.config.debugMode and cleanedCount > 0 then
-        VUI:Debug(format("ResourceCleanup: Reclaimed %d objects from pools", cleanedCount))
+
     end
 end
 
@@ -711,15 +711,7 @@ function ResourceCleanup:NotifyModulesForCleanup(deepCleanup)
             -- Call the module's cleanup function
             local success, result = pcall(cleanupFunc, deepCleanup)
             
-            if self.config.debugMode then
-                if success then
-                    VUI:Debug(format("ResourceCleanup: Module %s cleanup %s", 
-                        moduleName, result and "succeeded" or "failed"))
-                else
-                    VUI:Debug(format("ResourceCleanup: Module %s cleanup error: %s", 
-                        moduleName, tostring(result)))
-                end
-            end
+            -- Skip debug output in production
         end
     end
 end
@@ -797,9 +789,7 @@ function ResourceCleanup:RegisterModule(moduleName, cleanupFunc)
     
     self.state.registeredModules[moduleName] = cleanupFunc
     
-    if self.config.debugMode then
-        VUI:Debug(format("ResourceCleanup: Registered module %s for cleanup", moduleName))
-    end
+    -- Skip debug output in production
     
     return true
 end
@@ -810,10 +800,7 @@ function ResourceCleanup:SetModuleExempt(moduleName, exempt)
     
     self.state.exemptModules[moduleName] = exempt and true or nil
     
-    if self.config.debugMode then
-        VUI:Debug(format("ResourceCleanup: Module %s %s from automatic cleanup", 
-            moduleName, exempt and "exempted" or "unexempted"))
-    end
+    -- Skip debug output in production
     
     return true
 end

@@ -109,7 +109,7 @@ function DBOpt:OnInitialize()
     
     -- Debug message
     if DEBUG_MODE then
-        VUI:Debug("Database Optimization System initialized")
+
     end
 end
 
@@ -160,7 +160,7 @@ function DBOpt:PreloadFrequentSettings()
             if value ~= nil then
                 self:CacheValue(setting.db, setting.path, value)
                 if DEBUG_MODE then
-                    VUI:Debug("Preloaded: " .. setting.path)
+
                 end
             end
         end
@@ -307,7 +307,7 @@ function DBOpt:ProcessWriteQueue(force)
     wipe(self.state.writeQueue)
     
     if DEBUG_MODE and count > 0 then
-        VUI:Debug("Processed " .. count .. " database writes")
+
     end
 end
 
@@ -344,7 +344,7 @@ function DBOpt:CleanupCache(force)
     self.state.stats.cacheCleaned = self.state.stats.cacheCleaned + cleanupCount
     
     if DEBUG_MODE and cleanupCount > 0 then
-        VUI:Debug("Cleaned " .. cleanupCount .. " cache entries")
+
     end
 end
 
@@ -444,7 +444,7 @@ function DBOpt:RegisterModuleDatabase(moduleName, db)
     end
     
     if DEBUG_MODE then
-        VUI:Debug(string.format("Registered %s module database", moduleName))
+
     end
     
     return true

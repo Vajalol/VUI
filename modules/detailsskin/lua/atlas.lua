@@ -59,7 +59,7 @@ function DS.Atlas:RegisterAtlas()
     -- Mark as registered
     self.registered = true
     
-    VUI:Debug("DetailsSkin: Texture atlas registered")
+
 end
 
 -- Register textures for a specific theme

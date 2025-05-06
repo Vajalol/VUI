@@ -392,7 +392,7 @@ function VUI.ModuleTemplate:Create(name)
     -- AceAddon lifecycle methods
     function module:OnInitialize()
         -- Default initialization logic
-        self:Debug("Initializing")
+
         
         -- Get module settings from VUI main database
         if self.name then
@@ -417,7 +417,7 @@ function VUI.ModuleTemplate:Create(name)
     
     -- Handle profile changes
     function module:UpdateUI()
-        self:Debug("Updating UI for profile change")
+
         
         -- Refresh settings reference
         if self.name then

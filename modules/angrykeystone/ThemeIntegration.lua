@@ -467,5 +467,5 @@ function ThemeIntegration:Initialize()
     self:ApplyTheme()
     
     -- Print initialization message
-    -- Debug disabled in production release
+
 end

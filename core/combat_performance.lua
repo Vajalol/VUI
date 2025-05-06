@@ -67,13 +67,13 @@ function CombatPerf:InitializePool(poolName, frameCreationFunc, initialSize)
     end
     
     self.state.framePools[poolName].totalCreated = initialSize
-    VUI:Debug("Initialized frame pool: " .. poolName .. " with " .. initialSize .. " frames")
+
 end
 
 -- Acquire a frame from the pool
 function CombatPerf:AcquireFrame(poolName)
     if not self.state.framePools[poolName] then
-        VUI:Debug("Error: Frame pool '" .. poolName .. "' does not exist")
+
         return nil
     end
     
@@ -90,7 +90,7 @@ function CombatPerf:AcquireFrame(poolName)
         
         -- Log when pools grow significantly
         if pool.totalCreated % 10 == 0 then
-            VUI:Debug("Frame pool '" .. poolName .. "' expanded to " .. pool.totalCreated .. " frames")
+
         end
     end
     
@@ -116,7 +116,7 @@ end
 -- Release a frame back to the pool
 function CombatPerf:ReleaseFrame(poolName, frame)
     if not self.state.framePools[poolName] then
-        VUI:Debug("Error: Frame pool '" .. poolName .. "' does not exist")
+
         return
     end
     
@@ -159,7 +159,7 @@ function CombatPerf:ResizePool(poolName)
         end
         
         pool.totalCreated = targetSize
-        VUI:Debug("Increased pool '" .. poolName .. "' from " .. currentSize .. " to " .. targetSize .. " frames")
+
     end
     
     pool.lastResize = GetTime()
@@ -266,10 +266,10 @@ function CombatPerf:OnCombatStateChanged(inCombat)
     
     if inCombat then
         self:EnableThrottling()
-        VUI:Debug("Combat detected - enabling frame throttling")
+
     else
         self:DisableThrottling()
-        VUI:Debug("Combat ended - disabling frame throttling")
+
         
         -- Force update all frames to restore visual state
         for frame, _ in pairs(self.state.throttledFrames) do

@@ -103,7 +103,7 @@ function VUI.FontIntegration:CleanupFontCache(forceFullCleanup)
     
     -- Debug info
     if VUI.debug or forceFullCleanup then
-        VUI:Debug("Font Integration", "Font cache cleanup: removed " .. removed .. " of " .. beforeCount .. " cached font objects")
+
     end
     
     return removed, beforeCount

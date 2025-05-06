@@ -98,7 +98,7 @@ function ThemeOpt:Initialize()
     -- Register with VUI
     VUI:RegisterModule("ThemeSwitchingOptimization", self)
     
-    VUI:Debug("Theme Switching Optimization System initialized")
+
 end
 
 -- Register a frame as a theme element with priority
@@ -130,7 +130,7 @@ function ThemeOpt:OptimizedSwitchTheme(themeName, noTransition)
     -- Prevent rapid theme switching
     if self.config.throttleThemeSwitching and 
        (currentTime - self.state.lastThemeSwitch) < self.config.minimumThemeSwitchInterval then
-        VUI:Debug("Theme switch throttled - too soon since last switch")
+
         return false
     end
     
@@ -169,7 +169,7 @@ function ThemeOpt:OptimizedSwitchTheme(themeName, noTransition)
     self:BuildUpdateQueue()
     
     -- Start processing the queue
-    VUI:Debug("Theme switch started: " .. oldTheme .. " -> " .. themeName)
+
     
     -- Increment statistics
     self.state.performanceStats.switchCount = self.state.performanceStats.switchCount + 1
@@ -211,7 +211,7 @@ function ThemeOpt:BuildUpdateQueue()
     -- Reset batch index
     self.state.currentBatchIndex = 1
     
-    VUI:Debug("Built theme update queue with " .. #self.state.frameUpdateQueue .. " elements")
+
 end
 
 -- Process a batch of theme updates
@@ -282,13 +282,6 @@ function ThemeOpt:CompleteThemeSwitch()
     
     -- Notify system of completion
     VUI:SendMessage("VUI_THEME_SWITCH_COMPLETE", self.state.currentTheme)
-    
-    VUI:Debug(string.format(
-        "Theme switch completed in %.2fms - Updated: %d frames, Skipped: %d frames", 
-        timeTaken, 
-        self.state.updatedFrameCount,
-        self.state.skippedFrameCount
-    ))
 end
 
 -- Apply transition effect between themes
@@ -316,8 +309,6 @@ function ThemeOpt:PreloadThemeAtlas(themeName)
     
     VUI.Atlas:PreloadAtlas("themes." .. themeName)
     self.state.preloadedThemes[themeName] = true
-    
-    VUI:Debug("Preloaded atlas for theme: " .. themeName)
 end
 
 -- Preload common theme textures
@@ -330,8 +321,7 @@ function ThemeOpt:PreloadCommonThemeTextures()
     -- Also preload the default theme
     local defaultTheme = "thunderstorm"
     self:PreloadThemeAtlas(defaultTheme)
-    
-    VUI:Debug("Preloaded common theme textures")
+
 end
 
 -- Get optimized texture for theme
