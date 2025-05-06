@@ -3,7 +3,8 @@
 -- Version: 1.0.0
 
 local addonName, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 _G["VUI"] = VUI
 
 -- Initialize the main addon using AceAddon-3.0 framework
