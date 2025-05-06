@@ -5,7 +5,8 @@
 -------------------------------------------------------------------------------
 
 local addonName, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create mod namespace and set its name.
 local mod = {}

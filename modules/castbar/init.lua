@@ -5,7 +5,8 @@
 ]]
 
 local addonName, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 VUI.Castbar = VUI.Castbar or {}
 local Castbar = VUI.Castbar
 local ModuleAPI = VUI.ModuleAPI

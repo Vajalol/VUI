@@ -240,12 +240,12 @@ end
 
 -- Integrate with BuffOverlay module
 function Integration:IntegrateBuffOverlay()
-    if not VUI.buffoverlay then
+    if not VUI.BuffOverlay then
         self:Log(3, "BuffOverlay module not available for integration")
         return
     end
     
-    local BuffOverlay = VUI.buffoverlay
+    local BuffOverlay = VUI.BuffOverlay
     
     -- Register for aura events
     SpellTracker:RegisterCallback("SPELL", "BuffOverlay", function(eventData)
@@ -328,12 +328,12 @@ end
 
 -- Integrate with TrufiGCD module
 function Integration:IntegrateTrufiGCD()
-    if not VUI.trufigcd then
+    if not VUI.TrufiGCD then
         self:Log(3, "TrufiGCD module not available for integration")
         return
     end
     
-    local TrufiGCD = VUI.trufigcd
+    local TrufiGCD = VUI.TrufiGCD
     
     -- Register for spell cast events
     SpellTracker:RegisterCallback("SPELL", "TrufiGCD", function(eventData)

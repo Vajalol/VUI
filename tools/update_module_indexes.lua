@@ -1,7 +1,8 @@
 -- VUI Module Index Updater
 -- This script updates all module XML files to use the standardized format
 local addonName, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create the Module Index Updater namespace
 VUI.ModuleIndexUpdater = {}

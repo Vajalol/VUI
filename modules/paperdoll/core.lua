@@ -1,5 +1,6 @@
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Character Panel module (Paperdoll)
 VUI.Paperdoll = VUI:NewModule("Paperdoll")
@@ -113,6 +114,41 @@ local PRIMARY_STAT_COLORS = {
     ["ARMOR"] = {r = 0.7, g = 0.7, b = 0.7},            -- Light Gray
     ["MANA_REGEN"] = {r = 0.2, g = 0.6, b = 0.9}        -- Blue (mana)
 }
+
+-- RegisterCallback method to register callbacks for the module
+function VUI.Paperdoll:RegisterCallback(event, callback)
+    if not event or not callback then
+        return false
+    end
+    
+    -- Initialize callbacks table if it doesn't exist
+    if not self.callbacks then
+        self.callbacks = {}
+    end
+    
+    -- Initialize event callbacks if they don't exist
+    if not self.callbacks[event] then
+        self.callbacks[event] = {}
+    end
+    
+    -- Add the callback
+    table.insert(self.callbacks[event], callback)
+    return true
+end
+
+-- TriggerCallback method to trigger registered callbacks
+function VUI.Paperdoll:TriggerCallback(event, ...)
+    if not self.callbacks or not self.callbacks[event] then
+        return
+    end
+    
+    for _, callback in ipairs(self.callbacks[event]) do
+        local success, err = pcall(callback, ...)
+        if not success and VUI.debug then
+            VUI:LogError("Error in Paperdoll callback for " .. event .. ": " .. (err or "unknown error"))
+        end
+    end
+end
 
 function VUI.Paperdoll:OnInitialize()
     -- Default settings

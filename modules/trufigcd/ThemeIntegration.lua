@@ -2,7 +2,8 @@
 -- Author: VortexQ8
 
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local TrufiGCD = VUI.modules.trufigcd
 
 -- Apply theme colors to TrufiGCD elements

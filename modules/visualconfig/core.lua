@@ -1,6 +1,7 @@
 -- VUI Visual Configuration Module - Core Functionality
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local VisualConfig = VUI.visualconfig
 
 -- Get Ace libraries

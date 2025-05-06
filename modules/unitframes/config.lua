@@ -1,6 +1,7 @@
 -- VUI UnitFrames Module - Configuration Panel
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local UnitFrames = VUI.unitframes
 local AceGUI = LibStub("AceGUI-3.0")
 

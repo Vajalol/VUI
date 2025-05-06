@@ -1,12 +1,22 @@
--- VUI omnicd Module Initialization
+-- VUI OmniCD Module Initialization
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create module
-VUI.omnicd = {}
+local OmniCD = {}
+
+-- Register module with both camelCase and lowercase for consistency
+VUI:RegisterModule("OmniCD", OmniCD)
+VUI:RegisterModule("omnicd", OmniCD)
+
+-- Store reference to the proper namespace
+VUI.OmniCD = OmniCD
+-- Store lowercase reference for backward compatibility 
+VUI.omnicd = OmniCD
 
 -- Default settings
-VUI.omnicd.defaults = {
+OmniCD.defaults = {
     enabled = true,
     animations = true,
     growDirection = "RIGHT",
@@ -36,7 +46,7 @@ VUI.omnicd.defaults = {
 }
 
 -- Get configuration options for main UI integration
-function VUI.omnicd:GetConfig()
+function OmniCD:GetConfig()
     local config = {
         name = "OmniCD",
         type = "group",
@@ -250,12 +260,18 @@ function VUI.omnicd:GetConfig()
 end
 
 -- Register module config with the VUI ModuleAPI
-VUI.ModuleAPI:RegisterModuleConfig("omnicd", VUI.omnicd:GetConfig())
+VUI.ModuleAPI:RegisterModuleConfig("omnicd", OmniCD:GetConfig())
+VUI.ModuleAPI:RegisterModuleConfig("OmniCD", OmniCD:GetConfig())
 
 -- Initialize module
-function VUI.omnicd:Initialize()
-    -- Initialize settings
-    self.db = VUI.db.profile.modules.omnicd
+function OmniCD:Initialize()
+    -- Initialize settings using standardized module API if available
+    if VUI.InitializeModuleSettings then
+        self.db = VUI.InitializeModuleSettings("OmniCD", self.defaults)
+    else
+        -- Fallback if standardized API not available
+        self.db = VUI.db.profile.modules.omnicd
+    end
     
     -- Initialize module components
     self:SetupModule()

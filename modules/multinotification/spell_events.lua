@@ -8,7 +8,8 @@
 ]]
 
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local MultiNotification = VUI:GetModule("MultiNotification")
 
 -- Default spell categories

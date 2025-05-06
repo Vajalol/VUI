@@ -1,7 +1,8 @@
 -- VUI Blizzard Frame Skinning
 -- Provides specific skinning functions for individual Blizzard UI frames
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create a submodule for Blizzard frame skins
 VUI.Skins.BlizzardFrames = {}

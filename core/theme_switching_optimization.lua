@@ -1,5 +1,6 @@
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Theme Switching Optimization
 -- This module improves performance when switching between themes

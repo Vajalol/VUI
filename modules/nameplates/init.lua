@@ -1,5 +1,6 @@
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- VUI Plater Nameplates Module (inspired by WhiiskeyZ Plater profile)
 local Nameplates = {
@@ -9,10 +10,31 @@ local Nameplates = {
     version = "1.0.0",
 }
 
+-- Create standard module namespace with VUI ModuleAPI
+VUI:RegisterModule("Nameplates", Nameplates)
+VUI:RegisterModule("nameplates", Nameplates)  -- Register lowercase for backward compatibility
+
 -- Initialize the nameplates module
 function Nameplates:Initialize()
-    -- Load settings from saved variables
-    self.settings = VUI.db.profile.modules.nameplates or {}
+    -- Initialize or get settings using the standardized module API
+    if VUI.InitializeModuleSettings then
+        self.settings = VUI.InitializeModuleSettings("Nameplates", {
+            enabled = true,
+            styling = "plater",
+            friendlySize = 1.0,
+            enemySize = 1.0,
+            friendlyAlpha = 1.0,
+            enemyAlpha = 1.0,
+            showClassColors = true,
+            showHealthText = true,
+            healthFormat = "percent",
+            showCastbars = true,
+            showAuras = true
+        })
+    else
+        -- Fallback if standardized API not available
+        self.settings = VUI.db.profile.modules.nameplates or {}
+    end
     
     -- Set default enabled state
     self.enabled = self.settings.enabled
@@ -22,7 +44,8 @@ function Nameplates:Initialize()
     end
     
     -- Make this module accessible globally within VUI
-    VUI.nameplates = self
+    VUI.Nameplates = self  -- Store with CamelCase
+    VUI.nameplates = self  -- Store with lowercase for backward compatibility
     
     -- Initialize theme integration
     if self.ThemeIntegration then

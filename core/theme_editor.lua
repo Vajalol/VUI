@@ -1,7 +1,8 @@
 -- VUI Theme Editor
 -- Provides a visual theme customization interface
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create Theme Editor module
 VUI.ThemeEditor = {}

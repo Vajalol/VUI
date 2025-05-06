@@ -58,6 +58,19 @@ ModAPI.config = {
     validateDB = true,          -- Validate database structure
 }
 
+-- Helper function to normalize module names for standardization
+function ModAPI:NormalizeModuleName(name)
+    local nameLower = string.lower(name)
+    local nameCamel = name
+    
+    -- Convert first letter to uppercase and rest to lowercase for camelCase
+    if #name > 0 then
+        nameCamel = string.upper(string.sub(name, 1, 1)) .. string.lower(string.sub(name, 2))
+    end
+    
+    return nameLower, nameCamel
+end
+
 -- Register a module with VUI
 function ModAPI:RegisterModule(name, module, moduleType, version)
     if not name or not module then
@@ -65,8 +78,13 @@ function ModAPI:RegisterModule(name, module, moduleType, version)
         return false
     end
     
-    -- Check if already registered
-    if self.state.registeredModules[name] then
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(name)
+    
+    -- Check if already registered under any name variant
+    if self.state.registeredModules[name] or 
+       self.state.registeredModules[nameLower] or 
+       self.state.registeredModules[nameCamel] then
         self:LogWarning("Module already registered: " .. name)
         return false
     end
@@ -75,7 +93,7 @@ function ModAPI:RegisterModule(name, module, moduleType, version)
     moduleType = moduleType or "addon"
     version = version or "1.0.0"
     
-    -- Add state tracking
+    -- Add state tracking using the provided name
     self.state.registeredModules[name] = module
     self.state.moduleStatus[name] = "registered"
     self.state.moduleTypes[name] = moduleType
@@ -83,9 +101,44 @@ function ModAPI:RegisterModule(name, module, moduleType, version)
     self.state.loadedCount = self.state.loadedCount + 1
     table.insert(self.state.moduleOrder, name)
     
+    -- Also register standardized camelCase version if different
+    if name ~= nameCamel then
+        self.state.registeredModules[nameCamel] = module
+        self.state.moduleStatus[nameCamel] = "registered"
+        self.state.moduleTypes[nameCamel] = moduleType
+        self.state.moduleVersions[nameCamel] = version
+    end
+    
+    -- Also register lowercase version if different from original and camelCase
+    if name ~= nameLower and nameCamel ~= nameLower then
+        self.state.registeredModules[nameLower] = module
+        self.state.moduleStatus[nameLower] = "registered"
+        self.state.moduleTypes[nameLower] = moduleType
+        self.state.moduleVersions[nameLower] = version
+    end
+    
+    -- Set up the module in all named versions in the VUI namespace
+    VUI[name] = module
+    if name ~= nameCamel then
+        VUI[nameCamel] = module
+    end
+    if name ~= nameLower and nameCamel ~= nameLower then
+        VUI[nameLower] = module
+    end
+    
     -- Register in settings if needed
-    if VUI.db and VUI.db.profile and VUI.db.profile.modules and not VUI.db.profile.modules[name] then
-        VUI.db.profile.modules[name] = {}
+    if VUI.db and VUI.db.profile and VUI.db.profile.modules then
+        if not VUI.db.profile.modules[name] then
+            VUI.db.profile.modules[name] = {}
+        end
+        
+        -- Ensure settings are accessible via standardized name too
+        if name ~= nameLower then
+            VUI.db.profile.modules[nameLower] = VUI.db.profile.modules[name]
+        end
+        if name ~= nameCamel then
+            VUI.db.profile.modules[nameCamel] = VUI.db.profile.modules[name]
+        end
     end
     
     -- Auto-enable if configured
@@ -106,21 +159,45 @@ end
 
 -- Enable a module
 function ModAPI:EnableModule(name)
-    if not name or not self.state.registeredModules[name] then
-        self:LogError("Cannot enable unknown module: " .. tostring(name))
+    if not name then
+        self:LogError("Cannot enable module with nil name")
         return false
     end
     
-    local module = self.state.registeredModules[name]
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(name)
+    local moduleName = name
+    
+    -- Find the module under any of its name variants
+    if not self.state.registeredModules[name] then
+        if self.state.registeredModules[nameLower] then
+            moduleName = nameLower
+        elseif self.state.registeredModules[nameCamel] then
+            moduleName = nameCamel
+        else
+            self:LogError("Cannot enable unknown module: " .. tostring(name))
+            return false
+        end
+    end
+    
+    local module = self.state.registeredModules[moduleName]
     
     -- Already enabled, no need to enable again
-    if self.state.enabledModules[name] then
+    if self.state.enabledModules[moduleName] then
         return true
     end
     
-    -- Remove from disabled list if present
+    -- Remove from disabled list if present - check all possible name variants
     if self.state.disabledModules[name] then
         self.state.disabledModules[name] = nil
+        self.state.disabledCount = self.state.disabledCount - 1
+    end
+    if name ~= nameLower and self.state.disabledModules[nameLower] then
+        self.state.disabledModules[nameLower] = nil
+        self.state.disabledCount = self.state.disabledCount - 1
+    end
+    if name ~= nameCamel and nameLower ~= nameCamel and self.state.disabledModules[nameCamel] then
+        self.state.disabledModules[nameCamel] = nil
         self.state.disabledCount = self.state.disabledCount - 1
     end
     
@@ -136,15 +213,39 @@ function ModAPI:EnableModule(name)
     end
     
     if success then
-        -- Mark as enabled
+        -- Mark as enabled in all name variants
         self.state.enabledModules[name] = module
         self.state.moduleStatus[name] = "enabled"
+        
+        -- Also register with camelCase and lowercase if necessary
+        if name ~= nameCamel then
+            self.state.enabledModules[nameCamel] = module
+            self.state.moduleStatus[nameCamel] = "enabled"
+        end
+        if name ~= nameLower and nameCamel ~= nameLower then
+            self.state.enabledModules[nameLower] = module
+            self.state.moduleStatus[nameLower] = "enabled"
+        end
+        
         self.state.enabledCount = self.state.enabledCount + 1
         
         -- Save state if configured
         if self.config.saveModuleState and VUI.db and VUI.db.profile and VUI.db.profile.modules then
+            -- Make sure all name variants have the same settings
             if not VUI.db.profile.modules[name] then VUI.db.profile.modules[name] = {} end
             VUI.db.profile.modules[name].enabled = true
+            
+            if name ~= nameLower then
+                if not VUI.db.profile.modules[nameLower] then VUI.db.profile.modules[nameLower] = {} end
+                VUI.db.profile.modules[nameLower].enabled = true
+                VUI.db.profile.modules[nameLower] = VUI.db.profile.modules[name] -- Reference same table
+            end
+            
+            if name ~= nameCamel and nameLower ~= nameCamel then
+                if not VUI.db.profile.modules[nameCamel] then VUI.db.profile.modules[nameCamel] = {} end
+                VUI.db.profile.modules[nameCamel].enabled = true
+                VUI.db.profile.modules[nameCamel] = VUI.db.profile.modules[name] -- Reference same table
+            end
         end
         
         -- Log the operation
@@ -170,23 +271,46 @@ end
 
 -- Disable a module
 function ModAPI:DisableModule(name)
-    if not name or not self.state.registeredModules[name] then
-        self:LogError("Cannot disable unknown module: " .. tostring(name))
+    if not name then
+        self:LogError("Cannot disable module with nil name")
         return false
     end
     
-    local module = self.state.registeredModules[name]
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(name)
+    local moduleName = name
+    
+    -- Find the module under any of its name variants
+    if not self.state.registeredModules[name] then
+        if self.state.registeredModules[nameLower] then
+            moduleName = nameLower
+        elseif self.state.registeredModules[nameCamel] then
+            moduleName = nameCamel
+        else
+            self:LogError("Cannot disable unknown module: " .. tostring(name))
+            return false
+        end
+    end
+    
+    local module = self.state.registeredModules[moduleName]
     
     -- Already disabled, no need to disable again
-    if self.state.disabledModules[name] then
+    if self.state.disabledModules[moduleName] then
         return true
     end
     
-    -- Remove from enabled list if present
+    -- Remove from enabled list if present - check all possible name variants
     if self.state.enabledModules[name] then
         self.state.enabledModules[name] = nil
-        self.state.enabledCount = self.state.enabledCount - 1
     end
+    if name ~= nameLower and self.state.enabledModules[nameLower] then
+        self.state.enabledModules[nameLower] = nil
+    end
+    if name ~= nameCamel and nameLower ~= nameCamel and self.state.enabledModules[nameCamel] then
+        self.state.enabledModules[nameCamel] = nil
+    end
+    
+    self.state.enabledCount = self.state.enabledCount - 1
     
     -- Call module's disable method if it exists
     local success, err
@@ -199,15 +323,39 @@ function ModAPI:DisableModule(name)
         success = true
     end
     
-    -- Mark as disabled regardless of success
+    -- Mark as disabled in all name variants
     self.state.disabledModules[name] = module
     self.state.moduleStatus[name] = "disabled"
+    
+    -- Also disable with camelCase and lowercase if necessary
+    if name ~= nameCamel then
+        self.state.disabledModules[nameCamel] = module
+        self.state.moduleStatus[nameCamel] = "disabled"
+    end
+    if name ~= nameLower and nameCamel ~= nameLower then
+        self.state.disabledModules[nameLower] = module
+        self.state.moduleStatus[nameLower] = "disabled"
+    end
+    
     self.state.disabledCount = self.state.disabledCount + 1
     
     -- Save state if configured
     if self.config.saveModuleState and VUI.db and VUI.db.profile and VUI.db.profile.modules then
+        -- Make sure all name variants have the same settings
         if not VUI.db.profile.modules[name] then VUI.db.profile.modules[name] = {} end
         VUI.db.profile.modules[name].enabled = false
+        
+        if name ~= nameLower then
+            if not VUI.db.profile.modules[nameLower] then VUI.db.profile.modules[nameLower] = {} end
+            VUI.db.profile.modules[nameLower].enabled = false
+            VUI.db.profile.modules[nameLower] = VUI.db.profile.modules[name] -- Reference same table
+        end
+        
+        if name ~= nameCamel and nameLower ~= nameCamel then
+            if not VUI.db.profile.modules[nameCamel] then VUI.db.profile.modules[nameCamel] = {} end
+            VUI.db.profile.modules[nameCamel].enabled = false
+            VUI.db.profile.modules[nameCamel] = VUI.db.profile.modules[name] -- Reference same table
+        end
     end
     
     -- Log the operation
@@ -227,12 +375,31 @@ end
 
 -- Toggle a module's state
 function ModAPI:ToggleModule(name)
-    if not name or not self.state.registeredModules[name] then
-        self:LogError("Cannot toggle unknown module: " .. tostring(name))
+    if not name then
+        self:LogError("Cannot toggle module with nil name")
         return false
     end
     
-    if self.state.enabledModules[name] then
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(name)
+    local moduleName = name
+    
+    -- Find the module under any of its name variants
+    if not self.state.registeredModules[name] then
+        if self.state.registeredModules[nameLower] then
+            moduleName = nameLower
+        elseif self.state.registeredModules[nameCamel] then
+            moduleName = nameCamel
+        else
+            self:LogError("Cannot toggle unknown module: " .. tostring(name))
+            return false
+        end
+    end
+    
+    -- Check if the module is enabled under any of its name variants
+    if self.state.enabledModules[name] or 
+       self.state.enabledModules[nameLower] or 
+       self.state.enabledModules[nameCamel] then
         return self:DisableModule(name)
     else
         return self:EnableModule(name)
@@ -241,22 +408,66 @@ end
 
 -- Check if a module is loaded
 function ModAPI:IsModuleLoaded(name)
-    return self.state.registeredModules[name] ~= nil
+    if not name then return false end
+    
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(name)
+    
+    -- Check all possible name variants
+    return self.state.registeredModules[name] ~= nil or
+           self.state.registeredModules[nameLower] ~= nil or
+           self.state.registeredModules[nameCamel] ~= nil
 end
 
 -- Check if a module is enabled
 function ModAPI:IsModuleEnabled(name)
-    return self.state.enabledModules[name] ~= nil
+    if not name then return false end
+    
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(name)
+    
+    -- Check all possible name variants
+    return self.state.enabledModules[name] ~= nil or
+           self.state.enabledModules[nameLower] ~= nil or
+           self.state.enabledModules[nameCamel] ~= nil
 end
 
 -- Get a module by name
 function ModAPI:GetModule(name)
-    return self.state.registeredModules[name]
+    if not name then return nil end
+    
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(name)
+    
+    -- Try to find the module under any of its name variants
+    if self.state.registeredModules[name] then
+        return self.state.registeredModules[name]
+    elseif self.state.registeredModules[nameLower] then
+        return self.state.registeredModules[nameLower]
+    elseif self.state.registeredModules[nameCamel] then
+        return self.state.registeredModules[nameCamel]
+    end
+    
+    return nil
 end
 
 -- Get module status
 function ModAPI:GetModuleStatus(name)
-    return self.state.moduleStatus[name] or "unknown"
+    if not name then return "unknown" end
+    
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(name)
+    
+    -- Try to find the status under any of its name variants
+    if self.state.moduleStatus[name] then
+        return self.state.moduleStatus[name]
+    elseif self.state.moduleStatus[nameLower] then
+        return self.state.moduleStatus[nameLower]
+    elseif self.state.moduleStatus[nameCamel] then
+        return self.state.moduleStatus[nameCamel]
+    end
+    
+    return "unknown"
 end
 
 -- Register default settings for a module
@@ -555,10 +766,29 @@ function ModAPI:InitializeAllModules()
             
             if shouldInit then
                 -- Safety check for DB initialization
-                if self.config.dbInitCheck and module.db == nil and VUI.db and VUI.db.profile and VUI.db.profile.modules and VUI.db.profile.modules[name] then
-                    -- Set up database reference
-                    module.db = VUI.db.profile.modules[name]
-                    self:SafeDebug("DBInit", "Auto-initialized DB reference for module: " .. name)
+                if self.config.dbInitCheck and module.db == nil and VUI.db and VUI.db.profile and VUI.db.profile.modules then
+                    -- Get standardized versions of the name (lowercase and camelCase)
+                    local nameLower, nameCamel = self:NormalizeModuleName(name)
+                    
+                    -- Try to find the module settings under any of its name variants
+                    if VUI.db.profile.modules[name] then
+                        -- Set up database reference
+                        module.db = VUI.db.profile.modules[name]
+                        self:SafeDebug("DBInit", "Auto-initialized DB reference for module: " .. name)
+                    elseif VUI.db.profile.modules[nameLower] then
+                        -- Set up database reference using lowercase variant
+                        module.db = VUI.db.profile.modules[nameLower]
+                        self:SafeDebug("DBInit", "Auto-initialized DB reference for module: " .. name .. " using lowercase name: " .. nameLower)
+                    elseif VUI.db.profile.modules[nameCamel] then
+                        -- Set up database reference using camelCase variant
+                        module.db = VUI.db.profile.modules[nameCamel]
+                        self:SafeDebug("DBInit", "Auto-initialized DB reference for module: " .. name .. " using camelCase name: " .. nameCamel)
+                    else
+                        -- No existing settings found, create new entry
+                        VUI.db.profile.modules[name] = {}
+                        module.db = VUI.db.profile.modules[name]
+                        self:SafeDebug("DBInit", "Created new DB entry for module: " .. name)
+                    end
                 end
                 
                 -- Check for module template application
@@ -733,6 +963,139 @@ function ModAPI:GetStats()
     return stats
 end
 
+-- Initialize module settings with defaults
+-- CreateModuleSettings function - creates and returns module settings
+-- This function ensures all modules have consistent DB field access
+function ModAPI:CreateModuleSettings(moduleName, defaults)
+    if not moduleName then
+        self:LogError("Cannot create module settings: Missing module name")
+        return {}
+    end
+    
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(moduleName)
+    
+    -- Ensure VUI database structure exists
+    if not VUI.db then VUI.db = {} end
+    if not VUI.db.profile then VUI.db.profile = {} end
+    if not VUI.db.profile.modules then VUI.db.profile.modules = {} end
+    
+    -- Try to find existing settings under any of the name variants
+    local settings
+    if VUI.db.profile.modules[moduleName] then
+        settings = VUI.db.profile.modules[moduleName]
+    elseif VUI.db.profile.modules[nameLower] then
+        settings = VUI.db.profile.modules[nameLower]
+        -- Also create references with other names for consistency
+        VUI.db.profile.modules[moduleName] = settings
+    elseif VUI.db.profile.modules[nameCamel] then
+        settings = VUI.db.profile.modules[nameCamel]
+        -- Also create references with other names for consistency
+        VUI.db.profile.modules[moduleName] = settings
+    else
+        -- No existing settings, create new entry
+        settings = {}
+        VUI.db.profile.modules[moduleName] = settings
+        
+        -- Also create standardized name entries pointing to the same table
+        if moduleName ~= nameLower then
+            VUI.db.profile.modules[nameLower] = settings
+        end
+        if moduleName ~= nameCamel and nameLower ~= nameCamel then
+            VUI.db.profile.modules[nameCamel] = settings
+        end
+    end
+    
+    -- Merge defaults if provided
+    if defaults then
+        for k, v in pairs(defaults) do
+            if settings[k] == nil then
+                settings[k] = v
+            end
+        end
+    end
+    
+    return settings
+end
+
+function ModAPI:InitializeModuleSettings(moduleName, defaults)
+    if not moduleName or not defaults then
+        self:LogError("Cannot initialize settings: Missing module name or defaults")
+        return {}
+    end
+    
+    -- Get standardized versions of the name (lowercase and camelCase)
+    local nameLower, nameCamel = self:NormalizeModuleName(moduleName)
+    
+    -- Ensure VUI database structure exists
+    if not VUI.db then VUI.db = {} end
+    if not VUI.db.profile then VUI.db.profile = {} end
+    if not VUI.db.profile.modules then VUI.db.profile.modules = {} end
+    
+    -- Try to find existing settings under any of the name variants
+    local settings
+    if VUI.db.profile.modules[moduleName] then
+        settings = VUI.db.profile.modules[moduleName]
+    elseif VUI.db.profile.modules[nameLower] then
+        settings = VUI.db.profile.modules[nameLower]
+        -- Also create references with other names for consistency
+        VUI.db.profile.modules[moduleName] = settings
+    elseif VUI.db.profile.modules[nameCamel] then
+        settings = VUI.db.profile.modules[nameCamel]
+        -- Also create references with other names for consistency
+        VUI.db.profile.modules[moduleName] = settings
+    else
+        -- No existing settings, create new entry
+        settings = {}
+        VUI.db.profile.modules[moduleName] = settings
+        
+        -- Also create standardized name entries pointing to the same table
+        if moduleName ~= nameLower then
+            VUI.db.profile.modules[nameLower] = settings
+        end
+        if moduleName ~= nameCamel and nameLower ~= nameCamel then
+            VUI.db.profile.modules[nameCamel] = settings
+        end
+    end
+    
+    -- Merge defaults with existing settings
+    for k, v in pairs(defaults) do
+        if settings[k] == nil then
+            settings[k] = v
+        end
+    end
+    
+    -- Register defaults for this module (store but don't apply them)
+    if not self.state.defaultSettings then
+        self.state.defaultSettings = {}
+    end
+    self.state.defaultSettings[moduleName] = defaults
+    
+    return settings
+end
+
+-- Register defaults for a module
+function ModAPI:RegisterDefaults(moduleName, defaults)
+    if not moduleName or not defaults then return end
+    
+    -- Store defaults in state
+    if not self.state.defaultSettings then
+        self.state.defaultSettings = {}
+    end
+    self.state.defaultSettings[moduleName] = defaults
+    
+    -- Also store with standardized names for consistency
+    local nameLower, nameCamel = self:NormalizeModuleName(moduleName)
+    if moduleName ~= nameLower then
+        self.state.defaultSettings[nameLower] = defaults
+    end
+    if moduleName ~= nameCamel and nameLower ~= nameCamel then
+        self.state.defaultSettings[nameCamel] = defaults
+    end
+    
+    return true
+end
+
 -- Logging methods with fallback protection
 function ModAPI:LogInfo(message)
     if VUI and VUI.Debug then
@@ -793,6 +1156,75 @@ function ModAPI:SafeDebug(category, message)
     end
 end
 
+-- Create a new module with standardized structure
+function ModAPI:CreateModule(name, defaults)
+    if not name then
+        self:LogError("Cannot create module: Missing module name")
+        return nil
+    end
+    
+    -- Create the module object
+    local module = {}
+    
+    -- Set up standardized module properties
+    module.name = name
+    module.title = "VUI " .. name:gsub("^%l", string.upper)
+    module.version = "1.0.0"
+    module.author = "VortexQ8"
+    
+    -- Initialize database settings
+    module.db = self:CreateModuleSettings(name, defaults or {})
+    
+    -- Add standard methods
+    module.Enable = function(self)
+        if VUI.ModuleAPI.state.enabledModules[name] then
+            return -- Already enabled
+        end
+        
+        -- Call OnEnable if it exists
+        if self.OnEnable then
+            self:OnEnable()
+        end
+        
+        -- Update enabled state in DB
+        if self.db then
+            self.db.enabled = true
+        end
+        
+        -- Update module state tracking
+        VUI.ModuleAPI.state.enabledModules[name] = true
+        VUI.ModuleAPI.state.disabledModules[name] = nil
+    end
+    
+    module.Disable = function(self)
+        if not VUI.ModuleAPI.state.enabledModules[name] then
+            return -- Already disabled
+        end
+        
+        -- Call OnDisable if it exists
+        if self.OnDisable then
+            self:OnDisable()
+        end
+        
+        -- Update enabled state in DB
+        if self.db then
+            self.db.enabled = false
+        end
+        
+        -- Update module state tracking
+        VUI.ModuleAPI.state.enabledModules[name] = nil
+        VUI.ModuleAPI.state.disabledModules[name] = true
+    end
+    
+    -- Register the module
+    self:RegisterModule(name, module)
+    
+    -- Store a reference in VUI namespace
+    VUI[name] = module
+    
+    return module
+end
+
 -- Register the ModuleAPI with VUI
 function ModAPI:Initialize()
     VUI.RegisterModule = function(name, module, moduleType, version)
@@ -805,6 +1237,21 @@ function ModAPI:Initialize()
     
     VUI.InitializeModules = function()
         return ModAPI:InitializeAllModules()
+    end
+    
+    -- Expose module creation function
+    VUI.ModuleAPI.CreateModule = function(name, defaults)
+        return ModAPI:CreateModule(name, defaults)
+    end
+    
+    -- Expose settings initialization function
+    VUI.InitializeModuleSettings = function(moduleName, defaults)
+        return ModAPI:InitializeModuleSettings(moduleName, defaults)
+    end
+    
+    -- Expose module name standardization
+    VUI.NormalizeModuleName = function(name)
+        return ModAPI:NormalizeModuleName(name)
     end
     
     if VUI.RegisterSystem then

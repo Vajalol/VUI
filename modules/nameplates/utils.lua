@@ -1,5 +1,6 @@
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local Nameplates = VUI.nameplates
 
 -- Utility functions for VUI Plater

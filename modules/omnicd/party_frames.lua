@@ -1,6 +1,7 @@
 -- VUI OmniCD Party Frame Integration
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local OmniCD = VUI.omnicd
 
 -- Constants

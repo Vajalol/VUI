@@ -2,7 +2,8 @@
 -- This file defines the buff/debuff categorization system
 
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 -- Safety check in case unpack isn't available
 if not VUI.buffoverlay then
     VUI.buffoverlay = {}

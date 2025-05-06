@@ -1,6 +1,7 @@
 -- VUI Automation Module - Initialization
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create the module using the module API
 local Automation = VUI.ModuleAPI:CreateModule("automation")

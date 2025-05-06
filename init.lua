@@ -26,8 +26,10 @@ local AceDBOptions = LibStub("AceDBOptions-3.0")
 
 -- Add module tables
 -- Original modules
-VUI.buffoverlay = {}
-VUI.trufigcd = {}
+VUI.BuffOverlay = {}
+VUI.buffoverlay = VUI.BuffOverlay  -- Alias for backward compatibility
+VUI.TrufiGCD = {}
+VUI.trufigcd = VUI.TrufiGCD  -- Alias for backward compatibility
 VUI.moveany = {}
 VUI.auctionator = {}
 VUI.angrykeystone = {}
@@ -453,6 +455,66 @@ function VUI:PreInitialize()
             }
         }
     end
+end
+
+-- NewModule function (AceAddon compatibility)
+function VUI:NewModule(name, ...)
+    if not name then
+        error("Usage: NewModule(name[, prototype, ...]): 'name' - module name is required")
+        return nil
+    end
+    
+    -- Create the module
+    local module = {}
+    
+    -- Copy prototype methods (embedded libraries from AceAddon like AceEvent-3.0)
+    local libCount = select("#", ...)
+    if libCount > 0 then
+        -- Process each library prototype
+        for i = 1, libCount do
+            local lib = select(i, ...)
+            if type(lib) == "string" then
+                -- This is a library that needs to be embedded (AceEvent-3.0, etc.)
+                if LibStub then
+                    local prototype = LibStub(lib, true)
+                    if prototype and prototype.Embed then
+                        prototype:Embed(module)
+                    else
+                        VUI:Debug("Library " .. lib .. " not found or missing Embed method")
+                    end
+                end
+            elseif type(lib) == "table" then
+                -- This is a table of methods to be copied
+                for k, v in pairs(lib) do
+                    module[k] = v
+                end
+            end
+        end
+    end
+    
+    -- Set basic properties
+    module.name = name
+    
+    -- Initialize module database
+    if VUI.ModuleAPI and VUI.ModuleAPI.CreateModuleSettings then
+        module.db = VUI.ModuleAPI:CreateModuleSettings(name, {})
+    elseif VUI.db and VUI.db.profile and VUI.db.profile.modules then
+        -- Fallback if ModuleAPI isn't initialized yet
+        if not VUI.db.profile.modules[name] then
+            VUI.db.profile.modules[name] = {}
+        end
+        module.db = VUI.db.profile.modules[name]
+    end
+    
+    -- Store the module in the VUI namespace
+    VUI[name] = module
+    
+    -- Register the module with ModuleAPI if available
+    if VUI.ModuleAPI and VUI.ModuleAPI.RegisterModule then
+        VUI.ModuleAPI:RegisterModule(name, module)
+    end
+    
+    return module
 end
 
 -- Load default settings - this function is referenced but was missing

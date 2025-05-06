@@ -1,7 +1,8 @@
 -- VUI MSBT MultiNotification Integration
 -- Links the MSBT module with the MultiNotification system
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Get module references
 local MSBT = VUI:GetModule("MSBT")

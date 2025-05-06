@@ -1,5 +1,6 @@
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create the TrufiGCD module
 local TrufiGCD = {
@@ -9,7 +10,11 @@ local TrufiGCD = {
     version = "1.0.0",
     author = "VortexQ8"
 }
+-- Store reference to the proper namespace
+VUI.TrufiGCD = TrufiGCD
+-- Register with both lowercase and camelCase for consistency
 VUI:RegisterModule("trufigcd", TrufiGCD)
+VUI:RegisterModule("TrufiGCD", TrufiGCD)
 
 -- Get configuration options for main UI integration
 function TrufiGCD:GetConfig()

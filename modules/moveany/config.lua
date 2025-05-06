@@ -1,7 +1,8 @@
 -- MoveAny Config Implementation
 -- This file contains the configuration options for the MoveAny module
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local MoveAny = VUI.modules.moveany
 local AceGUI = LibStub("AceGUI-3.0")
 

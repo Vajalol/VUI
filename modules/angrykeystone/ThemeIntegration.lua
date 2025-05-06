@@ -5,7 +5,8 @@
 -------------------------------------------------------------------------------
 
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local AngryKeystones = VUI.angrykeystone
 
 -- Skip if AngryKeystones module is not available

@@ -5,6 +5,51 @@ if not VUI then VUI = _G.VUI end
 
 -- VUI Core functions
 
+-- Debug method with extensive fallbacks
+function VUI:Debug(msg)
+    -- Guard against nil message
+    if not msg then return end
+    
+    -- Try to use the debug settings if available
+    if self.db and self.db.profile and self.db.profile.debugging and self.db.profile.debugging.enabled then
+        -- If debugging is explicitly enabled in settings
+        if _G.DEFAULT_CHAT_FRAME then
+            _G.DEFAULT_CHAT_FRAME:AddMessage("|cff00aaff[VUI Debug]|r " .. tostring(msg))
+        else
+            print("|cff00aaff[VUI Debug]|r " .. tostring(msg))
+        end
+    end
+    
+    -- Always record in debug log if it exists
+    if self.debugLog then
+        table.insert(self.debugLog, {
+            time = GetTime(),
+            message = tostring(msg),
+            stack = debugstack(2, 1, 0)
+        })
+        
+        -- Keep log size reasonable
+        if #self.debugLog > 1000 then
+            table.remove(self.debugLog, 1)
+        end
+    end
+    
+    -- Always keep last few messages for crash diagnostics
+    if not self.lastDebugMessages then
+        self.lastDebugMessages = {}
+    end
+    
+    table.insert(self.lastDebugMessages, {
+        time = GetTime(),
+        message = tostring(msg)
+    })
+    
+    -- Keep recent messages list at a reasonable size
+    if #self.lastDebugMessages > 50 then
+        table.remove(self.lastDebugMessages, 1)
+    end
+end
+
 -- Initialize database
 function VUI:InitializeDB()
     -- Create main database using AceDB-3.0

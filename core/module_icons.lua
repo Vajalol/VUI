@@ -7,7 +7,8 @@
 ]]
 
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Module Icons Table
 -- Using standard WoW icons that match each module's functionality

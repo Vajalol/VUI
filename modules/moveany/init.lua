@@ -1,9 +1,17 @@
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create the MoveAny module
 local MoveAny = {}
+
+-- Register with both camelCase and lowercase for consistency
+VUI:RegisterModule("MoveAny", MoveAny)
 VUI:RegisterModule("moveany", MoveAny)
+
+-- Create references in VUI namespace
+VUI.MoveAny = MoveAny  -- CamelCase version
+VUI.moveany = MoveAny  -- lowercase for backward compatibility
 
 -- Get configuration options for main UI integration
 function MoveAny:GetConfig()
@@ -15,9 +23,9 @@ function MoveAny:GetConfig()
                 type = "toggle",
                 name = "Enable MoveAny",
                 desc = "Enable or disable the MoveAny module",
-                get = function() return VUI.db.profile.modules.moveany.enabled end,
+                get = function() return self.db.enabled end,
                 set = function(_, value) 
-                    VUI.db.profile.modules.moveany.enabled = value
+                    self.db.enabled = value
                     if value then
                         self:Enable()
                     else
@@ -30,9 +38,9 @@ function MoveAny:GetConfig()
                 type = "toggle",
                 name = "Show Grid",
                 desc = "Show a grid overlay for precise positioning",
-                get = function() return VUI.db.profile.modules.moveany.showGrid end,
+                get = function() return self.db.showGrid end,
                 set = function(_, value) 
-                    VUI.db.profile.modules.moveany.showGrid = value
+                    self.db.showGrid = value
                     if value then
                         self:ShowGrid()
                     else
@@ -48,9 +56,9 @@ function MoveAny:GetConfig()
                 min = 8,
                 max = 64,
                 step = 8,
-                get = function() return VUI.db.profile.modules.moveany.gridSize or 32 end,
+                get = function() return self.db.gridSize or 32 end,
                 set = function(_, value) 
-                    VUI.db.profile.modules.moveany.gridSize = value
+                    self.db.gridSize = value
                     self:UpdateGrid()
                 end,
                 order = 3
@@ -59,9 +67,9 @@ function MoveAny:GetConfig()
                 type = "toggle",
                 name = "Snap to Grid",
                 desc = "Automatically snap frames to the grid when moving",
-                get = function() return VUI.db.profile.modules.moveany.snapToGrid end,
+                get = function() return self.db.snapToGrid end,
                 set = function(_, value) 
-                    VUI.db.profile.modules.moveany.snapToGrid = value
+                    self.db.snapToGrid = value
                 end,
                 order = 4
             },
@@ -82,9 +90,40 @@ end
 
 -- Register module config with the VUI ModuleAPI
 VUI.ModuleAPI:RegisterModuleConfig("moveany", MoveAny:GetConfig())
+VUI.ModuleAPI:RegisterModuleConfig("MoveAny", MoveAny:GetConfig())
+
+-- Define defaults for MoveAny module
+MoveAny.defaults = {
+    enabled = true,
+    showGrid = false,
+    gridSize = 32,
+    snapToGrid = true,
+    lockFrames = true,
+    showTooltips = true,
+    savedFrames = {}
+}
 
 -- Initialize the module
 function MoveAny:Initialize()
+    -- Initialize settings using standardized module API if available
+    if VUI.InitializeModuleSettings then
+        self.db = VUI.InitializeModuleSettings("MoveAny", self.defaults)
+    else
+        -- Fallback if standardized API not available
+        if not VUI.db.profile.modules.moveany then
+            VUI.db.profile.modules.moveany = {}
+        end
+        
+        -- Initialize with defaults if values don't exist
+        for k, v in pairs(self.defaults) do
+            if VUI.db.profile.modules.moveany[k] == nil then
+                VUI.db.profile.modules.moveany[k] = v
+            end
+        end
+        
+        self.db = VUI.db.profile.modules.moveany
+    end
+    
     -- Create table to store moveable frames
     self.frames = {}
     self.anchors = {}
@@ -120,7 +159,7 @@ function MoveAny:SetupGrid()
     self.gridFrame.horizontal = {}
     self.gridFrame.vertical = {}
     
-    local gridSize = VUI.db.profile.modules.moveany.gridSize or 32
+    local gridSize = self.db.gridSize or 32
     
     -- Calculate number of lines needed based on screen dimensions
     local screenWidth = GetScreenWidth()
@@ -160,7 +199,7 @@ function MoveAny:UpdateGrid()
     self.gridFrame.horizontal = {}
     self.gridFrame.vertical = {}
     
-    local gridSize = VUI.db.profile.modules.moveany.gridSize or 32
+    local gridSize = self.db.gridSize or 32
     
     -- Calculate number of lines needed based on screen dimensions
     local screenWidth = GetScreenWidth()

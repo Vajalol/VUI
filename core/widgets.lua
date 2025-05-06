@@ -1,7 +1,8 @@
 -- VUI Widgets
 -- This file provides advanced UI widgets built on top of the basic UI framework
 local _, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 
 -- Create widgets namespace 
 VUI.Widgets = {}

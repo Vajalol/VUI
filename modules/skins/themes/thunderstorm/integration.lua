@@ -1,5 +1,6 @@
 local addonName, VUI = ...
--- Fallback for test environmentsif not VUI then VUI = _G.VUI end
+-- Fallback for test environments
+if not VUI then VUI = _G.VUI end
 local L = VUI.L
 local Module = VUI:GetModule('Skins')
 if not Module then return end
