@@ -1,0 +1,1 @@
+local errors = {}; local old_error = error; _G.error = function(msg, level) table.insert(errors, msg); print("ERROR CAPTURED:", msg); old_error(msg, level); end; function VUI_DumpErrors() for i, err in ipairs(errors) do print(i, err); end end
