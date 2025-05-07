@@ -236,6 +236,12 @@ function VUI:Initialize()
     -- Mark as initialized
     self.isInitialized = true
     
+    -- Initialize Final Validation system
+    if self.FinalValidation and self.FinalValidation.Initialize then
+        self:Debug("Initializing final validation system...")
+        self.FinalValidation:Initialize()
+    end
+    
     -- Trigger OnInitialize callbacks if registered
     if self.OnInitialize then
         self:OnInitialize()

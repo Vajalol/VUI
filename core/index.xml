@@ -66,4 +66,7 @@
     <!-- Skinning System - depends on theme system -->
     <Script file="Skins.lua"/>
     <Script file="BlizzardFrames.lua"/>
+    
+    <!-- Final Testing and Validation - load last -->
+    <Script file="final_validation.lua"/>
 </Ui>
