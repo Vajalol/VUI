@@ -322,34 +322,224 @@ end
 
 -- Reduce level of detail during combat
 function CombatPerf:ReduceLOD()
-    -- Implementation depends on what LOD features we support
-    -- This is a placeholder for future implementation
+    -- Track original settings to restore later
+    if not self.state.originalLODSettings then
+        self.state.originalLODSettings = {
+            textureFiltering = VUI.db.profile.appearance and VUI.db.profile.appearance.textureFiltering or "TRILINEAR",
+            shadowDetail = VUI.db.profile.appearance and VUI.db.profile.appearance.shadowDetail or "HIGH",
+            particleDensity = VUI.db.profile.appearance and VUI.db.profile.appearance.particleDensity or 1.0,
+            frameTextureLevels = VUI.db.profile.appearance and VUI.db.profile.appearance.frameTextureLevels or "HIGH"
+        }
+    end
+    
+    -- Reduce visual quality settings to improve performance
+    if VUI.db.profile.appearance then
+        -- Reduce texture filtering quality
+        VUI.db.profile.appearance.textureFiltering = "BILINEAR"
+        
+        -- Reduce shadow detail
+        VUI.db.profile.appearance.shadowDetail = "LOW"
+        
+        -- Reduce particle density (effects like spell animations)
+        VUI.db.profile.appearance.particleDensity = 0.5
+        
+        -- Use lower resolution textures for frames
+        VUI.db.profile.appearance.frameTextureLevels = "LOW"
+    end
+    
+    -- Apply LOD settings to all UI elements
+    self:ApplyLODToFrames(true)
+    
+    -- Notify modules about LOD change
+    VUI:SendMessage("VUI_LOD_CHANGED", "LOW")
+    
+    -- Update appearance if theme system is available
+    if VUI.ThemeIntegration and VUI.ThemeIntegration.ApplyTheme then
+        local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
+        VUI.ThemeIntegration:ApplyTheme(currentTheme, true) -- true = minimal update
+    end
 end
 
 -- Restore normal level of detail
 function CombatPerf:RestoreLOD()
-    -- Placeholder for future implementation
+    -- Restore original settings if we have them
+    if self.state.originalLODSettings and VUI.db.profile.appearance then
+        VUI.db.profile.appearance.textureFiltering = self.state.originalLODSettings.textureFiltering
+        VUI.db.profile.appearance.shadowDetail = self.state.originalLODSettings.shadowDetail
+        VUI.db.profile.appearance.particleDensity = self.state.originalLODSettings.particleDensity
+        VUI.db.profile.appearance.frameTextureLevels = self.state.originalLODSettings.frameTextureLevels
+    end
+    
+    -- Reset LOD on frames
+    self:ApplyLODToFrames(false)
+    
+    -- Notify modules about LOD change
+    VUI:SendMessage("VUI_LOD_CHANGED", "NORMAL")
+    
+    -- Update appearance if theme system is available
+    if VUI.ThemeIntegration and VUI.ThemeIntegration.ApplyTheme then
+        local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
+        VUI.ThemeIntegration:ApplyTheme(currentTheme) -- normal update
+    end
+end
+
+-- Apply LOD settings to frames
+function CombatPerf:ApplyLODToFrames(reduceLOD)
+    -- Process all throttled frames to apply appropriate LOD settings
+    for frame, info in pairs(self.state.throttledFrames) do
+        if frame.SetLOD then
+            frame:SetLOD(reduceLOD and "LOW" or "HIGH")
+        end
+        
+        -- Apply special handling for common frame types
+        local frameType = frame:GetObjectType()
+        
+        if frameType == "StatusBar" then
+            -- Reduce status bar resolution during combat
+            if reduceLOD then
+                frame:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+            elseif info.originalTexture then
+                frame:SetStatusBarTexture(info.originalTexture)
+            end
+        elseif frameType == "Frame" or frameType == "Button" then
+            -- Reduce shadow complexity on general frames
+            local hasShadow = frame.shadow or frame.Shadow
+            if hasShadow then
+                if reduceLOD then
+                    -- Store original alpha to restore later
+                    if not info.originalShadowAlpha and hasShadow:GetAlpha() then
+                        info.originalShadowAlpha = hasShadow:GetAlpha()
+                    end
+                    hasShadow:SetAlpha(0.3) -- Reduce shadow intensity
+                elseif info.originalShadowAlpha then
+                    hasShadow:SetAlpha(info.originalShadowAlpha)
+                end
+            end
+        end
+    end
+    
+    -- Also apply to unit frames if they exist
+    if VUI.unitframes and VUI.unitframes.frames then
+        for _, unitFrame in pairs(VUI.unitframes.frames) do
+            if unitFrame.SetLOD then
+                unitFrame:SetLOD(reduceLOD and "LOW" or "HIGH")
+            end
+        end
+    end
+    
+    -- Apply to nameplates if they exist
+    if VUI.nameplates and VUI.nameplates.SetLOD then
+        VUI.nameplates:SetLOD(reduceLOD and "LOW" or "HIGH")
+    end
 end
 
 -- Disable animations during combat
 function CombatPerf:DisableAnimations()
-    -- Implementation depends on our animation system
-    -- This is a placeholder for future implementation
+    -- Store original animation settings
+    if not self.state.originalAnimSettings then
+        self.state.originalAnimSettings = {
+            enabled = VUI.db.profile.animations and VUI.db.profile.animations.enabled or true,
+            frameAnimsEnabled = VUI.db.profile.animations and VUI.db.profile.animations.frameAnimsEnabled or true,
+            combatAnimsEnabled = VUI.db.profile.animations and VUI.db.profile.animations.combatAnimsEnabled or true,
+            uiAnimsEnabled = VUI.db.profile.animations and VUI.db.profile.animations.uiAnimsEnabled or true
+        }
+    end
+    
+    -- Disable most animations, but keep essential combat animations
+    if VUI.db.profile.animations then
+        -- Keep essential animations enabled
+        VUI.db.profile.animations.enabled = true
+        
+        -- Disable non-essential frame animations
+        VUI.db.profile.animations.frameAnimsEnabled = false
+        
+        -- Keep combat animations (they're important)
+        VUI.db.profile.animations.combatAnimsEnabled = true
+        
+        -- Disable UI animations (fades, etc)
+        VUI.db.profile.animations.uiAnimsEnabled = false
+    end
+    
+    -- Apply animation settings to all registered animation groups
+    if VUI.AnimationManager then
+        VUI.AnimationManager:PauseNonEssentialAnimations()
+    end
+    
+    -- Notify modules about animation state change
+    VUI:SendMessage("VUI_ANIMATIONS_STATE_CHANGED", false)
 end
 
 -- Enable animations when out of combat
 function CombatPerf:EnableAnimations()
-    -- Placeholder for future implementation
+    -- Restore original animation settings
+    if self.state.originalAnimSettings and VUI.db.profile.animations then
+        VUI.db.profile.animations.enabled = self.state.originalAnimSettings.enabled
+        VUI.db.profile.animations.frameAnimsEnabled = self.state.originalAnimSettings.frameAnimsEnabled
+        VUI.db.profile.animations.combatAnimsEnabled = self.state.originalAnimSettings.combatAnimsEnabled
+        VUI.db.profile.animations.uiAnimsEnabled = self.state.originalAnimSettings.uiAnimsEnabled
+    end
+    
+    -- Resume animations
+    if VUI.AnimationManager then
+        VUI.AnimationManager:ResumeAllAnimations()
+    end
+    
+    -- Notify modules about animation state change
+    VUI:SendMessage("VUI_ANIMATIONS_STATE_CHANGED", true)
 end
 
 -- Throttle tooltip updates during combat
 function CombatPerf:ThrottleTooltips()
-    -- Placeholder for future implementation
+    -- Store original tooltip settings
+    if not self.state.originalTooltipSettings then
+        self.state.originalTooltipSettings = {
+            updateFrequency = VUI.db.profile.tooltip and VUI.db.profile.tooltip.updateFrequency or 0.1,
+            detailLevel = VUI.db.profile.tooltip and VUI.db.profile.tooltip.detailLevel or "HIGH",
+            enableEnhancedInfo = VUI.db.profile.tooltip and VUI.db.profile.tooltip.enableEnhancedInfo or true
+        }
+    end
+    
+    -- Reduce tooltip update frequency and detail during combat
+    if VUI.db.profile.tooltip then
+        -- Set slower update frequency for tooltips
+        VUI.db.profile.tooltip.updateFrequency = 0.5 -- Once per half second
+        
+        -- Reduce level of information shown
+        VUI.db.profile.tooltip.detailLevel = "LOW"
+        
+        -- Disable enhanced info that requires additional processing
+        VUI.db.profile.tooltip.enableEnhancedInfo = false
+    end
+    
+    -- Apply to GameTooltip
+    if GameTooltip and GameTooltip.VUISetUpdateFrequency then
+        GameTooltip:VUISetUpdateFrequency(0.5)
+    end
+    
+    -- Notify tooltip module if available
+    if VUI.tooltip and VUI.tooltip.SetCombatMode then
+        VUI.tooltip:SetCombatMode(true)
+    end
 end
 
 -- Restore normal tooltip behavior
 function CombatPerf:RestoreTooltips()
-    -- Placeholder for future implementation
+    -- Restore original tooltip settings
+    if self.state.originalTooltipSettings and VUI.db.profile.tooltip then
+        VUI.db.profile.tooltip.updateFrequency = self.state.originalTooltipSettings.updateFrequency
+        VUI.db.profile.tooltip.detailLevel = self.state.originalTooltipSettings.detailLevel
+        VUI.db.profile.tooltip.enableEnhancedInfo = self.state.originalTooltipSettings.enableEnhancedInfo
+    end
+    
+    -- Apply to GameTooltip
+    if GameTooltip and GameTooltip.VUISetUpdateFrequency and self.state.originalTooltipSettings then
+        GameTooltip:VUISetUpdateFrequency(self.state.originalTooltipSettings.updateFrequency)
+    end
+    
+    -- Notify tooltip module if available
+    if VUI.tooltip and VUI.tooltip.SetCombatMode then
+        VUI.tooltip:SetCombatMode(false)
+    end
 end
 
 -- Get performance statistics

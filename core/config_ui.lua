@@ -78,6 +78,9 @@ function ConfigUI:Initialize()
         self:CreateSearchBar()
     end
     
+    -- Create module dependency visualization
+    self:CreateModuleDependencyVisualization()
+    
     -- Enable if set in profile
     if VUI.db.profile.configUI.enabled then
         self:Enable()
@@ -378,11 +381,51 @@ function ConfigUI:SelectTab(tabID)
         -- Save the last selected tab
         VUI.db.profile.configUI.lastTab = tabID
         
+        -- Add dependency visualization button if this is the modules tab
+        if tabID == "modules" then
+            self:CreateModuleDependencyButton(tabFrames[tabID])
+        end
+        
         -- Update preview if applicable
         if self.previewContent and VUI.db.profile.configUI.showPreview then
             self:UpdatePreview(tabID)
         end
     end
+end
+
+-- Create a button to show module dependencies
+function ConfigUI:CreateModuleDependencyButton(parent)
+    -- Don't create the button if it already exists
+    if self.dependencyButton then
+        return
+    end
+    
+    -- Create the button
+    local button = CreateFrame("Button", "VUIConfigModuleDependencyButton", parent, "UIPanelButtonTemplate")
+    button:SetSize(180, 22)
+    button:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -10, -10)
+    button:SetText("Show Module Dependencies")
+    button:SetScript("OnClick", function()
+        self:ShowModuleDependencyVisualization()
+    end)
+    
+    -- Add tooltip
+    button:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+        GameTooltip:ClearLines()
+        GameTooltip:AddLine("Module Dependencies Visualization")
+        GameTooltip:AddLine(" ")
+        GameTooltip:AddLine("View a visual representation of how modules depend on each other.", 1, 1, 1, true)
+        GameTooltip:AddLine("This helps you understand which modules are required by others and the potential impact of disabling modules.", 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    
+    button:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+    end)
+    
+    -- Store reference
+    self.dependencyButton = button
 end
 
 -- Update the preview panel based on selected tab
@@ -652,6 +695,494 @@ function ConfigUI:ClearSearch()
 end
 
 -- Register with Blizzard Interface Options
+-- Create Module Dependency Visualization
+function ConfigUI:CreateModuleDependencyVisualization()
+    -- Create main frame for dependency visualization
+    local frame = CreateFrame("Frame", "VUIModuleDependencyFrame", nil)
+    frame:SetSize(600, 500)
+    frame:SetPoint("CENTER", UIParent, "CENTER")
+    frame:SetFrameStrata("DIALOG")
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", function(self) self:StartMoving() end)
+    frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+    frame:Hide()
+    
+    -- Add backdrop
+    if frame.SetBackdrop then -- Check for API availability
+        frame:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true,
+            tileSize = 32,
+            edgeSize = 32,
+            insets = { left = 11, right = 12, top = 12, bottom = 11 }
+        })
+    end
+    
+    -- Title
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -16)
+    title:SetText("Module Dependencies")
+    
+    -- Close button
+    local closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+    closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -4)
+    
+    -- Scroll frame for dependencies visualization
+    local scrollFrame = CreateFrame("ScrollFrame", "VUIModuleDependencyScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 12, -36)
+    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 40)
+    
+    -- Scroll content
+    local content = CreateFrame("Frame", "VUIModuleDependencyContent", scrollFrame)
+    content:SetSize(scrollFrame:GetWidth(), 800) -- Height will be adjusted based on content
+    scrollFrame:SetScrollChild(content)
+    
+    -- Legend
+    local legendFrame = CreateFrame("Frame", nil, frame)
+    legendFrame:SetSize(frame:GetWidth() - 24, 30)
+    legendFrame:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 12, 5)
+    
+    local legendText = legendFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    legendText:SetPoint("LEFT", legendFrame, "LEFT", 0, 0)
+    legendText:SetText("Legend: ")
+    
+    -- Color codes for the dependency types
+    local requiredColor = CreateFrame("Frame", nil, legendFrame)
+    requiredColor:SetSize(12, 12)
+    requiredColor:SetPoint("LEFT", legendText, "RIGHT", 5, 0)
+    requiredColor:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8"})
+    requiredColor:SetBackdropColor(1, 0, 0, 0.7) -- Red for required
+    
+    local requiredText = legendFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    requiredText:SetPoint("LEFT", requiredColor, "RIGHT", 5, 0)
+    requiredText:SetText("Required")
+    
+    local optionalColor = CreateFrame("Frame", nil, legendFrame)
+    optionalColor:SetSize(12, 12)
+    optionalColor:SetPoint("LEFT", requiredText, "RIGHT", 10, 0)
+    optionalColor:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8"})
+    optionalColor:SetBackdropColor(0, 0.7, 1, 0.7) -- Blue for optional
+    
+    local optionalText = legendFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    optionalText:SetPoint("LEFT", optionalColor, "RIGHT", 5, 0)
+    optionalText:SetText("Optional")
+    
+    local enhancedColor = CreateFrame("Frame", nil, legendFrame)
+    enhancedColor:SetSize(12, 12)
+    enhancedColor:SetPoint("LEFT", optionalText, "RIGHT", 10, 0)
+    enhancedColor:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8"})
+    enhancedColor:SetBackdropColor(0, 0.8, 0, 0.7) -- Green for enhanced
+    
+    local enhancedText = legendFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    enhancedText:SetPoint("LEFT", enhancedColor, "RIGHT", 5, 0)
+    enhancedText:SetText("Enhanced")
+    
+    -- Create button to view dependencies
+    local viewDependenciesButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    viewDependenciesButton:SetSize(150, 22)
+    viewDependenciesButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -35, -16)
+    viewDependenciesButton:SetText("Refresh View")
+    viewDependenciesButton:SetScript("OnClick", function()
+        ConfigUI:RefreshDependencyVisualization()
+    end)
+    
+    -- Store references
+    self.dependencyFrame = frame
+    self.dependencyContent = content
+    
+    -- Return frame reference
+    return frame
+end
+
+-- Show Module Dependency Visualization
+function ConfigUI:ShowModuleDependencyVisualization()
+    if not self.dependencyFrame then
+        self:CreateModuleDependencyVisualization()
+    end
+    
+    -- Build or rebuild the visualization
+    self:RefreshDependencyVisualization()
+    
+    -- Show the frame
+    self.dependencyFrame:Show()
+end
+
+-- Refresh the Module Dependency Visualization
+function ConfigUI:RefreshDependencyVisualization()
+    local content = self.dependencyContent
+    if not content then return end
+    
+    -- Clear existing content
+    for _, child in ipairs({content:GetChildren()}) do
+        child:Hide()
+        child:SetParent(nil)
+        child = nil
+    end
+    
+    -- Get module information
+    local modules = {}
+    if VUI.ModuleManager and VUI.ModuleManager.GetModuleInfo then
+        modules = VUI.ModuleManager:GetModuleInfo()
+    else
+        -- Fallback: gather modules from various sources
+        for moduleName, _ in pairs(VUI.enabledModules or {}) do
+            modules[moduleName] = {
+                name = moduleName,
+                enabled = true,
+                dependencies = {},
+                optionalDependencies = {},
+                enhancedBy = {}
+            }
+        end
+        
+        -- Try to detect dependencies from ModuleAPI if available
+        if VUI.ModuleAPI and VUI.ModuleAPI.GetModuleDependencies then
+            for moduleName, moduleData in pairs(modules) do
+                moduleData.dependencies = VUI.ModuleAPI:GetModuleDependencies(moduleName) or {}
+                moduleData.optionalDependencies = VUI.ModuleAPI:GetOptionalDependencies(moduleName) or {}
+            end
+        end
+    end
+    
+    -- Sort modules by name
+    local sortedModules = {}
+    for moduleName, moduleData in pairs(modules) do
+        table.insert(sortedModules, {name = moduleName, data = moduleData})
+    end
+    table.sort(sortedModules, function(a, b) return a.name < b.name end)
+    
+    -- Create module boxes in the visualization
+    local boxWidth = 150
+    local boxHeight = 40
+    local margin = 20
+    local verticalSpacing = 70
+    local horizontalSpacing = 200
+    local maxBoxesPerRow = 3
+    
+    local arrows = {}
+    
+    -- Create the module boxes first
+    for i, moduleInfo in ipairs(sortedModules) do
+        local moduleName = moduleInfo.name
+        local moduleData = moduleInfo.data
+        
+        -- Calculate position
+        local row = math.floor((i-1) / maxBoxesPerRow)
+        local col = (i-1) % maxBoxesPerRow
+        
+        local xPos = margin + (col * (boxWidth + horizontalSpacing))
+        local yPos = -margin - (row * verticalSpacing)
+        
+        -- Create module box
+        local moduleBox = CreateFrame("Frame", "VUIModuleDependencyBox_" .. moduleName, content)
+        moduleBox:SetSize(boxWidth, boxHeight)
+        moduleBox:SetPoint("TOPLEFT", content, "TOPLEFT", xPos, yPos)
+        
+        -- Box background and border
+        if moduleBox.SetBackdrop then
+            moduleBox:SetBackdrop({
+                bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+                edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+                tile = true,
+                tileSize = 16,
+                edgeSize = 16,
+                insets = { left = 4, right = 4, top = 4, bottom = 4 }
+            })
+        end
+        
+        -- Module name
+        local nameText = moduleBox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        nameText:SetPoint("TOP", moduleBox, "TOP", 0, -8)
+        nameText:SetText(moduleData.name or moduleName)
+        
+        -- Enable/disable status text
+        local statusText = moduleBox:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        statusText:SetPoint("BOTTOM", moduleBox, "BOTTOM", 0, 8)
+        statusText:SetText(moduleData.enabled and "Enabled" or "Disabled")
+        statusText:SetTextColor(moduleData.enabled and 0, 1, 0 or 1, 0, 0) -- Green if enabled, red if disabled
+        
+        -- Store box position for arrow connections
+        moduleData.box = moduleBox
+        moduleData.centerX = xPos + (boxWidth / 2)
+        moduleData.centerY = yPos - (boxHeight / 2)
+        moduleData.top = yPos
+        moduleData.bottom = yPos - boxHeight
+        moduleData.left = xPos
+        moduleData.right = xPos + boxWidth
+        
+        -- Toggle enable/disable
+        moduleBox:SetScript("OnMouseDown", function(self, button)
+            if button == "LeftButton" then
+                -- Toggle module enabled status
+                if VUI.enabledModules and VUI.enabledModules[moduleName] ~= nil then
+                    local newState = not VUI.enabledModules[moduleName]
+                    
+                    -- Check for dependency warnings
+                    if not newState then -- If disabling
+                        local dependents = ConfigUI:GetModuleDependents(moduleName, modules)
+                        if #dependents > 0 then
+                            local warningMsg = "Warning: The following modules depend on " .. moduleName .. ":\n"
+                            for _, dependent in ipairs(dependents) do
+                                warningMsg = warningMsg .. "- " .. dependent .. "\n"
+                            end
+                            warningMsg = warningMsg .. "\nDisabling this module may break functionality in those modules."
+                            
+                            -- Show confirmation dialog
+                            StaticPopupDialogs["VUI_DISABLE_MODULE_WARNING"] = {
+                                text = warningMsg,
+                                button1 = "Disable Anyway",
+                                button2 = "Cancel",
+                                OnAccept = function()
+                                    VUI.enabledModules[moduleName] = false
+                                    statusText:SetText("Disabled")
+                                    statusText:SetTextColor(1, 0, 0)
+                                    -- Update module settings in database
+                                    if VUI.db and VUI.db.profile and VUI.db.profile.modules and 
+                                       VUI.db.profile.modules[moduleName] then
+                                        VUI.db.profile.modules[moduleName].enabled = false
+                                    end
+                                    ConfigUI:RefreshDependencyVisualization()
+                                end,
+                                timeout = 0,
+                                whileDead = true,
+                                hideOnEscape = true,
+                                preferredIndex = 3,
+                            }
+                            StaticPopup_Show("VUI_DISABLE_MODULE_WARNING")
+                            return
+                        end
+                    end
+                    
+                    -- If no warnings or enabling module
+                    VUI.enabledModules[moduleName] = newState
+                    statusText:SetText(newState and "Enabled" or "Disabled")
+                    statusText:SetTextColor(newState and 0, 1, 0 or 1, 0, 0)
+                    
+                    -- Update module settings in database
+                    if VUI.db and VUI.db.profile and VUI.db.profile.modules and 
+                       VUI.db.profile.modules[moduleName] then
+                        VUI.db.profile.modules[moduleName].enabled = newState
+                    end
+                    
+                    ConfigUI:RefreshDependencyVisualization()
+                end
+            end
+        end)
+        
+        -- Tooltip for module info
+        moduleBox:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+            GameTooltip:ClearLines()
+            GameTooltip:AddLine(moduleData.name or moduleName, 1, 1, 1)
+            GameTooltip:AddLine(" ")
+            
+            if moduleData.description then
+                GameTooltip:AddLine(moduleData.description, nil, nil, nil, true)
+                GameTooltip:AddLine(" ")
+            end
+            
+            -- List dependencies
+            if moduleData.dependencies and #moduleData.dependencies > 0 then
+                GameTooltip:AddLine("Required Dependencies:", 1, 0.5, 0)
+                for _, dep in ipairs(moduleData.dependencies) do
+                    local depEnabled = VUI.enabledModules and VUI.enabledModules[dep]
+                    local color = depEnabled and "00ff00" or "ff0000"
+                    GameTooltip:AddLine("- " .. dep .. " (|c" .. color .. (depEnabled and "Enabled" or "Disabled") .. "|r)")
+                end
+                GameTooltip:AddLine(" ")
+            end
+            
+            -- List optional dependencies
+            if moduleData.optionalDependencies and #moduleData.optionalDependencies > 0 then
+                GameTooltip:AddLine("Optional Dependencies:", 0, 0.7, 1)
+                for _, dep in ipairs(moduleData.optionalDependencies) do
+                    local depEnabled = VUI.enabledModules and VUI.enabledModules[dep]
+                    local color = depEnabled and "00ff00" or "ff9900" -- Green if enabled, orange if disabled
+                    GameTooltip:AddLine("- " .. dep .. " (|c" .. color .. (depEnabled and "Enabled" or "Disabled") .. "|r)")
+                end
+                GameTooltip:AddLine(" ")
+            end
+            
+            -- List modules enhanced by this one
+            if moduleData.enhancedBy and #moduleData.enhancedBy > 0 then
+                GameTooltip:AddLine("Enhanced By:", 0, 1, 0)
+                for _, dep in ipairs(moduleData.enhancedBy) do
+                    local depEnabled = VUI.enabledModules and VUI.enabledModules[dep]
+                    local color = depEnabled and "00ff00" or "ff9900"
+                    GameTooltip:AddLine("- " .. dep .. " (|c" .. color .. (depEnabled and "Enabled" or "Disabled") .. "|r)")
+                end
+            end
+            
+            GameTooltip:AddLine(" ")
+            GameTooltip:AddLine("Click to toggle enable/disable", 0.8, 0.8, 0.8)
+            
+            GameTooltip:Show()
+        end)
+        
+        moduleBox:SetScript("OnLeave", function(self)
+            GameTooltip:Hide()
+        end)
+    end
+    
+    -- Now draw the dependency arrows between modules
+    for _, moduleInfo in ipairs(sortedModules) do
+        local moduleName = moduleInfo.name
+        local moduleData = moduleInfo.data
+        
+        -- Draw arrows for required dependencies
+        if moduleData.dependencies then
+            for _, depName in ipairs(moduleData.dependencies) do
+                local depModule = modules[depName]
+                if depModule and depModule.box then
+                    local arrow = self:CreateDependencyArrow(content, moduleData, depModule, {r = 1, g = 0, b = 0, a = 0.7})
+                    if arrow then
+                        table.insert(arrows, arrow)
+                    end
+                end
+            end
+        end
+        
+        -- Draw arrows for optional dependencies
+        if moduleData.optionalDependencies then
+            for _, depName in ipairs(moduleData.optionalDependencies) do
+                local depModule = modules[depName]
+                if depModule and depModule.box then
+                    local arrow = self:CreateDependencyArrow(content, moduleData, depModule, {r = 0, g = 0.7, b = 1, a = 0.7})
+                    if arrow then
+                        table.insert(arrows, arrow)
+                    end
+                end
+            end
+        end
+        
+        -- Draw arrows for enhanced by relationships
+        if moduleData.enhancedBy then
+            for _, enhancerName in ipairs(moduleData.enhancedBy) do
+                local enhancerModule = modules[enhancerName]
+                if enhancerModule and enhancerModule.box then
+                    local arrow = self:CreateDependencyArrow(content, enhancerModule, moduleData, {r = 0, g = 0.8, b = 0, a = 0.7})
+                    if arrow then
+                        table.insert(arrows, arrow)
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Adjust content height based on the number of rows
+    local rows = math.ceil(#sortedModules / maxBoxesPerRow)
+    local contentHeight = (rows * verticalSpacing) + (margin * 2)
+    content:SetHeight(math.max(contentHeight, 800))
+end
+
+-- Helper function to create dependency arrows
+function ConfigUI:CreateDependencyArrow(parent, fromModule, toModule, color)
+    if not fromModule or not toModule or not fromModule.box or not toModule.box then
+        return nil
+    end
+    
+    -- Create arrow line
+    local arrow = CreateFrame("Frame", nil, parent)
+    arrow:SetFrameLevel(parent:GetFrameLevel() + 1)
+    
+    -- Determine start and end points based on relative position
+    local startX, startY, endX, endY
+    
+    -- Determine the relative positions
+    local horizontalOffset = fromModule.centerX - toModule.centerX
+    local verticalOffset = fromModule.centerY - toModule.centerY
+    
+    -- Choose connection points based on position
+    if math.abs(horizontalOffset) > math.abs(verticalOffset) then
+        -- Connect horizontally (left/right)
+        if horizontalOffset > 0 then
+            -- fromModule is to the right of toModule
+            startX = fromModule.left
+            startY = fromModule.centerY
+            endX = toModule.right
+            endY = toModule.centerY
+        else
+            -- fromModule is to the left of toModule
+            startX = fromModule.right
+            startY = fromModule.centerY
+            endX = toModule.left
+            endY = toModule.centerY
+        end
+    else
+        -- Connect vertically (top/bottom)
+        if verticalOffset > 0 then
+            -- fromModule is below toModule
+            startX = fromModule.centerX
+            startY = fromModule.top
+            endX = toModule.centerX
+            endY = toModule.bottom
+        else
+            -- fromModule is above toModule
+            startX = fromModule.centerX
+            startY = fromModule.bottom
+            endX = toModule.centerX
+            endY = toModule.top
+        end
+    end
+    
+    -- Create arrow line
+    local lineLength = math.sqrt((endX - startX)^2 + (endY - startY)^2)
+    local lineAngle = math.atan2(endY - startY, endX - startX)
+    
+    -- Create line texture
+    local line = arrow:CreateTexture(nil, "OVERLAY")
+    line:SetTexture("Interface\\Buttons\\WHITE8x8")
+    line:SetSize(lineLength, 2)
+    line:SetPoint("LEFT", parent, "TOPLEFT", startX, startY)
+    line:SetPoint("RIGHT", parent, "TOPLEFT", endX, endY)
+    
+    -- Set color
+    line:SetVertexColor(color.r, color.g, color.b, color.a)
+    
+    -- Add small arrowhead indicators at intervals
+    local indicatorSize = 4
+    local indicatorSpacing = 30
+    local numIndicators = math.floor(lineLength / indicatorSpacing)
+    
+    for i = 1, numIndicators do
+        local dist = (i / (numIndicators + 1)) * lineLength
+        local xPos = startX + math.cos(lineAngle) * dist
+        local yPos = startY + math.sin(lineAngle) * dist
+        
+        local indicator = arrow:CreateTexture(nil, "OVERLAY")
+        indicator:SetTexture("Interface\\Buttons\\WHITE8x8")
+        indicator:SetSize(indicatorSize, indicatorSize)
+        indicator:SetPoint("CENTER", parent, "TOPLEFT", xPos, yPos)
+        indicator:SetVertexColor(color.r, color.g, color.b, color.a)
+    end
+    
+    return arrow
+end
+
+-- Get a list of modules that depend on a given module
+function ConfigUI:GetModuleDependents(moduleName, modules)
+    local dependents = {}
+    
+    for otherName, otherData in pairs(modules) do
+        if otherName ~= moduleName then
+            -- Check required dependencies
+            if otherData.dependencies then
+                for _, dep in ipairs(otherData.dependencies) do
+                    if dep == moduleName then
+                        table.insert(dependents, otherName)
+                        break
+                    end
+                end
+            end
+        end
+    end
+    
+    return dependents
+end
+
 function ConfigUI:RegisterWithBlizzardOptions()
     -- Add main panel to interface options
     InterfaceOptions_AddCategory(self.panel)

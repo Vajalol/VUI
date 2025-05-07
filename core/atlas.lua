@@ -14,10 +14,17 @@ local Atlas = VUI.Atlas
 Atlas.atlases = {}
 Atlas.coordinates = {}
 Atlas.loaded = {}
+Atlas.textureCache = {} -- Cache of loaded textures
+Atlas.pendingTextureLoads = {} -- Queue for on-demand texture loading
+Atlas.compressionLevel = "HIGH" -- Compression setting (LOW, MEDIUM, HIGH)
 Atlas.stats = {
     texturesSaved = 0,
     memoryReduction = 0,
-    atlasesLoaded = 0
+    atlasesLoaded = 0,
+    cacheHits = 0,
+    cacheMisses = 0,
+    texturesCompressed = 0,
+    onDemandLoaded = 0
 }
 
 -- Define atlas files for each theme
@@ -352,19 +359,29 @@ end
 
 -- Initialize the texture atlas system
 function Atlas:Initialize()
+    -- Initialize texture cache and optimization settings
+    self.textureCache = {}
+    self.pendingTextureLoads = {}
+    
+    -- Determine default compression level based on system performance
+    self:DetermineOptimalCompressionLevel()
+    
     -- Register atlases with VUI's media system
     self:RegisterWithMediaSystem()
     
     -- Add methods to handle texture atlas usage
     self:ExtendMediaSystem()
     
-    -- Preload common atlases
+    -- Preload common atlases (essential ones immediately, others on-demand)
     self:PreloadAtlas("common")
     self:PreloadAtlas("buttons")
     
     -- Preload current theme atlas
     local currentTheme = VUI.db.profile.appearance.theme or "thunderstorm"
     self:PreloadAtlas("themes." .. currentTheme)
+    
+    -- Queue module-specific atlases for on-demand loading based on enabled modules
+    self:QueueModuleAtlases()
     
     -- Listen for theme changes to preload new theme atlas
     VUI:RegisterCallback("ThemeChanged", function(newTheme)
@@ -650,8 +667,26 @@ function Atlas:ExtendMediaSystem()
     -- Store original GetTextureCached function
     VUI.GetTextureCachedOriginal = VUI.GetTextureCached
     
-    -- Override with atlas-aware version
+    -- Override with atlas-aware version and texture caching
     VUI.GetTextureCached = function(self, texturePath, priority)
+        -- Check if this texture is already in our memory cache
+        local cachedTexture, cachedCoords = VUI.Atlas:GetCachedTexture(texturePath)
+        if cachedTexture then
+            -- Update last accessed time
+            if VUI.Atlas.textureCache[texturePath] then
+                VUI.Atlas.textureCache[texturePath].lastAccessed = GetTime()
+            end
+            
+            -- Return the cached texture information
+            return {
+                isAtlas = true,
+                texture = cachedTexture,
+                coords = cachedCoords,
+                cached = true,
+                originalPath = texturePath
+            }
+        end
+        
         -- Check if this texture is in an atlas
         if self.media.atlasTextures and self.media.atlasTextures[texturePath] then
             local atlasInfo = self.media.atlasTextures[texturePath]
@@ -659,19 +694,46 @@ function Atlas:ExtendMediaSystem()
             local coords = VUI.Atlas:GetTextureCoordinates(atlasInfo.atlas, atlasInfo.key)
             
             if atlasPath and coords then
-                -- Ensure atlas is loaded
-                VUI.Atlas:PreloadAtlas(atlasInfo.atlas)
-                
-                -- Add to stats
-                self.mediaStats.cacheHits = self.mediaStats.cacheHits + 1
-                
-                -- Create a table containing atlas info
-                return {
-                    isAtlas = true,
-                    path = atlasPath,
-                    coords = coords,
-                    originalPath = texturePath
-                }
+                -- For high-priority textures, load immediately
+                if priority and priority >= 3 then
+                    -- Ensure atlas is loaded
+                    VUI.Atlas:PreloadAtlas(atlasInfo.atlas)
+                    
+                    -- Create texture and add to cache
+                    local texture = CreateFrame("Frame"):CreateTexture(nil, "BACKGROUND")
+                    texture:SetTexture(atlasPath)
+                    texture:SetTexCoord(coords.left, coords.right, coords.top, coords.bottom)
+                    
+                    -- Apply texture compression for memory efficiency
+                    texture = VUI.Atlas:CompressTexture(texture)
+                    
+                    -- Cache the texture for future use
+                    VUI.Atlas:CacheTexture(texturePath, texture, coords)
+                    
+                    -- Add to stats
+                    self.mediaStats.cacheHits = self.mediaStats.cacheHits + 1
+                    
+                    -- Return the texture information
+                    return {
+                        isAtlas = true,
+                        texture = texture,
+                        path = atlasPath,
+                        coords = coords,
+                        originalPath = texturePath
+                    }
+                else
+                    -- For low-priority textures, load on-demand
+                    VUI.Atlas:QueueTextureForLoading(atlasInfo.atlas, atlasInfo.key, priority or 1)
+                    
+                    -- Just return the information for now
+                    return {
+                        isAtlas = true,
+                        path = atlasPath,
+                        coords = coords,
+                        queuedForLoading = true,
+                        originalPath = texturePath
+                    }
+                end
             end
         end
         
@@ -684,10 +746,15 @@ function Atlas:ExtendMediaSystem()
     VUI.GetMediaStats = function(self)
         local stats = originalGetMediaStats(self)
         
-        -- Add atlas stats
+        -- Add enhanced atlas stats
         stats.atlasTexturesSaved = VUI.Atlas.stats.texturesSaved
         stats.atlasMemoryReduction = VUI.Atlas.stats.memoryReduction
         stats.atlasesLoaded = VUI.Atlas.stats.atlasesLoaded
+        stats.atlasCacheHits = VUI.Atlas.stats.cacheHits
+        stats.atlasCacheMisses = VUI.Atlas.stats.cacheMisses
+        stats.atlasTexturesCompressed = VUI.Atlas.stats.texturesCompressed
+        stats.atlasOnDemandLoaded = VUI.Atlas.stats.onDemandLoaded
+        stats.atlasCompressionLevel = VUI.Atlas.compressionLevel
         
         return stats
     end
@@ -697,6 +764,73 @@ end
 function Atlas:ApplyTextureCoordinates(textureObject, atlasInfo)
     if not textureObject or not atlasInfo or not atlasInfo.isAtlas then return end
     
+    -- If we have a cached texture, use that directly
+    if atlasInfo.cached and atlasInfo.texture then
+        -- Clone the texture properties to the target texture object
+        textureObject:SetTexture(atlasInfo.texture:GetTexture())
+        textureObject:SetTexCoord(
+            atlasInfo.coords.left,
+            atlasInfo.coords.right,
+            atlasInfo.coords.top,
+            atlasInfo.coords.bottom
+        )
+        
+        -- Apply compression settings
+        self:CompressTexture(textureObject)
+        return
+    end
+    
+    -- If it's queued for loading but not yet loaded, prioritize it
+    if atlasInfo.queuedForLoading then
+        -- Extract atlas name and key from the path
+        local atlasName, textureKey
+        for atlas, info in pairs(self.files) do
+            if info.path == atlasInfo.path then
+                atlasName = atlas
+                break
+            end
+        end
+        
+        -- Extract module atlas name if needed
+        if not atlasName then
+            for module, info in pairs(self.files.modules) do
+                if info.path == atlasInfo.path then
+                    atlasName = "modules." .. module
+                    break
+                end
+            end
+        end
+        
+        -- Extract theme atlas name if needed
+        if not atlasName then
+            for theme, info in pairs(self.files.themes) do
+                if info.path == atlasInfo.path then
+                    atlasName = "themes." .. theme
+                    break
+                end
+            end
+        end
+        
+        -- Find the texture key by coordinates
+        if atlasName then
+            for key, coords in pairs(self:GetCoordinatesTable(atlasName)) do
+                if coords.left == atlasInfo.coords.left and 
+                   coords.right == atlasInfo.coords.right and
+                   coords.top == atlasInfo.coords.top and
+                   coords.bottom == atlasInfo.coords.bottom then
+                    textureKey = key
+                    break
+                end
+            end
+        end
+        
+        -- If we found both, prioritize loading
+        if atlasName and textureKey then
+            self:QueueTextureForLoading(atlasName, textureKey, 10) -- High priority
+        end
+    end
+    
+    -- Otherwise use the traditional approach
     textureObject:SetTexture(atlasInfo.path)
     textureObject:SetTexCoord(
         atlasInfo.coords.left,
@@ -704,14 +838,287 @@ function Atlas:ApplyTextureCoordinates(textureObject, atlasInfo)
         atlasInfo.coords.top,
         atlasInfo.coords.bottom
     )
+    
+    -- Apply compression
+    self:CompressTexture(textureObject)
 end
 
--- Get atlas stats for display
+-- Helper function to get the coordinates table for an atlas
+function Atlas:GetCoordinatesTable(atlasName)
+    if atlasName == "common" then
+        return self.coordinates.common
+    elseif atlasName == "buttons" then
+        return self.coordinates.buttons
+    elseif atlasName:find("^themes%.") then
+        local theme = atlasName:match("^themes%.(.+)$")
+        return self.coordinates.themes[theme]
+    elseif atlasName:find("^modules%.") then
+        local module = atlasName:match("^modules%.(.+)$")
+        return self.coordinates.modules[module]
+    end
+    return {}
+end
+
+-- Compress texture atlas for better memory efficiency
+function Atlas:CompressTexture(texture, level)
+    -- Skip if no texture
+    if not texture then return texture end
+    
+    local compressionLevel = level or self.compressionLevel
+    local result = texture
+    
+    -- Apply compression based on level
+    if compressionLevel == "LOW" then
+        -- Light compression - just drop mipmap levels
+        texture:SetTextureLevels(3) -- Reduce mipmap levels
+    elseif compressionLevel == "MEDIUM" then
+        -- Medium compression - drop mipmaps and reduce detail
+        texture:SetTextureLevels(2)
+        
+        -- Set the texture to a slightly lower resolution if possible
+        if texture.SetResolution then
+            texture:SetResolution(64)
+        end
+    elseif compressionLevel == "HIGH" then
+        -- High compression - maximum memory savings
+        texture:SetTextureLevels(1) -- Minimal mipmaps
+        
+        -- Set the texture to a lower resolution if possible
+        if texture.SetResolution then
+            texture:SetResolution(32)
+        end
+        
+        -- Reduce texture quality if possible
+        if texture.SetTextureQuality then
+            texture:SetTextureQuality(1)
+        end
+    end
+    
+    -- Update stats
+    self.stats.texturesCompressed = self.stats.texturesCompressed + 1
+    
+    return result
+end
+
+-- Set compression level for texture atlases
+function Atlas:SetCompressionLevel(level)
+    if level ~= "LOW" and level ~= "MEDIUM" and level ~= "HIGH" then
+        return false -- Invalid level
+    end
+    
+    -- Set new compression level
+    self.compressionLevel = level
+    
+    -- Re-compress any textures in the cache
+    for texturePath, textureInfo in pairs(self.textureCache) do
+        if textureInfo.texture then
+            textureInfo.texture = self:CompressTexture(textureInfo.texture, level)
+        end
+    end
+    
+    return true
+end
+
+-- Implement texture cache system for better performance
+function Atlas:GetCachedTexture(texturePath)
+    -- Check if the texture is already in our cache
+    if self.textureCache[texturePath] then
+        self.stats.cacheHits = self.stats.cacheHits + 1
+        return self.textureCache[texturePath].texture, self.textureCache[texturePath].coords
+    end
+    
+    -- Not in cache
+    self.stats.cacheMisses = self.stats.cacheMisses + 1
+    return nil, nil
+end
+
+-- Add texture to cache system
+function Atlas:CacheTexture(texturePath, texture, coords)
+    -- Skip if already cached
+    if self.textureCache[texturePath] then
+        return
+    end
+    
+    -- Apply compression before caching
+    local compressedTexture = self:CompressTexture(texture)
+    
+    -- Add to cache
+    self.textureCache[texturePath] = {
+        texture = compressedTexture,
+        coords = coords,
+        lastAccessed = GetTime(),
+        size = (texture.GetTexSize and texture:GetTexSize()) or 0
+    }
+    
+    -- Limit cache size (simple LRU implementation)
+    self:ManageTextureCache()
+end
+
+-- Remove oldest or least used textures from cache if it gets too large
+function Atlas:ManageTextureCache()
+    local maxCacheEntries = 100 -- Maximum number of textures to keep in cache
+    
+    -- Count cache entries
+    local count = 0
+    for _ in pairs(self.textureCache) do
+        count = count + 1
+    end
+    
+    -- If cache is not too large, do nothing
+    if count <= maxCacheEntries then
+        return
+    end
+    
+    -- Create sorted list of textures by last access time
+    local sortedTextures = {}
+    for path, info in pairs(self.textureCache) do
+        table.insert(sortedTextures, {
+            path = path,
+            lastAccessed = info.lastAccessed
+        })
+    end
+    
+    -- Sort by last accessed time (oldest first)
+    table.sort(sortedTextures, function(a, b)
+        return a.lastAccessed < b.lastAccessed
+    end)
+    
+    -- Remove oldest entries until we're under the limit
+    for i = 1, count - maxCacheEntries do
+        self.textureCache[sortedTextures[i].path] = nil
+    end
+end
+
+-- Queue texture for on-demand loading
+function Atlas:QueueTextureForLoading(atlasName, textureKey, priority)
+    if not atlasName or not textureKey then
+        return
+    end
+    
+    -- Add to queue with priority (higher = more important)
+    table.insert(self.pendingTextureLoads, {
+        atlasName = atlasName,
+        textureKey = textureKey,
+        priority = priority or 1,
+        queued = GetTime()
+    })
+    
+    -- Sort queue by priority (highest first)
+    table.sort(self.pendingTextureLoads, function(a, b)
+        return a.priority > b.priority
+    end)
+    
+    -- Start the on-demand loading process if not already running
+    self:ProcessTextureLoadQueue()
+end
+
+-- Process texture load queue (load textures one at a time)
+function Atlas:ProcessTextureLoadQueue()
+    -- Skip if queue is empty
+    if #self.pendingTextureLoads == 0 then
+        return
+    end
+    
+    -- Get highest priority texture from queue
+    local nextTexture = table.remove(self.pendingTextureLoads, 1)
+    
+    -- Get atlas file and coordinates for texture
+    local atlasFile = self:GetAtlasFile(nextTexture.atlasName)
+    local coords = self:GetTextureCoordinates(nextTexture.atlasName, nextTexture.textureKey)
+    
+    if atlasFile and coords then
+        -- Create texture object
+        local texture = CreateFrame("Frame"):CreateTexture(nil, "BACKGROUND")
+        texture:SetTexture(atlasFile)
+        texture:SetTexCoord(coords.left, coords.right, coords.top, coords.bottom)
+        
+        -- Apply compression
+        texture = self:CompressTexture(texture)
+        
+        -- Add to cache
+        local texturePath = atlasFile .. ":" .. nextTexture.textureKey
+        self:CacheTexture(texturePath, texture, coords)
+        
+        -- Update stats
+        self.stats.onDemandLoaded = self.stats.onDemandLoaded + 1
+    end
+    
+    -- Process next texture in queue (if any)
+    if #self.pendingTextureLoads > 0 then
+        -- Schedule next texture load with a slight delay to prevent freezing
+        C_Timer.After(0.01, function()
+            self:ProcessTextureLoadQueue()
+        end)
+    end
+end
+
+-- Determine optimal compression level based on system performance
+function Atlas:DetermineOptimalCompressionLevel()
+    -- Default to medium compression
+    local level = "MEDIUM"
+    
+    -- Check if we have performance settings
+    if VUI.db and VUI.db.profile and VUI.db.profile.performance then
+        -- If memory management is enabled, use high compression
+        if VUI.db.profile.performance.memoryManagement then
+            level = "HIGH"
+        -- If texture optimization is disabled, use low compression
+        elseif not VUI.db.profile.performance.textureOptimization then
+            level = "LOW"
+        end
+        
+        -- If lite mode is enabled, use high compression regardless
+        if VUI.db.profile.liteMode and VUI.db.profile.liteMode.enabled then
+            level = "HIGH"
+        end
+    end
+    
+    -- Set the compression level
+    self.compressionLevel = level
+    
+    -- Log the selected compression level
+    VUI:Print("Atlas texture compression level: " .. level)
+    
+    return level
+end
+
+-- Queue module-specific atlases for on-demand loading based on enabled modules
+function Atlas:QueueModuleAtlases()
+    -- Check if modules are defined
+    if not VUI.db or not VUI.db.profile or not VUI.db.profile.modules then
+        return
+    end
+    
+    -- Queue each module's atlas if the module is enabled
+    for moduleName, moduleSettings in pairs(VUI.db.profile.modules) do
+        if moduleSettings.enabled and self.files.modules[moduleName] then
+            -- Queue this module's atlas textures with low priority (will load when needed)
+            local atlasName = "modules." .. moduleName
+            
+            -- Get all texture keys for this module
+            if self.coordinates.modules[moduleName] then
+                for textureKey, _ in pairs(self.coordinates.modules[moduleName]) do
+                    -- Queue for loading with low priority (1)
+                    self:QueueTextureForLoading(atlasName, textureKey, 1)
+                end
+            end
+        end
+    end
+end
+
+-- Enhanced atlas stats for display
 function Atlas:GetStats()
     return {
         texturesSaved = self.stats.texturesSaved,
         memoryReduction = string.format("%.2f MB", self.stats.memoryReduction),
-        atlasesLoaded = self.stats.atlasesLoaded
+        atlasesLoaded = self.stats.atlasesLoaded,
+        cacheHits = self.stats.cacheHits,
+        cacheMisses = self.stats.cacheMisses,
+        texturesCompressed = self.stats.texturesCompressed,
+        onDemandLoaded = self.stats.onDemandLoaded,
+        compressionLevel = self.compressionLevel,
+        cachingEnabled = (next(self.textureCache) ~= nil) and "Yes" or "No",
+        pendingLoads = #self.pendingTextureLoads
     }
 end
 

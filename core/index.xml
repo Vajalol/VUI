@@ -61,6 +61,7 @@
     <Script file="config_ui.lua"/>
     <Script file="settings.lua"/>
     <Script file="database_config.lua"/>
+    <Script file="version_migration.lua"/>
     
     <!-- Skinning System - depends on theme system -->
     <Script file="Skins.lua"/>

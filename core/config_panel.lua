@@ -1059,9 +1059,147 @@ function VUI:CreateEnhancedGeneralSection()
         frame.title:SetPoint("TOPLEFT", 20, -20)
         frame.title:SetText(self.configFrame.themeData.headerColor .. "General Settings|r")
         
-        -- Set up the rest of the general settings here...
-        -- This is a placeholder for now
+        -- Description
+        frame.desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        frame.desc:SetPoint("TOPLEFT", frame.title, "BOTTOMLEFT", 0, -10)
+        frame.desc:SetText("Configure the core settings for VUI")
+        frame.desc:SetTextColor(0.9, 0.9, 0.9)
         
+        -- Create a scrollable frame for the content
+        local scrollFrame, content = self:CreateScrollFrame(frame)
+        frame.scrollFrame = scrollFrame
+        frame.content = content
+        
+        -- Performance section
+        local performanceSection = CreateFrame("Frame", nil, content)
+        performanceSection:SetSize(content:GetWidth() - 40, 200)
+        performanceSection:SetPoint("TOPLEFT", 20, -20)
+        
+        -- Performance section header
+        performanceSection.title = performanceSection:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        performanceSection.title:SetPoint("TOPLEFT", 0, 0)
+        performanceSection.title:SetText(self.configFrame.themeData.headerColor .. "Performance Options|r")
+        
+        -- Lite Mode Toggle
+        performanceSection.liteModeText = performanceSection:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        performanceSection.liteModeText:SetPoint("TOPLEFT", performanceSection.title, "BOTTOMLEFT", 0, -20)
+        performanceSection.liteModeText:SetText("Lite Mode")
+        
+        -- Create lite mode toggle checkbox
+        performanceSection.liteModeToggle = CreateFrame("CheckButton", nil, performanceSection, "InterfaceOptionsCheckButtonTemplate")
+        performanceSection.liteModeToggle:SetPoint("LEFT", performanceSection.liteModeText, "RIGHT", 10, 0)
+        
+        -- Set the initial state
+        local isLiteModeEnabled = self.db.profile.performance and self.db.profile.performance.liteMode or false
+        performanceSection.liteModeToggle:SetChecked(isLiteModeEnabled)
+        
+        -- Toggle handler
+        performanceSection.liteModeToggle:SetScript("OnClick", function(self)
+            local checked = self:GetChecked()
+            VUI.db.profile.performance = VUI.db.profile.performance or {}
+            VUI.db.profile.performance.liteMode = checked
+            
+            -- Apply lite mode changes immediately
+            VUI:ApplyLiteMode(checked)
+        end)
+        
+        -- Lite Mode Description
+        performanceSection.liteModeDesc = performanceSection:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        performanceSection.liteModeDesc:SetPoint("TOPLEFT", performanceSection.liteModeText, "BOTTOMLEFT", 0, -10)
+        performanceSection.liteModeDesc:SetText("Enables a streamlined version of VUI with reduced visual effects and optimized performance.\nIdeal for raids, battlegrounds, or low-end systems.")
+        performanceSection.liteModeDesc:SetTextColor(0.8, 0.8, 0.8)
+        performanceSection.liteModeDesc:SetWidth(content:GetWidth() - 80)
+        performanceSection.liteModeDesc:SetJustifyH("LEFT")
+        
+        -- Performance Profiles Section
+        local profilesTitle = performanceSection:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        profilesTitle:SetPoint("TOPLEFT", performanceSection.liteModeDesc, "BOTTOMLEFT", 0, -20)
+        profilesTitle:SetText("Performance Profiles")
+        
+        -- Create profile buttons
+        local profiles = {
+            { name = "Raid", tooltip = "Optimized for raid performance with minimal UI elements" },
+            { name = "Solo", tooltip = "Balanced settings for leveling and solo play" },
+            { name = "Battleground", tooltip = "Focused settings for PvP encounters" }
+        }
+        
+        local lastButton = nil
+        local buttonWidth = 100
+        
+        for i, profile in ipairs(profiles) do
+            local button = CreateFrame("Button", nil, performanceSection, "UIPanelButtonTemplate")
+            button:SetSize(buttonWidth, 24)
+            
+            if i == 1 then
+                button:SetPoint("TOPLEFT", profilesTitle, "BOTTOMLEFT", 0, -10)
+            else
+                button:SetPoint("LEFT", lastButton, "RIGHT", 5, 0)
+            end
+            
+            button:SetText(profile.name)
+            button:SetScript("OnClick", function()
+                VUI:ApplyPerformanceProfile(profile.name:lower())
+                
+                -- Update lite mode toggle to match profile setting
+                local profileSetting = profile.name:lower() == "raid" or profile.name:lower() == "battleground"
+                performanceSection.liteModeToggle:SetChecked(profileSetting)
+                VUI.db.profile.performance = VUI.db.profile.performance or {}
+                VUI.db.profile.performance.liteMode = profileSetting
+            end)
+            
+            -- Tooltip
+            button:SetScript("OnEnter", function(self)
+                GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+                GameTooltip:ClearLines()
+                GameTooltip:AddLine(profile.name .. " Profile")
+                GameTooltip:AddLine(profile.tooltip, 1, 1, 1, true)
+                GameTooltip:Show()
+            end)
+            
+            button:SetScript("OnLeave", function(self)
+                GameTooltip:Hide()
+            end)
+            
+            lastButton = button
+        end
+        
+        -- Frame Rate Limiter section
+        local framerateTitle = performanceSection:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        framerateTitle:SetPoint("TOPLEFT", profilesTitle, "BOTTOMLEFT", 0, -50)
+        framerateTitle:SetText("Frame Rate Limiter")
+        
+        -- Frame Rate Limiter Toggle
+        local frameRateLimiterToggle = CreateFrame("CheckButton", nil, performanceSection, "InterfaceOptionsCheckButtonTemplate")
+        frameRateLimiterToggle:SetPoint("LEFT", framerateTitle, "RIGHT", 10, 0)
+        
+        -- Set initial state
+        local isFrameRateLimiterEnabled = self.db.profile.performance and self.db.profile.performance.frameLimiter or false
+        frameRateLimiterToggle:SetChecked(isFrameRateLimiterEnabled)
+        
+        -- Toggle handler
+        frameRateLimiterToggle:SetScript("OnClick", function(self)
+            local checked = self:GetChecked()
+            VUI.db.profile.performance = VUI.db.profile.performance or {}
+            VUI.db.profile.performance.frameLimiter = checked
+            
+            -- Apply framerate limit if VUI.FrameRateThrottling exists
+            if VUI.FrameRateThrottling then
+                if checked then
+                    VUI.FrameRateThrottling:Enable()
+                else
+                    VUI.FrameRateThrottling:Disable()
+                end
+            end
+        end)
+        
+        local framerateDesc = performanceSection:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        framerateDesc:SetPoint("TOPLEFT", framerateTitle, "BOTTOMLEFT", 0, -10)
+        framerateDesc:SetText("Limits the frame rate during inactive periods to reduce system resource usage and heat.")
+        framerateDesc:SetTextColor(0.8, 0.8, 0.8)
+        framerateDesc:SetWidth(content:GetWidth() - 80)
+        framerateDesc:SetJustifyH("LEFT")
+        
+        -- Finish setting up the section
         self.configFrame.sections.General = frame
     end
 end

@@ -316,6 +316,9 @@ function VUI:InitializeDB()
             self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
         end
         
+        -- Trigger database initialized callback
+        self:TriggerCallback("OnDatabaseInitialized", self.db)
+        
         -- Create a character database if needed
         self.charDB = AceDB:New("VUICharacterDB", {
             char = {
@@ -359,30 +362,505 @@ function VUI:InitializeDB()
     end
 end
 
--- Perform first-time setup
+-- Perform first-time setup with comprehensive wizard
 function VUI:PerformFirstRunSetup()
-    -- Set initial theme based on class if this is first run
-    if self.db.profile.firstRun then
-        local _, class = UnitClass("player")
-        if class then
-            -- Use class-appropriate theme
-            local classToTheme = {
-                MAGE = "arcanemystic",
-                WARLOCK = "felenergy",
-                WARRIOR = "thunderstorm",
-                PALADIN = "phoenixflame",
-                DEATHKNIGHT = "thunderstorm",
-                DRUID = "felenergy",
-                HUNTER = "phoenixflame",
-                PRIEST = "arcanemystic",
-                ROGUE = "thunderstorm",
-                SHAMAN = "thunderstorm",
-                MONK = "arcanemystic",
-                DEMONHUNTER = "felenergy",
-                EVOKER = "phoenixflame"
+    -- Only run this for first-time users
+    if not self.db.profile.firstRun then return end
+    
+    -- 1. Determine player's class and role for defaults
+    local _, playerClass = UnitClass("player")
+    local playerRole = self:DetectPlayerRole()
+    local playerSpec = self:GetPlayerSpecialization()
+    
+    -- 2. Set appropriate theme based on class
+    local classToTheme = {
+        MAGE = "arcanemystic",
+        WARLOCK = "felenergy",
+        WARRIOR = "thunderstorm",
+        PALADIN = "phoenixflame",
+        DEATHKNIGHT = "thunderstorm",
+        DRUID = "felenergy",
+        HUNTER = "phoenixflame",
+        PRIEST = "arcanemystic",
+        ROGUE = "thunderstorm",
+        SHAMAN = "thunderstorm",
+        MONK = "arcanemystic",
+        DEMONHUNTER = "felenergy",
+        EVOKER = "phoenixflame"
+    }
+    
+    self.db.profile.appearance.theme = classToTheme[playerClass] or "thunderstorm"
+    
+    -- 3. Apply role-based configuration templates
+    self:ApplyRoleTemplate(playerRole, playerClass, playerSpec)
+    
+    -- 4. Create the Setup Wizard frame
+    self:CreateSetupWizard(playerRole, playerClass)
+    
+    -- Mark first run as complete (will be set to false after wizard completes)
+    self.db.profile.setupWizardStage = 1
+end
+
+-- Detect player's role based on specialization
+function VUI:DetectPlayerRole()
+    local role = "DPS" -- Default role
+    
+    -- Get specialization and role
+    local specIndex = GetSpecialization()
+    if specIndex then
+        local specID, _, _, _, _, specRole = GetSpecializationInfo(specIndex)
+        if specRole then
+            if specRole == "TANK" then
+                role = "Tank"
+            elseif specRole == "HEALER" then
+                role = "Healer"
+            else
+                -- For DPS, determine if ranged or melee
+                local classToRole = {
+                    MAGE = "RangedDPS",
+                    WARLOCK = "RangedDPS",
+                    HUNTER = "RangedDPS",
+                    PRIEST = "RangedDPS",
+                    WARRIOR = "MeleeDPS",
+                    PALADIN = "MeleeDPS",
+                    DEATHKNIGHT = "MeleeDPS",
+                    ROGUE = "MeleeDPS",
+                    MONK = "MeleeDPS",
+                    DEMONHUNTER = "MeleeDPS",
+                    SHAMAN = function(spec) return spec == 2 and "MeleeDPS" or "RangedDPS" end,
+                    DRUID = function(spec) return spec == 2 and "MeleeDPS" or "RangedDPS" end,
+                    EVOKER = "RangedDPS"
+                }
+                
+                local _, playerClass = UnitClass("player")
+                local roleFunc = classToRole[playerClass]
+                
+                if type(roleFunc) == "function" then
+                    role = roleFunc(specIndex)
+                elseif roleFunc then
+                    role = roleFunc
+                end
+            end
+        end
+    end
+    
+    return role
+end
+
+-- Get player's current specialization
+function VUI:GetPlayerSpecialization()
+    local specIndex = GetSpecialization()
+    if specIndex then
+        local specID, specName = GetSpecializationInfo(specIndex)
+        return {
+            index = specIndex,
+            id = specID,
+            name = specName
+        }
+    end
+    return nil
+end
+
+-- Apply role-based configuration template
+function VUI:ApplyRoleTemplate(role, class, spec)
+    -- Load base template for all roles
+    local template = self:GetBaseTemplate()
+    
+    -- Apply role-specific settings
+    if role == "Tank" then
+        template = self:ApplyTankTemplate(template, class, spec)
+    elseif role == "Healer" then
+        template = self:ApplyHealerTemplate(template, class, spec)
+    elseif role == "MeleeDPS" then
+        template = self:ApplyMeleeDPSTemplate(template, class, spec)
+    elseif role == "RangedDPS" then
+        template = self:ApplyRangedDPSTemplate(template, class, spec)
+    end
+    
+    -- Apply template to current profile
+    self:ApplyTemplateToProfile(template)
+    
+    -- Store the selected role for future reference
+    self.db.profile.playerRole = role
+    self.db.profile.roleTemplateApplied = true
+end
+
+-- Get base template for all roles
+function VUI:GetBaseTemplate()
+    return {
+        unitframes = {
+            enabled = true,
+            showPortraits = true,
+            classColoredBars = true,
+            frames = {
+                player = { enabled = true },
+                target = { enabled = true },
+                targettarget = { enabled = true },
+                focus = { enabled = true },
+                pet = { enabled = true },
+                party = { enabled = true },
+                boss = { enabled = true },
+                arena = { enabled = true }
             }
-            
-            self.db.profile.appearance.theme = classToTheme[class] or "thunderstorm"
+        },
+        buffoverlay = {
+            enabled = true,
+            size = 32,
+            spacing = 2,
+            growthDirection = "UP"
+        },
+        castbar = {
+            enabled = true,
+            showIcon = true,
+            showTimer = true
+        },
+        actionbars = {
+            enabled = true,
+            showHotkeys = true,
+            showMacroNames = true
+        },
+        nameplates = {
+            enabled = true,
+            showClassColors = true,
+            showCastBars = true
+        },
+        performance = {
+            frameLimiter = false,
+            reducedEffects = false
+        }
+    }
+end
+
+-- Apply Tank template customizations
+function VUI:ApplyTankTemplate(template, class, spec)
+    -- Enhanced unit frames with threat indicators
+    template.unitframes.showTargetHighlight = true
+    template.unitframes.frames.player.showThreatIndicator = true
+    template.unitframes.frames.player.largerHealthBar = true
+    template.unitframes.frames.player.moveHealthText = "center"
+    
+    -- Enhanced nameplates for threat management
+    template.nameplates.showThreatIndicator = true
+    template.nameplates.showAggroWarning = true
+    template.nameplates.colorByThreat = true
+    template.nameplates.largerScale = 1.2
+    
+    -- Defensive cooldown tracking
+    template.buffoverlay.highlightDefensives = true
+    template.trufigcd = template.trufigcd or {}
+    template.trufigcd.enabled = true
+    template.trufigcd.trackTaunts = true
+    template.trufigcd.highlightDefensives = true
+    
+    -- Class-specific adjustments
+    if class == "WARRIOR" or class == "PALADIN" or class == "DEATHKNIGHT" then
+        template.unitframes.frames.player.showResourceBar = true
+        template.unitframes.frames.player.resourceBarSize = 1.2
+    end
+    
+    return template
+end
+
+-- Apply Healer template customizations
+function VUI:ApplyHealerTemplate(template, class, spec)
+    -- Enhanced party frames
+    template.unitframes.frames.party.larger = true
+    template.unitframes.frames.party.showResourceBars = true
+    template.unitframes.frames.party.showDispellableDebuffs = true
+    template.unitframes.frames.party.highlightDispellable = true
+    template.unitframes.frames.party.showRaidIcons = true
+    
+    -- Raid frames if available
+    template.unitframes.frames.raid = template.unitframes.frames.raid or {}
+    template.unitframes.frames.raid.enabled = true
+    template.unitframes.frames.raid.showDispellableDebuffs = true
+    
+    -- Enhanced buff tracking
+    template.buffoverlay.trackHealingBuffs = true
+    template.buffoverlay.showHealPrediction = true
+    
+    -- Cooldown tracking
+    template.omnicd = template.omnicd or {}
+    template.omnicd.enabled = true
+    template.omnicd.showHealingCooldowns = true
+    
+    -- Extra functionality for healers
+    template.msbt = template.msbt or {}
+    template.msbt.enabled = true
+    template.msbt.showHealingEvents = true
+    
+    return template
+end
+
+-- Apply Melee DPS template customizations
+function VUI:ApplyMeleeDPSTemplate(template, class, spec)
+    -- Enhanced actionbars for melee
+    template.actionbars.showCooldownText = true
+    template.actionbars.enhancedCooldowns = true
+    
+    -- Buff tracking focused on melee
+    template.buffoverlay.trackMeleeBuffs = true
+    template.buffoverlay.trackProcEffects = true
+    
+    -- Enhanced nameplates for melee targeting
+    template.nameplates.customMeleeRange = true
+    template.nameplates.highlightNameplatesInRange = true
+    
+    -- Enable melee-specific modules
+    template.trufigcd = template.trufigcd or {}
+    template.trufigcd.enabled = true
+    template.trufigcd.trackMeleeAbilities = true
+    
+    -- Class-specific adjustments (Examples)
+    if class == "ROGUE" or class == "DRUID" then
+        -- Energy/Combo point tracking
+        template.unitframes.showComboPoints = true
+        template.unitframes.largeComboPoints = true
+    elseif class == "DEATHKNIGHT" then
+        -- Rune tracking
+        template.unitframes.showDetailedRunes = true
+    end
+    
+    return template
+end
+
+-- Apply Ranged DPS template customizations
+function VUI:ApplyRangedDPSTemplate(template, class, spec)
+    -- Enhanced UI for ranged
+    template.actionbars.showCooldownText = true
+    template.actionbars.enhancedCooldowns = true
+    
+    -- Buff tracking focused on ranged DPS
+    template.buffoverlay.trackRangedBuffs = true
+    template.buffoverlay.trackDotTimers = true
+    template.buffoverlay.trackProcEffects = true
+    
+    -- Enhanced nameplates for ranged targeting
+    template.nameplates.showCastInfo = true
+    template.nameplates.showRaidTargetIcon = true
+    
+    -- Enable ranged-specific modules
+    template.trufigcd = template.trufigcd or {}
+    template.trufigcd.enabled = true
+    template.trufigcd.trackRangedAbilities = true
+    
+    -- Class-specific adjustments
+    if class == "MAGE" or class == "WARLOCK" then
+        -- Mana/resource tracking
+        template.unitframes.detailedManaBar = true
+        template.unitframes.showManaPercentage = true
+    elseif class == "HUNTER" then
+        -- Focus tracking
+        template.unitframes.enhancedFocusDisplay = true
+    end
+    
+    return template
+end
+
+-- Apply template to current profile
+function VUI:ApplyTemplateToProfile(template)
+    -- This function intelligently merges the template with existing settings
+    for module, settings in pairs(template) do
+        if type(settings) == "table" and self.db.profile.modules[module] then
+            -- Module exists, merge settings
+            for key, value in pairs(settings) do
+                if type(value) == "table" and type(self.db.profile.modules[module][key]) == "table" then
+                    -- Recursively merge nested tables
+                    self:MergeSettings(self.db.profile.modules[module][key], value)
+                else
+                    -- Direct value assignment
+                    self.db.profile.modules[module][key] = value
+                end
+            end
+        else
+            -- Module doesn't exist or isn't a table, assign directly
+            self.db.profile.modules[module] = settings
+        end
+    end
+    
+    -- Enable appropriate modules based on template
+    for moduleName, settings in pairs(template) do
+        if type(settings) == "table" and settings.enabled ~= nil then
+            self.enabledModules[moduleName] = settings.enabled
+        end
+    end
+end
+
+-- Helper function to merge settings tables
+function VUI:MergeSettings(target, source)
+    for k, v in pairs(source) do
+        if type(v) == "table" and type(target[k]) == "table" then
+            self:MergeSettings(target[k], v)
+        else
+            target[k] = v
+        end
+    end
+    return target
+end
+
+-- Create the setup wizard interface
+function VUI:CreateSetupWizard(playerRole, playerClass)
+    -- Store the wizard and configuration data
+    self.setupWizard = {
+        currentStep = 1,
+        playerRole = playerRole,
+        playerClass = playerClass,
+        steps = {
+            "welcome",
+            "role",
+            "performance",
+            "UI",
+            "modules",
+            "complete"
+        },
+        choices = {
+            role = playerRole,
+            performanceLevel = "balanced",
+            UIStyle = "modern",
+            enabledModules = {}
+        }
+    }
+    
+    -- Schedule the wizard to appear after a short delay
+    C_Timer.After(1, function()
+        self:ShowSetupWizardStep(1)
+    end)
+end
+
+-- Show a specific step of the setup wizard
+function VUI:ShowSetupWizardStep(step)
+    -- This will be called by the frame when navigation happens
+    -- Implementation uses existing UI components in the addon
+    
+    -- Store the current step
+    self.setupWizard.currentStep = step
+    
+    -- When wizard completes (step > number of steps)
+    if step > #self.setupWizard.steps then
+        self:CompleteSetupWizard()
+        return
+    end
+    
+    -- Otherwise display current step
+    local stepName = self.setupWizard.steps[step]
+    self:DisplayWizardStep(stepName)
+end
+
+-- Display a particular wizard step
+function VUI:DisplayWizardStep(stepName)
+    -- This would create the actual UI for each step
+    -- Implementation would use the VUI.ConfigUI system already in place
+    
+    if self.ConfigUI and self.ConfigUI.ShowWizardStep then
+        self.ConfigUI:ShowWizardStep(stepName, self.setupWizard)
+    else
+        -- Wizard can't be displayed yet, perhaps config UI isn't loaded
+        -- Mark that wizard should be shown when possible
+        self.db.profile.showWizardOnUILoad = true
+    end
+end
+
+-- Complete the setup wizard
+function VUI:CompleteSetupWizard()
+    -- Apply final configuration based on wizard choices
+    self:ApplyWizardChoices(self.setupWizard.choices)
+    
+    -- Mark setup as complete
+    self.db.profile.firstRun = false
+    self.db.profile.setupWizardStage = nil
+    self.db.profile.setupComplete = true
+    self.db.profile.setupCompletedDate = time()
+    
+    -- Show completion message
+    self:Print("Setup complete! Type /vui to access settings anytime.")
+    
+    -- Reload UI if needed
+    if self.setupWizard.choices.reloadUI then
+        C_Timer.After(2, ReloadUI)
+    end
+end
+
+-- Apply all wizard choices to the profile
+function VUI:ApplyWizardChoices(choices)
+    -- 1. Apply role template again if it was changed
+    if choices.role ~= self.db.profile.playerRole then
+        self:ApplyRoleTemplate(choices.role, self.setupWizard.playerClass)
+    end
+    
+    -- 2. Apply performance settings
+    self:ApplyPerformanceSettings(choices.performanceLevel)
+    
+    -- 3. Apply UI style settings
+    self:ApplyUIStyleSettings(choices.UIStyle)
+    
+    -- 4. Enable/disable modules based on choices
+    for module, enabled in pairs(choices.enabledModules) do
+        self.enabledModules[module] = enabled
+        if self.db.profile.modules[module] then
+            self.db.profile.modules[module].enabled = enabled
+        end
+    end
+end
+
+-- Apply performance settings based on wizard choice
+function VUI:ApplyPerformanceSettings(performanceLevel)
+    local settings = self.db.profile
+    
+    if performanceLevel == "maximum" then
+        -- Maximum quality settings
+        settings.performance = {
+            frameLimiter = false,
+            highQualityTextures = true,
+            enhancedAnimations = true,
+            advancedEffects = true,
+            detailedTooltips = true
+        }
+    elseif performanceLevel == "balanced" then
+        -- Balanced settings
+        settings.performance = {
+            frameLimiter = true,
+            highQualityTextures = true,
+            enhancedAnimations = true,
+            advancedEffects = false,
+            detailedTooltips = true
+        }
+    elseif performanceLevel == "minimal" then
+        -- Performance-focused settings
+        settings.performance = {
+            frameLimiter = true,
+            highQualityTextures = false,
+            enhancedAnimations = false,
+            advancedEffects = false,
+            detailedTooltips = false
+        }
+    end
+    
+    -- Apply these settings to relevant systems
+    if self.FrameRateThrottling then
+        self.FrameRateThrottling.config.enabled = settings.performance.frameLimiter
+    end
+    
+    if self.CombatPerformance then
+        self.CombatPerformance.config.reduceLODInCombat = not settings.performance.advancedEffects
+        self.CombatPerformance.config.disableAnimationsInCombat = not settings.performance.enhancedAnimations
+    end
+end
+
+-- Apply UI style settings
+function VUI:ApplyUIStyleSettings(uiStyle)
+    -- Set the style preference in all UI modules
+    local modules = {"unitframes", "actionbars", "nameplates", "castbar"}
+    
+    for _, module in ipairs(modules) do
+        if self.db.profile.modules[module] then
+            self.db.profile.modules[module].style = uiStyle
+        end
+    end
+    
+    -- Apply the change immediately if modules are loaded
+    for _, module in ipairs(modules) do
+        if self[module] and self[module].ApplyStyle then
+            self[module]:ApplyStyle()
         end
     end
 end
