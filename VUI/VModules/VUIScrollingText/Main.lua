@@ -18,7 +18,7 @@ VUI.ScrollingText = {
     ModuleInfo = {
         title = "VUI Scrolling Text",
         desc = "Scrolls battle information around your character",
-        icon = [[Interface\AddOns\VUI\Media\scrollingtext.tga]],
+        icon = [[Interface\AddOns\VUI\Media\Icons\vortex_thunderstorm.svg]],
         author = "Vortex-WoW"
     }
 }

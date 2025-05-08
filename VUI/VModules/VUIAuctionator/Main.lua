@@ -13,7 +13,7 @@ VUI.Auctionator = {
   ModuleInfo = {
     title = "VUIAuctionator",
     desc = "Advanced Auction House Tools",
-    icon = [[Interface\AddOns\VUI\Media\auctionator.tga]],
+    icon = [[Interface\AddOns\VUI\Media\Icons\vortex_thunderstorm.svg]],
     author = "Vortex-WoW"
   }
 }
