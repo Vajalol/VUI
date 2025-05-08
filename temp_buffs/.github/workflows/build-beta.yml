@@ -1,0 +1,40 @@
+name: Giftwrap-Beta
+
+on:
+  push:
+    tags:
+      - "**-beta**"
+    paths-ignore:
+      - ".github/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      # WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+      WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: https://github.com/actions/checkout/issues/290
+        run:
+          git fetch --tags --force
+
+      - name: Luacheck
+        uses: nebularg/actions-luacheck@v1
+        with:
+          config: https://raw.githubusercontent.com/clicketz/wow-luacheckrc/mainline/.luacheckrc
+          args: "--no-color -q"
+          annotate: warning
+
+      - name: Generate Changelog
+        run: ./generate_changelog.sh
+
+      - name: Package
+        uses: BigWigsMods/packager@master
