@@ -13,4 +13,5 @@
   <Include file="VUINotifications\Load.xml"/>
   <Include file="VUIScrollingText\Load.xml"/>
   <Include file="VUIepf\Load.xml"/>
+  <Include file="VUIConsumables\Load.xml"/>
 </Ui>
