@@ -13,7 +13,7 @@ VUI.Notifications = {
     ModuleInfo = {
         title = "VUI Notifications",
         desc = "Simple spell notifications for combat events",
-        icon = [[Interface\AddOns\VUI\Media\Icons\vortex_thunderstorm.svg]],
+        icon = [[Interface\AddOns\VUI\Media\Icons\tga\vortex_thunderstorm.tga]],
         author = "Vortex-WoW"
     }
 }
