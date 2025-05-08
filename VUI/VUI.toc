@@ -18,5 +18,7 @@ Core\Load.xml
 Data\Load.xml
 ## MODULES
 Modules\Load.xml
+## VUI MODULES
+VModules\Load.xml
 ## CONFIG
 Config\Load.xml

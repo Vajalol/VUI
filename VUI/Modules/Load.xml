@@ -11,7 +11,4 @@
   <Include file='General\Load.xml'/>
   <Include file='Tooltip\Load.xml'/>
   <Include file='CastBars\Load.xml'/>
-  
-  <!-- VUI Additional Modules -->
-  <Include file='VUIBuffs\Load.xml'/>
 </Ui>
