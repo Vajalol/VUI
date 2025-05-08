@@ -26,6 +26,8 @@
     <Script file="Spells\Cata.lua" />
     
     <Script file="AddonCompatibility.lua" />
+    <Script file="Media.lua" />
     <Script file="VUIBuffs.lua" />
     <Script file="Options.lua" />
+    <Script file="VUI_Integration.lua" />
 </Ui>

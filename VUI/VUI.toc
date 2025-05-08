@@ -2,7 +2,7 @@
 ## Author: VortexQ8
 ## Version: 0.1.0-alpha
 ## Title: |cffea00ffV|r|cff00a2ffUI|r
-## SavedVariables: VUIDB, VUIBuffs_DB
+## SavedVariables: VUI_SavedVariables
 ## IconTexture: Interface\AddOns\VUI\Media\Icons\vortex_thunderstorm
 ## AddonCompartmentFunc: VUI_Options
 ## X-Website: https://github.com/Vajalol/VUI

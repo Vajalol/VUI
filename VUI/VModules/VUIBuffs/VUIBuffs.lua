@@ -108,11 +108,11 @@ local defaults = {
                 countXOffset = 0,
                 countYOffset = 0,
                 colorBarByType = true,
-                barTexture = "Interface\\AddOns\\VUI\\media\\modules\\VUIBuffs\\bar\\smooth",
-                edgeTexture = "Interface\\AddOns\\VUI\\media\\modules\\VUIBuffs\\border\\edge-default",
+                barTexture = VUIBuffs:GetMediaPath("Bars", "Smooth"),
+                edgeTexture = VUIBuffs:GetMediaPath("Borders", "Default"),
                 backgroundColor = { r = 0, g = 0, b = 0, a = 0.5 },
                 barColor = { r = 0.8, g = 0.8, b = 0.8, a = 0.7 },
-                font = "Interface\\AddOns\\VUI\\media\\fonts\\expressway.ttf",
+                font = "Interface\\AddOns\\VUI\\Media\\Fonts\\expressway.ttf",
                 fontOutline = "OUTLINE",
                 displayMode = "currentMax",
                 sortMethod = "timeleft",
@@ -175,8 +175,11 @@ local defaults = {
 
 -- Initialize the addon
 function VUIBuffs:OnInitialize()
-    -- Register SavedVariables
-    self.db = LibStub("AceDB-3.0"):New("VUIBuffs_DB", defaults, true)
+    -- Register SavedVariables under the unified VUI_SavedVariables structure
+    if not VUI_SavedVariables then VUI_SavedVariables = {} end
+    if not VUI_SavedVariables.VUIBuffs then VUI_SavedVariables.VUIBuffs = {} end
+    
+    self.db = LibStub("AceDB-3.0"):New("VUI_SavedVariables.VUIBuffs", defaults, true)
     
     -- Set up minimap button
     self:SetupDataBroker()
@@ -209,6 +212,9 @@ function VUIBuffs:OnInitialize()
     
     -- Register any events we need
     self:RegisterEvents()
+    
+    -- Initialize VUI integration
+    self:InitVUIIntegration()
 end
 
 -- Handle slash commands
@@ -273,7 +279,7 @@ function VUIBuffs:SetupDataBroker()
     local dataObj = LDB:NewDataObject("VUIBuffs", {
         type = "launcher",
         text = "VUI Buffs",
-        icon = "Interface\\AddOns\\VUI\\media\\modules\\VUIBuffs\\icon",
+        icon = self:GetMediaPath("Icons", "Default"),
         OnClick = function(_, button)
             if button == "LeftButton" then
                 self:OpenOptions()

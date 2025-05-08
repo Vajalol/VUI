@@ -12,6 +12,9 @@ local Tooltip = VUI:GetModule("Config.Layout.Tooltip")
 local Chat = VUI:GetModule("Config.Layout.Chat")
 local Buffs = VUI:GetModule("Config.Layout.Buffs")
 local Profiles = VUI:GetModule("Config.Layout.Profiles")
+-- VModules
+local VUIBuffs = VUI:GetModule("Config.Layout.VUIBuffs")
+local VUIAnyFrame = VUI:GetModule("Config.Layout.VUIAnyFrame")
 
 function Gui:OnEnable()
     local VUIConfig = LibStub('VUIConfig')
@@ -149,7 +152,10 @@ function Gui:OnEnable()
         Chat = Chat.layout,
         Misc = Misc.layout,
         Profiles = Profiles.layout,
-        FAQ = FAQ.layout
+        FAQ = FAQ.layout,
+        -- VModules
+        VUIBuffs = VUIBuffs.layout,
+        VUIAnyFrame = VUIAnyFrame.layout
     }
 
     --Categories
@@ -165,7 +171,10 @@ function Gui:OnEnable()
         { title = 'Chat', name = 'Chat', layout = options['Chat'] },
         { title = 'Misc', name = 'Misc', layout = options['Misc'] },
         { title = 'Profiles', name = 'Profiles', layout = options['Profiles'] },
-        { title = 'FAQ', name = 'FAQ', layout = options['FAQ'] }
+        { title = 'FAQ', name = 'FAQ', layout = options['FAQ'] },
+        -- VModules
+        { title = 'VUI Buffs', name = 'VUIBuffs', layout = options['VUIBuffs'] },
+        { title = 'VUI AnyFrame', name = 'VUIAnyFrame', layout = options['VUIAnyFrame'] }
     }
 
     -- Tabs
