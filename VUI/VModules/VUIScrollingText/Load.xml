@@ -1,0 +1,32 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- Localization -->
+    <Script file="locales/localization.lua"/>
+    
+    <!-- Main module file -->
+    <Script file="Main.lua"/>
+    
+    <!-- Services -->
+    <Script file="service/Animations.lua"/>
+    <Script file="service/ScrollAreas.lua"/>
+    <Script file="service/Parser.lua"/>
+    <Script file="service/Profiles.lua"/>
+    
+    <!-- Include fonts if needed -->
+    <Font name="VUIScrollingTextFont" font="Interface\AddOns\VUI\VModules\VUIScrollingText\fonts\frizqt__.ttf" virtual="true">
+        <FontHeight val="16"/>
+        <Shadow>
+            <Offset>
+                <AbsDimension x="1" y="-1"/>
+            </Offset>
+            <Color r="0" g="0" b="0" a="1"/>
+        </Shadow>
+    </Font>
+    
+    <Font name="VUIScrollingTextFontSmall" inherits="VUIScrollingTextFont" virtual="true">
+        <FontHeight val="12"/>
+    </Font>
+    
+    <Font name="VUIScrollingTextFontLarge" inherits="VUIScrollingTextFont" virtual="true">
+        <FontHeight val="24"/>
+    </Font>
+</Ui>
