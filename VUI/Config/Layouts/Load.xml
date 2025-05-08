@@ -16,4 +16,7 @@
   <Include file='_VUIBuffs.lua'/>
   <Include file='_VUIAnyFrame.lua'/>
   <Include file='_VUIKeystones.lua'/>
+  <Include file='_VUICC.lua'/>
+  <Include file='_VUICD.lua'/>
+  <Include file='_VUIIDs.lua'/>
 </Ui>
