@@ -1,0 +1,35 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+  <!-- Libraries -->
+  <Script file="Libs\LibStub\Libstub.lua"/>
+  
+  <!-- Polyfills for compatibility -->
+  <Script file="Polyfills.lua"/>
+  
+  <!-- Utility modules -->
+  <Script file="Modules\Utils\Utils.lua"/>
+  <Script file="Modules\Utils\MasqueHelper.lua"/>
+  <Script file="Modules\Utils\Constants.lua"/>
+  <Script file="Modules\Frames\FrameUtils.lua"/>
+  
+  <!-- Settings modules -->
+  <Script file="Modules\Settings\InnerBlocklist.lua"/>
+  <Script file="Modules\Settings\LayoutSettings.lua"/>
+  <Script file="Modules\Settings\UnitSettings.lua"/>
+  <Script file="Modules\Settings\ProfileSettings.lua"/>
+  <Script file="Modules\Settings\Settings.lua"/>
+  
+  <!-- Core modules -->
+  <Script file="Modules\Core\Icon.lua"/>
+  <Script file="Modules\Core\IconQueue.lua"/>
+  <Script file="Modules\Core\LocationCheck.lua"/>
+  <Script file="Modules\Core\Units.lua"/>
+  
+  <!-- Frames -->
+  <Script file="Modules\Frames\SettingsFrame.lua"/>
+  <Script file="Modules\Frames\BlocklistFrame.lua"/>
+  <Script file="Modules\Frames\ProfileFrame.lua"/>
+  
+  <!-- Main addon file -->
+  <Script file="VUITGCD.lua"/>
+</Ui>

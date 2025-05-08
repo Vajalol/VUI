@@ -1,23 +1,13 @@
-<Ui xmlns='http://www.blizzard.com/wow/ui/'>
-  <Include file='_Actionbar.lua'/>
-  <Include file='_Buffs.lua'/>
-  <Include file='_Castbars.lua'/>
-  <Include file='_Chat.lua'/>
-  <Include file='_FAQ.lua'/>
-  <Include file='_General.lua'/>
-  <Include file='_Map.lua'/>
-  <Include file='_Misc.lua'/>
-  <Include file='_Nameplates.lua'/>
-  <Include file='_Profiles.lua'/>
-  <Include file='_Tooltip.lua'/>
-  <Include file='_Unitframes.lua'/>
-  
-  <!-- VModules -->
-  <Include file='_VUIBuffs.lua'/>
-  <Include file='_VUIAnyFrame.lua'/>
-  <Include file='_VUIKeystones.lua'/>
-  <Include file='_VUICC.lua'/>
-  <Include file='_VUICD.lua'/>
-  <Include file='_VUIIDs.lua'/>
-  <Include file='_VUIGfinder.lua'/>
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+  <!-- Configuration Layouts -->
+  <Script file="_General.lua"/>
+  <Script file="_VUIBuffs.lua"/>
+  <Script file="_VUIAnyFrame.lua"/>
+  <Script file="_VUIKeystones.lua"/>
+  <Script file="_VUICC.lua"/>
+  <Script file="_VUICD.lua"/>
+  <Script file="_VUIIDs.lua"/>
+  <Script file="_VUIGfinder.lua"/>
+  <Script file="_VUITGCD.lua"/>
 </Ui>

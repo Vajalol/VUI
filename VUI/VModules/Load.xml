@@ -1,24 +1,12 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
-    <!-- Core Addon Module Integration -->
-    <Include file="VUIBuffs\Load.xml"/>
-    <Include file="VUIAnyFrame\Load.xml"/>
-    <Include file="VUIKeystones\Load.xml"/>
-    <Include file="VUICC\Load.xml"/>
-    <Include file="VUICD\Load.xml"/>
-    <Include file="VUIIDs\Load.xml"/>
-    <Include file="VUIGfinder\Load.xml"/>
-    <!--<Include file="VUITGCD\Load.xml"/>-->
-    <!--<Include file="VUIAuctionator\Load.xml"/>-->
-    <!--<Include file="VUINotifications\Load.xml"/>-->
-
-    <!-- WeakAura Feature Replication -->
-    <!--<Include file="VUIConsumables\Load.xml"/>-->
-    <!--<Include file="VUIPositionOfPower\Load.xml"/>-->
-    <!--<Include file="VUIMissingRaidBuffs\Load.xml"/>-->
-    <!--<Include file="VUIMouseFireTrail\Load.xml"/>-->
-    <!--<Include file="VUIHealerMana\Load.xml"/>-->
-    
-    <!-- New Features -->
-    <!--<Include file="VUIPlater\Load.xml"/>-->
+  <!-- VModules that extend VUI functionality -->
+  <Include file="VUIBuffs\Load.xml"/>
+  <Include file="VUIAnyFrame\Load.xml"/>
+  <Include file="VUIKeystones\Load.xml"/>
+  <Include file="VUICC\Load.xml"/>
+  <Include file="VUICD\Load.xml"/>
+  <Include file="VUIIDs\Load.xml"/>
+  <Include file="VUIGfinder\Load.xml"/>
+  <Include file="VUITGCD\Load.xml"/>
 </Ui>
