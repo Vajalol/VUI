@@ -5,7 +5,4 @@
   
   <!-- Load main module file -->
   <Script file="Main.lua"/>
-  
-  <!-- Load test file (only used when testing framework is loaded) -->
-  <Script file="Test.lua"/>
 </Ui>

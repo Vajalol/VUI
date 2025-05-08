@@ -18,7 +18,6 @@ Core\Load.xml
 Data\Load.xml
 ## UTILITIES
 Utilities\Animation.lua
-Utilities\TestFramework.lua
 ## MODULES
 Modules\Load.xml
 ## VUI MODULES
