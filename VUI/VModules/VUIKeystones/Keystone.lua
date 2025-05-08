@@ -119,17 +119,17 @@ end
 
 -- Get the timer for a specific dungeon (in seconds)
 function Keystone:GetDungeonTimer(mapID)
-    -- Updated with The War Within Season 2 dungeons and timers
+    -- Updated with The War Within Season 2 dungeons and timers (started April 30, 2024)
     local timers = {
         -- The War Within Season 2 Dungeons
-        [1180] = 1620, -- Cinderbrew Meadery
-        [1182] = 1500, -- Darkflame Cleft
-        [537] = 1500,  -- Algeth'ar Academy
-        [195] = 1800,  -- The Everbloom
-        [1154] = 1560, -- The Dawnbreaker
-        [168] = 1800,  -- Neltharion's Lair
-        [438] = 1800,  -- Uldaman: Legacy of Tyr
-        [204] = 1800,  -- Assault on Violet Hold
+        [1247] = 1800, -- Doom's Howl (new in Season 2)
+        [1248] = 1800, -- Vortex Pinnacle (new in Season 2)
+        [406] = 1800,  -- Ruby Life Pools
+        [405] = 1800,  -- The Azure Vault
+        [404] = 1800,  -- The Nokhud Offensive
+        [1196] = 1800, -- Darkheart Thicket
+        [1207] = 1800, -- The Everbloom
+        [1208] = 1800, -- Throne of the Tides
 
         -- Older dungeons kept for compatibility
         [375] = 1800, -- Mists of Tirna Scithe
