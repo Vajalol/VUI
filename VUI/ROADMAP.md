@@ -45,59 +45,46 @@ This document outlines the progress and current status of the VUI addon developm
 - Consolidated all module configurations into unified panel
 - Removed TestFramework.lua in favor of direct in-game debugging
 
-## Priority Tasks - Configuration System Overhaul
+## Priority Tasks - Configuration System Enhancement
 
-### 🔴 Phase 4.5: Configuration System Redesign
-- **High Priority**: Create a standalone, unified Main GUI for VUI
-  - Design a centralized configuration framework that all modules can hook into
-  - Implement a consistent styling and navigation system
-  - Ensure configuration panel loads efficiently without bloating memory usage
+### 🔴 Phase 4.5: Configuration System Enhancement
+- **High Priority**: Expand Existing GUI System
+  - Ensure all modules properly hook into the current GUI system
+  - Add any missing configuration options for complete functionality
+  - Maintain the existing GUI architecture while enhancing it
   
-- **High Priority**: Module Configuration Integration
-  - Remove individual module configuration panels (except VUIGfinder)
-  - Integrate all module options into the main configuration system
-  - Ensure each module has a dedicated section with appropriate categorization
-  - Maintain all existing configuration options without feature loss
-  - Preserve VUIGfinder's unique configuration tied to the LFG interface
+- **High Priority**: Module Configuration Standardization
+  - Keep VUIGfinder's unique configuration tied to the LFG interface
+  - Connect all other modules to the main configuration panel
+  - Organize options logically with appropriate categorization
+  - Ensure all functionality is accessible through the main GUI
   
-- **High Priority**: First-Time Installation Experience
-  - Design streamlined installation wizard for new users
-  - Create step-by-step guide for essential configuration options
-  - Implement default profiles for different user types (DPS, Tank, Healer)
-  - Add tooltips and help text for all configuration options
-  - Include welcome message with basic navigation instructions
+- **High Priority**: First-Time User Experience
+  - Improve the initial user experience for new installations
+  - Provide better default configurations
+  - Add helpful tooltips and explanations for key features
+  - Include streamlined default profile options
 
 #### Implementation Plan
-1. **Analysis Phase** (1-2 days)
-   - Audit all existing module configuration systems
-   - Document all configuration options that need to be preserved
-   - Identify common patterns and shared requirements
+1. **GUI System Analysis**
+   - Study the existing configuration system architecture
+   - Identify how modules currently register with the main GUI
+   - Document best practices for adding options without breaking existing functionality
+   
+2. **Module Connection & Enhancement**
+   - Systematically add any missing module options to the main configuration panel
+   - Standardize how modules register their configuration sections
+   - Ensure all modules properly save and load settings
+   
+3. **First-Time Experience Improvements**
+   - Enhance the installation/first-run experience
+   - Create sensible defaults for all options
+   - Add helpful guidance for new users
 
-2. **Architecture Design** (2-3 days)
-   - Design modular configuration framework
-   - Create registration system for modules to hook into main GUI
-   - Define standard API for modules to add configuration options
-
-3. **Core Implementation** (3-4 days)
-   - Build standalone configuration panel framework
-   - Implement navigation and category system
-   - Create option templates (sliders, checkboxes, color pickers, etc.)
-   - Develop consistent styling system
-
-4. **Module Integration** (4-5 days)
-   - Convert each module to use the new configuration system
-   - Migrate all settings without data loss
-   - Test each module for full functionality
-
-5. **Installation Wizard** (2-3 days)
-   - Design and implement first-time setup experience
-   - Create guided configuration process
-   - Add default profile selection
-
-6. **Testing & Refinement** (2-3 days)
-   - Usability testing for configuration flow
-   - Performance testing to ensure minimal impact
-   - Polish and refine user experience
+4. **Testing & Validation**
+   - Verify all configuration options work correctly
+   - Test settings persistence between sessions
+   - Ensure consistent user experience across all modules
 
 ## Upcoming Phases
 
@@ -126,14 +113,14 @@ Based on user preferences, the following changes were made to the development ap
 
 3. **Temporary File Cleanup**: Removed all temporary files and directories used during development to streamline the final package.
 
-4. **Configuration System Redesign**: Shifting from distributed configuration panels to a single, unified configuration system while preserving all functionality.
+4. **Configuration System Enhancement**: Extending the existing configuration system to ensure all modules are properly integrated while maintaining the current architecture.
 
 ## Next Steps
 
-The immediate focus is on implementing the Configuration System Overhaul (Phase 4.5), with particular attention to:
+The immediate focus is on enhancing the Configuration System (Phase 4.5), with particular attention to:
 
-1. Creating a standalone Main GUI that all modules connect to
-2. Consolidating module configuration panels while maintaining all options
-3. Improving the first-time installation experience
+1. Expanding the existing GUI system with complete module configuration options
+2. Ensuring all modules properly connect to the main configuration panel
+3. Improving the first-time user experience with better defaults and guidance
 
-Upon completion of the Configuration System Overhaul, work will continue on Phase 5 (Testing, Debugging, and Performance Optimization).
+Upon completion of the Configuration System Enhancement, work will continue on Phase 5 (Testing, Debugging, and Performance Optimization).
