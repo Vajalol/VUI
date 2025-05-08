@@ -6,7 +6,7 @@
     <Include file="VUIKeystones\Load.xml"/>
     <Include file="VUICC\Load.xml"/>
     <Include file="VUICD\Load.xml"/>
-    <!--<Include file="VUIIDs\Load.xml"/>-->
+    <Include file="VUIIDs\Load.xml"/>
     <!--<Include file="VUIGfinder\Load.xml"/>-->
     <!--<Include file="VUITGCD\Load.xml"/>-->
     <!--<Include file="VUIAuctionator\Load.xml"/>-->
