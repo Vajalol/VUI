@@ -9,6 +9,9 @@ function Layout:OnEnable()
 
     -- Data
     local Textures = VUI:GetModule("Data.Textures")
+    
+    -- VUIPlater module
+    local VUIPlater = VUI:GetModule("VUIPlater")
 
     -- Layout
     Layout.layout = {
@@ -185,6 +188,68 @@ function Layout:OnEnable()
                     end,
                     column = 4,
                     order = 2
+                }
+            },
+            -- VUIPlater integration
+            {
+                header = {
+                    type = 'header',
+                    label = 'VUI Plater Integration'
+                }
+            },
+            {
+                enablePlater = {
+                    key = 'vmodules.vuiplater.enabled',
+                    type = 'checkbox',
+                    label = 'Enable VUI Plater',
+                    tooltip = 'Enable VUI Plater - advanced nameplate customization based on Whiiskeyz profile',
+                    column = 4,
+                    order = 1,
+                    callback = function(self)
+                        -- Update VUIPlater enabled state
+                        if VUIPlater and VUIPlater.db then
+                            VUIPlater.db.profile.enabled = self:GetValue()
+                            if self:GetValue() then 
+                                if VUIPlater.OnEnable then VUIPlater:OnEnable() end 
+                            else 
+                                if VUIPlater.OnDisable then VUIPlater:OnDisable() end 
+                            end
+                        end
+                    end
+                },
+                useWhiiskeyzProfile = {
+                    key = 'vmodules.vuiplater.useWhiiskeyz',
+                    type = 'checkbox',
+                    label = 'Use Whiiskeyz Profile',
+                    tooltip = 'Apply the Whiiskeyz Plater profile settings',
+                    column = 4,
+                    order = 2,
+                    callback = function(self)
+                        if VUIPlater and VUIPlater.db then
+                            if self:GetValue() then
+                                VUIPlater.db.profile.currentPreset = "WHIISKEYZ"
+                                -- Reset to default settings
+                                VUIPlater.db:ResetProfile()
+                                -- Update all nameplates
+                                VUIPlater:OnDisable()
+                                VUIPlater:OnEnable()
+                            end
+                        end
+                    end
+                }
+            },
+            {
+                configPlater = {
+                    type = 'button',
+                    label = 'Open Advanced Settings',
+                    tooltip = 'Open the full VUI Plater configuration panel with all options',
+                    column = 4,
+                    order = 3,
+                    callback = function()
+                        if VUIPlater then
+                            VUI.Config:OpenConfig("VUIPlater")
+                        end
+                    end
                 }
             },
         },

@@ -30,7 +30,7 @@ local VUIPositionOfPower = VUI:GetModule("Config.Layout.VUIPositionOfPower")
 local VUIMissingRaidBuffs = VUI:GetModule("Config.Layout.VUIMissingRaidBuffs")
 local VUIMouseFireTrail = VUI:GetModule("Config.Layout.VUIMouseFireTrail")
 local VUIHealerMana = VUI:GetModule("Config.Layout.VUIHealerMana")
-local VUIPlater = VUI:GetModule("Config.Layout.VUIPlater")
+-- Note: VUIPlater integrated with Nameplates section
 
 function Gui:OnEnable()
     local VUIConfig = LibStub('VUIConfig')
@@ -187,9 +187,8 @@ function Gui:OnEnable()
         VUIPositionOfPower = VUIPositionOfPower and VUIPositionOfPower.layout,
         VUIMissingRaidBuffs = VUIMissingRaidBuffs and VUIMissingRaidBuffs.layout,
         VUIMouseFireTrail = VUIMouseFireTrail and VUIMouseFireTrail.layout,
-        VUIHealerMana = VUIHealerMana and VUIHealerMana.layout,
-        -- VModules - New Features (Phase 3)
-        VUIPlater = VUIPlater and VUIPlater.layout
+        VUIHealerMana = VUIHealerMana and VUIHealerMana.layout
+        -- Note: VUIPlater integrated with Nameplates section
     }
 
     --Categories
@@ -238,10 +237,9 @@ function Gui:OnEnable()
         options['VUIHealerMana'] and { title = 'VUI Healer Mana', name = 'VUIHealerMana', layout = options['VUIHealerMana'] },
         
         -- Phase 3 Header
-        { title = '|cFF00AAFFNew Features|r', name = 'NewFeaturesHeader', layout = nil },
+        { title = '|cFF00AAFFNew Features|r', name = 'NewFeaturesHeader', layout = nil }
         
-        -- Phase 3: New Features
-        options['VUIPlater'] and { title = 'VUI Plater', name = 'VUIPlater', layout = options['VUIPlater'] }
+        -- Note: VUIPlater integrated with Nameplates section
     }
     
     -- Filter out nil entries (modules that might not be available)

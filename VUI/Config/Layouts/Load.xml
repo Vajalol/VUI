@@ -2,6 +2,19 @@
 ..\FrameXML\UI.xsd">
   <!-- Configuration Layouts -->
   <Script file="_General.lua"/>
+  <Script file="_Actionbar.lua"/>
+  <Script file="_Buffs.lua"/>
+  <Script file="_Castbars.lua"/>
+  <Script file="_Chat.lua"/>
+  <Script file="_FAQ.lua"/>
+  <Script file="_Map.lua"/>
+  <Script file="_Misc.lua"/>
+  <Script file="_Nameplates.lua"/>
+  <Script file="_Profiles.lua"/>
+  <Script file="_Tooltip.lua"/>
+  <Script file="_Unitframes.lua"/>
+  
+  <!-- Phase 1: Core Addon Modules -->
   <Script file="_VUIBuffs.lua"/>
   <Script file="_VUIAnyFrame.lua"/>
   <Script file="_VUIKeystones.lua"/>
@@ -10,4 +23,15 @@
   <Script file="_VUIIDs.lua"/>
   <Script file="_VUIGfinder.lua"/>
   <Script file="_VUITGCD.lua"/>
+  
+  <!-- Phase 2: WeakAura Replacements -->
+  <Script file="_VUIConsumables.lua"/>
+  <Script file="_VUIMissingRaidBuffs.lua"/>
+  <Script file="_VUIMouseFireTrail.lua"/>
+  <Script file="_VUIHealerMana.lua"/>
+  <Script file="_VUIPositionOfPower.lua"/>
+  <Script file="_VUIepf.lua"/>
+  <Script file="_VUIScrollingText.lua"/>
+  
+  <!-- Still needed: VUIAuctionator and VUINotifications -->
 </Ui>
