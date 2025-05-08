@@ -294,6 +294,84 @@ function Layout:OnEnable()
                     end
                 },
             },
+            {
+                header = {
+                    type = 'header',
+                    label = 'Color Settings'
+                },
+            },
+            {
+                durationFontColor = {
+                    key = 'vmodules.vuipositionofpower.durationFontColor',
+                    type = 'color',
+                    label = 'Duration Text Color',
+                    tooltip = 'Set the color for duration text',
+                    hasAlpha = true,
+                    column = 4,
+                    order = 1,
+                    callback = function(self, r, g, b, a)
+                        if VUIPositionOfPower and VUIPositionOfPower.db then
+                            VUIPositionOfPower.db.profile.durationFontColor = {r = r, g = g, b = b, a = a}
+                            if VUIPositionOfPower.UpdateIcons then
+                                VUIPositionOfPower:UpdateIcons()
+                            end
+                        end
+                    end
+                },
+                stackFontColor = {
+                    key = 'vmodules.vuipositionofpower.stackFontColor',
+                    type = 'color',
+                    label = 'Stack Text Color',
+                    tooltip = 'Set the color for stack count text',
+                    hasAlpha = true,
+                    column = 4,
+                    order = 2,
+                    callback = function(self, r, g, b, a)
+                        if VUIPositionOfPower and VUIPositionOfPower.db then
+                            VUIPositionOfPower.db.profile.stackFontColor = {r = r, g = g, b = b, a = a}
+                            if VUIPositionOfPower.UpdateIcons then
+                                VUIPositionOfPower:UpdateIcons()
+                            end
+                        end
+                    end
+                },
+            },
+            {
+                borderColor = {
+                    key = 'vmodules.vuipositionofpower.borderColor',
+                    type = 'color',
+                    label = 'Border Color',
+                    tooltip = 'Set the color for icon borders (when not using class color)',
+                    hasAlpha = true,
+                    column = 4,
+                    order = 1,
+                    callback = function(self, r, g, b, a)
+                        if VUIPositionOfPower and VUIPositionOfPower.db then
+                            VUIPositionOfPower.db.profile.borderColor = {r = r, g = g, b = b, a = a}
+                            if VUIPositionOfPower.UpdateIcons then
+                                VUIPositionOfPower:UpdateIcons()
+                            end
+                        end
+                    end
+                },
+                backgroundColor = {
+                    key = 'vmodules.vuipositionofpower.backgroundColor',
+                    type = 'color',
+                    label = 'Background Color',
+                    tooltip = 'Set the background color for the icons',
+                    hasAlpha = true,
+                    column = 4,
+                    order = 2,
+                    callback = function(self, r, g, b, a)
+                        if VUIPositionOfPower and VUIPositionOfPower.db then
+                            VUIPositionOfPower.db.profile.backgroundColor = {r = r, g = g, b = b, a = a}
+                            if VUIPositionOfPower.UpdateIcons then
+                                VUIPositionOfPower:UpdateIcons()
+                            end
+                        end
+                    end
+                },
+            },
         },
     }
 end

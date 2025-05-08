@@ -32,6 +32,7 @@
   <Script file="_VUIPositionOfPower.lua"/>
   <Script file="_VUIepf.lua"/>
   <Script file="_VUIScrollingText.lua"/>
+  <Script file="_VUINotifications.lua"/>
   
-  <!-- Still needed: VUIAuctionator and VUINotifications -->
+  <!-- VUIAuctionator handles its own configuration UI -->
 </Ui>
