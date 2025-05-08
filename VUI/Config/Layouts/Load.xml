@@ -15,4 +15,5 @@
   <!-- VModules -->
   <Include file='_VUIBuffs.lua'/>
   <Include file='_VUIAnyFrame.lua'/>
+  <Include file='_VUIKeystones.lua'/>
 </Ui>

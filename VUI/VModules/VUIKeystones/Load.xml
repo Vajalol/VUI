@@ -1,0 +1,25 @@
+<Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+    <!-- Load required libraries -->
+    <Script file="libs\LibStub\LibStub.lua"/>
+    <Include file="libs\LibUIDropDownMenu\LibUIDropDownMenu.xml"/>
+    
+    <!-- Load localizations -->
+    <Include file="Locales\Locales.xml"/>
+    
+    <!-- Core files -->
+    <Script file="Init.lua"/>
+    <Script file="Media.lua"/>
+    <Script file="Core.lua"/>
+    <Script file="Config.lua"/>
+    
+    <!-- Feature files -->
+    <Script file="ObjectiveTracker.lua"/>
+    <Script file="ProgressTracker.lua"/>
+    <Script file="Keystone.lua"/>
+    <Script file="Gossip.lua"/>
+    <Script file="Splits.lua"/>
+    <Script file="Schedule.lua"/>
+    
+    <!-- VUI Integration -->
+    <Script file="VUI_Integration.lua"/>
+</Ui>

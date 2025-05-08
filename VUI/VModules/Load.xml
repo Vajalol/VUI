@@ -3,7 +3,7 @@
     <!-- Core Addon Module Integration -->
     <Include file="VUIBuffs\Load.xml"/>
     <Include file="VUIAnyFrame\Load.xml"/>
-    <!--<Include file="VUIKeystones\Load.xml"/>-->
+    <Include file="VUIKeystones\Load.xml"/>
     <!--<Include file="VUICC\Load.xml"/>-->
     <!--<Include file="VUICD\Load.xml"/>-->
     <!--<Include file="VUIIDs\Load.xml"/>-->

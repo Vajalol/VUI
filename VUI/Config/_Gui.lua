@@ -15,6 +15,7 @@ local Profiles = VUI:GetModule("Config.Layout.Profiles")
 -- VModules
 local VUIBuffs = VUI:GetModule("Config.Layout.VUIBuffs")
 local VUIAnyFrame = VUI:GetModule("Config.Layout.VUIAnyFrame")
+local VUIKeystones = VUI:GetModule("Config.Layout.VUIKeystones")
 
 function Gui:OnEnable()
     local VUIConfig = LibStub('VUIConfig')
@@ -155,7 +156,8 @@ function Gui:OnEnable()
         FAQ = FAQ.layout,
         -- VModules
         VUIBuffs = VUIBuffs.layout,
-        VUIAnyFrame = VUIAnyFrame.layout
+        VUIAnyFrame = VUIAnyFrame.layout,
+        VUIKeystones = VUIKeystones.layout
     }
 
     --Categories
@@ -174,7 +176,8 @@ function Gui:OnEnable()
         { title = 'FAQ', name = 'FAQ', layout = options['FAQ'] },
         -- VModules
         { title = 'VUI Buffs', name = 'VUIBuffs', layout = options['VUIBuffs'] },
-        { title = 'VUI AnyFrame', name = 'VUIAnyFrame', layout = options['VUIAnyFrame'] }
+        { title = 'VUI AnyFrame', name = 'VUIAnyFrame', layout = options['VUIAnyFrame'] },
+        { title = 'VUI Keystones', name = 'VUIKeystones', layout = options['VUIKeystones'] }
     }
 
     -- Tabs
