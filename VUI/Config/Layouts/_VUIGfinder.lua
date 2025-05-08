@@ -4,7 +4,7 @@ if not VUI.Config then return end
 local Module = VUI:GetModule("VUIGfinder")
 if not Module then return end
 
--- Create the options table
+-- Create the options table - simplified for main VUI GUI integration
 VUI.Config.Layout["VUIGfinder"] = {
     name = "VUI Gfinder",
     desc = "Enhances the Group Finder with advanced filtering",
@@ -160,137 +160,40 @@ VUI.Config.Layout["VUIGfinder"] = {
                 },
             },
         },
-        filtering = {
-            name = "Filtering",
+        defaults = {
+            name = "Default Filters",
             type = "group",
             order = 30,
             args = {
                 header = {
-                    name = "Filter Settings",
+                    name = "Default Filter Settings",
                     type = "header",
                     order = 1,
                 },
                 desc = {
-                    name = "Configure default filtering options for different activity types.",
+                    name = "Configure default behavior. Detailed filtering options available in the Group Finder interface.",
                     type = "description",
                     order = 2,
                 },
-                dungeonHeader = {
-                    name = "Dungeon Filter Defaults",
-                    type = "header",
-                    order = 10,
-                },
-                dungeonEnabled = {
-                    name = "Enable Dungeon Filtering",
-                    desc = "Apply filtering to dungeon groups",
+                remembersLastFilters = {
+                    name = "Remember Last Filters",
+                    desc = "Remember the last used filters between sessions",
                     type = "toggle",
-                    order = 11,
-                    get = function() return Module.db.profile.dungeon.enabled end,
+                    width = "full",
+                    order = 3,
+                    get = function() return Module.db.profile.rememberFilters end,
                     set = function(info, val)
-                        Module.db.profile.dungeon.enabled = val
+                        Module.db.profile.rememberFilters = val
                     end,
                 },
-                minDungeonDifficulty = {
-                    name = "Minimum Difficulty",
-                    desc = "Minimum dungeon difficulty to show",
-                    type = "select",
-                    order = 12,
-                    values = {
-                        [1] = "Normal",
-                        [2] = "Heroic",
-                        [3] = "Mythic",
-                        [4] = "Mythic+"
-                    },
-                    get = function() return Module.db.profile.dungeon.minimumDifficulty end,
-                    set = function(info, val)
-                        Module.db.profile.dungeon.minimumDifficulty = val
-                    end,
-                },
-                maxDungeonDifficulty = {
-                    name = "Maximum Difficulty",
-                    desc = "Maximum dungeon difficulty to show",
-                    type = "select",
-                    order = 13,
-                    values = {
-                        [1] = "Normal",
-                        [2] = "Heroic",
-                        [3] = "Mythic",
-                        [4] = "Mythic+"
-                    },
-                    get = function() return Module.db.profile.dungeon.maximumDifficulty end,
-                    set = function(info, val)
-                        Module.db.profile.dungeon.maximumDifficulty = val
-                    end,
-                },
-                minMythicLevel = {
-                    name = "Min Mythic+ Level",
-                    desc = "Minimum Mythic+ level to display",
-                    type = "range",
-                    min = 2,
-                    max = 30,
-                    step = 1,
-                    order = 14,
-                    get = function() return Module.db.profile.dungeon.minMythicPlusLevel end,
-                    set = function(info, val)
-                        Module.db.profile.dungeon.minMythicPlusLevel = val
-                    end,
-                },
-                maxMythicLevel = {
-                    name = "Max Mythic+ Level",
-                    desc = "Maximum Mythic+ level to display",
-                    type = "range",
-                    min = 2,
-                    max = 30,
-                    step = 1,
-                    order = 15,
-                    get = function() return Module.db.profile.dungeon.maxMythicPlusLevel end,
-                    set = function(info, val)
-                        Module.db.profile.dungeon.maxMythicPlusLevel = val
-                    end,
-                },
-                raidHeader = {
-                    name = "Raid Filter Defaults",
-                    type = "header",
-                    order = 20,
-                },
-                raidEnabled = {
-                    name = "Enable Raid Filtering",
-                    desc = "Apply filtering to raid groups",
-                    type = "toggle",
-                    order = 21,
-                    get = function() return Module.db.profile.raid.enabled end,
-                    set = function(info, val)
-                        Module.db.profile.raid.enabled = val
-                    end,
-                },
-                minRaidDifficulty = {
-                    name = "Minimum Difficulty",
-                    desc = "Minimum raid difficulty to show",
-                    type = "select",
-                    order = 22,
-                    values = {
-                        [1] = "Normal",
-                        [2] = "Heroic",
-                        [3] = "Mythic"
-                    },
-                    get = function() return Module.db.profile.raid.minimumDifficulty end,
-                    set = function(info, val)
-                        Module.db.profile.raid.minimumDifficulty = val
-                    end,
-                },
-                maxRaidDifficulty = {
-                    name = "Maximum Difficulty",
-                    desc = "Maximum raid difficulty to show",
-                    type = "select",
-                    order = 23,
-                    values = {
-                        [1] = "Normal",
-                        [2] = "Heroic",
-                        [3] = "Mythic"
-                    },
-                    get = function() return Module.db.profile.raid.maximumDifficulty end,
-                    set = function(info, val)
-                        Module.db.profile.raid.maximumDifficulty = val
+                resetButton = {
+                    name = "Reset All Filters",
+                    desc = "Reset all filters to default values",
+                    type = "execute",
+                    order = 4,
+                    func = function()
+                        Module:ResetAllFilters()
+                        VUI:Print("VUI Gfinder: All filters have been reset to default values.")
                     end,
                 },
             },
@@ -306,13 +209,13 @@ VUI.Config.Layout["VUIGfinder"] = {
                     order = 1,
                 },
                 desc = {
-                    name = "Configure advanced filtering expressions.",
+                    name = "Configure advanced options. Full filtering expression support is available in the Group Finder interface.",
                     type = "description",
                     order = 2,
                 },
-                enabled = {
-                    name = "Enable Advanced Mode",
-                    desc = "Use custom filter expressions instead of the UI",
+                defaultExpressionMode = {
+                    name = "Default to Expression Mode",
+                    desc = "Start in advanced expression mode instead of UI mode",
                     type = "toggle",
                     width = "full",
                     order = 3,
@@ -321,51 +224,22 @@ VUI.Config.Layout["VUIGfinder"] = {
                         Module.db.profile.advanced.enabled = val
                     end,
                 },
-                expression = {
-                    name = "Filter Expression",
-                    desc = "Advanced filter expression (e.g., 'mythicplus >= 10 and members < 4')",
-                    type = "input",
-                    width = "full",
-                    order = 4,
-                    multiline = 3,
-                    get = function() return Module.db.profile.advanced.expression end,
-                    set = function(info, val)
-                        Module.db.profile.advanced.expression = val
-                    end,
-                    disabled = function() return not Module.db.profile.advanced.enabled end,
-                },
-                spacer1 = {
-                    name = "",
-                    type = "description",
-                    order = 5,
-                },
-                sortingHeader = {
-                    name = "Sorting",
-                    type = "header",
-                    order = 6,
-                },
-                sortingEnabled = {
-                    name = "Enable Custom Sorting",
-                    desc = "Sort results with a custom expression",
+                enableSorting = {
+                    name = "Enable Result Sorting",
+                    desc = "Enable sorting of search results (can be configured in filter dialog)",
                     type = "toggle",
                     width = "full",
-                    order = 7,
+                    order = 4,
                     get = function() return Module.db.profile.sorting.enabled end,
                     set = function(info, val)
                         Module.db.profile.sorting.enabled = val
                     end,
                 },
-                sortingExpression = {
-                    name = "Sorting Expression",
-                    desc = "Expression to sort by (e.g., 'mythicplus desc, age asc')",
-                    type = "input",
-                    width = "full",
-                    order = 8,
-                    get = function() return Module.db.profile.sorting.expression end,
-                    set = function(info, val)
-                        Module.db.profile.sorting.expression = val
-                    end,
-                    disabled = function() return not Module.db.profile.sorting.enabled end,
+                advFilteringHelp = {
+                    name = "Advanced filtering expressions are available directly in the Group Finder dialog. Click the VUI Gfinder button in the LFG interface to access all filtering options.",
+                    type = "description",
+                    order = 5,
+                    fontSize = "medium",
                 },
             },
         },
