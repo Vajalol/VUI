@@ -1,72 +1,123 @@
-# VUI - Vortex UI
+<p align="center">
+  <img src="Media/Icons/logo.tga" alt="VUI Logo" width="150" height="150"/>
+</p>
 
-A comprehensive World of Warcraft addon suite that revolutionizes UI customization and player performance tracking for The War Within and beyond.
+<h1 align="center">VUI - Vortex UI</h1>
+<p align="center">
+  <b>A Comprehensive World of Warcraft Addon Suite</b>
+</p>
+<p align="center">
+  <a href="https://github.com/Vajalol/VUI/releases"><img src="https://img.shields.io/github/v/release/Vajalol/VUI?include_prereleases&style=for-the-badge" alt="Release"></a>
+  <a href="https://github.com/Vajalol/VUI/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Vajalol/VUI?style=for-the-badge" alt="License"></a>
+  <a href="https://discord.gg/vortexui"><img src="https://img.shields.io/discord/123456789?color=7289DA&label=Discord&logo=discord&logoColor=white&style=for-the-badge" alt="Discord"></a>
+</p>
 
-## Overview
+---
 
-VUI (Vortex UI) is a unified addon package that integrates multiple high-quality addons and WeakAura features into a single, cohesive suite with consistent design and functionality. It provides a complete UI enhancement solution with minimal configuration needed.
+## 📋 Overview
 
-## Features
+VUI (Vortex UI) revolutionizes the World of Warcraft interface by integrating multiple high-quality addons and WeakAura features into a single, cohesive suite with consistent design and functionality. Built for The War Within Season 2 and beyond, VUI provides a complete UI enhancement solution with minimal configuration required.
 
-VUI includes the following modules:
+## ✨ Key Features
 
-### Core Addon Modules
-- **VUIBuffs**: Enhanced buff/debuff tracking and display
-- **VUIAnyFrame**: Move and resize default UI frames
-- **VUIKeystones**: Comprehensive Mythic+ keystone enhancements
-- **VUICC**: Cooldown text and animations on abilities, items, and buffs
-- **VUICD**: Party cooldown tracking with icons and timers
-- **VUIIDs**: Tooltip enhancement with spell, item, and NPC IDs
-- **VUIGfinder**: Improved group finder interface with enhanced filtering
-- **VUITGCD**: Visual display of recently used abilities
-- **VUIAuctionator**: Auction house enhancements and tools
-- **VUINotifications**: Customizable combat and spell notifications
+- **All-in-One Design**: Unified approach eliminates the need for multiple separate addons
+- **Performance Optimized**: Streamlined code for minimal impact on game performance
+- **Modular Architecture**: Enable only the features you need
+- **Consistent Styling**: Unified visual design across all components
+- **Comprehensive Configuration**: Intuitive and extensive customization options
+- **Cross-Expansion Compatibility**: Designed for both retail and classic versions
 
-### WeakAura Feature Modules
-- **VUIConsumables**: Tracks and displays player consumables with timers
-- **VUIPositionOfPower**: Visual indicators for positioning buffs/effects
-- **VUIMissingRaidBuffs**: Alerts for missing raid buffs/debuffs
-- **VUIMouseFireTrail**: Cosmetic fire trail following mouse cursor
-- **VUIHealerMana**: Tracks and displays healer mana in groups/raids
+## 🧩 Module Categories
 
-### Specialized Modules
-- **VUIPlater**: Comprehensive nameplate customization system (exact replica of Whiiskeyz Plater profile)
+### 🛡️ Core Addon Modules
 
-## Installation
+| Module | Description |
+|--------|-------------|
+| **VUIBuffs** | Enhanced buff/debuff tracking with customizable display options |
+| **VUIAnyFrame** | Move, scale, and modify any default UI frame with precision |
+| **VUIKeystones** | Comprehensive Mythic+ keystone tracking and management |
+| **VUICC** | Advanced cooldown counting with customizable text and animations |
+| **VUICD** | Party/raid cooldown tracking with icons, timers, and announcements |
+| **VUIIDs** | Tooltip enhancement displaying spell, item, and NPC IDs |
+| **VUIGfinder** | Improved group finder with advanced filtering and queue management |
+| **VUITGCD** | Visual display of recently used abilities with history tracking |
+| **VUIAuctionator** | Powerful auction house tools with market analysis features |
+| **VUINotifications** | Customizable combat event notifications with sound alerts |
 
-1. Download the latest version from [GitHub](https://github.com/Vajalol/VUI) or [CurseForge](https://www.curseforge.com/wow/addons/vui)
-2. Extract the ZIP file
-3. Place the "VUI" folder in your World of Warcraft "Interface/AddOns" directory
-4. Restart World of Warcraft or reload your UI (/reload)
+### 🔮 WeakAura-Inspired Modules
 
-## Configuration
+| Module | Description |
+|--------|-------------|
+| **VUIConsumables** | Tracks active consumables with timers and alerts for optimal uptime |
+| **VUIPositionOfPower** | Visual positioning guides for maximizing buff/debuff effects |
+| **VUIMissingRaidBuffs** | Smart alerts for missing critical raid buffs and enhancements |
+| **VUIMouseFireTrail** | Cosmetic effects with customizable particles following cursor |
+| **VUIHealerMana** | Dedicated tracking for healer mana levels in group content |
 
-VUI offers a comprehensive configuration panel accessible through:
+### 🔍 Specialized Modules
+
+| Module | Description |
+|--------|-------------|
+| **VUIPlater** | Advanced nameplate customization with threat visualization, aura tracking, and cast bars |
+| **VUIScrollingText** | Combat text system with customizable animations and positioning |
+
+## 🔧 Installation
+
+1. Download the latest release from [GitHub](https://github.com/Vajalol/VUI/releases) or [CurseForge](https://www.curseforge.com/wow/addons/vui)
+2. Extract the ZIP file contents
+3. Place the "VUI" folder in your World of Warcraft "_retail_/Interface/AddOns" directory
+4. Launch the game or reload your UI with `/reload`
+
+## ⚙️ Configuration
+
+VUI features a comprehensive configuration panel with the following access methods:
+
 - Type `/vui` in the chat
 - Right-click the VUI minimap icon
-- Access through the Interface Options panel
+- Access through ESC → Interface → AddOns → VUI
 
-Each module has its own section in the configuration panel with detailed options for customization.
+Each module has its own dedicated section with detailed customization options:
 
-## Dependencies
+- **General**: Global settings affecting all modules
+- **Appearance**: Visual customization options
+- **Behavior**: Functionality and performance settings
+- **Module-Specific**: Individual configuration for each enabled module
 
-VUI is completely standalone and does not require any external addons to function.
+## 🚀 Quick Start Guide
 
-## Support
+1. **Enable Desired Modules**: After installation, access the configuration panel and enable only the modules you need
+2. **Configure Global Settings**: Adjust global appearance and behavior options
+3. **Fine-tune Modules**: Configure each enabled module according to your preferences
+4. **Save Profiles**: Create and save different profiles for various characters or activities
 
-If you encounter any issues or have suggestions:
+## 📦 Dependencies
+
+VUI is completely standalone and does not require any external addons to function properly.
+
+## 🤝 Support & Community
+
+If you encounter any issues or have suggestions for improvement:
+
 - Open an issue on [GitHub](https://github.com/Vajalol/VUI/issues)
-- Join our [Discord server](https://discord.gg/vortexui) for support and discussion
+- Join our [Discord server](https://discord.gg/vortexui) for real-time support and discussion
+- Contribute to the project by submitting pull requests
 
-## Credits
+## 📜 Credits
 
-VUI was created by VortexQ8 based on the SUI framework by Syiana, with integration of functionality from multiple popular addons.
+VUI was created by VortexQ8, building upon the SUI framework by Syiana, with integration of functionality from multiple popular addons and WeakAuras.
 
-Special thanks to:
-- Syiana for the SUI framework
-- All original addon authors whose work inspired VUI modules
-- The WoW addon community for their continued contributions
+**Special thanks to:**
+- Syiana for the original SUI framework
+- All addon authors whose work inspired VUI modules
+- The World of Warcraft addon community for their contributions
+- All testers and users providing valuable feedback
 
-## License
+## 📄 License
 
 VUI is released under the MIT License. See the LICENSE file for details.
+
+---
+
+<p align="center">
+  Made with ❤️ for the World of Warcraft community
+</p>
