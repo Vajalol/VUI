@@ -137,13 +137,37 @@ function M:OnInitialize()
 end
 
 function M:OnEnable()
+    -- Check if UnitFrames module is enabled
+    self.unitFramesEnabled = VUI:GetModule("UnitFrames.Player", true) and VUI:GetModule("UnitFrames.Player"):IsEnabled()
+    
     -- Apply current frame mode
     self:ApplyFrameMode(self.db.profile.frameMode, self.db.profile.customFrameMode)
     
     -- Register events
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
+        -- Delay frame application slightly to ensure proper order with other modules
+        C_Timer.After(0.2, function() 
+            if M.db.profile.frameMode ~= 0 then
+                M:ApplyFrameMode(M.db.profile.frameMode, M.db.profile.customFrameMode)
+            end
+        end)
+    end)
     self:RegisterEvent("UI_SCALE_CHANGED")
     self:RegisterEvent("PLAYER_LOGIN")
+    
+    -- Hook into the UnitFrames resting state handler to maintain our frame style
+    if self.unitFramesEnabled then
+        hooksecurefunc("PlayerFrame_UpdateStatus", function(self)
+            if (IsResting()) then
+                -- Re-apply our frame mode if it's not default
+                if M.db.profile.frameMode ~= 0 then
+                    C_Timer.After(0.1, function() 
+                        M:ApplyFrameMode(M.db.profile.frameMode, M.db.profile.customFrameMode)
+                    end)
+                end
+            end
+        end)
+    end
     
     self:Debug("VUIepf module enabled")
 end
