@@ -1,0 +1,86 @@
+local AddonName, VUI = ...
+local L = LibStub("AceLocale-3.0"):NewLocale("VUI", "enUS", true)
+if not L then return end
+
+-- VUIPositionOfPower Localization
+L["General Settings"] = true
+L["Enable"] = true
+L["Enable/disable this module"] = true
+L["Unlock Frame"] = true
+L["Unlock the frame to allow repositioning"] = true
+L["Display In Combat Only"] = true
+L["Only show position buffs while in combat"] = true
+L["Appearance"] = true
+L["Scale"] = true
+L["Adjust the size of the display"] = true
+L["Alpha"] = true
+L["Adjust the transparency of the display"] = true
+L["Icon Size"] = true
+L["Size of the buff icons"] = true
+L["Icon Spacing"] = true
+L["Space between buff icons"] = true
+L["Growth Direction"] = true
+L["Direction in which new icons appear"] = true
+L["Right"] = true
+L["Left"] = true
+L["Up"] = true
+L["Down"] = true
+L["Display Options"] = true
+L["Show Glow Effect"] = true
+L["Show a glow effect around important buffs"] = true
+L["Show Duration"] = true
+L["Show the time remaining on buffs"] = true
+L["Show Stack Count"] = true
+L["Show the number of stacks for stacking buffs"] = true
+L["Use Class Color Border"] = true
+L["Color the icon borders based on your class"] = true
+L["Frame locked."] = true
+L["Frame unlocked for moving. Drag to reposition, then lock when finished."] = true
+
+-- Position Buff Names
+L["Careful Aim"] = true
+L["Lock and Load"] = true
+L["Steady Focus"] = true
+L["Rune of Power"] = true
+L["Brain Freeze"] = true
+L["Clearcasting"] = true
+L["Hot Streak"] = true
+L["Chi Energy"] = true
+L["Hit Combo"] = true
+L["True Bearing"] = true
+L["Jolly Roger"] = true
+L["Grand Melee"] = true
+L["Shark Infested Waters"] = true
+L["Broadside"] = true
+L["Buried Treasure"] = true
+L["Flagellation"] = true
+L["Starfallen"] = true
+L["Lunar Empowerment"] = true
+L["Solar Empowerment"] = true
+L["Maelstrom Weapon"] = true
+L["Crash Lightning"] = true
+L["Festering Wound"] = true
+
+-- Position Buff Descriptions
+L["Target has 70% or more health, increasing Critical Strike chance of Aimed Shot and Rapid Fire"] = true
+L["Your auto-attacks have a chance to make your next Aimed Shot cost no Focus and be instant"] = true
+L["Using Steady Shot twice in a row increases your haste by 7%"] = true
+L["Increases spell damage while standing in the rune"] = true
+L["Your next Flurry will hit as though the target were frozen"] = true
+L["Your next Arcane spell's damage is increased and mana cost reduced"] = true
+L["Your next Pyroblast or Flamestrike will be instant cast and deal increased damage"] = true
+L["Hit combo increases, increasing damage done"] = true
+L["Each successive attack that triggers combo strikes increases damage done"] = true
+L["Finishing moves reduce the remaining cooldown of many Rogue abilities"] = true
+L["Finishing moves have a chance to generate extra combo points"] = true
+L["Grants increased energy regeneration and attack speed"] = true
+L["Increases critical strike chance"] = true
+L["Pistol Shot and Between the Eyes grant additional combo points"] = true
+L["Reduces energy cost of abilities"] = true
+L["Combo points spent during Flagellation increase your haste"] = true
+L["Starsurge increases the damage of your Moonfire and Sunfire"] = true
+L["Lunar Strike does increased damage"] = true
+L["Solar Wrath does increased damage"] = true
+L["Your Lightning Bolt and Chain Lightning casts are instant and deal more damage"] = true
+L["Your auto-attacks hit all nearby targets"] = true
+L["Target is afflicted with wounds that burst when struck by Scourge Strike"] = true

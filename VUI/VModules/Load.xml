@@ -14,4 +14,5 @@
   <Include file="VUIScrollingText\Load.xml"/>
   <Include file="VUIepf\Load.xml"/>
   <Include file="VUIConsumables\Load.xml"/>
+  <Include file="VUIPositionOfPower\Load.xml"/>
 </Ui>
