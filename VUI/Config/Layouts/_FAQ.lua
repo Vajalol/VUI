@@ -107,6 +107,25 @@ function Layout:OnEnable()
                     column = 3,
                     order = 2
                 }
+            },
+            {
+                header = {
+                    type = 'header',
+                    label = 'Documentation'
+                }
+            },
+            {
+                -- This will be a placeholder that the Documentation module will replace
+                documentation = {
+                    type = 'panel',
+                    size = {
+                        width = 480,
+                        height = 370
+                    },
+                    label = 'VUI Documentation',
+                    column = 1,
+                    order = 1
+                }
             }
         },
     }

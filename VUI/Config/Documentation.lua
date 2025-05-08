@@ -129,40 +129,85 @@ end
 -- Add documentation to the FAQ panel
 function Documentation:OnInitialize()
     -- We'll hook into the FAQ panel when it's created
-    hooksecurefunc(VUI:GetModule("Config.Layout.FAQ"), "GetLayout", function(self)
-        if self.layout and self.layout.children and not self.docAdded then
-            -- Add our documentation
-            local panel = CreateFrame("Frame")
-            self:GenerateDocumentation(panel)
-            table.insert(self.layout.children, {
-                type = "panel",
-                size = {
-                    width = 480,
-                    height = 370
-                },
-                children = {
-                    {
-                        type = "frame",
+    hooksecurefunc(VUI:GetModule("Config.Layout.FAQ"), "OnEnable", function(self)
+        if self.layout and self.layout.rows and not self.docAdded then
+            -- Find the documentation panel placeholder
+            for _, row in ipairs(self.layout.rows) do
+                if row.documentation then
+                    -- Create our documentation frame
+                    local panel = CreateFrame("Frame")
+                    panel:SetSize(480, 370)
+                    
+                    -- Generate documentation content
+                    Documentation:GenerateDocumentation(panel)
+                    
+                    -- Replace the placeholder with our panel
+                    row.documentation.object = panel
+                    
+                    self.docAdded = true
+                    VUI:Print("Documentation module loaded successfully")
+                    break
+                end
+            end
+            
+            -- If we didn't find the placeholder, try to add it as a new section
+            if not self.docAdded then
+                VUI:Print("Documentation placeholder not found, adding as new section")
+                
+                -- Create our documentation frame
+                local panel = CreateFrame("Frame")
+                panel:SetSize(480, 370)
+                
+                -- Generate documentation content
+                Documentation:GenerateDocumentation(panel)
+                
+                -- Try to add a new section
+                table.insert(self.layout.rows, {
+                    header = {
+                        type = 'header',
+                        label = 'Documentation'
+                    }
+                })
+                
+                table.insert(self.layout.rows, {
+                    documentation = {
+                        type = 'panel',
                         size = {
                             width = 480,
                             height = 370
                         },
-                        label = "Documentation",
-                        object = panel
+                        label = 'VUI Documentation',
+                        object = panel,
+                        column = 1,
+                        order = 1
                     }
-                }
-            })
-            self.docAdded = true
+                })
+                
+                self.docAdded = true
+            end
         end
     end)
 end
 
 -- Command to show documentation
 function Documentation:ShowDocumentation()
-    -- Open VUI config to the FAQ tab
+    -- Open VUI config
     VUI:Config()
     
-    -- TODO: Switch to the FAQ tab
+    -- Try to switch to the FAQ tab
+    if VUI.configFrame and VUI.configFrame.SelectTab then
+        -- Attempt to select the FAQ tab
+        C_Timer.After(0.2, function()
+            for i, tab in ipairs(VUI.configFrame.tabs) do
+                if tab.value == "FAQ" then
+                    VUI.configFrame:SelectTab(i)
+                    VUI:Print("Documentation is available in the FAQ tab")
+                    return
+                end
+            end
+            VUI:Print("Documentation can be found in the FAQ section")
+        end)
+    end
 end
 
 -- Register slash command for documentation
