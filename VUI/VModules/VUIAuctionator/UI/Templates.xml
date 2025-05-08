@@ -1,0 +1,265 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+  <!-- Button Template -->
+  <Button name="VUIAuctionatorButtonTemplate" virtual="true">
+    <Size x="120" y="22"/>
+    <NormalFont style="GameFontNormal"/>
+    <HighlightFont style="GameFontHighlight"/>
+    <DisabledFont style="GameFontDisable"/>
+    <NormalTexture file="Interface\Buttons\UI-Panel-Button-Up">
+      <TexCoords left="0" right="0.625" top="0" bottom="0.6875"/>
+    </NormalTexture>
+    <PushedTexture file="Interface\Buttons\UI-Panel-Button-Down">
+      <TexCoords left="0" right="0.625" top="0" bottom="0.6875"/>
+    </PushedTexture>
+    <DisabledTexture file="Interface\Buttons\UI-Panel-Button-Disabled">
+      <TexCoords left="0" right="0.625" top="0" bottom="0.6875"/>
+    </DisabledTexture>
+    <HighlightTexture file="Interface\Buttons\UI-Panel-Button-Highlight" alphaMode="ADD">
+      <TexCoords left="0" right="0.625" top="0" bottom="0.6875"/>
+    </HighlightTexture>
+  </Button>
+  
+  <!-- IconButton Template -->
+  <Button name="VUIAuctionatorIconButtonTemplate" virtual="true">
+    <Size x="32" y="32"/>
+    <HighlightTexture file="Interface\Buttons\ButtonHilight-Square" alphaMode="ADD"/>
+    <PushedTexture file="Interface\Buttons\UI-Quickslot-Depress"/>
+  </Button>
+  
+  <!-- Tab Button Template -->
+  <Button name="VUIAuctionatorTabButtonTemplate" virtual="true">
+    <Size x="84" y="32"/>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentLeftDisabled" file="Interface\PaperDollInfoFrame\UI-Character-ActiveTab">
+          <Size x="20" y="32"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="5"/>
+            </Anchor>
+          </Anchors>
+          <TexCoords left="0" right="0.15625" top="0" bottom="1.0"/>
+        </Texture>
+        <Texture name="$parentMiddleDisabled" file="Interface\PaperDollInfoFrame\UI-Character-ActiveTab">
+          <Size x="44" y="32"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentLeftDisabled" relativePoint="RIGHT"/>
+          </Anchors>
+          <TexCoords left="0.15625" right="0.84375" top="0" bottom="1.0"/>
+        </Texture>
+        <Texture name="$parentRightDisabled" file="Interface\PaperDollInfoFrame\UI-Character-ActiveTab">
+          <Size x="20" y="32"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentMiddleDisabled" relativePoint="RIGHT"/>
+          </Anchors>
+          <TexCoords left="0.84375" right="1.0" top="0" bottom="1.0"/>
+        </Texture>
+      </Layer>
+    </Layers>
+    <ButtonText name="$parentText">
+      <Anchors>
+        <Anchor point="CENTER">
+          <Offset x="0" y="-3"/>
+        </Anchor>
+      </Anchors>
+    </ButtonText>
+    <NormalFont style="GameFontNormalSmall"/>
+    <HighlightFont style="GameFontHighlightSmall"/>
+    <DisabledFont style="GameFontHighlightSmall"/>
+    <NormalTexture name="$parentLeft" file="Interface\PaperDollInfoFrame\UI-Character-InactiveTab">
+      <Size x="20" y="32"/>
+      <Anchors>
+        <Anchor point="TOPLEFT"/>
+      </Anchors>
+      <TexCoords left="0" right="0.15625" top="0" bottom="1.0"/>
+    </NormalTexture>
+    <NormalTexture name="$parentMiddle" file="Interface\PaperDollInfoFrame\UI-Character-InactiveTab">
+      <Size x="44" y="32"/>
+      <Anchors>
+        <Anchor point="LEFT" relativeTo="$parentLeft" relativePoint="RIGHT"/>
+      </Anchors>
+      <TexCoords left="0.15625" right="0.84375" top="0" bottom="1.0"/>
+    </NormalTexture>
+    <NormalTexture name="$parentRight" file="Interface\PaperDollInfoFrame\UI-Character-InactiveTab">
+      <Size x="20" y="32"/>
+      <Anchors>
+        <Anchor point="LEFT" relativeTo="$parentMiddle" relativePoint="RIGHT"/>
+      </Anchors>
+      <TexCoords left="0.84375" right="1.0" top="0" bottom="1.0"/>
+    </NormalTexture>
+    <HighlightTexture name="$parentHighlight" file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
+      <Anchors>
+        <Anchor point="TOPLEFT">
+          <Offset x="10" y="5"/>
+        </Anchor>
+        <Anchor point="BOTTOMRIGHT">
+          <Offset x="-10" y="0"/>
+        </Anchor>
+      </Anchors>
+    </HighlightTexture>
+  </Button>
+  
+  <!-- Tooltip Template -->
+  <GameTooltip name="VUIAuctionatorTooltip" inherits="GameTooltipTemplate" parent="UIParent" hidden="true"/>
+  
+  <!-- EditBox Template -->
+  <EditBox name="VUIAuctionatorEditBoxTemplate" autoFocus="false" virtual="true">
+    <Size x="150" y="22"/>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentLeft" file="Interface\Common\Common-Input-Border">
+          <Size x="8" y="22"/>
+          <Anchors>
+            <Anchor point="TOPLEFT"/>
+          </Anchors>
+          <TexCoords left="0" right="0.0625" top="0" bottom="0.625"/>
+        </Texture>
+        <Texture name="$parentMiddle" file="Interface\Common\Common-Input-Border">
+          <Size x="134" y="22"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentLeft" relativePoint="RIGHT"/>
+          </Anchors>
+          <TexCoords left="0.0625" right="0.9375" top="0" bottom="0.625"/>
+        </Texture>
+        <Texture name="$parentRight" file="Interface\Common\Common-Input-Border">
+          <Size x="8" y="22"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentMiddle" relativePoint="RIGHT"/>
+          </Anchors>
+          <TexCoords left="0.9375" right="1.0" top="0" bottom="0.625"/>
+        </Texture>
+      </Layer>
+    </Layers>
+    <FontString inherits="ChatFontNormal"/>
+    <Scripts>
+      <OnEscapePressed>
+        self:ClearFocus()
+      </OnEscapePressed>
+      <OnEnterPressed>
+        self:ClearFocus()
+      </OnEnterPressed>
+    </Scripts>
+  </EditBox>
+  
+  <!-- Money Display Template -->
+  <Frame name="VUIAuctionatorMoneyDisplayTemplate" virtual="true">
+    <Size x="150" y="16"/>
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="$parentGold" inherits="GameFontHighlight" text="0">
+          <Anchors>
+            <Anchor point="RIGHT" x="-30" y="0"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentSilver" inherits="GameFontHighlight" text="0">
+          <Anchors>
+            <Anchor point="RIGHT" x="-15" y="0"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentCopper" inherits="GameFontHighlight" text="0">
+          <Anchors>
+            <Anchor point="RIGHT" x="0" y="0"/>
+          </Anchors>
+        </FontString>
+        <Texture name="$parentGoldTexture" file="Interface\MoneyFrame\UI-GoldIcon">
+          <Size x="12" y="12"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentGold" relativePoint="RIGHT"/>
+          </Anchors>
+        </Texture>
+        <Texture name="$parentSilverTexture" file="Interface\MoneyFrame\UI-SilverIcon">
+          <Size x="12" y="12"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentSilver" relativePoint="RIGHT"/>
+          </Anchors>
+        </Texture>
+        <Texture name="$parentCopperTexture" file="Interface\MoneyFrame\UI-CopperIcon">
+          <Size x="12" y="12"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentCopper" relativePoint="RIGHT"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+    </Layers>
+  </Frame>
+  
+  <!-- Panel Template -->
+  <Frame name="VUIAuctionatorPanelTemplate" virtual="true">
+    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+      <BackgroundInsets>
+        <AbsInset left="11" right="12" top="12" bottom="11"/>
+      </BackgroundInsets>
+      <TileSize>
+        <AbsValue val="32"/>
+      </TileSize>
+      <EdgeSize>
+        <AbsValue val="32"/>
+      </EdgeSize>
+    </Backdrop>
+  </Frame>
+  
+  <!-- Scroll Frame Template -->
+  <ScrollFrame name="VUIAuctionatorScrollFrameTemplate" inherits="UIPanelScrollFrameTemplate" virtual="true">
+    <Anchors>
+      <Anchor point="TOPLEFT">
+        <Offset x="16" y="-16"/>
+      </Anchor>
+      <Anchor point="BOTTOMRIGHT">
+        <Offset x="-30" y="16"/>
+      </Anchor>
+    </Anchors>
+    <ScrollChild>
+      <Frame name="$parentScrollChild">
+        <Size x="1" y="1"/>
+      </Frame>
+    </ScrollChild>
+  </ScrollFrame>
+  
+  <!-- Listing Template (for auction results) -->
+  <Button name="VUIAuctionatorListingTemplate" virtual="true">
+    <Size x="568" y="20"/>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentHighlight" setAllPoints="true" hidden="true">
+          <Color r="1" g="1" b="1" a="0.2"/>
+        </Texture>
+      </Layer>
+      <Layer level="ARTWORK">
+        <FontString name="$parentName" inherits="GameFontHighlight" justifyH="LEFT">
+          <Size x="200" y="20"/>
+          <Anchors>
+            <Anchor point="LEFT" x="5" y="0"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentQuantity" inherits="GameFontHighlight" justifyH="RIGHT">
+          <Size x="40" y="20"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentName" relativePoint="RIGHT" x="10" y="0"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentPrice" inherits="GameFontHighlight" justifyH="RIGHT">
+          <Size x="100" y="20"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentQuantity" relativePoint="RIGHT" x="10" y="0"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentUnitPrice" inherits="GameFontHighlight" justifyH="RIGHT">
+          <Size x="100" y="20"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentPrice" relativePoint="RIGHT" x="10" y="0"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parentTimeLeft" inherits="GameFontHighlight" justifyH="RIGHT">
+          <Size x="80" y="20"/>
+          <Anchors>
+            <Anchor point="LEFT" relativeTo="$parentUnitPrice" relativePoint="RIGHT" x="10" y="0"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <HighlightTexture alphaMode="ADD">
+      <Color r="0.3" g="0.3" b="0.3" a="0.3"/>
+    </HighlightTexture>
+  </Button>
+</Ui>

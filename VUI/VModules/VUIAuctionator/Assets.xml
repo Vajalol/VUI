@@ -1,0 +1,10 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <!-- Modern AH Assets -->
+  <Include file="Frames\Templates.xml"/>
+  <Include file="Frames\MinimapIcon.xml"/>
+  <Include file="Frames\SellingFrame.xml"/>
+  <Include file="Frames\ShoppingFrame.xml"/>
+  <Include file="Frames\CancellingFrame.xml"/>
+  <Include file="Frames\ConfigFrame.xml"/>
+  <Include file="Frames\FullScanFrame.xml"/>
+</Ui>

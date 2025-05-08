@@ -1,0 +1,15 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Script file="EventBus.lua"/>
+  <Script file="Message.lua"/>
+  <Script file="Money.lua"/>
+  <Script file="Table.lua"/>
+  <Script file="Debug.lua"/>
+  <Script file="Slice.lua"/>
+  <Script file="CreateEventBuses.lua"/>
+  <Script file="TimeFormat.lua"/>
+  <Script file="ItemInfo.lua"/>
+  <Script file="ValidateItemLink.lua"/>
+  <Script file="BuildItemLevelString.lua"/>
+  <Script file="VerifyListTypes.lua"/>
+  <Script file="Throttle.lua"/>
+</Ui>

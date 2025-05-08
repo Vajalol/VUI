@@ -1,0 +1,116 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <!-- Basic Template for TabButtons -->
+  <Button name="VUIAuctionatorTabButtonTemplate" virtual="true">
+    <Size x="140" y="22"/>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture file="Interface\AddOns\VUI\media\modules\VUIAuctionator\AuctionatorTabMiddle" parentKey="Middle">
+          <Size x="10" y="22"/>
+          <Anchors>
+            <Anchor point="LEFT" x="10" y="0"/>
+            <Anchor point="RIGHT" x="-10" y="0"/>
+          </Anchors>
+        </Texture>
+        <Texture file="Interface\AddOns\VUI\media\modules\VUIAuctionator\AuctionatorTabLeft" parentKey="Left">
+          <Size x="10" y="22"/>
+          <Anchors>
+            <Anchor point="TOPLEFT"/>
+          </Anchors>
+        </Texture>
+        <Texture file="Interface\AddOns\VUI\media\modules\VUIAuctionator\AuctionatorTabRight" parentKey="Right">
+          <Size x="10" y="22"/>
+          <Anchors>
+            <Anchor point="TOPRIGHT"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+      <Layer level="ARTWORK">
+        <Texture file="Interface\AddOns\VUI\media\modules\VUIAuctionator\AuctionatorTabSelectedMiddle" parentKey="SelectedMiddle" hidden="true">
+          <Size x="10" y="22"/>
+          <Anchors>
+            <Anchor point="LEFT" x="10" y="0"/>
+            <Anchor point="RIGHT" x="-10" y="0"/>
+          </Anchors>
+        </Texture>
+        <Texture file="Interface\AddOns\VUI\media\modules\VUIAuctionator\AuctionatorTabSelectedLeft" parentKey="SelectedLeft" hidden="true">
+          <Size x="10" y="22"/>
+          <Anchors>
+            <Anchor point="TOPLEFT"/>
+          </Anchors>
+        </Texture>
+        <Texture file="Interface\AddOns\VUI\media\modules\VUIAuctionator\AuctionatorTabSelectedRight" parentKey="SelectedRight" hidden="true">
+          <Size x="10" y="22"/>
+          <Anchors>
+            <Anchor point="TOPRIGHT"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+    </Layers>
+    <ButtonText name="$parentNormalText" parentKey="NormalText">
+      <Size x="10" y="10"/>
+      <Anchors>
+        <Anchor point="CENTER" x="0" y="-1"/>
+      </Anchors>
+    </ButtonText>
+    <NormalFont style="GameFontNormalSmall"/>
+    <HighlightFont style="GameFontHighlightSmall"/>
+    <DisabledFont style="GameFontDisableSmall"/>
+    <HighlightTexture file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
+      <Size x="5" y="24"/>
+      <Anchors>
+        <Anchor point="LEFT" x="10" y="-4"/>
+        <Anchor point="RIGHT" x="-10" y="-4"/>
+      </Anchors>
+    </HighlightTexture>
+  </Button>
+
+  <!-- Basic Template for Panel Frames -->
+  <Frame name="VUIAuctionatorPanelTemplate" virtual="true">
+    <Layers>
+      <Layer level="BACKGROUND" textureSubLevel="-6">
+        <Texture name="$parentBg" file="Interface\AddOns\VUI\media\modules\VUIAuctionator\AuctionatorBackground" parentKey="Bg" setAllPoints="true"/>
+      </Layer>
+      <Layer level="BACKGROUND" textureSubLevel="-5">
+        <Texture file="Interface\FrameGeneral\UI-Background-Marble" horizTile="true" vertTile="true" parentKey="Marble">
+          <Anchors>
+            <Anchor point="TOPLEFT" x="4" y="-4"/>
+            <Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+    </Layers>
+  </Frame>
+
+  <!-- Basic Template for Button -->
+  <Button name="VUIAuctionatorButtonTemplate" inherits="UIPanelButtonTemplate" virtual="true">
+    <Size x="100" y="22"/>
+    <Scripts>
+      <OnLoad>
+        self.Left:SetTexture("Interface\\AddOns\\VUI\\media\\modules\\VUIAuctionator\\VUIButton-Left");
+        self.Middle:SetTexture("Interface\\AddOns\\VUI\\media\\modules\\VUIAuctionator\\VUIButton-Middle");
+        self.Right:SetTexture("Interface\\AddOns\\VUI\\media\\modules\\VUIAuctionator\\VUIButton-Right");
+      </OnLoad>
+    </Scripts>
+  </Button>
+
+  <!-- Basic Template for List Item -->
+  <Button name="VUIAuctionatorListItemTemplate" virtual="true">
+    <Size x="320" y="20"/>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture parentKey="NormalTexture" file="Interface\AddOns\VUI\media\modules\VUIAuctionator\VUIListBg">
+          <Size x="316" y="18"/>
+          <Anchors>
+            <Anchor point="CENTER"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+    </Layers>
+    <HighlightTexture file="Interface\AddOns\VUI\media\modules\VUIAuctionator\VUIListHighlight" alphaMode="ADD">
+      <Size x="316" y="18"/>
+      <Anchors>
+        <Anchor point="CENTER"/>
+      </Anchors>
+    </HighlightTexture>
+  </Button>
+</Ui>

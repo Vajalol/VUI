@@ -1,0 +1,21 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+  <!-- Load the Main.lua first to setup the base objects -->
+  <Script file="Main.lua"/>
+  
+  <!-- Load localization files -->
+  <Script file="Locales\Locale.lua"/>
+  <Script file="Locales\enUS.lua"/>
+  
+  <!-- Load all source files -->
+  <Include file="Source\Load.xml"/>
+  
+  <!-- Load UI templates -->
+  <Include file="UI\Templates.xml"/>
+  
+  <!-- Load UI components -->
+  <Include file="UI\Components\Load.xml"/>
+  
+  <!-- Load Configuration panel -->
+  <Include file="UI\Config\Load.xml"/>
+</Ui>

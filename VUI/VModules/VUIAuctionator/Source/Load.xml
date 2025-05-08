@@ -1,0 +1,36 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+  <!-- Load Utilities first -->
+  <Include file="Utilities\Load.xml"/>
+  
+  <!-- Load Core files -->
+  <Script file="Constants.lua"/>
+  <Script file="Objects.lua"/>
+  
+  <!-- Load Configuration -->
+  <Include file="Config\Load.xml"/>
+  
+  <!-- Load Database -->
+  <Script file="Database.lua"/>
+  
+  <!-- Load API -->
+  <Script file="API.lua"/>
+  
+  <!-- Load AuctionHouse integration files -->
+  <Script file="AuctionHouse\Core.lua"/>
+  
+  <!-- Load Search functionality -->
+  <Script file="Searching\Core.lua"/>
+  
+  <!-- Load Selling functionality -->
+  <Script file="Selling\Core.lua"/>
+  
+  <!-- Load Cancelling functionality -->
+  <Script file="Cancel\Core.lua"/>
+  
+  <!-- Load Shopping List functionality -->
+  <Script file="Lists\Core.lua"/>
+  
+  <!-- Load History functionality -->
+  <Script file="History\Core.lua"/>
+</Ui>

@@ -1,0 +1,7 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <!-- We'll use the core VUI library system instead of embedding separate libraries -->
+  <Script file="LibStub.lua"/>
+  <Script file="CallbackHandler-1.0.lua"/>
+  <Include file="LibDataBroker-1.1\LibDataBroker-1.1.xml"/>
+  <Include file="LibDBIcon-1.0\LibDBIcon-1.0.xml"/>
+</Ui>

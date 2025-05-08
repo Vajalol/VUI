@@ -1,0 +1,162 @@
+local addonName, VUI = ...
+local Auctionator = VUI.Auctionator
+
+local L = {
+  -- General Terms
+  AUCTION = "Auction",
+  AUCTIONS = "Auctions",
+  AUCTIONATOR = "VUIAuctionator",
+  BUY = "Buy",
+  SELL = "Sell",
+  PRICE = "Price",
+  STACK = "Stack",
+  STACKS = "Stacks",
+  QUANTITY = "Quantity",
+  UNIT_PRICE = "Unit Price",
+  HISTORICAL_PRICE = "Historical Price",
+  CURRENT_PRICE = "Current Price",
+  VENDOR_PRICE = "Vendor Price",
+  TOTAL_PRICE = "Total Price",
+  BID = "Bid",
+  BUYOUT = "Buyout",
+  CANCEL = "Cancel",
+  STATUS = "Status",
+  DURATION = "Duration",
+  TIME_LEFT = "Time Left",
+  DEPOSIT = "Deposit",
+  SEARCH = "Search",
+  SEARCHING = "Searching...",
+  REFRESH = "Refresh",
+  CLEAR = "Clear",
+  FULL_SCAN = "Full Scan",
+  IMPORT = "Import",
+  EXPORT = "Export",
+  SAVE = "Save",
+  CONTINUE = "Continue",
+  RESET = "Reset",
+  OPEN = "Open",
+  CLOSE = "Close",
+  OPTIONS = "Options",
+  ITEMS = "Items",
+  UNDERCUT = "Undercut",
+  COMPETITION = "Competition",
+  POSTING = "Posting",
+  POSTED = "Posted",
+  FAVORITES = "Favorites",
+  IGNORE = "Ignore",
+  HISTORY = "History",
+  RESULTS = "Results",
+  ERROR = "Error",
+  WARNING = "Warning",
+  SUCCESS = "Success",
+  SETTINGS = "Settings",
+  LOADING = "Loading...",
+  
+  -- Configuration Panel
+  CONFIG_HEADER = "VUIAuctionator Configuration",
+  CONFIG_GENERAL_TAB = "General",
+  CONFIG_SELLING_TAB = "Selling",
+  CONFIG_BUYING_TAB = "Buying",
+  CONFIG_TOOLTIPS_TAB = "Tooltips",
+  CONFIG_CANCELLING_TAB = "Cancelling",
+  CONFIG_ADVANCED_TAB = "Advanced",
+  
+  -- General Settings
+  CONFIG_AUTOSCAN_ON_OPEN = "Auto-scan when opening Auction House",
+  CONFIG_AUTOSCAN_ON_OPEN_TOOLTIP = "Automatically scan the Auction House when opening it to update prices.",
+  CONFIG_OPEN_FIRST_AUCTION = "Open first auction when searching",
+  CONFIG_OPEN_FIRST_AUCTION_TOOLTIP = "Automatically open the details of the first auction found when searching.",
+  CONFIG_DEFAULT_TAB = "Default tab",
+  CONFIG_DEFAULT_TAB_TOOLTIP = "Select which tab to show by default when opening the Auction House.",
+  CONFIG_AUCTION_CHAT_LOG = "Show auction chat messages",
+  CONFIG_AUCTION_CHAT_LOG_TOOLTIP = "Display chat messages when posting, buying, or cancelling auctions.",
+  CONFIG_LIFO_AUCTION_SORT = "Show newest auctions first (LIFO)",
+  CONFIG_LIFO_AUCTION_SORT_TOOLTIP = "Sort auction results with newest auctions first instead of the default lowest price first.",
+  
+  -- Selling Settings
+  CONFIG_SHOW_SELLING_PRICE_HISTORY = "Show price history in selling tab",
+  CONFIG_SHOW_SELLING_PRICE_HISTORY_TOOLTIP = "Display historical price data in the selling tab.",
+  CONFIG_SELLING_BAG_COLLAPSED = "Keep bag panel collapsed",
+  CONFIG_SELLING_BAG_COLLAPSED_TOOLTIP = "Keep the bag panel collapsed by default in the selling tab.",
+  CONFIG_SELLING_BAG_SELECT_SHORTCUT = "Bag selection shortcut",
+  CONFIG_SELLING_BAG_SELECT_SHORTCUT_TOOLTIP = "Choose which modifier key + click combination to use for selecting items from your bags.",
+  CONFIG_SELLING_ICON_SIZE = "Item icon size",
+  CONFIG_SELLING_ICON_SIZE_TOOLTIP = "Set the size of item icons in the selling interface.",
+  CONFIG_SELLING_AUTO_SELECT_NEXT = "Auto-select next item after posting",
+  CONFIG_SELLING_AUTO_SELECT_NEXT_TOOLTIP = "Automatically select the next item in your bags after posting an auction.",
+  CONFIG_SELLING_MISSING_FAVOURITES = "Show missing favorites",
+  CONFIG_SELLING_MISSING_FAVOURITES_TOOLTIP = "Show missing favorite items in the selling tab.",
+  CONFIG_SELLING_POST_SHORTCUT = "Post shortcut key",
+  CONFIG_SELLING_POST_SHORTCUT_TOOLTIP = "Choose which key to use for quick posting of auctions.",
+  
+  -- Tooltip Settings
+  CONFIG_TOOLTIP_MARKET_VALUE = "Show market value",
+  CONFIG_TOOLTIP_MARKET_VALUE_TOOLTIP = "Display the current market value in item tooltips.",
+  CONFIG_TOOLTIP_HISTORICAL_PRICE = "Show historical price",
+  CONFIG_TOOLTIP_HISTORICAL_PRICE_TOOLTIP = "Display the historical average price in item tooltips.",
+  CONFIG_TOOLTIP_VENDOR_PRICE = "Show vendor price",
+  CONFIG_TOOLTIP_VENDOR_PRICE_TOOLTIP = "Display the vendor sell price in item tooltips.",
+  CONFIG_HIDE_VENDOR_TIPS = "Hide 'sell to vendor' suggestions",
+  CONFIG_HIDE_VENDOR_TIPS_TOOLTIP = "Hide the tooltip suggestions to sell items to vendors when they have little auction value.",
+  
+  -- Price Settings
+  CONFIG_UNDERCUT_PERCENTAGE = "Undercut percentage",
+  CONFIG_UNDERCUT_PERCENTAGE_TOOLTIP = "Set the percentage to undercut other auctions by.",
+  CONFIG_UNDERCUT_STATIC_VALUE = "Undercut static value",
+  CONFIG_UNDERCUT_STATIC_VALUE_TOOLTIP = "Set a static value to undercut other auctions by.",
+  
+  -- Cancelling Settings
+  CONFIG_CANCEL_UNDERCUT_SHORTCUT = "Cancel auction shortcut",
+  CONFIG_CANCEL_UNDERCUT_SHORTCUT_TOOLTIP = "Choose which modifier key + click combination to use for quickly cancelling auctions.",
+  
+  -- Database Settings
+  CONFIG_NO_PRICE_DATABASE = "Disable price database",
+  CONFIG_NO_PRICE_DATABASE_TOOLTIP = "Disable saving of price data. Useful to reduce memory usage if you don't need historical prices.",
+  CONFIG_PRICE_HISTORY_DAYS = "Days to keep price history",
+  CONFIG_PRICE_HISTORY_DAYS_TOOLTIP = "Set how many days of price history to keep in the database.",
+  CONFIG_AUTO_PURGE_OLD_PRICES = "Automatically purge old prices",
+  CONFIG_AUTO_PURGE_OLD_PRICES_TOOLTIP = "Automatically remove price data older than the configured number of days to keep the database size manageable.",
+  
+  -- Status Messages
+  MSG_SCAN_COMPLETE = "Scan complete",
+  MSG_SCAN_FAILED = "Scan failed: %s",
+  MSG_AUCTION_POSTED = "Posted %s for %s",
+  MSG_AUCTION_CANCELLED = "Cancelled %s auction",
+  MSG_AUCTIONS_CANCELLED = "Cancelled %d auctions",
+  MSG_AUCTION_BOUGHT = "Bought %s for %s",
+  MSG_AUCTION_SOLD = "Sold %s for %s",
+  MSG_SEARCHING = "Searching for %s...",
+  MSG_COMPRESSING_DATABASE = "Compressing database...",
+  MSG_DATABASE_COMPRESSED = "Database compressed (removed %d old entries)",
+  MSG_FAVOURITE_ADDED = "Added %s to favorites",
+  MSG_FAVOURITE_REMOVED = "Removed %s from favorites",
+  MSG_IGNORED_ADDED = "Added %s to ignored list",
+  MSG_IGNORED_REMOVED = "Removed %s from ignored list",
+  
+  -- Error Messages
+  ERR_AUCTION_HOUSE_CLOSED = "The Auction House is not open",
+  ERR_AUCTION_HOUSE_BUSY = "The Auction House is busy, please try again",
+  ERR_ITEM_NOT_FOUND = "Item not found",
+  ERR_NO_PRICE_DATA = "No price data available",
+  ERR_TOO_MANY_RESULTS = "Too many results, please refine your search",
+  ERR_SEARCH_FAILED = "Search failed, please try again",
+  ERR_INSUFFICIENT_MONEY = "Insufficient money",
+  ERR_OWNERSHIP = "You can't buy your own auctions",
+  ERR_HIGHER_BIDDER = "You are already the highest bidder",
+  ERR_AUCTION_REMOVED = "That auction has been removed",
+  ERR_NOT_IMPLEMENTED = "This feature is not implemented yet",
+  
+  -- Time Formats
+  TIME_SHORT = "Short (30m)",
+  TIME_MEDIUM = "Medium (2h)",
+  TIME_LONG = "Long (12h)",
+  TIME_VERY_LONG = "Very Long (48h)",
+  
+  -- Auction Duration
+  DURATION_SHORT = "12 Hours",
+  DURATION_MEDIUM = "24 Hours",
+  DURATION_LONG = "48 Hours",
+}
+
+-- Register the English locale
+Auctionator.Locales.Register("enUS", L)
