@@ -1,0 +1,15 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="VUICC.lua"/>
+    <Script file="core\cooldown.lua"/>
+    <Script file="core\timer.lua"/>
+    <Script file="core\display.lua"/>
+    <Script file="core\fx.lua"/>
+    <Script file="effects\none.lua"/>
+    <Script file="effects\alert.lua"/>
+    <Script file="effects\flare.lua"/>
+    <Script file="effects\pulse.lua"/>
+    <Script file="effects\shine.lua"/>
+    <Script file="settings\settings.lua"/>
+    <Script file="settings\themes.lua"/>
+    <Script file="settings\rules.lua"/>
+</Ui>

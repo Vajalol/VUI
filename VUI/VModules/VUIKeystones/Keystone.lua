@@ -119,17 +119,17 @@ end
 
 -- Get the timer for a specific dungeon (in seconds)
 function Keystone:GetDungeonTimer(mapID)
-    -- Updated with The War Within Season 2 dungeons and timers (started April 30, 2024)
+    -- Updated with The War Within Season 2 dungeons and timers (verified from Wowhead)
     local timers = {
-        -- The War Within Season 2 Dungeons
-        [1247] = 1800, -- Doom's Howl (new in Season 2)
-        [1248] = 1800, -- Vortex Pinnacle (new in Season 2)
-        [406] = 1800,  -- Ruby Life Pools
-        [405] = 1800,  -- The Azure Vault
-        [404] = 1800,  -- The Nokhud Offensive
-        [1196] = 1800, -- Darkheart Thicket
-        [1207] = 1800, -- The Everbloom
-        [1208] = 1800, -- Throne of the Tides
+        -- The War Within Season 2 Dungeons (current season)
+        [2579] = 1980, -- Cinderbrew Meadery (33:00)
+        [2451] = 1860, -- Darkflame Cleft (31:00)
+        [2540] = 1740, -- The Rookery (29:00)
+        [2519] = 1950, -- Priory of the Sacred Flame (32:30)
+        [1199] = 1980, -- Operation: Floodgate (33:00)
+        [247] = 2340,  -- The MOTHERLODE!! (39:00)
+        [382] = 2040,  -- Theater of Pain (34:00)
+        [370] = 1920,  -- Operation: Mechagon - Workshop (32:00)
 
         -- Older dungeons kept for compatibility
         [375] = 1800, -- Mists of Tirna Scithe
@@ -139,7 +139,7 @@ function Keystone:GetDungeonTimer(mapID)
         [379] = 1800, -- Plaguefall
         [380] = 1440, -- Sanguine Depths
         [381] = 2160, -- Spires of Ascension
-        [382] = 1440, -- Theater of Pain
+        -- [382] = 1440, -- Theater of Pain (now in current season with updated timer)
         [2] = 1500,   -- Temple of the Jade Serpent
         [165] = 1320, -- Neltharion's Lair
         [197] = 1800, -- Eye of Azshara
@@ -147,14 +147,14 @@ function Keystone:GetDungeonTimer(mapID)
         [244] = 1800, -- Atal'Dazar
         [245] = 1800, -- Freehold
         [246] = 1560, -- Tol Dagor
-        [247] = 1800, -- The MOTHERLODE!!
+        -- [247] = 1800, -- The MOTHERLODE!! (now in current season with updated timer)
         [248] = 2160, -- Waycrest Manor
         [249] = 1800, -- Kings' Rest
         [250] = 2160, -- Temple of Sethraliss
         [252] = 2160, -- Shrine of the Storm
         [353] = 1800, -- Mists of Tirna Scithe
         [369] = 1800, -- Operation: Mechagon - Junkyard
-        [370] = 1800, -- Operation: Mechagon - Workshop
+        -- [370] = 1800, -- Operation: Mechagon - Workshop (now in current season with updated timer)
         [391] = 1920, -- Tazavesh: Streets of Wonder
         [392] = 1320, -- Tazavesh: So'leah's Gambit
     }
