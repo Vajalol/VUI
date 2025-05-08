@@ -372,11 +372,31 @@ function M:UpdateVisibility()
         shouldShow = false
     end
     
-    -- Set visibility
+    -- Set visibility with smooth animations if available
     if shouldShow then
-        self.particleFrame:Show()
+        if not self.particleFrame:IsShown() and VUI.Animations then
+            -- Use fade in animation
+            VUI.Animations:FadeIn(self.particleFrame, 0.3, nil, {
+                fromAlpha = 0,
+                toAlpha = 1,
+                smoothing = "OUT"
+            })
+        elseif not self.particleFrame:IsShown() then
+            -- Fallback if animations module not available
+            self.particleFrame:Show()
+        end
     else
-        self.particleFrame:Hide()
+        if self.particleFrame:IsShown() and VUI.Animations then
+            -- Use fade out animation
+            VUI.Animations:FadeOut(self.particleFrame, 0.3, nil, {
+                fromAlpha = 1,
+                toAlpha = 0,
+                smoothing = "IN"
+            })
+        elseif self.particleFrame:IsShown() then
+            -- Fallback if animations module not available
+            self.particleFrame:Hide()
+        end
     end
 end
 

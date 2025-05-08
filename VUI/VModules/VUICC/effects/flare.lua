@@ -16,7 +16,7 @@ local function createFlareAnimation(frame)
     local texture = flare:CreateTexture(nil, 'OVERLAY')
     texture:SetPoint('CENTER')
     texture:SetAllPoints(flare)
-    texture:SetTexture("Interface\\AddOns\\VUI\\media\\modules\\VUICC\\flare")
+    texture:SetTexture("Interface\\AddOns\\VUI\\Media\\modules\\VUICC\\flare")
     texture:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
     texture:SetBlendMode('ADD')
     

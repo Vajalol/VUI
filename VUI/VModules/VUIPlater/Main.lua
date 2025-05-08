@@ -252,9 +252,9 @@ M.importantDebuffs = {
 
 -- Border textures
 M.borderTextures = {
-    ["VUI_BORDER_1PX"] = "Interface\\AddOns\\VUI\\media\\modules\\VUIPlater\\textures\\border_1px.tga",
-    ["VUI_BORDER_2PX"] = "Interface\\AddOns\\VUI\\media\\modules\\VUIPlater\\textures\\border_2px.tga",
-    ["VUI_BORDER_GLOW"] = "Interface\\AddOns\\VUI\\media\\modules\\VUIPlater\\textures\\border_glow.tga",
+    ["VUI_BORDER_1PX"] = "Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\border_1px.tga",
+    ["VUI_BORDER_2PX"] = "Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\border_2px.tga",
+    ["VUI_BORDER_GLOW"] = "Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\border_glow.tga",
 }
 
 -- Aura whitelist/blacklist
@@ -389,15 +389,15 @@ function M:RegisterFontMedia()
     
     -- Register our statusbar textures
     if not LSM:IsValid("statusbar", "VUI Gradient") then
-        LSM:Register("statusbar", "VUI Gradient", "Interface\\AddOns\\VUI\\media\\textures\\gradient.tga")
+        LSM:Register("statusbar", "VUI Gradient", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\gradient.tga")
     end
     
     if not LSM:IsValid("statusbar", "VUI Flat") then
-        LSM:Register("statusbar", "VUI Flat", "Interface\\AddOns\\VUI\\media\\textures\\flat.tga")
+        LSM:Register("statusbar", "VUI Flat", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\flat.tga")
     end
     
     if not LSM:IsValid("statusbar", "VUI Smooth") then
-        LSM:Register("statusbar", "VUI Smooth", "Interface\\AddOns\\VUI\\media\\textures\\smooth.tga")
+        LSM:Register("statusbar", "VUI Smooth", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\smooth.tga")
     end
 end
 
@@ -749,7 +749,7 @@ function M:CreateNameplateElements(plate)
     plate.VUI.castShield = plate.VUI.castBar:CreateTexture(nil, "OVERLAY")
     plate.VUI.castShield:SetSize(16, 16)
     plate.VUI.castShield:SetPoint("CENTER", plate.VUI.castIcon, "CENTER")
-    plate.VUI.castShield:SetTexture("Interface\\AddOns\\VUI\\media\\modules\\VUIPlater\\textures\\shield.tga")
+    plate.VUI.castShield:SetTexture("Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\shield.tga")
     plate.VUI.castShield:Hide()
     
     -- Cast bar text
@@ -789,7 +789,7 @@ function M:CreateNameplateElements(plate)
     plate.VUI.threatIndicator = blizzFrame:CreateTexture(nil, "OVERLAY")
     plate.VUI.threatIndicator:SetSize(16, 16)
     plate.VUI.threatIndicator:SetPoint("RIGHT", plate.VUI.healthBar, "LEFT", -2, 0)
-    plate.VUI.threatIndicator:SetTexture("Interface\\AddOns\\VUI\\media\\modules\\VUIPlater\\textures\\threat.tga")
+    plate.VUI.threatIndicator:SetTexture("Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\threat.tga")
     plate.VUI.threatIndicator:Hide()
     
     -- Create execution indicator

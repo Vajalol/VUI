@@ -56,7 +56,7 @@ function VUIGfinder.String_TrimWhitespace(str)
 end
 
 function VUIGfinder.GetMediaPath(subPath)
-    return "Interface\\AddOns\\VUI\\media\\modules\\VUIGfinder\\" .. subPath
+    return "Interface\\AddOns\\VUI\\Media\\modules\\VUIGfinder\\" .. subPath
 end
 
 function VUIGfinder.FormatTime(seconds)

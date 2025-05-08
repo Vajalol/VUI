@@ -47,7 +47,7 @@ M.defaults = {
 
 -- Texture utilities
 function M:GetMediaPath(file)
-    return "Interface\\AddOns\\VUI\\VModules\\VUIepf\\media\\" .. file
+    return "Interface\\AddOns\\VUI\\Media\\modules\\VUIepf\\" .. file
 end
 
 function M:SetTexture(t, p)

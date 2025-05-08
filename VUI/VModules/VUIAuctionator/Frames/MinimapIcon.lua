@@ -3,7 +3,7 @@ local Auctionator = VUI.Auctionator
 
 -- Define local constants
 local MINIMAP_ICON_POSITION = "minimapPosition"
-local MINIMAP_ICON_PATH = "Interface\\AddOns\\VUI\\media\\modules\\VUIAuctionator\\MinimapIcon"
+local MINIMAP_ICON_PATH = "Interface\\AddOns\\VUI\\Media\\modules\\VUIAuctionator\\MinimapIcon"
 
 -- Minimap icon data
 local minimapIconLDB = nil

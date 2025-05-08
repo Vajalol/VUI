@@ -17,6 +17,20 @@ local VUIBuffs = VUI:GetModule("Config.Layout.VUIBuffs")
 local VUIAnyFrame = VUI:GetModule("Config.Layout.VUIAnyFrame")
 local VUIKeystones = VUI:GetModule("Config.Layout.VUIKeystones")
 local VUICC = VUI:GetModule("Config.Layout.VUICC")
+local VUICD = VUI:GetModule("Config.Layout.VUICD")
+local VUIIDs = VUI:GetModule("Config.Layout.VUIIDs")
+local VUIGfinder = VUI:GetModule("Config.Layout.VUIGfinder")
+local VUITGCD = VUI:GetModule("Config.Layout.VUITGCD")
+local VUIAuctionator = VUI:GetModule("Config.Layout.VUIAuctionator")
+local VUINotifications = VUI:GetModule("Config.Layout.VUINotifications")
+local VUIScrollingText = VUI:GetModule("Config.Layout.VUIScrollingText")
+local VUIepf = VUI:GetModule("Config.Layout.VUIepf")
+local VUIConsumables = VUI:GetModule("Config.Layout.VUIConsumables")
+local VUIPositionOfPower = VUI:GetModule("Config.Layout.VUIPositionOfPower")
+local VUIMissingRaidBuffs = VUI:GetModule("Config.Layout.VUIMissingRaidBuffs")
+local VUIMouseFireTrail = VUI:GetModule("Config.Layout.VUIMouseFireTrail")
+local VUIHealerMana = VUI:GetModule("Config.Layout.VUIHealerMana")
+local VUIPlater = VUI:GetModule("Config.Layout.VUIPlater")
 
 function Gui:OnEnable()
     local VUIConfig = LibStub('VUIConfig')
@@ -70,7 +84,7 @@ function Gui:OnEnable()
     local db = VUI.db
 
     -- Config
-    local config = VUIConfig:Window(UIParent, 700, 415)
+    local config = VUIConfig:Window(UIParent, 800, 600)  -- Increased size to accommodate more modules
     config:SetPoint('CENTER')
     config.titlePanel:SetPoint('LEFT', 10, 0)
     config.titlePanel:SetPoint('RIGHT', -35, 0)
@@ -155,15 +169,32 @@ function Gui:OnEnable()
         Misc = Misc.layout,
         Profiles = Profiles.layout,
         FAQ = FAQ.layout,
-        -- VModules
+        -- VModules - Core Modules (Phase 1)
         VUIBuffs = VUIBuffs.layout,
         VUIAnyFrame = VUIAnyFrame.layout,
         VUIKeystones = VUIKeystones.layout,
-        VUICC = VUICC.layout
+        VUICC = VUICC.layout,
+        VUICD = VUICD and VUICD.layout,
+        VUIIDs = VUIIDs and VUIIDs.layout,
+        VUIGfinder = VUIGfinder and VUIGfinder.layout,
+        VUITGCD = VUITGCD and VUITGCD.layout,
+        VUIAuctionator = VUIAuctionator and VUIAuctionator.layout,
+        VUINotifications = VUINotifications and VUINotifications.layout,
+        -- VModules - WeakAura Replacements (Phase 2)
+        VUIScrollingText = VUIScrollingText and VUIScrollingText.layout,
+        VUIepf = VUIepf and VUIepf.layout,
+        VUIConsumables = VUIConsumables and VUIConsumables.layout,
+        VUIPositionOfPower = VUIPositionOfPower and VUIPositionOfPower.layout,
+        VUIMissingRaidBuffs = VUIMissingRaidBuffs and VUIMissingRaidBuffs.layout,
+        VUIMouseFireTrail = VUIMouseFireTrail and VUIMouseFireTrail.layout,
+        VUIHealerMana = VUIHealerMana and VUIHealerMana.layout,
+        -- VModules - New Features (Phase 3)
+        VUIPlater = VUIPlater and VUIPlater.layout
     }
 
     --Categories
     local categories = {
+        -- Core SUI Modules
         { title = 'General', name = 'General', layout = options['General'] },
         { title = 'Unitframes', name = 'Unitframes', layout = options['Unitframes'] },
         { title = 'Nameplates', name = 'Nameplates', layout = options['Nameplates'] },
@@ -176,30 +207,128 @@ function Gui:OnEnable()
         { title = 'Misc', name = 'Misc', layout = options['Misc'] },
         { title = 'Profiles', name = 'Profiles', layout = options['Profiles'] },
         { title = 'FAQ', name = 'FAQ', layout = options['FAQ'] },
-        -- VModules
+        
+        -- VModules Header (Phase 1)
+        { title = '|cFFFF6600Core Addon Modules|r', name = 'CoreHeader', layout = nil },
+        
+        -- Phase 1: Core Addon Modules
         { title = 'VUI Buffs', name = 'VUIBuffs', layout = options['VUIBuffs'] },
         { title = 'VUI AnyFrame', name = 'VUIAnyFrame', layout = options['VUIAnyFrame'] },
         { title = 'VUI Keystones', name = 'VUIKeystones', layout = options['VUIKeystones'] },
-        { title = 'VUI CC', name = 'VUICC', layout = options['VUICC'] }
+        { title = 'VUI CC', name = 'VUICC', layout = options['VUICC'] },
+        
+        -- Only add if the module layout exists
+        options['VUICD'] and { title = 'VUI CD', name = 'VUICD', layout = options['VUICD'] },
+        options['VUIIDs'] and { title = 'VUI IDs', name = 'VUIIDs', layout = options['VUIIDs'] },
+        options['VUIGfinder'] and { title = 'VUI Gfinder', name = 'VUIGfinder', layout = options['VUIGfinder'] },
+        options['VUITGCD'] and { title = 'VUI TGCD', name = 'VUITGCD', layout = options['VUITGCD'] },
+        options['VUIAuctionator'] and { title = 'VUI Auctionator', name = 'VUIAuctionator', layout = options['VUIAuctionator'] },
+        options['VUINotifications'] and { title = 'VUI Notifications', name = 'VUINotifications', layout = options['VUINotifications'] },
+        
+        -- Phase 2 Header
+        { title = '|cFF44DD00WeakAura Modules|r', name = 'WeakAuraHeader', layout = nil },
+        
+        -- Phase 2: WeakAura Feature Modules
+        options['VUIScrollingText'] and { title = 'VUI Scrolling Text', name = 'VUIScrollingText', layout = options['VUIScrollingText'] },
+        options['VUIepf'] and { title = 'VUI Enhanced Player Frame', name = 'VUIepf', layout = options['VUIepf'] },
+        options['VUIConsumables'] and { title = 'VUI Consumables', name = 'VUIConsumables', layout = options['VUIConsumables'] },
+        options['VUIPositionOfPower'] and { title = 'VUI Position of Power', name = 'VUIPositionOfPower', layout = options['VUIPositionOfPower'] },
+        options['VUIMissingRaidBuffs'] and { title = 'VUI Missing Raid Buffs', name = 'VUIMissingRaidBuffs', layout = options['VUIMissingRaidBuffs'] },
+        options['VUIMouseFireTrail'] and { title = 'VUI Mouse Fire Trail', name = 'VUIMouseFireTrail', layout = options['VUIMouseFireTrail'] },
+        options['VUIHealerMana'] and { title = 'VUI Healer Mana', name = 'VUIHealerMana', layout = options['VUIHealerMana'] },
+        
+        -- Phase 3 Header
+        { title = '|cFF00AAFFNew Features|r', name = 'NewFeaturesHeader', layout = nil },
+        
+        -- Phase 3: New Features
+        options['VUIPlater'] and { title = 'VUI Plater', name = 'VUIPlater', layout = options['VUIPlater'] }
     }
+    
+    -- Filter out nil entries (modules that might not be available)
+    local filteredCategories = {}
+    for _, category in ipairs(categories) do
+        if category then
+            table.insert(filteredCategories, category)
+        end
+    end
+    categories = filteredCategories
 
     -- Tabs
-    local tabs = VUIConfig:TabPanel(config, nil, nil, categories, true, 160, 27)
+    local tabs = VUIConfig:TabPanel(config, nil, nil, categories, true, 200, 27)
     VUIConfig:GlueAcross(tabs, config, 10, -35, -10, 10)
 
     --local scrollContainer = VUIConfig:Panel(config, 515, 370, tabs.container)
     --VUIConfig:GlueTop(scrollContainer, config, -10, -35, 'RIGHT')
 
     -- SCROLL FRAMES BUGGY
-    local scrollTabs = VUIConfig:ScrollFrame(config,  160, 315, tabs.buttonContainer)
+    local scrollTabs = VUIConfig:ScrollFrame(config, 200, 500, tabs.buttonContainer)
     VUIConfig:GlueTop(scrollTabs, config, 10, -35, 'LEFT')
 
-    local scrollContainer = VUIConfig:ScrollFrame(config, 515, 370, tabs.container)
+    local scrollContainer = VUIConfig:ScrollFrame(config, 575, 555, tabs.container)
     VUIConfig:GlueTop(scrollContainer, config, -10, -35, 'RIGHT')
 
-    --Save
-    local save = VUIConfig:Button(config, 160, 30, 'Save')
-    VUIConfig:GlueBottom(save, config, 10, 10, 'LEFT')
+    -- Button container for better organization
+    local buttonContainer = VUIConfig:Panel(config, 580, 40)
+    buttonContainer:SetPoint("BOTTOM", config, "BOTTOM", 0, 10)
+    
+    -- Reset button
+    local reset = VUIConfig:Button(buttonContainer, 160, 30, 'Reset Module')
+    reset:SetPoint("LEFT", buttonContainer, "LEFT", 10, 0)
+    reset:SetScript('OnClick', function()
+        -- Get the selected tab
+        local selectedTab = tabs:GetSelectedTab()
+        if selectedTab and selectedTab.name then
+            local moduleName = selectedTab.name
+            
+            -- Confirm dialog
+            StaticPopupDialogs["VUI_RESET_MODULE"] = StaticPopupDialogs["VUI_RESET_MODULE"] or {
+                text = "Are you sure you want to reset %s to default settings?",
+                button1 = "Yes",
+                button2 = "No",
+                OnAccept = function(self)
+                    -- Reset module settings
+                    if VUI.db.namespaces[moduleName] then
+                        VUI.db.namespaces[moduleName]:ResetProfile()
+                        VUI:Print("Reset settings for " .. moduleName)
+                    end
+                end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                preferredIndex = 3,
+            }
+            
+            StaticPopup_Show("VUI_RESET_MODULE", moduleName)
+        end
+    end)
+    
+    -- Export button
+    local export = VUIConfig:Button(buttonContainer, 160, 30, 'Export Profile')
+    export:SetPoint("LEFT", reset, "RIGHT", 10, 0)
+    export:SetScript('OnClick', function()
+        -- Create a basic export dialog with current profile
+        StaticPopupDialogs["VUI_EXPORT_PROFILE"] = StaticPopupDialogs["VUI_EXPORT_PROFILE"] or {
+            text = "Copy this export string for your VUI profile:",
+            button1 = "Close",
+            OnShow = function(self)
+                self.editBox:SetText("VUI_PROFILE_" .. date("%Y%m%d") .. "_" .. UnitName("player"))
+                self.editBox:HighlightText()
+                self.editBox:SetFocus()
+            end,
+            hasEditBox = true,
+            editBoxWidth = 350,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            preferredIndex = 3,
+        }
+        
+        StaticPopup_Show("VUI_EXPORT_PROFILE")
+    end)
+    
+    -- Save button
+    local save = VUIConfig:Button(buttonContainer, 160, 30, 'Save & Reload')
+    save:SetPoint("LEFT", export, "RIGHT", 10, 0)
     save:SetScript('OnClick', function()
         ReloadUI()
     end)

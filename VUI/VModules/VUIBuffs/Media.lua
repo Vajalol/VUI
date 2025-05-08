@@ -6,23 +6,23 @@ local L = VUIBuffs.L
 VUIBuffs.Media = {
     -- Bars
     Bars = {
-        Smooth = "Interface\\AddOns\\VUI\\media\\modules\\VUIBuffs\\bar\\smooth",
+        Smooth = "Interface\\AddOns\\VUI\\Media\\modules\\VUIBuffs\\bar\\smooth",
     },
     
     -- Borders
     Borders = {
-        Default = "Interface\\AddOns\\VUI\\media\\modules\\VUIBuffs\\border\\edge-default",
+        Default = "Interface\\AddOns\\VUI\\Media\\modules\\VUIBuffs\\border\\edge-default",
     },
     
     -- Icons
     Icons = {
-        Default = "Interface\\AddOns\\VUI\\media\\modules\\VUIBuffs\\icon\\vui_buffs",
+        Default = "Interface\\AddOns\\VUI\\Media\\modules\\VUIBuffs\\icon\\vui_buffs",
     },
     
     -- Textures
     Textures = {
-        Logo = "Interface\\AddOns\\VUI\\media\\modules\\VUIBuffs\\textures\\logo",
-        LogoTransparent = "Interface\\AddOns\\VUI\\media\\modules\\VUIBuffs\\textures\\logo_transparent",
+        Logo = "Interface\\AddOns\\VUI\\Media\\modules\\VUIBuffs\\textures\\logo",
+        LogoTransparent = "Interface\\AddOns\\VUI\\Media\\modules\\VUIBuffs\\textures\\logo_transparent",
     },
 }
 

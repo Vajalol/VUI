@@ -152,7 +152,7 @@ function VUICD.Pools.CreateStatusBar(parent)
     bar.text:SetPoint("CENTER")
     
     -- Set default texture
-    bar:SetStatusBarTexture("Interface\\AddOns\\VUI\\media\\modules\\VUICD\\statusbar.tga")
+    bar:SetStatusBarTexture("Interface\\AddOns\\VUI\\Media\\modules\\VUICD\\statusbar.tga")
     
     return bar
 end
@@ -184,7 +184,7 @@ function VUICD.Pools.CreatePixelGlow(parent)
     -- Create glow textures
     for i = 1, 4 do
         local texture = frame:CreateTexture(nil, "BACKGROUND")
-        texture:SetTexture("Interface\\AddOns\\VUI\\media\\modules\\VUICD\\glow.tga")
+        texture:SetTexture("Interface\\AddOns\\VUI\\Media\\modules\\VUICD\\glow.tga")
         texture:SetBlendMode("ADD")
         texture:SetPoint("CENTER")
         texture:SetSize(32, 32)

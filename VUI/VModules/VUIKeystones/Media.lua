@@ -3,7 +3,7 @@ local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
 local L = VUIKeystones.L
 
 -- Media paths
-local MEDIA_PATH = "Interface\\AddOns\\VUI\\media\\modules\\VUIKeystones\\"
+local MEDIA_PATH = "Interface\\AddOns\\VUI\\Media\\modules\\VUIKeystones\\"
 
 -- Function to get media file path
 function VUIKeystones:GetMediaPath(mediaType, fileName)

@@ -16,6 +16,9 @@ Media\Load.xml
 Core\Load.xml
 ## DATA
 Data\Load.xml
+## UTILITIES
+Utilities\Animation.lua
+Utilities\TestFramework.lua
 ## MODULES
 Modules\Load.xml
 ## VUI MODULES

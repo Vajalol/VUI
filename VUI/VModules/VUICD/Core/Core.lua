@@ -91,7 +91,7 @@ function VUICD:RegisterMedia()
     local LSM = self.Libs.LSM
     
     -- Register textures
-    LSM:Register("statusbar", "VUI-Party-StatusBar", "Interface\\AddOns\\VUI\\media\\modules\\VUICD\\statusbar.tga")
+    LSM:Register("statusbar", "VUI-Party-StatusBar", "Interface\\AddOns\\VUI\\Media\\modules\\VUICD\\statusbar.tga")
 end
 
 -- Get party module settings

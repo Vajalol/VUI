@@ -85,7 +85,7 @@ Auctionator.Constants = {
   
   -- Media path function
   MEDIA_PATH = function(file)
-    return "Interface\\AddOns\\VUI\\media\\modules\\VUIAuctionator\\" .. file
+    return "Interface\\AddOns\\VUI\\Media\\modules\\VUIAuctionator\\" .. file
   end,
   
   -- Time constants

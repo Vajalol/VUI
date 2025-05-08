@@ -3,7 +3,7 @@ local VUIAnyFrame = LibStub("AceAddon-3.0"):GetAddon("VUIAnyFrame")
 local L = VUIAnyFrame.L
 
 -- Media paths
-local MEDIA_PATH = "Interface\\AddOns\\VUI\\media\\modules\\VUIAnyFrame\\"
+local MEDIA_PATH = "Interface\\AddOns\\VUI\\Media\\modules\\VUIAnyFrame\\"
 
 -- Function to get media file path
 function VUIAnyFrame:GetMediaPath(mediaType, fileName)
