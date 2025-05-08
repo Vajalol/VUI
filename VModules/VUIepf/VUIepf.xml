@@ -1,0 +1,27 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="..\FrameXML\UI.xsd">
+    <Script file="Main.lua"/>
+    <Script file="CustomFrameModes.lua"/>
+    <GameTooltip name="VUIepf_Tooltip" frameStrata="TOOLTIP" hidden="false" parent="UIParent" inherits="GameTooltipTemplate"/>
+    <Frame name="VUIepfTemplate" virtual="true" mixin="VUIepfMixin">
+        <Layers>
+            <Layer level="BACKGROUND" textureSubLevel="1">
+                <Texture parentKey="Frame" hidden="true">
+                    <Anchors>
+                        <Anchor point="RIGHT" relativeKey="$parent.$parent.PlayerFrameContainer.FrameTexture"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK" textureSubLevel="2">
+                <Texture parentKey="Portrait" hidden="true">
+                    <Anchors>
+                        <Anchor point="RIGHT" relativeKey="$parent.$parent.PlayerFrameContainer.PlayerPortrait"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnLoad method="Loaded"/>
+            <OnEvent method="Event_Received"/>
+        </Scripts>
+    </Frame>
+</Ui>

@@ -12,4 +12,5 @@
   <Include file="VUIAuctionator\Load.xml"/>
   <Include file="VUINotifications\Load.xml"/>
   <Include file="VUIScrollingText\Load.xml"/>
+  <Include file="VUIepf\Load.xml"/>
 </Ui>
