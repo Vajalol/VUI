@@ -1,0 +1,18 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- Localization -->
+    <Script file="locales/localization.lua"/>
+
+    <!-- Data files -->
+    <Script file="data/Colors.lua"/>
+    <Script file="data/Sizes.lua"/>
+    <Script file="data/Affiliations.lua"/>
+    <Script file="data/SpellSchools.lua"/>
+    <Script file="data/MissTypes.lua"/>
+    
+    <!-- Services -->
+    <Script file="service/NotifyService.lua"/>
+    <Script file="service/ErrorService.lua"/>
+    
+    <!-- Main module file -->
+    <Script file="Main.lua"/>
+</Ui>

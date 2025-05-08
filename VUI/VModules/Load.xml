@@ -10,4 +10,5 @@
   <Include file="VUIGfinder\Load.xml"/>
   <Include file="VUITGCD\Load.xml"/>
   <Include file="VUIAuctionator\Load.xml"/>
+  <Include file="VUINotifications\Load.xml"/>
 </Ui>
