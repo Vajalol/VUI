@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <path d="M32 4C16.536 4 4 16.536 4 32s12.536 28 28 28 28-12.536 28-28S47.464 4 32 4zm0 8a20 20 0 0 1 0 40 20 20 0 0 1 0-40z" fill="none" stroke="#ffffff" stroke-width="4"/>
-  <path d="M32 20v12l8 8" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="26" y="35" font-family="Arial" font-size="20" font-weight="bold" fill="#ffffff">+</text>
-</svg>

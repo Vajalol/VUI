@@ -4,27 +4,6 @@ modules = ["lua", "python-3.11", "lua-5.1"]
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Project"
-
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "WoW Addon Validation"
-
-[[workflows.workflow]]
-name = "WoW Addon Validation"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "luac -p core/*.lua modules/*/*.lua && echo \"Lua syntax validation passed!\""
 
 [deployment]
 run = ["sh", "-c", "luac -p core/*.lua modules/*/*.lua && echo \"Lua syntax validation passed!\""]

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="34px" height="34px" viewBox="0 0 34 34" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <title>Position of Power Icon Border</title>
-    <g id="Icon-Border" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <rect id="Border" stroke="#FFFFFF" stroke-width="2" x="1" y="1" width="32" height="32" rx="2"></rect>
-        <path d="M4,1 L1,4 M1,30 L4,33 M30,33 L33,30 M33,4 L30,1" id="Corners" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></path>
-        <path d="M17,1 L17,3 M1,17 L3,17 M17,33 L17,31 M33,17 L31,17" id="Midpoints" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></path>
-    </g>
-</svg>

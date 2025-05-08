@@ -1,5 +1,0 @@
-<Ui xmlns='http://www.blizzard.com/wow/ui/'>
-  <Include file='bartender.lua'/>
-  <Include file='classicui.lua'/>
-  <!-- Additional addon skins will be added here -->
-</Ui>
