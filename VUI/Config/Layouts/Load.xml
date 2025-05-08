@@ -19,4 +19,5 @@
   <Include file='_VUICC.lua'/>
   <Include file='_VUICD.lua'/>
   <Include file='_VUIIDs.lua'/>
+  <Include file='_VUIGfinder.lua'/>
 </Ui>
