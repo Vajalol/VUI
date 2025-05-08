@@ -1,0 +1,63 @@
+local AddonName, VUI = ...
+local L = LibStub("AceLocale-3.0"):NewLocale("VUI", "enUS", true)
+if not L then return end
+
+-- VUIMouseFireTrail Localization
+L["General Settings"] = true
+L["Enable"] = true
+L["Enable/disable this module"] = true
+L["Enable In Zones"] = true
+L["Show During Combat"] = true
+L["Show the fire trail during combat"] = true
+L["Show In Instances"] = true
+L["Show the fire trail in dungeons and raids"] = true
+L["Show In Rest Areas"] = true
+L["Show the fire trail in cities and inns"] = true
+L["Show In Open World"] = true
+L["Show the fire trail in the open world"] = true
+L["Hide With UI"] = true
+L["Hide the fire trail when the UI is hidden"] = true
+L["Appearance"] = true
+L["Particle Style"] = true
+L["Choose the visual style of the trail particles"] = true
+L["Custom Color"] = true
+L["Set a custom color for the particles"] = true
+L["Particle Settings"] = true
+L["Particle Count"] = true
+L["Number of particles in the trail"] = true
+L["Particle Size"] = true
+L["Size of each particle"] = true
+L["Particle Alpha"] = true
+L["Transparency of particles"] = true
+L["Particle Fade Speed"] = true
+L["How quickly particles fade away"] = true
+L["Size Variation"] = true
+L["Random size variation of particles"] = true
+L["Trail Length"] = true
+L["Length of the particle trail"] = true
+L["Particle Speed"] = true
+L["How fast the particles move"] = true
+L["Activation"] = true
+L["Require Mouse Button"] = true
+L["Only show trail when holding a mouse button"] = true
+L["Mouse Button"] = true
+L["Which mouse button to hold"] = true
+L["Left Button"] = true
+L["Right Button"] = true
+L["Middle Button"] = true
+L["Require Key Modifier"] = true
+L["Only show trail when holding a modifier key"] = true
+L["Key Modifier"] = true
+L["Which key to hold"] = true
+L["Shift"] = true
+L["Control"] = true
+L["Alt"] = true
+
+-- Particle style names
+L["Fire"] = true
+L["Arcane"] = true
+L["Frost"] = true
+L["Nature"] = true
+L["Rainbow"] = true
+L["Custom Color"] = true
+L["Unknown"] = true

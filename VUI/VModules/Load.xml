@@ -15,4 +15,6 @@
   <Include file="VUIepf\Load.xml"/>
   <Include file="VUIConsumables\Load.xml"/>
   <Include file="VUIPositionOfPower\Load.xml"/>
+  <Include file="VUIMissingRaidBuffs\Load.xml"/>
+  <Include file="VUIMouseFireTrail\Load.xml"/>
 </Ui>

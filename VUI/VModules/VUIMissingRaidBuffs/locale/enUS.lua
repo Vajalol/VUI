@@ -1,0 +1,79 @@
+local AddonName, VUI = ...
+local L = LibStub("AceLocale-3.0"):NewLocale("VUI", "enUS", true)
+if not L then return end
+
+-- VUIMissingRaidBuffs Localization
+L["General Settings"] = true
+L["Enable"] = true
+L["Enable/disable this module"] = true
+L["Unlock Frame"] = true
+L["Unlock the frame to allow repositioning"] = true
+L["Display In Group Only"] = true
+L["Only show missing buffs while in a group/raid"] = true
+L["Display In Combat Only"] = true
+L["Only show missing buffs while in combat"] = true
+L["Appearance"] = true
+L["Scale"] = true
+L["Adjust the size of the display"] = true
+L["Alpha"] = true
+L["Adjust the transparency of the display"] = true
+L["Icon Size"] = true
+L["Size of the buff icons"] = true
+L["Icon Spacing"] = true
+L["Space between buff icons"] = true
+L["Growth Direction"] = true
+L["Direction in which new icons appear"] = true
+L["Right"] = true
+L["Left"] = true
+L["Up"] = true
+L["Down"] = true
+L["Show Tooltips"] = true
+L["Show tooltips with buff information"] = true
+L["Show Status Text"] = true
+L["Show 'Missing' text below icons"] = true
+L["Warnings"] = true
+L["Show Warnings"] = true
+L["Show warnings for missing buffs before encounters"] = true
+L["Play Warning Sound"] = true
+L["Play sound when warning about missing buffs"] = true
+L["Show Warning Message"] = true
+L["Display a chat message about missing buffs"] = true
+L["Buff Tracking"] = true
+L["Track Intellect"] = true
+L["Check for missing Intellect buff"] = true
+L["Track Stamina"] = true
+L["Check for missing Stamina buff"] = true
+L["Track Attack Power"] = true
+L["Check for missing Attack Power buff"] = true
+L["Track Haste"] = true
+L["Check for missing Haste buff"] = true
+L["Track Kings"] = true
+L["Check for missing Kings buff"] = true
+L["Track Might"] = true
+L["Check for missing Might buff"] = true
+L["Track Bloodlust/Heroism"] = true
+L["Check for Bloodlust/Heroism at encounter start"] = true
+L["Frame locked."] = true
+L["Frame unlocked for moving. Drag to reposition, then lock when finished."] = true
+L["Missing"] = true
+L["Provided By:"] = true
+L["Unknown"] = true
+
+-- Buff Names
+L["Intellect"] = true
+L["Stamina"] = true
+L["Attack Power"] = true
+L["Haste"] = true
+L["Spell Power"] = true
+L["Blessing of Kings"] = true
+L["Blessing of Might"] = true
+L["Bloodlust/Heroism"] = true
+
+-- Buff Warnings
+L["Missing Intellect buff!"] = true
+L["Missing Stamina buff!"] = true
+L["Missing Attack Power buff!"] = true
+L["Missing Haste buff!"] = true
+L["Missing Kings buff!"] = true
+L["Missing Might buff!"] = true
+L["Don't forget to use Bloodlust/Heroism!"] = true
