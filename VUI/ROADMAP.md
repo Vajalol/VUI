@@ -45,11 +45,65 @@ This document outlines the progress and current status of the VUI addon developm
 - Consolidated all module configurations into unified panel
 - Removed TestFramework.lua in favor of direct in-game debugging
 
+## Priority Tasks - Configuration System Overhaul
+
+### 🔴 Phase 4.5: Configuration System Redesign
+- **High Priority**: Create a standalone, unified Main GUI for VUI
+  - Design a centralized configuration framework that all modules can hook into
+  - Implement a consistent styling and navigation system
+  - Ensure configuration panel loads efficiently without bloating memory usage
+  
+- **High Priority**: Module Configuration Integration
+  - Remove individual module configuration panels (except VUIGfinder)
+  - Integrate all module options into the main configuration system
+  - Ensure each module has a dedicated section with appropriate categorization
+  - Maintain all existing configuration options without feature loss
+  - Preserve VUIGfinder's unique configuration tied to the LFG interface
+  
+- **High Priority**: First-Time Installation Experience
+  - Design streamlined installation wizard for new users
+  - Create step-by-step guide for essential configuration options
+  - Implement default profiles for different user types (DPS, Tank, Healer)
+  - Add tooltips and help text for all configuration options
+  - Include welcome message with basic navigation instructions
+
+#### Implementation Plan
+1. **Analysis Phase** (1-2 days)
+   - Audit all existing module configuration systems
+   - Document all configuration options that need to be preserved
+   - Identify common patterns and shared requirements
+
+2. **Architecture Design** (2-3 days)
+   - Design modular configuration framework
+   - Create registration system for modules to hook into main GUI
+   - Define standard API for modules to add configuration options
+
+3. **Core Implementation** (3-4 days)
+   - Build standalone configuration panel framework
+   - Implement navigation and category system
+   - Create option templates (sliders, checkboxes, color pickers, etc.)
+   - Develop consistent styling system
+
+4. **Module Integration** (4-5 days)
+   - Convert each module to use the new configuration system
+   - Migrate all settings without data loss
+   - Test each module for full functionality
+
+5. **Installation Wizard** (2-3 days)
+   - Design and implement first-time setup experience
+   - Create guided configuration process
+   - Add default profile selection
+
+6. **Testing & Refinement** (2-3 days)
+   - Usability testing for configuration flow
+   - Performance testing to ensure minimal impact
+   - Polish and refine user experience
+
 ## Upcoming Phases
 
 ### 🔄 Phase 5: Testing, Debugging, and Performance Optimization
-- **In Progress**: Testing module compatibility with current game version
-- **In Progress**: Refining error handling for better troubleshooting
+- **To Do**: Testing module compatibility with current game version
+- **To Do**: Refining error handling for better troubleshooting
 - **To Do**: Optimizing performance for high-stress situations (raids, etc.)
 - **To Do**: Memory usage optimization
 - **To Do**: Load-time improvements
@@ -72,13 +126,14 @@ Based on user preferences, the following changes were made to the development ap
 
 3. **Temporary File Cleanup**: Removed all temporary files and directories used during development to streamline the final package.
 
+4. **Configuration System Redesign**: Shifting from distributed configuration panels to a single, unified configuration system while preserving all functionality.
+
 ## Next Steps
 
-The immediate focus is on Phase 5 (Testing, Debugging, and Performance Optimization), with particular attention to:
+The immediate focus is on implementing the Configuration System Overhaul (Phase 4.5), with particular attention to:
 
-1. Comprehensive error handling without masking issues
-2. Performance testing in various in-game scenarios
-3. Memory usage monitoring and optimization
-4. Final polish of the user interface and experience
+1. Creating a standalone Main GUI that all modules connect to
+2. Consolidating module configuration panels while maintaining all options
+3. Improving the first-time installation experience
 
-Upon completion of Phase 5, work will begin on Phase 6 to prepare for the initial public release.
+Upon completion of the Configuration System Overhaul, work will continue on Phase 5 (Testing, Debugging, and Performance Optimization).
