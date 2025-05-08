@@ -41,8 +41,35 @@ function Auctionator:Initialize()
     self.Database:Initialize()
   end
   
-  -- Initialize other sub-systems as needed
-  -- (Other initialization code will be added as systems are implemented)
+  -- Initialize subsystems
+  if self.Selling and self.Selling.Initialize then
+    self.Selling:Initialize()
+  end
+  
+  if self.Lists and self.Lists.Initialize then
+    self.Lists:Initialize()
+  end
+  
+  if self.History and self.History.Initialize then
+    self.History:Initialize()
+  end
+  
+  if self.Cancel and self.Cancel.Initialize then
+    self.Cancel:Initialize()
+  end
+  
+  -- Initialize the Config UI
+  if self.Config.UI and self.Config.UI.Initialize then
+    self.Config.UI:Initialize()
+  end
+  
+  -- Initialize the main UI
+  if self.UI and self.UI.MainFrame and self.UI.MainFrame.Initialize then
+    self.UI.MainFrame:Initialize()
+  end
+  
+  -- Set up tooltips
+  self:SetupTooltips()
   
   -- Register with VUI Config
   if VUI.Config and VUI.Config.RegisterModule then
