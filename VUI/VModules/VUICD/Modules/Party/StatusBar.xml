@@ -1,0 +1,23 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <!-- Status Bar Template -->
+    <StatusBar name="VUICD_StatusBarTemplate" virtual="true" minValue="0" maxValue="1" defaultValue="0">
+        <Size x="30" y="6"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture name="$parentBackground" setAllPoints="true">
+                    <Color r="0.1" g="0.1" b="0.1" a="0.8"/>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString name="$parentText" inherits="GameFontHighlightSmall" justifyH="CENTER">
+                    <Anchors>
+                        <Anchor point="CENTER"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <BarTexture file="Interface\AddOns\VUI\media\modules\VUICD\statusbar.tga"/>
+        <BarColor r="1.0" g="1.0" b="1.0"/>
+    </StatusBar>
+</Ui>

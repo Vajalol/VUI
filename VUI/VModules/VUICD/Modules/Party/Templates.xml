@@ -1,0 +1,56 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <!-- Cooldown Icon Template -->
+    <Frame name="VUICD_CooldownIconTemplate" virtual="true">
+        <Size x="30" y="30"/>
+        <Layers>
+            <Layer level="ARTWORK">
+                <Texture name="$parentIcon" setAllPoints="true">
+                    <TexCoords left="0.08" right="0.92" top="0.08" bottom="0.92"/>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString name="$parentCount" inherits="NumberFontNormal" justifyH="RIGHT">
+                    <Anchors>
+                        <Anchor point="BOTTOMRIGHT" x="-2" y="2"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Cooldown name="$parentCooldown" inherits="CooldownFrameTemplate" hideCountdownNumbers="true" reverse="true" setAllPoints="true"/>
+        </Frames>
+    </Frame>
+    
+    <!-- Party Member Frame Template -->
+    <Frame name="VUICD_PartyMemberTemplate" virtual="true">
+        <Size x="160" y="40"/>
+        <Layers>
+            <Layer level="ARTWORK">
+                <Texture name="$parentClassIcon" parentKey="classIcon">
+                    <Size x="16" y="16"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="2" y="0"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString name="$parentName" inherits="GameFontNormalSmall" justifyH="LEFT" parentKey="nameText">
+                    <Size x="100" y="12"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.classIcon" relativePoint="RIGHT" x="4" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <!-- Container for cooldown icons -->
+            <Frame name="$parentIconContainer" parentKey="iconContainer">
+                <Size x="150" y="30"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" x="0" y="-2"/>
+                </Anchors>
+            </Frame>
+        </Frames>
+    </Frame>
+</Ui>
