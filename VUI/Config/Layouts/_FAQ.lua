@@ -93,7 +93,7 @@ function Layout:OnEnable()
                     type = 'button',
                     text = 'Discord',
                     onClick = function()
-                        VUIConfig:Dialog('Discord', 'discord.gg/yBWkxxR')
+                        VUIConfig:Dialog('Discord', 'https://discord.gg/z5W3EWUrwu')
                     end,
                     column = 3,
                     order = 1
@@ -102,7 +102,7 @@ function Layout:OnEnable()
                     type = 'button',
                     text = 'Twitch',
                     onClick = function()
-                        VUIConfig:Dialog('Twitch', 'twitch.tv/syiana')
+                        VUIConfig:Dialog('Twitch', 'twitch.tv/vajalol')
                     end,
                     column = 3,
                     order = 2
