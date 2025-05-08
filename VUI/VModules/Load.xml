@@ -18,4 +18,5 @@
   <Include file="VUIMissingRaidBuffs\Load.xml"/>
   <Include file="VUIMouseFireTrail\Load.xml"/>
   <Include file="VUIHealerMana\Load.xml"/>
+  <Include file="VUIPlater\Load.xml"/>
 </Ui>
