@@ -1,100 +1,111 @@
 local Module = VUI:NewModule("Config.Install");
 
--- Define the multi-step installation wizard
+-- Define the enhanced multi-step installation wizard using VUIConfig
 local function CreateInstallWizard()
-    -- Main frame for installation wizard
-    local Install = CreateFrame("Frame", "VUIInstallWizard", UIParent)
-    Install:SetWidth(800)
-    Install:SetHeight(600)
-    Install:SetPoint("CENTER", 0, 0)
-    Install:EnableMouse(true)
+    local VUIConfig = LibStub('VUIConfig')
+    
+    -- Create main window with VUIConfig
+    local Install = VUIConfig:Window(UIParent, 800, 600, "|cffea00ffV|r|cff00a2ffUI|r - Installation")
+    Install:SetPoint("CENTER")
     Install:SetFrameStrata("HIGH")
+    Install:SetMovable(true)
+    Install:EnableMouse(true)
     
-    -- Background texture
-    local Texture = Install:CreateTexture(nil, "BACKGROUND")
-    Texture:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Background")
-    Texture:SetAllPoints(Install)
-    Install.texture = Texture
-    
-    -- Title header
-    Install.header = Install:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    Install.header:SetPoint("TOP", 0, -20)
-    Install.header:SetText("|cffea00ffV|r|cff00a2ffUI|r - The Vortex UI Suite")
-    Install.header:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 24, "OUTLINE")
+    -- Add VUI logo
+    local logo = VUIConfig:Texture(Install.titlePanel, 120, 35, "Interface\\AddOns\\VUI\\Media\\Textures\\Config\\Logo")
+    VUIConfig:GlueLeft(logo, Install.titlePanel, 10, 0)
     
     -- Subtitle
-    Install.subtitle = Install:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    Install.subtitle:SetPoint("TOP", Install.header, "BOTTOM", 0, -5)
-    Install.subtitle:SetText("A Comprehensive UI Customization Suite")
+    local subtitle = VUIConfig:Label(Install.titlePanel, "Installation Wizard")
+    subtitle:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 14)
+    VUIConfig:GlueRight(subtitle, Install.titlePanel, -40, 0)
     
-    -- Page indicator text
-    Install.pageText = Install:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    Install.pageText:SetPoint("BOTTOMRIGHT", -10, 10)
+    -- Better navigation buttons using VUIConfig widgets
+    Install.prevButton = VUIConfig:Button(Install, 120, 30, "Previous")
+    Install.prevButton:SetPoint("BOTTOMLEFT", 20, 20)
+    Install.prevButton:Disable() -- Initially disabled
     
-    -- Navigation buttons
-    Install.prevButton = CreateFrame("Button", nil, Install, "UIPanelButtonTemplate")
-    Install.prevButton:SetSize(100, 25)
-    Install.prevButton:SetPoint("BOTTOMLEFT", 10, 10)
-    Install.prevButton:SetText("Previous")
-    Install.prevButton:Hide()
+    Install.nextButton = VUIConfig:Button(Install, 120, 30, "Next")
+    Install.nextButton:SetPoint("BOTTOMRIGHT", -20, 20)
     
-    Install.nextButton = CreateFrame("Button", nil, Install, "UIPanelButtonTemplate")
-    Install.nextButton:SetSize(100, 25)
-    Install.nextButton:SetPoint("BOTTOMRIGHT", -10, 10)
-    Install.nextButton:SetText("Next")
+    Install.skipButton = VUIConfig:Button(Install, 120, 30, "Skip Setup")
+    Install.skipButton:SetPoint("BOTTOM", 0, 20)
     
-    Install.skipButton = CreateFrame("Button", nil, Install, "UIPanelButtonTemplate")
-    Install.skipButton:SetSize(100, 25)
-    Install.skipButton:SetPoint("BOTTOM", 0, 10)
-    Install.skipButton:SetText("Skip Setup")
+    -- Page indicator text with VUIConfig styling
+    Install.pageText = VUIConfig:Label(Install, "")
+    Install.pageText:SetPoint("BOTTOM", 0, 55)
     
-    -- Content container frame
-    Install.content = CreateFrame("Frame", nil, Install)
-    Install.content:SetSize(750, 450)
-    Install.content:SetPoint("TOP", Install.subtitle, "BOTTOM", 0, -20)
+    -- Create content area with proper styling
+    Install.content = VUIConfig:Panel(Install, 760, 450)
+    VUIConfig:GlueTop(Install.content, Install, 0, -60)
+    VUIConfig:ApplyBackdrop(Install.content, "panel")
     
-    -- Store pages and current page
+    -- Page tracking same as before
     Install.pages = {}
     Install.currentPage = 1
     
-    -- Navigation functions
+    -- Enhanced page navigation with animations
     Install.GoToPage = function(self, pageNum)
-        -- Hide all pages
-        for i, page in ipairs(self.pages) do
-            page:Hide()
-        end
-        
-        -- Show requested page
         if pageNum >= 1 and pageNum <= #self.pages then
-            self.currentPage = pageNum
-            self.pages[pageNum]:Show()
-            
             -- Update page indicator
             self.pageText:SetText("Page " .. pageNum .. " of " .. #self.pages)
             
-            -- Update button visibility
-            if pageNum == 1 then
-                self.prevButton:Hide()
+            -- Animate current page out
+            if self.pages[self.currentPage]:IsShown() then
+                VUI.Animations:FadeOut(self.pages[self.currentPage], 0.3, function()
+                    self.pages[self.currentPage]:Hide()
+                    self.currentPage = pageNum
+                    
+                    -- Animate new page in
+                    self.pages[pageNum]:Show()
+                    VUI.Animations:FadeIn(self.pages[pageNum], 0.3)
+                    
+                    -- Update button states
+                    if pageNum == 1 then
+                        self.prevButton:Disable()
+                    else
+                        self.prevButton:Enable()
+                    end
+                    
+                    if pageNum == #self.pages then
+                        self.nextButton:SetText("Finish")
+                    else
+                        self.nextButton:SetText("Next")
+                    end
+                end)
             else
-                self.prevButton:Show()
-            end
-            
-            if pageNum == #self.pages then
-                self.nextButton:SetText("Finish")
-            else
-                self.nextButton:SetText("Next")
+                -- First page or no current page shown
+                self.currentPage = pageNum
+                self.pages[pageNum]:Show()
+                VUI.Animations:FadeIn(self.pages[pageNum], 0.3)
+                
+                -- Update button states
+                if pageNum == 1 then
+                    self.prevButton:Disable()
+                else
+                    self.prevButton:Enable()
+                end
+                
+                if pageNum == #self.pages then
+                    self.nextButton:SetText("Finish")
+                else
+                    self.nextButton:SetText("Next")
+                end
             end
         end
     end
     
-    -- Setup button scripts
+    -- Setup enhanced button scripts with animated effects
     Install.prevButton:SetScript("OnClick", function()
         if Install.currentPage > 1 then
+            VUI.Animations:Pulse(Install.prevButton, 0.2)
             Install:GoToPage(Install.currentPage - 1)
         end
     end)
     
     Install.nextButton:SetScript("OnClick", function()
+        VUI.Animations:Pulse(Install.nextButton, 0.2)
+        
         if Install.currentPage < #Install.pages then
             Install:GoToPage(Install.currentPage + 1)
         else
@@ -105,90 +116,169 @@ local function CreateInstallWizard()
             -- Apply default settings
             VUI:ConfigureFirstTimeSetup()
             
-            local fadeInfo = {};
-            fadeInfo.mode = "OUT";
-            fadeInfo.timeToFade = 0.4;
-            fadeInfo.finishedFunc = function()
+            -- Use animation system instead of UIFrameFade
+            VUI.Animations:FadeOut(Install, 0.4, function()
                 Install:Hide()
                 VUI:Config()
-            end
-            UIFrameFade(Install, fadeInfo);
+            end)
         end
     end)
     
     Install.skipButton:SetScript("OnClick", function()
+        VUI.Animations:Pulse(Install.skipButton, 0.2)
+        
         VUI.db.profile.install = true
         VUI.db.profile.reset = true
         
         -- Apply default settings even when skipping
         VUI:ConfigureFirstTimeSetup()
         
-        local fadeInfo = {};
-        fadeInfo.mode = "OUT";
-        fadeInfo.timeToFade = 0.4;
-        fadeInfo.finishedFunc = function()
+        -- Use animation system
+        VUI.Animations:FadeOut(Install, 0.4, function()
             Install:Hide()
             VUI:Config()
-        end
-        UIFrameFade(Install, fadeInfo);
+        end)
     end)
     
     return Install
 end
 
--- Create pages for the installation wizard
+-- Create enhanced welcome page with VUIConfig and animations
 local function CreateWelcomePage(parent)
-    local page = CreateFrame("Frame", nil, parent.content)
-    page:SetAllPoints()
+    local VUIConfig = LibStub('VUIConfig')
     
-    -- VUI Logo (we'll use text since we don't have direct image access)
-    local logo = page:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    logo:SetPoint("TOP", 0, 0)
-    logo:SetText("|cffea00ffV|r|cff00a2ffUI|r")
-    logo:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 64, "OUTLINE")
+    local page = VUIConfig:Panel(parent.content)
+    page:SetAllPoints()
+    page:Hide() -- Initially hidden for animation
+    
+    -- VUI Logo
+    local logoPanel = VUIConfig:Panel(page, 250, 120)
+    logoPanel:SetPoint("TOP", 0, -20)
+    VUIConfig:ApplyBackdrop(logoPanel, "panel")
+    
+    local logoText = VUIConfig:Label(logoPanel, "|cffea00ffV|r|cff00a2ffUI|r")
+    logoText:SetPoint("CENTER", 0, 0)
+    logoText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 72, "OUTLINE")
+    
+    -- Welcome panel with animated border
+    local welcomePanel = VUIConfig:Panel(page, 650, 120)
+    welcomePanel:SetPoint("TOP", logoPanel, "BOTTOM", 0, -20)
+    VUIConfig:ApplyBackdrop(welcomePanel, "panel", "border")
     
     -- Welcome text
-    local welcomeText = page:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    welcomeText:SetPoint("TOP", logo, "BOTTOM", 0, -40)
-    welcomeText:SetWidth(650)
-    welcomeText:SetJustifyH("CENTER")
-    welcomeText:SetText("Welcome to VUI (Vortex UI), a comprehensive user interface enhancement suite for World of Warcraft.\n\nVUI brings together the best addons and features in a unified, customizable package to improve your gameplay experience.\n\nThis setup wizard will guide you through the initial configuration of VUI.")
+    local welcomeText = VUIConfig:Label(welcomePanel, "Welcome to VUI (Vortex UI)")
+    welcomeText:SetPoint("TOP", 0, -15)
+    welcomeText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 18)
+    VUIConfig:SetTextColor(welcomeText, "header")
     
-    -- Feature highlights
-    local features = page:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    features:SetPoint("TOP", welcomeText, "BOTTOM", 0, -40)
-    features:SetWidth(650)
-    features:SetJustifyH("LEFT")
-    features:SetText("Key Features:\n\n• Modular design - Enable only what you need\n• Enhanced combat feedback and tracking\n• Streamlined auction house interface\n• Advanced raid and party tools\n• Customizable notifications\n• Comprehensive cooldown management")
+    local welcomeDesc = VUIConfig:Label(welcomePanel, "A comprehensive user interface enhancement suite for World of Warcraft.\n\nVUI brings together the best addons and features in a unified, customizable package to improve your gameplay experience.")
+    welcomeDesc:SetPoint("TOP", welcomeText, "BOTTOM", 0, -10)
+    welcomeDesc:SetWidth(600)
+    welcomeDesc:SetJustifyH("CENTER")
+    
+    -- Features panel
+    local featuresPanel = VUIConfig:Panel(page, 650, 180)
+    featuresPanel:SetPoint("TOP", welcomePanel, "BOTTOM", 0, -20)
+    VUIConfig:ApplyBackdrop(featuresPanel, "panel", "border")
+    
+    -- Features header
+    local featuresHeader = VUIConfig:Label(featuresPanel, "Key Features")
+    featuresHeader:SetPoint("TOP", 0, -15)
+    featuresHeader:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
+    VUIConfig:SetTextColor(featuresHeader, "header")
+    
+    -- Feature list using individual labels for animation
+    local features = {
+        "• Modular design - Enable only what you need",
+        "• Enhanced combat feedback and tracking",
+        "• Streamlined auction house interface",
+        "• Advanced raid and party tools",
+        "• Customizable notifications",
+        "• Comprehensive cooldown management"
+    }
+    
+    local featureLabels = {}
+    for i, feature in ipairs(features) do
+        local label = VUIConfig:Label(featuresPanel, feature)
+        label:SetPoint("TOPLEFT", 50, -40 - (i-1) * 20)
+        label:SetWidth(550)
+        label:SetJustifyH("LEFT")
+        label:SetAlpha(0) -- Start invisible for animation
+        table.insert(featureLabels, label)
+    end
+    
+    -- Setup page load animation
+    page.OnShow = function(self)
+        -- Reset elements for animation
+        logoPanel:SetAlpha(0)
+        welcomePanel:SetAlpha(0)
+        featuresPanel:SetAlpha(0)
+        
+        for _, label in ipairs(featureLabels) do
+            label:SetAlpha(0)
+        end
+        
+        -- Animate logo
+        C_Timer.After(0.2, function()
+            VUI.Animations:FadeIn(logoPanel, 0.4)
+            VUI.Animations:Pulse(logoPanel, 0.6)
+        end)
+        
+        -- Animate welcome panel
+        C_Timer.After(0.7, function()
+            VUI.Animations:FadeIn(welcomePanel, 0.4)
+        end)
+        
+        -- Animate features panel
+        C_Timer.After(1.1, function()
+            VUI.Animations:FadeIn(featuresPanel, 0.4)
+            
+            -- Animate individual features with a cascade effect
+            for i, label in ipairs(featureLabels) do
+                C_Timer.After(1.3 + (i * 0.15), function()
+                    VUI.Animations:FadeIn(label, 0.3)
+                end)
+            end
+        end)
+    end
+    
+    -- Set up hooks for animations
+    page:HookScript("OnShow", page.OnShow)
     
     return page
 end
 
--- Create module overview page
+-- Create enhanced module overview page with VUIConfig and animations
 local function CreateModulesPage(parent)
-    local page = CreateFrame("Frame", nil, parent.content)
+    local VUIConfig = LibStub('VUIConfig')
+    
+    local page = VUIConfig:Panel(parent.content)
     page:SetAllPoints()
+    page:Hide() -- Initially hidden for animation
     
-    -- Title
-    local title = page:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOP", 0, 0)
-    title:SetText("VUI Modules Overview")
+    -- Title with VUIConfig styling
+    local titlePanel = VUIConfig:Panel(page, 700, 60)
+    titlePanel:SetPoint("TOP", 0, -20)
+    VUIConfig:ApplyBackdrop(titlePanel, "panel")
     
-    -- Description
-    local desc = page:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    desc:SetPoint("TOP", title, "BOTTOM", 0, -20)
-    desc:SetWidth(700)
+    local title = VUIConfig:Label(titlePanel, "VUI Modules Overview")
+    title:SetPoint("CENTER", 0, 0)
+    title:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 20)
+    VUIConfig:SetTextColor(title, "header")
+    
+    -- Description panel
+    local descPanel = VUIConfig:Panel(page, 700, 60)
+    descPanel:SetPoint("TOP", titlePanel, "BOTTOM", 0, -10)
+    VUIConfig:ApplyBackdrop(descPanel, "panel")
+    
+    local desc = VUIConfig:Label(descPanel, "VUI is composed of several specialized modules. Each module focuses on enhancing specific aspects of the game interface.\n\nYou can enable or disable individual modules based on your preferences.")
+    desc:SetPoint("CENTER", 0, 0)
+    desc:SetWidth(650)
     desc:SetJustifyH("CENTER")
-    desc:SetText("VUI is composed of several specialized modules. Each module focuses on enhancing specific aspects of the game interface.\n\nYou can enable or disable individual modules based on your preferences.")
     
-    -- Create scrollframe for module list
-    local scrollFrame = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetSize(700, 300)
-    scrollFrame:SetPoint("TOP", desc, "BOTTOM", 0, -20)
-    
-    local scrollChild = CreateFrame("Frame")
-    scrollFrame:SetScrollChild(scrollChild)
-    scrollChild:SetSize(680, 600) -- Extra height for scrolling
+    -- Create enhanced scrollframe using VUIConfig
+    local scrollFrame = VUIConfig:ScrollFrame(page, 700, 300)
+    scrollFrame:SetPoint("TOP", descPanel, "BOTTOM", 0, -10)
     
     -- Module descriptions
     local moduleDescriptions = {
@@ -209,37 +299,45 @@ local function CreateModulesPage(parent)
         {name = "VUIPlater", desc = "Advanced nameplate customization integrated with VUI."}
     }
     
-    -- Add module descriptions
-    local lastElement
+    -- Add module panels to the scroll frame with animations
+    local moduleFrames = {}
     local yOffset = 10
     
     for i, module in ipairs(moduleDescriptions) do
-        local moduleFrame = CreateFrame("Frame", nil, scrollChild)
-        moduleFrame:SetSize(660, 50)
+        -- Create module panel with VUIConfig styling
+        local moduleFrame = VUIConfig:Panel(scrollFrame.content)
+        moduleFrame:SetSize(660, 60)
         moduleFrame:SetPoint("TOPLEFT", 10, -yOffset)
         
-        -- Add a subtle background
-        local bg = moduleFrame:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints()
-        bg:SetColorTexture(0.1, 0.1, 0.1, i % 2 == 0 and 0.3 or 0.1) -- Alternating row colors
+        -- Apply VUIConfig styling with alternating colors
+        if i % 2 == 0 then
+            VUIConfig:ApplyBackdrop(moduleFrame, "button")
+        else
+            VUIConfig:ApplyBackdrop(moduleFrame, "panel")
+        end
         
         -- Module name
-        local name = moduleFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-        name:SetPoint("TOPLEFT", 10, -10)
-        name:SetText("|cff00a2ff" .. module.name .. "|r")
+        local name = VUIConfig:Label(moduleFrame, module.name)
+        name:SetPoint("TOPLEFT", 15, -12)
+        name:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
+        VUIConfig:SetTextColor(name, "header")
         
         -- Module description
-        local desc = moduleFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        desc:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0, -5)
-        desc:SetPoint("RIGHT", moduleFrame, "RIGHT", -10, 0)
-        desc:SetJustifyH("LEFT")
-        desc:SetText(module.desc)
+        local descText = VUIConfig:Label(moduleFrame, module.desc)
+        descText:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0, -5)
+        descText:SetPoint("RIGHT", moduleFrame, "RIGHT", -15, 0)
+        descText:SetJustifyH("LEFT")
         
-        -- Add tooltip functionality
+        -- Add hover highlight effect
+        VUIConfig:HookHoverBorder(moduleFrame)
+        
+        -- Add tooltip functionality with VUIConfig style
         moduleFrame:EnableMouse(true)
         moduleFrame:SetScript("OnEnter", function(self)
+            VUI.Animations:Pulse(self, 0.3)
+            
             GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-            GameTooltip:AddLine(module.name, 1, 0.5, 1)
+            GameTooltip:AddLine(module.name, 0, 0.9, 1)
             GameTooltip:AddLine(module.desc, 0.8, 0.8, 0.8, true)
             GameTooltip:AddLine("You can enable or disable this module in the VUI configuration panel.", 0.6, 0.9, 0.6, true)
             GameTooltip:Show()
@@ -248,41 +346,94 @@ local function CreateModulesPage(parent)
             GameTooltip:Hide()
         end)
         
-        yOffset = yOffset + 60
-        lastElement = moduleFrame
+        -- Prepare for animation
+        moduleFrame:SetAlpha(0)
+        table.insert(moduleFrames, moduleFrame)
+        
+        yOffset = yOffset + 70
     end
     
     -- Adjust scrollChild height based on content
-    scrollChild:SetHeight(yOffset + 20)
+    scrollFrame.content:SetHeight(yOffset + 20)
+    
+    -- Set up animation sequence when the page is shown
+    page.OnShow = function(self)
+        -- Reset elements for animation
+        titlePanel:SetAlpha(0)
+        descPanel:SetAlpha(0)
+        scrollFrame:SetAlpha(0)
+        
+        for _, frame in ipairs(moduleFrames) do
+            frame:SetAlpha(0)
+        end
+        
+        -- Animate title
+        C_Timer.After(0.2, function()
+            VUI.Animations:FadeIn(titlePanel, 0.4)
+        end)
+        
+        -- Animate description
+        C_Timer.After(0.6, function()
+            VUI.Animations:FadeIn(descPanel, 0.4)
+        end)
+        
+        -- Animate scroll frame
+        C_Timer.After(1.0, function()
+            VUI.Animations:FadeIn(scrollFrame, 0.4)
+            
+            -- Animate modules with cascade effect
+            for i, frame in ipairs(moduleFrames) do
+                C_Timer.After(1.2 + (i * 0.1), function()
+                    VUI.Animations:FadeIn(frame, 0.3)
+                    
+                    -- Add a subtle bounce effect to draw attention
+                    if i % 3 == 0 then  -- Every third module gets a bounce for visual interest
+                        C_Timer.After(0.3, function()
+                            VUI.Animations:Bounce(frame, 0.4, nil, {height = 5, bounces = 1})
+                        end)
+                    end
+                end)
+            end
+        end)
+    end
+    
+    -- Set up hooks for animations
+    page:HookScript("OnShow", page.OnShow)
     
     return page
 end
 
--- Create quick-start configuration page
+-- Create enhanced quick-start configuration page with VUIConfig and animations
 local function CreateQuickStartPage(parent)
-    local page = CreateFrame("Frame", nil, parent.content)
+    local VUIConfig = LibStub('VUIConfig')
+    
+    local page = VUIConfig:Panel(parent.content)
     page:SetAllPoints()
+    page:Hide() -- Initially hidden for animation
     
-    -- Title
-    local title = page:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOP", 0, 0)
-    title:SetText("Quick-Start Configuration")
+    -- Title with VUIConfig styling
+    local titlePanel = VUIConfig:Panel(page, 700, 60)
+    titlePanel:SetPoint("TOP", 0, -20)
+    VUIConfig:ApplyBackdrop(titlePanel, "panel")
     
-    -- Description
-    local desc = page:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    desc:SetPoint("TOP", title, "BOTTOM", 0, -20)
-    desc:SetWidth(700)
+    local title = VUIConfig:Label(titlePanel, "Quick-Start Configuration")
+    title:SetPoint("CENTER", 0, 0)
+    title:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 20)
+    VUIConfig:SetTextColor(title, "header")
+    
+    -- Description panel
+    local descPanel = VUIConfig:Panel(page, 700, 60)
+    descPanel:SetPoint("TOP", titlePanel, "BOTTOM", 0, -10)
+    VUIConfig:ApplyBackdrop(descPanel, "panel")
+    
+    local desc = VUIConfig:Label(descPanel, "Here are some recommended settings to get you started with VUI. You can always adjust these later through the VUI configuration panel.")
+    desc:SetPoint("CENTER", 0, 0)
+    desc:SetWidth(650)
     desc:SetJustifyH("CENTER")
-    desc:SetText("Here are some recommended settings to get you started with VUI. You can always adjust these later through the VUI configuration panel.")
     
-    -- Create scrollframe for settings
-    local scrollFrame = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetSize(700, 300)
-    scrollFrame:SetPoint("TOP", desc, "BOTTOM", 0, -20)
-    
-    local scrollChild = CreateFrame("Frame")
-    scrollFrame:SetScrollChild(scrollChild)
-    scrollChild:SetSize(680, 600) -- Extra height for scrolling
+    -- Create enhanced scrollframe using VUIConfig
+    local scrollFrame = VUIConfig:ScrollFrame(page, 700, 300)
+    scrollFrame:SetPoint("TOP", descPanel, "BOTTOM", 0, -10)
     
     -- Quick start options
     local options = {
@@ -296,118 +447,298 @@ local function CreateQuickStartPage(parent)
         {category = "Text", name = "VUIScrollingText", desc = "Combat text appearance", value = "Animated"}
     }
     
-    -- Add options
-    local lastElement
+    -- Storage for animation elements
+    local categoryPanels = {}
+    local optionPanels = {}
+    
+    -- Add options using VUIConfig elements
     local yOffset = 10
     
-    -- Category headers
+    -- Category headers - using a table to track them
     local categories = {}
     
     for i, option in ipairs(options) do
         -- Create category header if this is the first time we've seen this category
         if not categories[option.category] then
-            local categoryFrame = CreateFrame("Frame", nil, scrollChild)
-            categoryFrame:SetSize(660, 30)
-            categoryFrame:SetPoint("TOPLEFT", 10, -yOffset)
+            local categoryPanel = VUIConfig:Panel(scrollFrame.content)
+            categoryPanel:SetSize(660, 30)
+            categoryPanel:SetPoint("TOPLEFT", 10, -yOffset)
+            VUIConfig:ApplyBackdrop(categoryPanel, "button", "border")
             
-            -- Add category background
-            local catBg = categoryFrame:CreateTexture(nil, "BACKGROUND")
-            catBg:SetAllPoints()
-            catBg:SetColorTexture(0.2, 0.2, 0.4, 0.5)
+            -- Category name with VUIConfig styling
+            local catName = VUIConfig:Label(categoryPanel, option.category)
+            catName:SetPoint("LEFT", 15, 0)
+            catName:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
+            VUIConfig:SetTextColor(catName, "header")
             
-            -- Category name
-            local catName = categoryFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-            catName:SetPoint("LEFT", 10, 0)
-            catName:SetText(option.category)
+            -- Store for animation
+            categoryPanel:SetAlpha(0)
+            table.insert(categoryPanels, categoryPanel)
             
             categories[option.category] = true
             yOffset = yOffset + 40
         end
         
-        -- Create option frame
-        local optionFrame = CreateFrame("Frame", nil, scrollChild)
-        optionFrame:SetSize(660, 40)
-        optionFrame:SetPoint("TOPLEFT", 10, -yOffset)
+        -- Create option panel with VUIConfig styling
+        local optionPanel = VUIConfig:Panel(scrollFrame.content)
+        optionPanel:SetSize(660, 50)
+        optionPanel:SetPoint("TOPLEFT", 10, -yOffset)
         
-        -- Add a subtle background
-        local bg = optionFrame:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints()
-        bg:SetColorTexture(0.1, 0.1, 0.1, i % 2 == 0 and 0.2 or 0.1) -- Alternating row colors
+        -- Apply VUIConfig styling with alternating colors
+        if i % 2 == 0 then
+            VUIConfig:ApplyBackdrop(optionPanel, "button")
+        else
+            VUIConfig:ApplyBackdrop(optionPanel, "panel")
+        end
         
         -- Option name
-        local name = optionFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        name:SetPoint("TOPLEFT", 20, -10)
-        name:SetText("|cffdddddd" .. option.name .. "|r")
+        local nameText = VUIConfig:Label(optionPanel, option.name)
+        nameText:SetPoint("TOPLEFT", 20, -12)
+        nameText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 14)
         
         -- Option description
-        local desc = optionFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-        desc:SetPoint("BOTTOMLEFT", 20, 10)
-        desc:SetText(option.desc)
+        local descText = VUIConfig:Label(optionPanel, option.desc)
+        descText:SetPoint("BOTTOMLEFT", 20, 12)
+        descText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 12)
         
-        -- Default value
-        local value = optionFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        value:SetPoint("RIGHT", -20, 0)
-        value:SetText("|cff00ff00" .. option.value .. "|r")
+        -- Default value with accent color
+        local valueText = VUIConfig:Label(optionPanel, option.value)
+        valueText:SetPoint("RIGHT", -20, 0)
+        valueText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 14)
+        valueText:SetTextColor(0, 1, 0.4) -- Bright green
         
-        -- Add tooltip functionality
-        optionFrame:EnableMouse(true)
-        optionFrame:SetScript("OnEnter", function(self)
+        -- Add hover highlight and tooltip
+        VUIConfig:HookHoverBorder(optionPanel)
+        
+        optionPanel:EnableMouse(true)
+        optionPanel:SetScript("OnEnter", function(self)
+            VUI.Animations:Pulse(self, 0.3)
+            
             GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-            GameTooltip:AddLine(option.name, 1, 1, 1)
+            GameTooltip:AddLine(option.name, 0, 0.9, 1)
             GameTooltip:AddLine(option.desc, 0.8, 0.8, 0.8, true)
             GameTooltip:AddLine("This setting can be changed later in the VUI configuration panel.", 0.6, 0.9, 0.6, true)
             GameTooltip:Show()
         end)
-        optionFrame:SetScript("OnLeave", function()
+        optionPanel:SetScript("OnLeave", function()
             GameTooltip:Hide()
         end)
         
-        yOffset = yOffset + 50
-        lastElement = optionFrame
+        -- Prepare for animation
+        optionPanel:SetAlpha(0)
+        table.insert(optionPanels, optionPanel)
+        
+        yOffset = yOffset + 60
     end
     
-    -- Adjust scrollChild height based on content
-    scrollChild:SetHeight(yOffset + 20)
+    -- Adjust scrollFrame content height
+    scrollFrame.content:SetHeight(yOffset + 20)
     
     -- Note about further customization
-    local note = page:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    note:SetPoint("BOTTOM", 0, 70)
-    note:SetWidth(700)
+    local notePanel = VUIConfig:Panel(page, 700, 60)
+    notePanel:SetPoint("BOTTOM", 0, 20)
+    VUIConfig:ApplyBackdrop(notePanel, "panel")
+    
+    local note = VUIConfig:Label(notePanel, "These are baseline settings to get you started. You can fully customize every aspect of VUI through the configuration panel that will open after this setup.")
+    note:SetPoint("CENTER", 0, 0)
+    note:SetWidth(680)
     note:SetJustifyH("CENTER")
-    note:SetText("Note: These are just baseline settings to get you started. You can fully customize every aspect of VUI through the configuration panel, which will open after this setup.")
+    notePanel:SetAlpha(0) -- Hidden for animation
+    
+    -- Set up animation sequence when the page is shown
+    page.OnShow = function(self)
+        -- Reset elements for animation
+        titlePanel:SetAlpha(0)
+        descPanel:SetAlpha(0)
+        scrollFrame:SetAlpha(0)
+        notePanel:SetAlpha(0)
+        
+        -- Reset all option and category panels
+        for _, panel in ipairs(categoryPanels) do
+            panel:SetAlpha(0)
+        end
+        
+        for _, panel in ipairs(optionPanels) do
+            panel:SetAlpha(0)
+        end
+        
+        -- Animate title
+        C_Timer.After(0.2, function()
+            VUI.Animations:FadeIn(titlePanel, 0.4)
+        end)
+        
+        -- Animate description
+        C_Timer.After(0.6, function()
+            VUI.Animations:FadeIn(descPanel, 0.4)
+        end)
+        
+        -- Animate scroll frame
+        C_Timer.After(1.0, function()
+            VUI.Animations:FadeIn(scrollFrame, 0.4)
+            
+            -- Animate categories with staggered timing
+            for i, panel in ipairs(categoryPanels) do
+                C_Timer.After(1.2 + (i * 0.2), function()
+                    VUI.Animations:FadeIn(panel, 0.3)
+                    VUI.Animations:Pulse(panel, 0.4)
+                end)
+            end
+            
+            -- Animate options with cascade effect
+            for i, panel in ipairs(optionPanels) do
+                C_Timer.After(1.4 + (i * 0.1), function()
+                    VUI.Animations:FadeIn(panel, 0.3)
+                end)
+            end
+        end)
+        
+        -- Animate note at the end
+        C_Timer.After(3.0, function()
+            VUI.Animations:FadeIn(notePanel, 0.6)
+        end)
+    end
+    
+    -- Set up hooks for animations
+    page:HookScript("OnShow", page.OnShow)
     
     return page
 end
 
--- Create final page with completion message
+-- Create enhanced completion page with VUIConfig and animations
 local function CreateCompletionPage(parent)
-    local page = CreateFrame("Frame", nil, parent.content)
+    local VUIConfig = LibStub('VUIConfig')
+    
+    local page = VUIConfig:Panel(parent.content)
     page:SetAllPoints()
+    page:Hide() -- Initially hidden for animation
     
-    -- Completion message
-    local title = page:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOP", 0, 0)
-    title:SetText("Setup Complete!")
+    -- Completion header panel
+    local headerPanel = VUIConfig:Panel(page, 700, 100)
+    headerPanel:SetPoint("TOP", 0, -20)
+    VUIConfig:ApplyBackdrop(headerPanel, "panel")
     
-    -- VUI logo again
-    local logo = page:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    logo:SetPoint("TOP", title, "BOTTOM", 0, -20)
-    logo:SetText("|cffea00ffV|r|cff00a2ffUI|r")
-    logo:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 48, "OUTLINE")
+    -- "Setup Complete" title with special styling
+    local title = VUIConfig:Label(headerPanel, "Setup Complete!")
+    title:SetPoint("CENTER", 0, 10)
+    title:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 32)
+    title:SetTextColor(0, 0.9, 1) -- Bright blue
     
-    -- Final instructions
-    local finalText = page:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    finalText:SetPoint("TOP", logo, "BOTTOM", 0, -40)
+    -- VUI logo with special effect
+    local logoPanel = VUIConfig:Panel(page, 250, 100)
+    logoPanel:SetPoint("TOP", headerPanel, "BOTTOM", 0, -20)
+    VUIConfig:ApplyBackdrop(logoPanel, "panel")
+    
+    local logo = VUIConfig:Label(logoPanel, "|cffea00ffV|r|cff00a2ffUI|r")
+    logo:SetPoint("CENTER", 0, 0)
+    logo:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 64, "OUTLINE")
+    
+    -- Congratulations panel
+    local congratsPanel = VUIConfig:Panel(page, 700, 120)
+    congratsPanel:SetPoint("TOP", logoPanel, "BOTTOM", 0, -20)
+    VUIConfig:ApplyBackdrop(congratsPanel, "panel")
+    
+    local finalText = VUIConfig:Label(congratsPanel, "Congratulations! VUI is now set up with recommended settings.\n\nAfter clicking 'Finish', the VUI configuration panel will open where you can further customize every aspect of the interface to your liking.")
+    finalText:SetPoint("CENTER", 0, 0)
     finalText:SetWidth(650)
     finalText:SetJustifyH("CENTER")
-    finalText:SetText("Congratulations! VUI is now set up with recommended settings.\n\nAfter clicking 'Finish', the VUI configuration panel will open where you can further customize every aspect of the interface to your liking.\n\nYou can always access the VUI configuration panel by typing:\n\n|cff00a2ff/vui|r or |cff00a2ff/vui config|r")
     
-    -- Tips section
-    local tips = page:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    tips:SetPoint("TOP", finalText, "BOTTOM", 0, -40)
-    tips:SetWidth(650)
-    tips:SetJustifyH("LEFT")
-    tips:SetText("Quick Tips:\n\n• Hover over options in the configuration panel for detailed tooltips\n• Use VUI profiles to save different configurations for different characters\n• Most modules can be enabled/disabled independently\n• Type /vui help for a list of all available commands")
+    -- Command reference panel
+    local commandPanel = VUIConfig:Panel(page, 400, 60)
+    commandPanel:SetPoint("TOP", congratsPanel, "BOTTOM", 0, -20)
+    VUIConfig:ApplyBackdrop(commandPanel, "button")
+    
+    local commandText = VUIConfig:Label(commandPanel, "Access VUI settings anytime with:")
+    commandText:SetPoint("TOP", 0, -10)
+    
+    local commandExample = VUIConfig:Label(commandPanel, "|cff00a2ff/vui|r or |cff00a2ff/vui config|r")
+    commandExample:SetPoint("BOTTOM", 0, 10)
+    commandExample:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
+    
+    -- Tips panel
+    local tipsPanel = VUIConfig:Panel(page, 700, 120)
+    tipsPanel:SetPoint("TOP", commandPanel, "BOTTOM", 0, -20)
+    VUIConfig:ApplyBackdrop(tipsPanel, "panel")
+    
+    local tipsHeader = VUIConfig:Label(tipsPanel, "Quick Tips")
+    tipsHeader:SetPoint("TOP", 0, -10)
+    tipsHeader:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
+    VUIConfig:SetTextColor(tipsHeader, "header")
+    
+    -- Create individual tip items for animation
+    local tips = {
+        "• Hover over options in the configuration panel for detailed tooltips",
+        "• Use VUI profiles to save different configurations for different characters",
+        "• Most modules can be enabled/disabled independently",
+        "• Type /vui help for a list of all available commands"
+    }
+    
+    local tipLabels = {}
+    for i, tip in ipairs(tips) do
+        local tipLabel = VUIConfig:Label(tipsPanel, tip)
+        tipLabel:SetPoint("TOPLEFT", 40, -30 - ((i-1) * 18))
+        tipLabel:SetWidth(620)
+        tipLabel:SetJustifyH("LEFT")
+        tipLabel:SetAlpha(0) -- Start invisible for animation
+        table.insert(tipLabels, tipLabel)
+    end
+    
+    -- Set up animation sequence when the page is shown
+    page.OnShow = function(self)
+        -- Reset elements for animation
+        headerPanel:SetAlpha(0)
+        logoPanel:SetAlpha(0)
+        congratsPanel:SetAlpha(0)
+        commandPanel:SetAlpha(0)
+        tipsPanel:SetAlpha(0)
+        
+        for _, label in ipairs(tipLabels) do
+            label:SetAlpha(0)
+        end
+        
+        -- Animate header with pulse
+        C_Timer.After(0.2, function()
+            VUI.Animations:FadeIn(headerPanel, 0.5)
+            C_Timer.After(0.5, function()
+                VUI.Animations:Pulse(headerPanel, 0.6)
+            end)
+        end)
+        
+        -- Animate logo with bounce
+        C_Timer.After(0.7, function()
+            VUI.Animations:FadeIn(logoPanel, 0.5)
+            C_Timer.After(0.5, function()
+                VUI.Animations:Bounce(logoPanel, 0.7, nil, {height = 15, bounces = 2})
+            end)
+        end)
+        
+        -- Animate congratulations text
+        C_Timer.After(1.4, function()
+            VUI.Animations:FadeIn(congratsPanel, 0.5)
+        end)
+        
+        -- Animate command panel with pulse
+        C_Timer.After(1.9, function()
+            VUI.Animations:FadeIn(commandPanel, 0.5)
+            C_Timer.After(0.5, function()
+                VUI.Animations:Pulse(commandPanel, 0.4)
+            end)
+        end)
+        
+        -- Animate tips panel
+        C_Timer.After(2.4, function()
+            VUI.Animations:FadeIn(tipsPanel, 0.5)
+            
+            -- Animate individual tips with cascade effect
+            for i, label in ipairs(tipLabels) do
+                C_Timer.After(2.6 + (i * 0.2), function()
+                    VUI.Animations:SlideIn(label, "RIGHT", 0.4, nil, {distance = 50})
+                end)
+            end
+        end)
+    end
+    
+    -- Set up hooks for animations
+    page:HookScript("OnShow", page.OnShow)
     
     return page
 end
