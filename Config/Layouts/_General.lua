@@ -8,6 +8,7 @@ function Layout:OnEnable()
     local Themes = VUI:GetModule("Data.Themes")
     local Fonts = VUI:GetModule("Data.Fonts")
     local Textures = VUI:GetModule("Data.Textures")
+    local ThemePreview = VUI:GetModule("Config.Components.ThemePreview")
 
     -- Layout
     Layout.layout = {
@@ -21,48 +22,54 @@ function Layout:OnEnable()
                 }
             },
             {
-                theme = {
-                    key = 'theme',
-                    type = 'dropdown',
-                    label = 'Theme',
-                    options = Themes.data,
-                    column = 5,
-                    order = 1,
-                    onChange = function(self, newTheme)
-                        -- Notify modules about theme change
-                        if VUI.SendCallback then
-                            VUI:SendCallback("Theme_Changed", newTheme)
-                        end
-                        -- Update UI
-                        ReloadUI()
+                header = {
+                    type = 'header',
+                    label = 'Theme Selection'
+                }
+            },
+            {
+                themePreviews = {
+                    type = 'custom',
+                    column = 12,
+                    content = function(parent)
+                        -- Create the theme preview panel with all themes
+                        return ThemePreview:Create(parent, Themes.data, db.profile.general.theme, function(selectedTheme)
+                            -- Handle theme selection by updating the UI
+                            db.profile.general.theme = selectedTheme
+                            
+                            -- Notify modules about theme change
+                            if VUI.SendCallback then
+                                VUI:SendCallback("Theme_Changed", selectedTheme)
+                            end
+                            
+                            -- Update UI after a small delay to give feedback before reload
+                            C_Timer.After(0.3, function()
+                                ReloadUI()
+                            end)
+                        end)
                     end
-                },
+                }
+            },
+            {
                 font = {
                     key = 'font',
                     type = 'dropdown',
                     label = 'Font',
                     options = Fonts.data,
                     column = 5,
-                    order = 2
+                    order = 1
                 },
-                --[[texture = {
-          key = 'texture',
-          type = 'dropdown',
-          label = 'Texture',
-          options = Textures.data,
-          column = 4,
-          order = 3
-        }]]
-            },
-            {
                 color = {
                     key = 'color',
                     type = 'color',
                     label = 'Custom Color',
-                    column = 3,
+                    column = 5,
+                    order = 2,
+                    disabled = function() return db.profile.general.theme ~= "Custom" end,
+                    tooltip = "Only used with the Custom theme",
                     update = function() end,
                     cancel = function() end
-                }
+                },
             },
             {
                 header = {
