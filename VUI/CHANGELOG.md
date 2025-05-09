@@ -1,5 +1,17 @@
 # VUI Changelog
 
+## [0.7.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
+
+### Added
+- Enhanced General.Stats module with advanced information displays:
+  - Color-changing FPS display (Red, Yellow, Green) based on framerate values
+  - Color-changing MS display (Green, Yellow, Orange, Red) based on latency values
+  - Added loot specialization display showing current loot spec with:
+    - Class-colored text 
+    - Specialization icon
+    - Automatic fallback to current spec if no loot spec is selected
+  - Optimized Stats frame width handling for new display elements
+
 ## [0.6.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
 
 ### Added

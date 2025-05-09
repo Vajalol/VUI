@@ -1,6 +1,6 @@
 ## Interface: 110100
 ## Author: VortexQ8
-## Version: 0.6.0-alpha
+## Version: 0.7.0-alpha
 ## Title: |cffea00ffV|r|cff00a2ffUI|r
 ## SavedVariables: VUI_SavedVariables
 ## IconTexture: Interface\AddOns\VUI\Media\Icons\vortex_thunderstorm

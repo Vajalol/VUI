@@ -46,7 +46,8 @@ local defaults = {
                 ilvl = true,
                 fps = true,
                 ms = true,
-                movementSpeed = false
+                movementSpeed = false,
+                lootspec = true
             },
             playerstats = {
                 enabled = true, 

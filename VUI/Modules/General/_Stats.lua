@@ -55,10 +55,64 @@ function Module:OnEnable()
         end
 
         local function status()
-            local function getFPS() return "|c00ffffff" .. floor(GetFramerate()) .. "|r fps" end
+            -- Color-coded FPS display (Red < 15, Yellow < 30, Green >= 30)
+            local function getFPS() 
+                local fps = floor(GetFramerate())
+                local color
+                if fps < 15 then
+                    color = "ff0000" -- Red
+                elseif fps < 30 then
+                    color = "ffff00" -- Yellow
+                else
+                    color = "00ff00" -- Green
+                end
+                return "|c00" .. color .. fps .. "|r fps"
+            end
 
-            local function getLatency() return "|c00ffffff" .. select(4, GetNetStats()) .. "|r ms" end
+            -- Color-coded latency display (Green < 50, Yellow < 100, Orange < 200, Red >= 200)
+            local function getLatency() 
+                local ms = select(4, GetNetStats())
+                local color
+                if ms < 50 then
+                    color = "00ff00" -- Green
+                elseif ms < 100 then
+                    color = "ffff00" -- Yellow
+                elseif ms < 200 then
+                    color = "ff9900" -- Orange
+                else
+                    color = "ff0000" -- Red
+                end
+                return "|c00" .. color .. ms .. "|r ms"
+            end
 
+            -- Loot specialization display with class color and spec icon
+            local function getLootSpec()
+                local specID = GetLootSpecialization()
+                local className, classFileName = UnitClass("player")
+                local classColor = RAID_CLASS_COLORS[classFileName]
+                local colorStr = string.format("%02x%02x%02x", classColor.r*255, classColor.g*255, classColor.b*255)
+                
+                -- If no loot spec is selected, use current spec
+                if specID == 0 then
+                    specID = GetSpecialization()
+                    if specID then 
+                        specID = GetSpecializationInfo(specID)
+                    else
+                        return "|cffff0000No Spec|r"
+                    end
+                end
+                
+                -- Get spec name and icon
+                local _, specName, _, specIcon = GetSpecializationInfoByID(specID)
+                if not specName then return "|cffff0000Unknown|r" end
+                
+                -- Create icon texture string (16x16 pixels)
+                local iconString = "|T" .. specIcon .. ":16:16:0:0|t"
+                
+                -- Return formatted loot spec string with icon
+                return iconString .. " |c00" .. colorStr .. "LOOT: " .. specName .. "|r"
+            end
+            
             local isGliding, canGlide, forwardSpeed = C_PlayerInfo.GetGlidingInfo()
             local function getMovementSpeed()
                 if isGliding then
@@ -78,15 +132,19 @@ function Module:OnEnable()
             if db.display.ms then
                 table.insert(result, getLatency())
             end
+            
+            if db.display.lootspec then
+                table.insert(result, getLootSpec())
+            end
 
             if db.display.movementSpeed then
                 table.insert(result, getMovementSpeed())
             end
 
-            return table.concat(result, " ")
+            return table.concat(result, "  ")
         end
 
-        StatsFrame:SetWidth(50)
+        StatsFrame:SetWidth(200) -- Wider initial width to accommodate loot spec display
         StatsFrame:SetHeight(fontSize)
         StatsFrame.text = StatsFrame:CreateFontString(nil, "BACKGROUND")
         StatsFrame.text:SetPoint(textAlign, StatsFrame)
@@ -103,8 +161,14 @@ function Module:OnEnable()
             lastUpdate = lastUpdate + elapsed
             if lastUpdate > 0.2 then
                 lastUpdate = 0
-                StatsFrame.text:SetText(status())
-                self:SetWidth(StatsFrame.text:GetStringWidth())
+                local statusText = status()
+                StatsFrame.text:SetText(statusText)
+                -- Add extra width for the icon in loot spec display
+                local width = StatsFrame.text:GetStringWidth()
+                if db.display.lootspec then
+                    width = width + 20 -- Additional space for spec icon
+                end
+                self:SetWidth(width)
                 self:SetHeight(StatsFrame.text:GetStringHeight())
             end
         end
