@@ -1,5 +1,6 @@
 local Colors = VUI:NewModule('Data.Colors');
 
+-- User roles & classes
 Colors.aut    = '|cfff72a53'
 Colors.mod    = '|cff2a91f7'
 Colors.dev    = '|cff2af7af'
@@ -17,3 +18,8 @@ Colors.rog    = '|cffFFF468'
 Colors.mage   = '|cff3FC7EB'
 Colors.dh     = '|cffA330C9'
 Colors.evoker = '|cff33937F'
+
+-- VUI theme colors
+Colors.vui_primary = '|cff0D9DE6' -- Medium blue from logo gradient
+Colors.vui_accent = '|cff3EBEFF'  -- Light blue from logo gradient
+Colors.vui_dark = '|cff0A6B9F'    -- Darker shade for contrast

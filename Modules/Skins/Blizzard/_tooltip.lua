@@ -24,12 +24,18 @@ function Module:OnEnable()
                 self:SetBackdropBorderColor(0.1, 0.1, 0.1, 0)
                 if (theme == 'Dark') then
                     self:SetBackdropColor(unpack(backdrop.bgColor))
+                elseif (theme == 'VUI') then
+                    -- VUI theme uses a semi-transparent blue background
+                    self:SetBackdropColor(0.05, 0.61, 0.9, 0.2) -- #0D9DE6 with 0.2 alpha
                 else
                     self:SetBackdropColor(unpack(VUI:Color(0.3, 0.3)))
                 end
                 if self.NineSlice then
                     if (theme == 'Dark') then
                         self.NineSlice:SetBorderColor(unpack(backdrop.borderColor))
+                    elseif (theme == 'VUI') then
+                        -- VUI theme uses the lighter blue for borders
+                        self.NineSlice:SetBorderColor(0.24, 0.75, 1, 0.9) -- #3EBEFF with 0.9 alpha
                     else
                         self.NineSlice:SetBorderColor(unpack(VUI:Color(0.35, 1)))
                     end

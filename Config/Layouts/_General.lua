@@ -27,7 +27,15 @@ function Layout:OnEnable()
                     label = 'Theme',
                     options = Themes.data,
                     column = 5,
-                    order = 1
+                    order = 1,
+                    onChange = function(self, newTheme)
+                        -- Notify modules about theme change
+                        if VUI.SendCallback then
+                            VUI:SendCallback("Theme_Changed", newTheme)
+                        end
+                        -- Update UI
+                        ReloadUI()
+                    end
                 },
                 font = {
                     key = 'font',

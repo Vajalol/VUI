@@ -9,7 +9,7 @@ local defaults = {
         install = false,
         reset = false,
         general = {
-            theme = 'Dark',
+            theme = 'VUI',
             font = [[Interface\Addons\VUI\Media\Fonts\PTSansNarrow.ttf]],
             texture = [[Interface\Addons\VUI\Media\Textures\Status\Smooth.blp]],
             color = { r = 0, g = 0, b = 0, a = 1 },
@@ -486,6 +486,7 @@ function VUI:OnInitialize()
         Dark = { 0.3, 0.3, 0.3 },
         Class = { classColor.r, classColor.g, classColor.b },
         Custom = { customColor.r, customColor.g, customColor.b },
+        VUI = { 0.05, 0.61, 0.9 }, -- #0D9DE6 (medium blue)
     }
     local theme = themes[self.db.profile.general.theme]
 
@@ -507,6 +508,7 @@ function VUI:OnInitialize()
                 Dark = { 0.3, 0.3, 0.3 },
                 Class = { classColor.r, classColor.g, classColor.b },
                 Custom = { customColor.r, customColor.g, customColor.b },
+                VUI = { 0.05, 0.61, 0.9 }, -- #0D9DE6 (medium blue)
             }
             local theme = themes[self.db.profile.general.theme]
             return {
@@ -603,30 +605,51 @@ function VUI:OnInitialize()
         }
 
         if (frame) then
+            local currentTheme = self.db.profile.general.theme
+            local skinColor
+            
+            -- Determine color based on theme
+            if currentTheme == "VUI" then
+                -- Special case for VUI theme - use a slightly different approach
+                -- Less desaturation for VUI theme to preserve the blue tint
+                if customColor then
+                    skinColor = { 0.05, 0.61, 0.9, 0.85 } -- Use VUI blue with reduced alpha
+                else
+                    skinColor = { 0.15, 0.15, 0.15, 1.0 }
+                end
+            else
+                -- Use standard approach for other themes
+                if customColor then
+                    skinColor = VUI:Color(.15)
+                else
+                    skinColor = { 0.15, 0.15, 0.15, 1.0 }
+                end
+            end
+            
             if not (isTable) then
                 for _, v in pairs({ frame:GetRegions() }) do
                     if (not VUI_forbiddenFrames[v:GetName()]) and (not VUI_forbiddenFrames[v]) then
                         if v:GetObjectType() == "Texture" then
-                            if (customColor) then
-                                v:SetDesaturated(true)
-                                v:SetVertexColor(unpack(VUI:Color(.15)))
+                            -- For VUI theme, apply limited desaturation to preserve color
+                            if currentTheme == "VUI" and customColor then
+                                v:SetDesaturated(false)
                             else
                                 v:SetDesaturated(true)
-                                v:SetVertexColor(.15, .15, .15)
                             end
+                            v:SetVertexColor(unpack(skinColor))
                         end
                     end
                 end
             else
                 for _, v in pairs(frame) do
                     if (v) then
-                        if (customColor) then
-                            v:SetDesaturated(true)
-                            v:SetVertexColor(unpack(VUI:Color(.15)))
+                        -- For VUI theme, apply limited desaturation to preserve color
+                        if currentTheme == "VUI" and customColor then
+                            v:SetDesaturated(false)
                         else
                             v:SetDesaturated(true)
-                            v:SetVertexColor(.15, .15, .15)
                         end
+                        v:SetVertexColor(unpack(skinColor))
                     end
                 end
             end
