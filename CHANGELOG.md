@@ -1,5 +1,16 @@
 # VUI Changelog
 
+## [0.7.1-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
+
+### Added
+- UI Scale feature in Misc settings panel:
+  - Options to enable/disable UI scaling
+  - Slider for precise scale adjustment (0.5-1.0)
+  - Auto Scale button to calculate optimal scale based on screen resolution
+  - Reset button to quickly return to default scale
+  - Emergency slash command (/vui-reset-scale) to recover from UI scaling issues
+  - Combat-safe scaling that waits until combat ends to apply changes
+
 ## [0.7.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
 
 ### Added

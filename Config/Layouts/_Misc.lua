@@ -126,6 +126,75 @@ function Layout:OnEnable()
                     column = 4,
                     order = 2
                 },
+            },
+            {
+                header = {
+                    type = 'header',
+                    label = 'UI Scale'
+                },
+            },
+            {
+                uiscaleEnabled = {
+                    key = 'uiscale.enabled',
+                    type = 'checkbox',
+                    label = 'Enable UI Scale',
+                    tooltip = 'Enable UI Scale adjustment to optimize your interface for your screen resolution',
+                    column = 4,
+                    order = 1
+                },
+            },
+            {
+                uiscaleValue = {
+                    key = 'uiscale.scale',
+                    type = 'slider',
+                    label = 'UI Scale',
+                    tooltip = 'Adjust the UI Scale (between 0.5 and 1.0)',
+                    min = 0.5,
+                    max = 1.0,
+                    step = 0.01,
+                    column = 6,
+                    order = 1,
+                    disabled = function() return not db.profile.misc.uiscale.enabled end,
+                    onChange = function(self, value)
+                        local UIScaleModule = VUI:GetModule("Misc.UIScale")
+                        if UIScaleModule then
+                            UIScaleModule:ApplyScale(value)
+                        end
+                    end
+                },
+                uiscaleAuto = {
+                    type = 'button',
+                    text = 'Auto Scale',
+                    tooltip = 'Automatically calculate optimal UI scale based on your screen resolution',
+                    column = 3,
+                    order = 2,
+                    disabled = function() return not db.profile.misc.uiscale.enabled end,
+                    onClick = function()
+                        local UIScaleModule = VUI:GetModule("Misc.UIScale")
+                        if UIScaleModule then
+                            local autoScale = UIScaleModule:CalculateAutoScale()
+                            UIScaleModule:ApplyScale(autoScale)
+                            -- Refresh the slider value
+                            VUI:GetModule("Config.Gui"):Refresh()
+                        end
+                    end
+                },
+                uiscaleReset = {
+                    type = 'button',
+                    text = 'Reset Scale',
+                    tooltip = 'Reset to default UI scale (1.0)',
+                    column = 3,
+                    order = 3,
+                    disabled = function() return not db.profile.misc.uiscale.enabled end,
+                    onClick = function()
+                        local UIScaleModule = VUI:GetModule("Misc.UIScale")
+                        if UIScaleModule then
+                            UIScaleModule:ResetScale()
+                            -- Refresh the slider value
+                            VUI:GetModule("Config.Gui"):Refresh()
+                        end
+                    end
+                },
             }
         },
     }

@@ -274,6 +274,11 @@ local defaults = {
             repbar = false,
             menubutton = true,
             dragonflying = true,
+            uiscale = {
+                enabled = false,
+                scale = 1.0,
+                helpShown = false,
+            },
         },
         edit = {
             statsframe = {
