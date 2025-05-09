@@ -25,5 +25,5 @@ function Module:OnEnable()
         local showAnchors = StringToBoolean(showAnchorsArg or "", showAnchorsDefault);
         FrameStackTooltip_Toggle(showHidden, showRegions, showAnchors);
     end
-    SLASH_VUI1 = "/sui"
+    SLASH_VUI1 = "/vui"
 end

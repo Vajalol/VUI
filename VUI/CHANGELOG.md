@@ -1,5 +1,15 @@
 # VUI Changelog
 
+## [0.6.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
+
+### Added
+- Enhanced Castbar features with advanced information display:
+  - Latency Display: Shows network latency in milliseconds on the left side of castbars
+  - Target Name Display: Shows the name of the spell target on the right side of castbars
+  - Color-coded target names based on class
+  - Visual latency indicator for player castbar
+  - Comprehensive configuration options in the Castbars settings panel
+
 ## [0.5.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
 
 ### Added
