@@ -43,6 +43,7 @@ VUI (Vortex UI) revolutionizes the World of Warcraft interface by integrating mu
 | **VUITGCD** | Visual display of recently used abilities with history tracking |
 | **VUIAuctionator** | Powerful auction house tools with market analysis features |
 | **VUINotifications** | Customizable combat event notifications with sound alerts |
+| **VUIPlayerStats** | Transparent, movable frame displaying detailed player statistics with animation effects |
 
 ### 🔮 WeakAura-Inspired Modules
 

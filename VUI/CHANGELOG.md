@@ -1,5 +1,30 @@
 # VUI Changelog
 
+## [0.4.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
+
+### Added
+- Enhanced Tooltip features with extensive unit information:
+  - Target Info: Shows current target of the unit being inspected
+  - Targeted Info: Shows which raid/party members are targeting the current unit
+  - Player Titles: Displays full player titles in tooltips
+  - Guild Ranks: Shows detailed guild information with color-coded ranks
+  - Role Information: Displays unit role (tank, healer, dps) with appropriate icons
+  - Mount Display: Shows the current mount of players with name
+  - Gender Information: Displays player character gender
+  - Item Level: Shows average item level of inspected players with coloring by quality
+  - Comprehensive configuration options in the Tooltip settings panel
+
+## [0.3.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
+
+### Added
+- Implemented new Player Stats feature in General module:
+  - Transparent, movable and resizable frame showing detailed player statistics
+  - Displays Crit, Haste, Mastery, Versatility, Speed, Leech, and Avoidance percentages
+  - Color-coded values with pulse animation effects when stats increase significantly
+  - Bloodlust/Heroism tracking with timer and stack count display
+  - Comprehensive configuration options in General settings panel
+  - Position and size saving functionality
+
 ## [0.2.0-alpha](https://github.com/Vajalol/VUI) (2025-05-08)
 
 ### Added

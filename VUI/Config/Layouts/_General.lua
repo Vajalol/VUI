@@ -178,6 +178,41 @@ function Layout:OnEnable()
                 },
             },
             {
+                header = {
+                    type = 'header',
+                    label = 'Player Stats'
+                },
+            },
+            {
+                playerStatsEnabled = {
+                    key = 'playerstats.enabled',
+                    type = 'checkbox',
+                    label = 'Enable Player Stats',
+                    tooltip = 'Show a frame with detailed player statistics like Crit, Haste, Mastery, etc.',
+                    column = 3,
+                    order = 1
+                },
+                playerStatsCombatOnly = {
+                    key = 'playerstats.combatOnly',
+                    type = 'checkbox',
+                    label = 'Combat Only',
+                    tooltip = 'Only show the Player Stats frame while in combat',
+                    column = 3,
+                    order = 2
+                },
+                playerStatsTransparency = {
+                    key = 'playerstats.transparency',
+                    type = 'slider',
+                    label = 'Background Transparency',
+                    tooltip = 'Adjust the background transparency of the Player Stats frame',
+                    min = 0,
+                    max = 1,
+                    step = 0.05,
+                    column = 4,
+                    order = 3
+                },
+            },
+            {
                 afkscreen = {
                     key = 'cosmetic.afkscreen',
                     type = 'checkbox',

@@ -47,6 +47,14 @@ local defaults = {
                 fps = true,
                 ms = true,
                 movementSpeed = false
+            },
+            playerstats = {
+                enabled = true, 
+                combatOnly = false,
+                transparency = 0.5,
+                position = {"CENTER", UIParent, "CENTER", 200, 0},
+                width = 200,
+                height = 160
             }
         },
         unitframes = {
@@ -200,7 +208,16 @@ local defaults = {
         tooltip = {
             style = 'Custom',
             lifeontop = true,
-            mouseanchor = false
+            mouseanchor = false,
+            hideincombat = false,
+            targetInfo = true,
+            targetedInfo = true,
+            playerTitles = true,
+            guildRanks = true,
+            roleIcon = true,
+            gender = true,
+            mountInfo = true,
+            inspectInfo = true
         },
         buffs = {
             buff = {
