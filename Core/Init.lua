@@ -161,6 +161,12 @@ local defaults = {
                 { id = 224732, name = 'Covert Webmancer',        color = { r = 0, g = 0.55, b = 1, a = 1 } },
                 { id = 216339, name = 'Sureki Unnaturaler',      color = { r = 0, g = 0.55, b = 1, a = 1 } },
                 { id = 221102, name = 'Elder Shadeweaver',       color = { r = 0, g = 0.55, b = 1, a = 1 } },
+            },
+            vmodules = {
+                vuiplater = {
+                    enabled = false,
+                    useWhiiskeyz = true,
+                }
             }
         },
         raidframes = {

@@ -1,7 +1,15 @@
 local Module = VUI:NewModule("NamePlates.Size");
 
 function Module:OnEnable()
-    if C_AddOns.IsAddOnLoaded('Plater') or C_AddOns.IsAddOnLoaded('TidyPlates_ThreatPlates') or C_AddOns.IsAddOnLoaded('TidyPlates') or C_AddOns.IsAddOnLoaded('Kui_Nameplates') then return end
+    -- Check for external nameplate addons OR VUIPlater being enabled
+    if C_AddOns.IsAddOnLoaded('Plater') or 
+       C_AddOns.IsAddOnLoaded('TidyPlates_ThreatPlates') or 
+       C_AddOns.IsAddOnLoaded('TidyPlates') or 
+       C_AddOns.IsAddOnLoaded('Kui_Nameplates') or
+       (VUI:GetModule("VUIPlater") and VUI:GetModule("VUIPlater").db and 
+       VUI:GetModule("VUIPlater").db.profile.enabled) then 
+        return 
+    end
     local db = VUI.db.profile.nameplates
     if db and db.style ~= 'Default' then
         local function updateCvars()

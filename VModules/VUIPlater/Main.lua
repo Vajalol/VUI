@@ -289,6 +289,38 @@ function M:OnInitialize()
 end
 
 function M:OnEnable()
+    -- Check if any standalone nameplate addon is loaded
+    if C_AddOns.IsAddOnLoaded('Plater') or 
+       C_AddOns.IsAddOnLoaded('TidyPlates_ThreatPlates') or 
+       C_AddOns.IsAddOnLoaded('TidyPlates') or 
+       C_AddOns.IsAddOnLoaded('Kui_Nameplates') then
+       
+        -- Disable self if we find another nameplate addon
+        self.db.profile.enabled = false
+        VUI:Print("|cffff0000VUIPlater disabled:|r Another nameplate addon was detected")
+        return
+    end
+    
+    -- Check if we need to disable core nameplates modules
+    local nameplateModules = {
+        "NamePlates.Core",
+        "NamePlates.TotemIcons",
+        "NamePlates.HealthText",
+        "NamePlates.CastTime"
+    }
+    
+    -- Disable core nameplates modules
+    for _, moduleName in ipairs(nameplateModules) do
+        local module = VUI:GetModule(moduleName)
+        if module and module:IsEnabled() then
+            module:Disable()
+            self:Debug("Disabled core module: " .. moduleName)
+        end
+    end
+    
+    -- Initialize nameplate cache
+    self.nameplates = self.nameplates or {}
+    
     -- Register events
     self:RegisterEvent("NAME_PLATE_CREATED", "OnNamePlateCreated")
     self:RegisterEvent("NAME_PLATE_UNIT_ADDED", "OnNamePlateAdded")
@@ -351,6 +383,26 @@ function M:OnDisable()
     
     -- Clear caches
     wipe(self.nameplates)
+    
+    -- Re-enable core nameplate modules if they're not already enabled
+    local nameplateModules = {
+        "NamePlates.Core",
+        "NamePlates.TotemIcons",
+        "NamePlates.HealthText",
+        "NamePlates.CastTime"
+    }
+    
+    -- Check VUI profile to see if nameplates are enabled
+    local db = VUI.db.profile.nameplates
+    if db then
+        for _, moduleName in ipairs(nameplateModules) do
+            local module = VUI:GetModule(moduleName)
+            if module and not module:IsEnabled() then
+                module:Enable()
+                self:Debug("Re-enabled core module: " .. moduleName)
+            end
+        end
+    end
     
     self:Debug("VUIPlater module disabled")
 end
