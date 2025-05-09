@@ -7,7 +7,7 @@ local SavedVariables = VUI:NewModule("SavedVariables")
 
 -- List of all VUI modules that might have settings
 local moduleList = {
-    -- Core Modules (from original SUI)
+    -- Core Modules 
     "General", "Unitframes", "Nameplates", "Actionbar", "Castbars", 
     "Tooltip", "Buffs", "Map", "Chat", "Misc",
     

@@ -15,7 +15,7 @@ DefaultSettings.moduleDefaults = {
             enableBlizzard = false
         },
         fonts = {
-            global = "Interface\\AddOns\\VUI\\Media\\Fonts\\expressway.ttf",
+            global = "Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf",
             size = 12
         },
         colors = {

@@ -12,6 +12,7 @@ local LSM = LibStub("LibSharedMedia-3.0")
 --   FONT
 -- -----
 LSM:Register("font", "Default", STANDARD_TEXT_FONT, bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU))
+LSM:Register("font", "PT Sans Narrow", [[Interface\Addons\VUI\Media\Fonts\PTSansNarrow.ttf]], bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU))
 LSM:Register("font", "VUI", [[Interface\Addons\VUI\Media\Fonts\Prototype.ttf]])
 LSM:Register("font", "Avant Garde", [[Interface\Addons\VUI\Media\Fonts\AvantGarde.ttf]], bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU))
 LSM:Register("font", "Arial Bold", [[Interface\Addons\VUI\Media\Fonts\Arial_Bold.ttf]])

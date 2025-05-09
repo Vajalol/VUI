@@ -20,7 +20,7 @@ local function CreateInstallWizard()
     Install.header = Install:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     Install.header:SetPoint("TOP", 0, -20)
     Install.header:SetText("|cffea00ffV|r|cff00a2ffUI|r - The Vortex UI Suite")
-    Install.header:SetFont(Install.header:GetFont(), 24, "OUTLINE")
+    Install.header:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 24, "OUTLINE")
     
     -- Subtitle
     Install.subtitle = Install:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -153,7 +153,7 @@ local function CreateWelcomePage(parent)
     local logo = page:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     logo:SetPoint("TOP", 0, 0)
     logo:SetText("|cffea00ffV|r|cff00a2ffUI|r")
-    logo:SetFont(logo:GetFont(), 64, "OUTLINE")
+    logo:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 64, "OUTLINE")
     
     -- Welcome text
     local welcomeText = page:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -401,7 +401,7 @@ local function CreateCompletionPage(parent)
     local logo = page:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     logo:SetPoint("TOP", title, "BOTTOM", 0, -20)
     logo:SetText("|cffea00ffV|r|cff00a2ffUI|r")
-    logo:SetFont(logo:GetFont(), 48, "OUTLINE")
+    logo:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 48, "OUTLINE")
     
     -- Final instructions
     local finalText = page:CreateFontString(nil, "ARTWORK", "GameFontNormal")

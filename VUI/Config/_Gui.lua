@@ -36,7 +36,7 @@ function Gui:OnEnable()
     local VUIConfig = LibStub('VUIConfig')
     VUIConfig.config = {
         font = {
-            family    = STANDARD_TEXT_FONT,
+            family    = "Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf",
             size      = 12,
             titleSize = 16,
             effect    = 'NONE',
