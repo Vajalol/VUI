@@ -8,6 +8,7 @@
 ## X-Website: https://github.com/Vajalol/VUI
 ## X-Curse-Project-ID: 1257198
 ## Discord: https://discord.gg/tmeWdSQKsp
+## Paypall: https://www.paypal.com/donate/?hosted_button_id=67ASZ8FXPXMDY
 
 ## LIBS
 Libs\Load.xml

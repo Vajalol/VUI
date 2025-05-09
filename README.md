@@ -8,8 +8,8 @@
 </p>
 <p align="center">
   <a href="https://github.com/Vajalol/VUI/releases"><img src="https://img.shields.io/github/v/release/Vajalol/VUI?include_prereleases&style=for-the-badge" alt="Release"></a>
-  <a href="https://github.com/Vajalol/VUI/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Vajalol/VUI?style=for-the-badge" alt="License"></a>
-  <a href="https://discord.gg/vortexui"><img src="https://img.shields.io/discord/123456789?color=7289DA&label=Discord&logo=discord&logoColor=white&style=for-the-badge" alt="Discord"></a>
+  <a href="https://github.com/Vajalol/VUI/blob/main/LICENSE.txt"><img src="https://img.shields.io/github/license/Vajalol/VUI?style=for-the-badge" alt="License"></a>
+  <a href="https://discord.gg/tmeWdSQKsp"><img src="https://img.shields.io/discord/123456789?color=7289DA&label=Discord&logo=discord&logoColor=white&style=for-the-badge" alt="Discord"></a>
 </p>
 
 ---
@@ -75,6 +75,7 @@ VUI features a comprehensive configuration panel with the following access metho
 
 - Type `/vui` in the chat
 - Right-click the VUI minimap icon
+- Click the VUI button in the game menu (ESC menu)
 - Access through ESC → Interface → AddOns → VUI
 
 Each module has its own dedicated section with detailed customization options:
@@ -103,6 +104,9 @@ If you encounter any issues or have suggestions for improvement:
 - Join our [Discord server](https://discord.gg/tmeWdSQKsp) for real-time support and discussion
 - Contribute to the project by submitting pull requests
 
+If you enjoy using VUI and would like to support its continued development:
+- [Donate via PayPal](https://www.paypal.com/donate/?hosted_button_id=67ASZ8FXPXMDY)
+
 ## 📜 Credits
 
 VUI was created by VortexQ8, inspired by the SUI framework by Syiana, integration of functionality from multiple popular addons, WeakAuras and modules.
@@ -115,7 +119,7 @@ VUI was created by VortexQ8, inspired by the SUI framework by Syiana, integratio
 
 ## 📄 License
 
-VUI is released under the MIT License. See the LICENSE file for details.
+VUI is released under a Custom License that prohibits editing or modification without explicit permission. See the [LICENSE.txt](LICENSE.txt) file for details.
 
 ---
 
