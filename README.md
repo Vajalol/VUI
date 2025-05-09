@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Media/Icons/logo.tga" alt="VUI Logo" width="150" height="150"/>
+  <img src="Media/Icons/tga/vortex_thunderstorm.svg" alt="VUI Logo" width="150" height="150"/>
 </p>
 
 <h1 align="center">VUI - Vortex UI</h1>
