@@ -3,10 +3,11 @@
 ## Version: 0.7.0-alpha
 ## Title: |cffea00ffV|r|cff00a2ffUI|r
 ## SavedVariables: VUI_SavedVariables
-## IconTexture: Interface\AddOns\VUI\Media\Icons\vortex_thunderstorm
+## IconTexture: Interface\AddOns\VUI\Media\Icons\tga\vortex_thunderstorm.tga
 ## AddonCompartmentFunc: VUI_Options
 ## X-Website: https://github.com/Vajalol/VUI
 ## X-Curse-Project-ID: 1257198
+## Discord: https://discord.gg/tmeWdSQKsp
 
 ## LIBS
 Libs\Load.xml

@@ -64,7 +64,7 @@ VUI (Vortex UI) revolutionizes the World of Warcraft interface by integrating mu
 
 ## 🔧 Installation
 
-1. Download the latest release from [GitHub](https://github.com/Vajalol/VUI/releases) or [CurseForge](https://www.curseforge.com/wow/addons/vui)
+1. Download the latest release from [GitHub](https://github.com/Vajalol/VUI) or [CurseForge](https://www.curseforge.com/wow/addons/vortex-ui) 
 2. Extract the ZIP file contents
 3. Place the "VUI" folder in your World of Warcraft "_retail_/Interface/AddOns" directory
 4. Launch the game or reload your UI with `/reload`
