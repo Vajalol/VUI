@@ -10,9 +10,22 @@ local defaults = {
         reset = false,
         general = {
             theme = 'Dark',
-            font = [[Interface\Addons\VUI\Media\Fonts\Prototype.ttf]],
+            font = [[Interface\Addons\VUI\Media\Fonts\PTSansNarrow.ttf]],
             texture = [[Interface\Addons\VUI\Media\Textures\Status\Smooth.blp]],
             color = { r = 0, g = 0, b = 0, a = 1 },
+            minimap = {
+                scale = 1.0,
+                position = "TOPRIGHT",
+                enableBlizzard = false
+            },
+            fonts = {
+                global = "Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf",
+                size = 12
+            },
+            colors = {
+                primary = {r = 0.917, g = 0, b = 1, a = 1}, -- Vortex purple
+                secondary = {r = 0, g = 0.635, b = 1, a = 1} -- VUI blue
+            },
             automation = {
                 delete = true,
                 decline = false,
@@ -250,8 +263,183 @@ local defaults = {
                 y = 0
             },
         },
+        
+        -- VModule defaults
+        VUIBuffs = {
+            enabled = true,
+            style = "icon", -- "icon" or "bar"
+            growthDirection = "RIGHT_DOWN",
+            size = 32,
+            showDuration = true,
+            position = {"TOPRIGHT", UIParent, "TOPRIGHT", -15, -15}
+        },
+        
+        VUIAnyFrame = {
+            enabled = true,
+            savedFrames = {}
+        },
+        
+        VUIKeystones = {
+            enabled = true,
+            position = {"CENTER", UIParent, "CENTER", 0, 0},
+            showInChat = true,
+            announceKey = true
+        },
+        
+        VUICC = {
+            enabled = true,
+            scale = 1.0,
+            position = {"CENTER", UIParent, "CENTER", 0, 100},
+            showIcons = true,
+            showText = true,
+            showTimer = true
+        },
+        
+        VUICD = {
+            enabled = true,
+            style = "GRID", -- "GRID", "BAR", "ICON"
+            scale = 1.0,
+            position = {"CENTER", UIParent, "CENTER", 0, -100},
+            showText = true,
+            showCooldownSpiral = true,
+            groupByCategory = true
+        },
+        
+        VUIIDs = {
+            enabled = true,
+            showTooltip = true,
+            showChat = false,
+            chatChannel = "SELF"
+        },
+        
+        VUIGfinder = {
+            enabled = true,
+            enhancedFiltering = true,
+            savedSearches = true,
+            oneClickSignup = true
+        },
+        
+        VUITGCD = {
+            enabled = true,
+            size = 6,
+            position = {"CENTER", UIParent, "CENTER", 0, -60},
+            color = {r = 0.7, g = 0.7, b = 0.7, a = 0.7}
+        },
+        
+        VUIAuctionator = {
+            enabled = true,
+            compactView = true,
+            enhancedSearch = true,
+            showMarketValue = true,
+            alertPriceThreshold = 0.8 -- Alert at 80% of market value
+        },
+        
+        VUINotifications = {
+            enabled = true,
+            position = {"TOP", UIParent, "TOP", 0, -50},
+            duration = 3,
+            size = 1.0,
+            showSound = true,
+            events = {
+                rareSpawn = true,
+                groupInvite = true,
+                battlegroundQueue = true,
+                itemSold = true,
+                friendOnline = true,
+                guildChat = false,
+                instanceReset = true
+            }
+        },
+        
+        VUIScrollingText = {
+            enabled = true,
+            style = "dynamic", -- "static", "dynamic", "fountain"
+            scale = 1.0,
+            speed = 1.5,
+            position = {"CENTER", UIParent, "CENTER", 0, 100},
+            critScale = 1.5,
+            showIcon = true,
+            showSchoolColors = true,
+            mergeThreshold = 0.3
+        },
+        
+        VUIepf = {
+            enabled = true,
+            style = "enhanced", -- "default", "enhanced", "minimal"
+            scale = 1.0,
+            position = {"CENTER", UIParent, "CENTER", 0, 0},
+            showDetails = true,
+            showPetFrame = true,
+            classTheme = true
+        },
+        
+        VUIConsumables = {
+            enabled = true,
+            position = {"CENTER", UIParent, "CENTER", 0, 200},
+            showIcons = true,
+            showDuration = true,
+            groupByType = true,
+            alertThreshold = 300 -- 5 minutes
+        },
+        
+        VUIPositionOfPower = {
+            enabled = true,
+            scale = 1.0,
+            position = {"CENTER", UIParent, "CENTER", 0, 150},
+            showIcon = true,
+            showBar = true,
+            showText = true
+        },
+        
+        VUIMissingRaidBuffs = {
+            enabled = true,
+            position = {"TOPLEFT", UIParent, "TOPLEFT", 15, -15},
+            showIcons = true,
+            showNames = true,
+            showAlways = false,
+            alertInChat = true
+        },
+        
+        VUIMouseFireTrail = {
+            enabled = false, -- Disabled by default as it's purely cosmetic
+            style = "vortex", -- "fire", "arcane", "vortex"
+            scale = 1.0,
+            opacity = 0.7,
+            length = 1.0
+        },
+        
+        VUIHealerMana = {
+            enabled = true,
+            showInParty = true,
+            showInRaid = true,
+            position = {"CENTER", UIParent, "CENTER", -200, 0},
+            scale = 1.0,
+            sortOrder = "ASCENDING"
+        },
+        
+        VUIPlater = {
+            enabled = true,
+            useVUIStyle = true,
+            showResourceBar = true,
+            showCastbar = true,
+            showAuras = true,
+            friendlyAlpha = 1.0,
+            enemyAlpha = 1.0,
+            threatColor = true
+        },
     }
 }
+
+-- Function to be called from the installation wizard
+function VUI:ConfigureFirstTimeSetup()
+    -- Set defaults for all modules
+    self:Print("First-time setup: Applying recommended settings to all modules")
+    
+    -- No need to copy settings from defaults table as they're already applied when creating the database
+    -- This is just a placeholder for potential future custom logic
+    
+    self:Print("First-time setup complete: Applied recommended settings to all modules")
+end
 
 function VUI:OnInitialize()
     -- VUI DB Reset 10.0

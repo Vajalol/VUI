@@ -103,11 +103,7 @@ local function CreateInstallWizard()
             VUI.db.profile.reset = true
             
             -- Apply default settings
-            if VUI.DefaultSettings then
-                VUI.DefaultSettings:ConfigureFirstTimeSetup()
-            else
-                VUI:Print("Warning: DefaultSettings module not found. Using default configuration.")
-            end
+            VUI:ConfigureFirstTimeSetup()
             
             local fadeInfo = {};
             fadeInfo.mode = "OUT";
@@ -125,11 +121,7 @@ local function CreateInstallWizard()
         VUI.db.profile.reset = true
         
         -- Apply default settings even when skipping
-        if VUI.DefaultSettings then
-            VUI.DefaultSettings:ConfigureFirstTimeSetup()
-        else
-            VUI:Print("Warning: DefaultSettings module not found. Using default configuration.")
-        end
+        VUI:ConfigureFirstTimeSetup()
         
         local fadeInfo = {};
         fadeInfo.mode = "OUT";
