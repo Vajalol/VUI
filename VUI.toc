@@ -10,7 +10,7 @@
 ## X-Curse-Project-ID: 1257198
 ## Discord: https://discord.gg/tmeWdSQKsp
 ## Paypall: https://www.paypal.com/donate/?hosted_button_id=67ASZ8FXPXMDY
-## X-Change-0.7.1-alpha: Added UI Scale control feature in Misc settings
+## X-Change-0.7.1-alpha: Added UI Scale control feature in Misc settings and new theme options
 
 ## LIBS
 Libs\Load.xml
@@ -22,6 +22,7 @@ Core\Load.xml
 Data\Load.xml
 ## UTILITIES
 Utilities\Animation.lua
+Utilities\UIScale.lua
 ## MODULES
 Modules\Load.xml
 ## VUI MODULES

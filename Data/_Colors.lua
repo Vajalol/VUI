@@ -23,3 +23,18 @@ Colors.evoker = '|cff33937F'
 Colors.vui_primary = '|cff0D9DE6' -- Medium blue from logo gradient
 Colors.vui_accent = '|cff3EBEFF'  -- Light blue from logo gradient
 Colors.vui_dark = '|cff0A6B9F'    -- Darker shade for contrast
+
+-- Phoenix Flame theme colors
+Colors.phoenix_primary = '|cffE64D0D' -- Orange/red from logo gradient
+Colors.phoenix_accent = '|cffFFA31A'  -- Light orange from logo gradient
+Colors.phoenix_dark = '|cffB23A0A'    -- Darker shade for contrast
+
+-- Fel Energy theme colors
+Colors.fel_primary = '|cff1AFF1A' -- Bright green from logo gradient
+Colors.fel_accent = '|cff00AA00'  -- Darker green from logo gradient
+Colors.fel_dark = '|cff008800'    -- Darker shade for contrast
+
+-- Arcane Mystic theme colors
+Colors.arcane_primary = '|cff9D0DE6' -- Purple from logo gradient
+Colors.arcane_accent = '|cffD459FF'  -- Light purple from logo gradient
+Colors.arcane_dark = '|cff6A099F'    -- Darker shade for contrast
