@@ -239,7 +239,11 @@ local defaults = {
             friendlist = true,
             quickjoin = true,
             looticons = true,
-            roleicons = true
+            roleicons = true,
+            history = true,
+            emojis = true,
+            sounds = true,
+            whisperSound = true
         },
         maps = {
             minimapsize = 1,

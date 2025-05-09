@@ -1,5 +1,15 @@
 # VUI Changelog
 
+## [0.5.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
+
+### Added
+- Enhanced Chat System with advanced features:
+  - Chat History: Persistence of up to 500 lines between game sessions
+  - Chat Copy: Improved copy button with movable, resizable copy window
+  - Emoji Support: Comprehensive emoji conversion system with 34+ emoji textures
+  - Whisper Sound: Custom notification sound when receiving whispers
+  - Comprehensive configuration options in the Chat settings panel
+
 ## [0.4.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
 
 ### Added

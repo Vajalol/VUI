@@ -40,7 +40,7 @@ function Layout:OnEnable()
                 link = {
                     key = 'link',
                     type = 'checkbox',
-                    label = 'Link copy',
+                    label = 'Link Copy',
                     tooltip = 'Make links clickable to copy them',
                     column = 4,
                     order = 2
@@ -48,18 +48,84 @@ function Layout:OnEnable()
                 copy = {
                     key = 'copy',
                     type = 'checkbox',
-                    label = 'Copy Symbol',
-                    tooltip = 'Show/Hide copy chat-history icon',
+                    label = 'Copy Button',
+                    tooltip = 'Show/Hide button to copy chat history',
                     column = 4,
                     order = 3
                 },
+            },
+            {
+                history = {
+                    key = 'history',
+                    type = 'checkbox',
+                    label = 'Save Chat History',
+                    tooltip = 'Save the last 500 lines of chat between sessions',
+                    column = 6,
+                    order = 1
+                },
+                emojis = {
+                    key = 'emojis',
+                    type = 'checkbox',
+                    label = 'Chat Emojis',
+                    tooltip = 'Enable emoji conversion in chat messages',
+                    column = 6,
+                    order = 2
+                }
+            },
+            {
+                header = {
+                    type = 'header',
+                    label = 'Sound Effects'
+                }
+            },
+            {
+                sounds = {
+                    key = 'sounds',
+                    type = 'checkbox',
+                    label = 'Enable Sound Effects',
+                    tooltip = 'Enable chat sound effects',
+                    column = 5,
+                    order = 1
+                },
+                whisperSound = {
+                    key = 'whisperSound',
+                    type = 'checkbox',
+                    label = 'Whisper Sound',
+                    tooltip = 'Play a sound when you receive a whisper',
+                    column = 7,
+                    order = 2
+                }
+            },
+            {
+                header = {
+                    type = 'header',
+                    label = 'Icons & Buttons'
+                }
             },
             {
                 quickjoin = {
                     key = 'quickjoin',
                     type = 'checkbox',
                     label = 'Friendlist Button',
-                    tooltip = 'Show/Hide friendlist button'
+                    tooltip = 'Show/Hide friendlist button',
+                    column = 4,
+                    order = 1
+                },
+                looticons = {
+                    key = 'looticons',
+                    type = 'checkbox',
+                    label = 'Loot Icons',
+                    tooltip = 'Display icons for loot in chat',
+                    column = 4,
+                    order = 2
+                },
+                roleicons = {
+                    key = 'roleicons',
+                    type = 'checkbox',
+                    label = 'Role Icons',
+                    tooltip = 'Display role icons in chat',
+                    column = 4,
+                    order = 3
                 }
             },
             {
