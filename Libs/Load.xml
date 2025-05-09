@@ -12,11 +12,10 @@
   <Include file='AceTimer-3.0\AceTimer-3.0.xml'/>
   <Include file='LibDeflate\lib.xml' />
   <Include file='LibDBIcon-1.0\embeds.xml'/>
-  <Include file='LibDBIcon-1.0\LibDBIcon-1.0\lib.xml'/>
   <Include file='LibDropDown\embed.xml'/>
   <Include file='LibEditMode\embed.xml'/>
   <Include file='LibEditModeOverride\LibEditModeOverride.xml'/>
-  <Include file='LibSharedMedia-3.0\LibSharedMedia-3.0\lib.xml'/>
+  <Include file='LibSharedMedia-3.0\lib.xml'/>
   <Include file='LibNPCInfo\lib.xml'/>
   <Include file='VUIConfig\VUIConfig.xml'/>
 </Ui>
