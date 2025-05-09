@@ -100,12 +100,12 @@ VUI is completely standalone and does not require any external addons to functio
 If you encounter any issues or have suggestions for improvement:
 
 - Open an issue on [GitHub](https://github.com/Vajalol/VUI/issues)
-- Join our [Discord server](https://discord.gg/vortexui) for real-time support and discussion
+- Join our [Discord server](https://discord.gg/tmeWdSQKsp) for real-time support and discussion
 - Contribute to the project by submitting pull requests
 
 ## 📜 Credits
 
-VUI was created by VortexQ8, building upon the SUI framework by Syiana, with integration of functionality from multiple popular addons and WeakAuras.
+VUI was created by VortexQ8, inspired by the SUI framework by Syiana, integration of functionality from multiple popular addons, WeakAuras and modules.
 
 **Special thanks to:**
 - Syiana for the original SUI framework

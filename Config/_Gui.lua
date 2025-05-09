@@ -144,7 +144,7 @@ function Gui:OnEnable()
     if db.profile.misc.menubutton then
         local function VUIGameMenuButton(self)
             self:AddSection();
-            self:AddButton("|cffea00ffS|r|cff00a2ffUI|r", VUI:Config(true))
+            self:AddButton("|cffea00ffV|r|cff00a2ffUI|r", VUI:Config(true))
         end
 
         hooksecurefunc(GameMenuFrame, "InitButtons", VUIGameMenuButton)
