@@ -2,7 +2,7 @@ modules = ["lua", "python-3.11", "lua-5.1"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["unzip", "imagemagick", "unrar", "wget"]
+packages = ["unzip", "imagemagick", "unrar", "wget", "lua"]
 
 [workflows]
 
