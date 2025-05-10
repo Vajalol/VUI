@@ -268,10 +268,12 @@ M.positionBuffs = {
 -- Initialize module
 function M:OnInitialize()
     -- Register module with VUI
-    self.db = VUI.db:RegisterNamespace(MODNAME, self.defaults)
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
     
     -- Register settings with VUI Config
-    VUI.Config:RegisterModuleOptions(MODNAME, self:GetOptions(), self.TITLE)
+    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
     
     -- Store active auras
     self.activeBuffs = {}
@@ -279,7 +281,7 @@ function M:OnInitialize()
     -- Create frames
     self:CreateFrames()
     
-    self:Debug("VUIPositionOfPower module initialized")
+    self:Debug(self.NAME .. " module initialized")
 end
 
 function M:OnEnable()
@@ -300,7 +302,7 @@ function M:OnEnable()
     -- Initial update
     self:UpdateDisplay()
     
-    self:Debug("VUIPositionOfPower module enabled")
+    self:Debug(self.NAME .. " module enabled")
 end
 
 function M:OnDisable()
@@ -318,12 +320,12 @@ function M:OnDisable()
     -- Unregister events
     self:UnregisterAllEvents()
     
-    self:Debug("VUIPositionOfPower module disabled")
+    self:Debug(self.NAME .. " module disabled")
 end
 
 -- Debug and logging functions
 function M:Debug(...)
-    VUI:Debug(MODNAME, ...)
+    VUI:Debug(self.NAME, ...)
 end
 
 function M:Print(...)

@@ -220,10 +220,12 @@ end
 -- Initialize module
 function M:OnInitialize()
     -- Register module with VUI
-    self.db = VUI.db:RegisterNamespace(MODNAME, self.defaults)
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
     
     -- Register settings with VUI Config
-    VUI.Config:RegisterModuleOptions(MODNAME, self:GetOptions(), self.TITLE)
+    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
     
     -- Missing buffs tracking
     self.missingBuffs = {}
@@ -231,7 +233,7 @@ function M:OnInitialize()
     -- Create frames
     self:CreateFrames()
     
-    self:Debug("VUIMissingRaidBuffs module initialized")
+    self:Debug(self.NAME .. " module initialized")
 end
 
 function M:OnEnable()

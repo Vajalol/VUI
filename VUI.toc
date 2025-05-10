@@ -15,17 +15,24 @@
 
 ## LIBS
 Libs\Load.xml
+
 ## MEDIA
 Media\Load.xml
+
 ## CORE
 Core\Load.xml
+
 ## DATA
 Data\Load.xml
+
 ## UTILITIES
 Utilities\Animation.lua
+
 ## MODULES
 Modules\Load.xml
+
 ## VUI MODULES
 VModules\Load.xml
+
 ## CONFIG
 Config\Load.xml
