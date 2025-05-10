@@ -322,28 +322,140 @@ local defaults = {
         
         VUIKeystones = {
             enabled = true,
-            position = {"CENTER", UIParent, "CENTER", 0, 0},
+            useThemeColors = true,
+            
+            -- Tooltip settings
+            progressTooltip = true,
+            progressTooltipMDT = false,
+            progressFormat = 1,
+            
+            -- Timer and display settings
+            silverGoldTimer = false,
+            splitsFormat = 1,
+            completionMessage = true,
+            smallAffixes = true,
+            
+            -- Death and progress tracking
+            deathTracker = true,
+            recordSplits = false,
+            
+            -- UI enhancements
+            showLevelModifier = false,
+            hideTalkingHead = true,
+            resetPopup = false,
+            
+            -- Dungeon-specific features
+            autoGossip = true,
+            cosRumors = false,
+            
+            -- Visual settings
+            scheduleColor = {r = 0.1, g = 0.6, b = 0.8},
+            completedColor = {r = 0.6, g = 0.8, b = 0.1},
+            
+            -- Frame positions
+            objectivePosition = {"CENTER", nil, "CENTER", 0, 80},
+            timerPosition = {"CENTER", nil, "CENTER", 0, 110},
+            deathTrackerPosition = {"CENTER", nil, "CENTER", 240, 100},
+            
+            -- Leaderboard enhancements
+            showLeaderRunSummary = true,
+            enhancedLeaderboard = true,
+            
+            -- Weekly best frame
+            weeklyBestFramePosition = {"TOPRIGHT", nil, "TOPRIGHT", -250, -15},
+            weeklyBestFrameScale = 1,
+            
+            -- Chat and social features
+            announceKeystones = true,
+            announceChannel = "PARTY",
+            announceMilestones = true,
+            
+            -- Legacy settings
             showInChat = true,
             announceKey = true
         },
         
         VUICC = {
             enabled = true,
-            scale = 1.0,
-            position = {"CENTER", UIParent, "CENTER", 0, 100},
-            showIcons = true,
-            showText = true,
-            showTimer = true
+            disableBlizzardCooldownText = true,
+            fontSize = 18,
+            fontFace = "Fonts\\FRIZQT__.TTF",
+            fontOutline = "OUTLINE",
+            minScale = 0.5,
+            minDuration = 2,
+            mmssThreshold = 90,
+            tenthsThreshold = 5,
+            effect = "PULSE",
+            useThemeColors = true,
+            useClassColors = false,
+            styles = {
+                soon = {r = 1, g = 0.2, b = 0.2},
+                seconds = {r = 1, g = 1, b = 0.2},
+                minutes = {r = 0.8, g = 0.8, b = 0.8},
+                hours = {r = 0.6, g = 0.6, b = 0.6},
+                days = {r = 0.4, g = 0.4, b = 0.4}
+            }
         },
         
         VUICD = {
             enabled = true,
-            style = "GRID", -- "GRID", "BAR", "ICON"
-            scale = 1.0,
-            position = {"CENTER", UIParent, "CENTER", 0, -100},
-            showText = true,
-            showCooldownSpiral = true,
-            groupByCategory = true
+            modules = { ["Party"] = true },
+            theme = {
+                useThemeColors = true,
+                useClassColors = true
+            },
+            party = {
+                enabled = true,
+                visibility = {
+                    arena = true,
+                    raid = true,
+                    party = true,
+                    scenario = true,
+                    none = false,
+                    outside = false,
+                    inTest = true
+                },
+                icons = {
+                    desaturate = true,
+                    showTooltip = true,
+                    tooltipScale = 1,
+                    showCounter = true,
+                    counterScale = 0.85,
+                    scale = 0.85,
+                    anchor = "TOPLEFT",
+                    relativePoint = "BOTTOMLEFT",
+                    padding = 1,
+                    columns = 10,
+                    statusBar = {
+                        enabled = true,
+                        position = "TOP",
+                        width = 2,
+                        height = 12,
+                        showSpark = true,
+                        statusBarTexture = "OmniCD-texture_flat",
+                        useClassColor = true
+                    }
+                },
+                spells = {
+                    defensive = true,
+                    offensive = true,
+                    covenant = true,
+                    interrupt = true,
+                    utility = true,
+                    custom = false
+                },
+                highlight = {
+                    glowBuffs = true,
+                    glowType = "warcraft",
+                    notInterruptible = true
+                },
+                position = {
+                    anchor = "TOPLEFT",
+                    relativePoint = "TOPLEFT",
+                    offsetX = 0,
+                    offsetY = -50
+                }
+            }
         },
         
         VUIIDs = {
@@ -377,10 +489,39 @@ local defaults = {
         
         VUINotifications = {
             enabled = true,
-            position = {"TOP", UIParent, "TOP", 0, -50},
-            duration = 3,
-            size = 1.0,
-            showSound = true,
+            soundsEnabled = true,
+            suppressErrors = true,
+            
+            -- Notification types
+            showInterrupts = true,
+            showDispels = true,
+            showMisses = true,
+            showReflects = true,
+            showPetStatus = true,
+            
+            -- Visual settings
+            notificationScale = 1.0,
+            notificationDuration = 3.0,
+            
+            -- Position
+            position = {"TOP", UIParent, "TOP", 0, -120},
+            
+            -- Font settings
+            font = "Fonts\\FRIZQT__.TTF",
+            fontSize = 18,
+            fontOutline = "OUTLINE",
+            
+            -- Theme
+            useThemeColors = true,
+            colors = {
+                interrupt = {r = 0.41, g = 0.8, b = 0.94, a = 1.0},
+                dispel = {r = 0.84, g = 0.43, b = 1.0, a = 1.0},
+                reflect = {r = 1.0, g = 0.5, b = 0.0, a = 1.0},
+                miss = {r = 0.82, g = 0.82, b = 0.82, a = 1.0},
+                pet = {r = 0.94, g = 0.41, b = 0.45, a = 1.0}
+            },
+            
+            -- Legacy settings
             events = {
                 rareSpawn = true,
                 groupInvite = true,
@@ -394,14 +535,84 @@ local defaults = {
         
         VUIScrollingText = {
             enabled = true,
-            style = "dynamic", -- "static", "dynamic", "fountain"
-            scale = 1.0,
-            speed = 1.5,
-            position = {"CENTER", UIParent, "CENTER", 0, 100},
+            
+            -- Animation settings
+            style = "dynamic", -- "static", "dynamic", "fountain", "threshold", "vuithemed"
+            animationSpeed = 1.5,
+            useThemeColors = true,
+            
+            -- Font settings
+            masterFont = "Friz Quadrata TT",
+            normalFontSize = 18,
+            normalOutlineIndex = 2, -- 1=None, 2=Thin, 3=Thick
+            critFontSize = 26,
+            critOutlineIndex = 2,
             critScale = 1.5,
+            
+            -- Display settings
             showIcon = true,
             showSchoolColors = true,
-            mergeThreshold = 0.3
+            mergeThreshold = 0.3,
+            
+            -- Sound settings
+            soundsEnabled = true,
+            
+            -- Areas to display
+            areas = {
+                incoming = {
+                    enabled = true,
+                    position = {"CENTER", nil, "CENTER", 0, 100},
+                    size = {300, 260},
+                    scrollDirection = 1, -- SCROLL_UP
+                    behavior = 1, -- BEHAVIOR_SCROLL
+                    textAlign = "CENTER"
+                },
+                outgoing = {
+                    enabled = true,
+                    position = {"CENTER", nil, "CENTER", 0, -100},
+                    size = {300, 260},
+                    scrollDirection = 2, -- SCROLL_DOWN
+                    behavior = 1, -- BEHAVIOR_SCROLL
+                    textAlign = "CENTER"
+                },
+                notifications = {
+                    enabled = true,
+                    position = {"TOP", nil, "TOP", 0, -120},
+                    size = {400, 100},
+                    scrollDirection = 4, -- SCROLL_RIGHT
+                    behavior = 4, -- BEHAVIOR_STATIC
+                    textAlign = "CENTER"
+                }
+            },
+            
+            -- Events to trigger scrolling text
+            events = {
+                combatDamage = true,
+                combatMisses = true,
+                combatHealing = true,
+                resourceGains = true,
+                deaths = true,
+                honorGains = true,
+                buffGains = true,
+                buffFades = true,
+                combatState = true,
+                lootItems = true,
+                skillGains = true,
+                experience = true
+            },
+            
+            -- Color settings
+            colors = {
+                normal = {r = 1.0, g = 1.0, b = 1.0, a = 1.0},
+                crit = {r = 1.0, g = 0.0, b = 0.0, a = 1.0},
+                mana = {r = 0.0, g = 0.0, b = 1.0, a = 1.0},
+                rage = {r = 1.0, g = 0.0, b = 0.0, a = 1.0},
+                energy = {r = 1.0, g = 1.0, b = 0.0, a = 1.0},
+                runic = {r = 0.0, g = 0.8, b = 1.0, a = 1.0},
+                heal = {r = 0.0, g = 1.0, b = 0.0, a = 1.0},
+                buff = {r = 0.0, g = 0.0, b = 1.0, a = 1.0},
+                debuff = {r = 1.0, g = 0.0, b = 0.0, a = 1.0}
+            }
         },
         
         VUIepf = {
@@ -442,20 +653,74 @@ local defaults = {
         },
         
         VUIMouseFireTrail = {
-            enabled = false, -- Disabled by default as it's purely cosmetic
-            style = "vortex", -- "fire", "arcane", "vortex"
-            scale = 1.0,
-            opacity = 0.7,
-            length = 1.0
+            enabled = true,
+            trailCount = 25,
+            trailType = "PARTICLE",
+            trailShape = "V_SHAPE",
+            trailTexture = "flame01",
+            trailSize = 25,
+            trailAlpha = 0.7,
+            trailDecay = 0.92,
+            trailVariation = 0.2,
+            trailSmoothing = 60,
+            colorMode = "THEME",
+            customColorR = 1.0,
+            customColorG = 1.0,
+            customColorB = 1.0,
+            textureCategory = "Basic",
+            connectSegments = false,
+            enableGlow = false,
+            pulsingGlow = false,
+            showInCombat = true,
+            showInInstances = true,
+            showInRestArea = true,
+            showInWorld = true,
+            requireMouseButton = false,
+            requireModifierKey = false,
+            useThemeColor = true
         },
         
         VUIHealerMana = {
             enabled = true,
+            scale = 1.0,
+            point = "CENTER",
+            relativePoint = "CENTER",
+            xOffset = -200,
+            yOffset = 0,
+            width = 250,
+            height = 20,
+            spacing = 2,
+            barTexture = "VUI Gradient",
+            fontName = "Arial Narrow",
+            fontSize = 12,
+            showSelf = true,
+            showParty = true,
+            showRaid = true,
+            
+            -- Visual settings
+            outlineMode = "OUTLINE",
+            textPosition = "CENTER",
+            useClassColors = true,
+            useThemeColors = true,
+            
+            -- Behavior
+            sortOrder = "ASCENDING",
+            hideOOC = false,
+            hideInCombat = false,
+            hideNotInGroup = true,
+            onlyShowLowMana = false,
+            lowManaThreshold = 20,
+            
+            -- Color settings
+            barColor = {r = 0.2, g = 0.4, b = 1.0, a = 1.0},
+            textColor = {r = 1.0, g = 1.0, b = 1.0, a = 1.0},
+            backgroundColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+            borderColor = {r = 0.0, g = 0.0, b = 0.0, a = 1.0},
+            
+            -- Legacy settings
             showInParty = true,
             showInRaid = true,
-            position = {"CENTER", UIParent, "CENTER", -200, 0},
-            scale = 1.0,
-            sortOrder = "ASCENDING"
+            position = {"CENTER", UIParent, "CENTER", -200, 0}
         },
         
         VUIPlater = {

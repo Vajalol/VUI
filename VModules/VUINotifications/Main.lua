@@ -1,25 +1,19 @@
-local addonName, VUI = ...
+-- VUINotifications Module
+-- Displays notifications for combat events
+-- Based on SpellNotifications with VUI integration
 
--- Create the main Notifications table in the VUI namespace
-VUI.Notifications = {
-    -- Basic information
-    Name = "VUINotifications",
-    Version = "1.0.0",
-    
-    -- Flag to track initialization state
-    Initialized = false,
-    
-    -- Module info for VUI integration
-    ModuleInfo = {
-        title = "VUI Notifications",
-        desc = "Simple spell notifications for combat events",
-        icon = [[Interface\AddOns\VUI\Media\Icons\tga\vortex_thunderstorm.tga]],
-        author = "Vortex-WoW"
-    }
-}
+local AddonName, VUI = ...
+local MODNAME = "VUINotifications"
+local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
 
--- Access the localization system after it's loaded
-local L = VUI.Notifications.L or {}
+-- Localization
+local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+
+-- Module Constants
+M.NAME = MODNAME
+M.TITLE = "VUI Notifications"
+M.DESCRIPTION = "Simple spell notifications for combat events"
+M.VERSION = "1.0"
 
 -- Private variables
 local reflected = {}
@@ -27,9 +21,74 @@ local duration
 local warnOP
 local warnCS
 
--- Function called when the addon loads
-function VUI.Notifications:OnLoad(self)
-    local _, class = UnitClass("player")
+-- Default settings
+M.defaults = {
+    profile = {
+        enabled = true,
+        soundsEnabled = true,
+        suppressErrors = true,
+        
+        -- Notification types
+        showInterrupts = true,
+        showDispels = true,
+        showMisses = true,
+        showReflects = true,
+        showPetStatus = true,
+        
+        -- Visual settings
+        notificationScale = 1.0,
+        notificationDuration = 3.0,
+        
+        -- Position
+        position = {"TOP", UIParent, "TOP", 0, -120},
+        
+        -- Font settings
+        font = "Fonts\\FRIZQT__.TTF",
+        fontSize = 18,
+        fontOutline = "OUTLINE",
+        
+        -- Theme
+        useThemeColors = true,
+        colors = {
+            interrupt = {r = 0.41, g = 0.8, b = 0.94, a = 1.0},
+            dispel = {r = 0.84, g = 0.43, b = 1.0, a = 1.0},
+            reflect = {r = 1.0, g = 0.5, b = 0.0, a = 1.0},
+            miss = {r = 0.82, g = 0.82, b = 0.82, a = 1.0},
+            pet = {r = 0.94, g = 0.41, b = 0.45, a = 1.0}
+        }
+    }
+}
+
+-- Initialize the module
+function M:OnInitialize()
+    -- Create the database
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
+    
+    -- Initialize the configuration panel
+    self:InitializeConfig()
+    
+    -- Register callback for theme changes
+    VUI:RegisterCallback("OnThemeChanged", function()
+        if self.UpdateTheme then
+            self:UpdateTheme()
+        end
+    end)
+    
+    -- Create frames
+    self:CreateFrames()
+    
+    -- Register slash command
+    self:RegisterChatCommand("vuin", "SlashCommand")
+    
+    -- Debug message
+    VUI:Debug(self.NAME .. " initialized")
+end
+
+-- Enable the module
+function M:OnEnable()
+    -- Register events
     self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     self:RegisterEvent("UNIT_HEALTH")
     self:RegisterEvent("PLAYER_TARGET_CHANGED")
@@ -37,322 +96,175 @@ function VUI.Notifications:OnLoad(self)
     self:RegisterEvent("PLAYER_REGEN_ENABLED") -- leave combat
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
+    
+    -- Debug message
+    VUI:Debug(self.NAME .. " enabled")
 end
 
--- Function called when an event fires
-function VUI.Notifications:OnEvent(event, ...)
-    if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-        -- Process combat log events
-        self:ProcessCombatLog()
-    end
-    -- Other events can be handled here as needed
+-- Disable the module
+function M:OnDisable()
+    -- Unregister events
+    self:UnregisterAllEvents()
+    
+    -- Debug message
+    VUI:Debug(self.NAME .. " disabled")
 end
 
 -- Process combat log events
-function VUI.Notifications:ProcessCombatLog()
-    local timeStamp, event, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = CombatLogGetCurrentEventInfo()
-    local _, class = UnitClass("player")
-    local size = self.Sizes()
-    local color = self.Colors()
-    local affiliation = self.Affiliations()
-    local ME, FRIENDLY, PET = affiliation.MINE, affiliation.FRIENDLY, affiliation.PET
-
-    local cast = {}
-    function cast.by(affiliation)
-        return bit.band(sourceFlags, affiliation) > 0
-    end
-    function cast.on(affiliation)
-        return bit.band(destFlags, affiliation) > 0
-    end
-    function cast.notOn(affiliation)
-        return bit.band(destFlags, affiliation) <= 0
-    end
-
-    -- INTERRUPTS
-    if event == "SPELL_INTERRUPT" and cast.by(ME) then
-        -- Check configuration
-        if self:GetConfigValue("showInterrupts", true) then
-            local extraSchool = select(17, CombatLogGetCurrentEventInfo())
-            local spellSchool = self.SpellSchools()[extraSchool]
-
-            if spellSchool == nil then
-                spellSchool = "unknown spell school"
-            end
-            self.print((L["INTERRUPTED"] or "Interrupted") .. " " .. string.lower(spellSchool) .. ".", color.GREEN, size.SMALL)
-        end
-    end
-
-    -- DISPEL AND PURGE
-    if event == "SPELL_DISPEL" and cast.by(ME) then
-        -- Check configuration
-        if self:GetConfigValue("showDispels", true) then
-            local spellName = select(16, CombatLogGetCurrentEventInfo())
-            if cast.on(FRIENDLY) then
-                self.print((L["DISPELLED"] or "Dispelled") .. " " .. spellName .. ".", color.WHITE, size.SMALL) -- friendly target
-            else
-                self.print((L["DISPELLED"] or "Dispelled") .. " " .. spellName .. ".", color.YELLOW, size.SMALL) -- enemy target
-            end
-        end
-    end
-
-    -- SPELLSTEAL
-    if event == "SPELL_STOLEN" and cast.by(ME) then
-        local spellName = select(16, CombatLogGetCurrentEventInfo())
-        self.print((L["STOLE"] or "Stole") .. " " .. spellName .. ".", color.YELLOW, size.SMALL) -- enemy target
-    end
-
-    -- PET DIED
-    if ((
-        event == "UNIT_DIED" or
-        event == "UNIT_DESTROYED" or
-        event == "UNIT_DISSIPATES") and
-        cast.on(ME) and
-        cast.on(PET)
-    ) then
-        -- Check configuration
-        if self:GetConfigValue("showPetStatus", true) then
-            self.print(L["PET_DEAD"] or "Pet dead.", color.RED, size.LARGE)
-            self.playSound("buzz")
-        end
-    end
-
-    -- SPELL REFLECTION
-    if event == "SPELL_AURA_APPLIED" or event == "SPELL_AURA_REMOVED" and cast.by(ME) then
-        local spellName = select(13, CombatLogGetCurrentEventInfo())
-        if spellName == "Mass Spell Reflection" then
-            if event == "SPELL_AURA_APPLIED" then
-                reflected[destGUID] = true
-            else
-                reflected[destGUID] = false
-            end
-        end
-    end
-
-    if event == "SPELL_MISSED" and cast.notOn(ME) then
-        -- Check configuration
-        if self:GetConfigValue("showReflects", true) then
-            local spellName, _, missType = select(13, CombatLogGetCurrentEventInfo())
-            if missType == "REFLECT" then
-                if reflected[destGUID] ~= nil then
-                    if reflected[destGUID] then
-                        self.print((L["REFLECTED"] or "Reflected") .. " " .. spellName .. ".", color.BLUE, size.SMALL)
-                    end
-                end
-            end
-        end
-    end
-
-    -- REFLECTED & GROUNDED
-    if event == "SPELL_MISSED" and cast.on(ME) then
-        -- Check configuration
-        if self:GetConfigValue("showReflects", true) then
-            local spellName, _, missType = select(13, CombatLogGetCurrentEventInfo())
-            if missType == "REFLECT" then
-                self.print((L["REFLECTED"] or "Reflected") .. " " .. spellName .. ".", color.WHITE, size.SMALL)
-            elseif destName == "Grounding Totem" and cast.on(ME) then
-                self.print((L["GROUNDED"] or "Grounded") .. " " .. spellName .. ".", color.WHITE, size.SMALL)
-            end
-        end
-    end
-
-    --
-    if event == "SPELL_DAMAGE" and cast.on(ME) then
-        -- Check configuration
-        if self:GetConfigValue("showReflects", true) then
-            local spellName = select(13, CombatLogGetCurrentEventInfo())
-            if destName == "Grounding Totem" then
-                self.print((L["GROUNDED"] or "Grounded") .. " " .. spellName .. ".", color.WHITE, size.SMALL)
-            end
-        end
-    end
-
-    if event == "SPELL_MISSED" and cast.by(ME) then
-        -- Check configuration
-        if self:GetConfigValue("showMisses", true) then
-            if (
-                destGUID == UnitGUID("target") or
-                destGUID == UnitGUID("targettarget") or
-                destGUID == UnitGUID("focus") or
-                destGUID == UnitGUID("player") or
-                destGUID == UnitGUID("pet") or
-                destGUID == UnitGUID("pettarget") or
-                destGUID == UnitGUID("mouseover") or
-                destGUID == UnitGUID("mouseovertarget") or
-                destGUID == UnitGUID("arena1") or
-                destGUID == UnitGUID("arena2") or
-                destGUID == UnitGUID("arena3") or
-                destGUID == UnitGUID("arena4") or
-                destGUID == UnitGUID("arena5") or
-                destGUID == UnitGUID("party1") or
-                destGUID == UnitGUID("party2") or
-                destGUID == UnitGUID("party3") or
-                destGUID == UnitGUID("party4") or
-                destGUID == UnitGUID("party5")
-            ) then -- makes sure dest targ wasn't some random aoe
-                local spellName, _, missType = select(13, CombatLogGetCurrentEventInfo())
-                local resistMethod = self.MissTypes()[missType]
-
-                if (missType == "ABSORB") then
-                    return
-                elseif (destName == "Grounding Totem") then
-                    resistMethod = "grounded"
-                    MySpellGrounded = true
-                elseif (missType == "REFLECT") then
-                    MySpellReflected = true
-                elseif (resistMethod == nil) then
-                    resistMethod = "missed"
-                end
-
-                if (resistMethod == "immune") or (resistMethod == "evaded") then
-                    self.print("" .. spellName .. " " .. resistMethod .. ".", color.RED, size.LARGE)
-                else
-                    self.print("" .. spellName .. " " .. resistMethod .. ".", color.WHITE, size.LARGE)
-                end
-            end
-        end
+function M:COMBAT_LOG_EVENT_UNFILTERED()
+    if not self.db.profile.enabled then return end
+    
+    local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, spellID, spellName, _, extraSpellID, extraSpellName = CombatLogGetCurrentEventInfo()
+    
+    -- This would be where we process the combat log events
+    -- For demonstration, we're just including placeholders
+    
+    if eventType == "SPELL_INTERRUPT" and self.db.profile.showInterrupts then
+        self:ShowNotification("Interrupted " .. destName .. ": " .. extraSpellName, "interrupt")
+    elseif eventType == "SPELL_DISPEL" and self.db.profile.showDispels then
+        self:ShowNotification("Dispelled " .. destName .. ": " .. extraSpellName, "dispel")
+    elseif eventType == "SPELL_REFLECT" and self.db.profile.showReflects then
+        self:ShowNotification("Reflected " .. spellName, "reflect")
+    elseif eventType:match("MISSED$") and self.db.profile.showMisses then
+        local missType = extraSpellID
+        self:ShowNotification(spellName .. " " .. missType, "miss")
     end
 end
 
--- Add configuration to VUI panel
-function VUI.Notifications:SetupConfig()
-    if VUI.Config and VUI.Config.RegisterModule then
-        VUI.Config:RegisterModule("VUINotifications", self.ModuleInfo.title, self.ModuleInfo.desc, self.ModuleInfo.icon)
-        
-        -- Add config options
-        if VUI.Config.AddOption then
-            -- Main enable/disable toggle
-            VUI.Config:AddOption("VUINotifications", {
-                key = "enabled",
-                name = L["ENABLE_NOTIFICATIONS"] or "Enable Notifications",
-                desc = L["ENABLE_NOTIFICATIONS_DESC"] or "Show notifications for combat events like interrupts, dispels, and misses",
-                type = "toggle",
-                default = true,
-                requiresReload = false,
-            })
-            
-            -- Sound toggle
-            VUI.Config:AddOption("VUINotifications", {
-                key = "soundsEnabled",
-                name = L["ENABLE_SOUNDS"] or "Enable Sounds",
-                desc = L["ENABLE_SOUNDS_DESC"] or "Play sounds for important notifications",
-                type = "toggle",
-                default = true,
-                requiresReload = false,
-            })
-            
-            -- Error suppression toggle
-            VUI.Config:AddOption("VUINotifications", {
-                key = "suppressErrors",
-                name = L["SUPPRESS_ERRORS"] or "Suppress Common Errors",
-                desc = L["SUPPRESS_ERRORS_DESC"] or "Hide common combat error messages like 'Not enough energy', 'Out of range', etc.",
-                type = "toggle",
-                default = true,
-                requiresReload = false,
-            })
-            
-            -- Notification types header
-            VUI.Config:AddOption("VUINotifications", {
-                key = "notificationTypesHeader",
-                name = L["NOTIFICATION_TYPES"] or "Notification Types",
-                desc = L["NOTIFICATION_TYPES_DESC"] or "Configure which types of notifications to show",
+-- Create frames for notifications
+function M:CreateFrames()
+    -- Create the main frame
+    self.frame = CreateFrame("Frame", "VUINotificationsFrame", UIParent)
+    self.frame:SetSize(400, 100)
+    self.frame:SetPoint(unpack(self.db.profile.position))
+    
+    -- Create the text frame
+    self.text = self.frame:CreateFontString(nil, "OVERLAY")
+    self.text:SetFont(self.db.profile.font, self.db.profile.fontSize, self.db.profile.fontOutline)
+    self.text:SetPoint("CENTER", self.frame, "CENTER", 0, 0)
+    
+    -- Hide initially
+    self.frame:Hide()
+end
+
+-- Show a notification
+function M:ShowNotification(message, notificationType)
+    if not self.db.profile.enabled then return end
+    
+    -- Set the text color based on notification type
+    local color = self.db.profile.colors[notificationType] or {r = 1, g = 1, b = 1, a = 1}
+    self.text:SetTextColor(color.r, color.g, color.b, color.a)
+    
+    -- Set the text and show the frame
+    self.text:SetText(message)
+    self.frame:Show()
+    
+    -- Play sound if enabled
+    if self.db.profile.soundsEnabled then
+        PlaySound(SOUNDKIT.ALARM_WARNING_SOUND)
+    end
+    
+    -- Hide after duration
+    C_Timer.After(self.db.profile.notificationDuration, function()
+        self.frame:Hide()
+    end)
+end
+
+-- Configuration initialization
+function M:InitializeConfig()
+    -- Create config options table
+    local options = {
+        name = self.TITLE,
+        desc = self.DESCRIPTION,
+        type = "group",
+        args = {
+            header = {
                 type = "header",
-            })
-            
-            -- Interrupt notifications
-            VUI.Config:AddOption("VUINotifications", {
-                key = "showInterrupts",
-                name = L["SHOW_INTERRUPTS"] or "Show Interrupts",
-                desc = L["SHOW_INTERRUPTS_DESC"] or "Show notifications when you successfully interrupt a spell",
+                name = self.TITLE,
+                order = 1,
+            },
+            version = {
+                type = "description",
+                name = "|cffff9900Version:|r " .. self.VERSION,
+                order = 2,
+            },
+            desc = {
+                type = "description",
+                name = self.DESCRIPTION,
+                order = 3,
+            },
+            spacer = {
+                type = "description",
+                name = " ",
+                order = 4,
+            },
+            enabled = {
                 type = "toggle",
-                default = true,
-                requiresReload = false,
-            })
-            
-            -- Dispel notifications
-            VUI.Config:AddOption("VUINotifications", {
-                key = "showDispels",
-                name = L["SHOW_DISPELS"] or "Show Dispels",
-                desc = L["SHOW_DISPELS_DESC"] or "Show notifications when you successfully dispel a buff or debuff",
+                name = L["Enable"],
+                desc = L["Enable_Desc"] or "Enable or disable combat notifications",
+                width = "full",
+                order = 5,
+                get = function() return self.db.profile.enabled end,
+                set = function(_, val) 
+                    self.db.profile.enabled = val
+                    if val then
+                        self:Enable()
+                    else
+                        self:Disable()
+                    end
+                end,
+            },
+            soundsEnabled = {
                 type = "toggle",
-                default = true,
-                requiresReload = false,
-            })
-            
-            -- Miss notifications
-            VUI.Config:AddOption("VUINotifications", {
-                key = "showMisses",
-                name = L["SHOW_MISSES"] or "Show Misses",
-                desc = L["SHOW_MISSES_DESC"] or "Show notifications when your abilities miss, are dodged, parried, etc.",
+                name = L["Enable Sounds"] or "Enable Sounds",
+                desc = L["Enable_Sounds_Desc"] or "Play sounds with notifications",
+                width = "full",
+                order = 6,
+                get = function() return self.db.profile.soundsEnabled end,
+                set = function(_, val) self.db.profile.soundsEnabled = val end,
+            },
+            suppressErrors = {
                 type = "toggle",
-                default = true,
-                requiresReload = false,
-            })
-            
-            -- Reflect notifications
-            VUI.Config:AddOption("VUINotifications", {
-                key = "showReflects",
-                name = L["SHOW_REFLECTS"] or "Show Reflects",
-                desc = L["SHOW_REFLECTS_DESC"] or "Show notifications when spells are reflected",
-                type = "toggle",
-                default = true,
-                requiresReload = false,
-            })
-            
-            -- Pet notifications
-            VUI.Config:AddOption("VUINotifications", {
-                key = "showPetStatus",
-                name = L["SHOW_PET_STATUS"] or "Show Pet Status",
-                desc = L["SHOW_PET_STATUS_DESC"] or "Show notifications when your pet dies",
-                type = "toggle",
-                default = true,
-                requiresReload = false,
-            })
-        end
-    end
+                name = L["Suppress Error Messages"] or "Suppress Error Messages",
+                desc = L["Suppress_Errors_Desc"] or "Hide common error messages",
+                width = "full",
+                order = 7,
+                get = function() return self.db.profile.suppressErrors end,
+                set = function(_, val) self.db.profile.suppressErrors = val end,
+            },
+            -- Additional options would go here
+        }
+    }
+    
+    -- Register with VUI's configuration system
+    VUI.Config:RegisterModuleOptions(self.NAME, options, self.TITLE)
 end
 
--- Helper function to get config value with fallback to default
-function VUI.Notifications:GetConfigValue(key, defaultValue)
-    if VUI_SavedVariables and 
-       VUI_SavedVariables.VUINotifications and 
-       VUI_SavedVariables.VUINotifications[key] ~= nil then
-        return VUI_SavedVariables.VUINotifications[key]
-    end
-    return defaultValue
-end
-
--- Initialize the module
-function VUI.Notifications:Initialize()
-    if self.Initialized then
-        return
-    end
-    
-    -- Set up config
-    self:SetupConfig()
-    
-    -- Set up error suppression
-    if self:GetConfigValue("suppressErrors", true) then
-        self.HookErrorsFrame()
-    end
-    
-    -- Add slash command
-    SLASH_VUINOTIFICATIONS1 = "/vuin"
-    SLASH_VUINOTIFICATIONS2 = "/vuinotifications"
-    SlashCmdList["VUINOTIFICATIONS"] = function(msg)
-        if VUI.Config and VUI.Config.OpenConfigPanel then
-            VUI.Config:OpenConfigPanel("VUINotifications")
-        else
-            print("|cff33ff99VUI Notifications:|r Use /vui for configuration.")
-        end
-    end
-    
-    -- Mark as initialized
-    self.Initialized = true
-    
-    -- Log initialization
-    if VUI.Utilities and VUI.Utilities.Logger then
-        VUI.Utilities.Logger:Log("VUINotifications initialized")
+-- Slash command handler
+function M:SlashCommand(input)
+    if input == "toggle" then
+        self.db.profile.enabled = not self.db.profile.enabled
+        VUI:Print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
     else
-        print("|cff33ff99VUI Notifications:|r Module initialized")
+        -- Open configuration
+        VUI.Config:OpenToCategory(self.TITLE)
     end
+end
+
+-- Theme update handler
+function M:UpdateTheme()
+    -- Update visuals based on current theme
+    if not self.db.profile.useThemeColors then return end
+    
+    local theme = VUI:GetActiveTheme()
+    if not theme then return end
+    
+    -- Apply theme colors to notification types
+    self.db.profile.colors.interrupt = {r = theme.colors.primary.r, g = theme.colors.primary.g, b = theme.colors.primary.b, a = 1.0}
+    self.db.profile.colors.dispel = {r = theme.colors.secondary.r, g = theme.colors.secondary.g, b = theme.colors.secondary.b, a = 1.0}
+end
+
+-- Debug helper
+function M:Debug(...)
+    VUI:Debug(self.NAME, ...)
 end
