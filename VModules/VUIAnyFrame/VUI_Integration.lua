@@ -36,6 +36,9 @@ function VUIAnyFrame:InitVUIIntegration()
     hooksecurefunc(self, "UpdateAllFrames", function()
         self:SyncSettingsToVUI()
     end)
+    
+    -- The VUI Config registration will be handled in SetupOptions,
+    -- which is called in OnInitialize
 end
 
 -- Sync settings from VUIAnyFrame to VUI

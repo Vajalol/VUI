@@ -38,8 +38,13 @@ function VUIAnyFrame:OnInitialize()
     self.db.RegisterCallback(self, "OnProfileCopied", "ProfileChanged")
     self.db.RegisterCallback(self, "OnProfileReset", "ProfileChanged")
     
-    -- Initialize addon options
+    -- Set up the options - use the standardized approach for VUI modules
     self:SetupOptions()
+    
+    -- Initialize VUI integration if VUI is available
+    if VUI then
+        self:InitVUIIntegration()
+    end
     
     -- Create our frames
     self:CreateFrames()
@@ -53,7 +58,7 @@ end
 
 -- Handle slash commands
 function VUIAnyFrame:SlashCommand(input)
-    input = input:trim()
+    input = input:trim():lower()
     
     if input == "config" or input == "options" or input == "opt" or input == "" then
         self:OpenOptions()
@@ -63,11 +68,21 @@ function VUIAnyFrame:SlashCommand(input)
         self:LockFrames()
     elseif input == "unlock" or input == "u" then
         self:UnlockFrames()
+    elseif input == "help" or input == "h" or input == "?" then
+        self:Print("VUI AnyFrame commands:")
+        self:Print(" - /va : Open config panel")
+        self:Print(" - /va reset (or r): Reset all frames")
+        self:Print(" - /va lock (or l): Lock all frames")
+        self:Print(" - /va unlock (or u): Unlock all frames")
+        self:Print(" - /va help (or h, ?): Show this help")
     else
-        self:Print(L["Available commands:"])
-        self:Print("- " .. L["reset - Reset all frames"])
-        self:Print("- " .. L["lock/unlock - Lock/unlock all frames"])
-        self:Print("- " .. L["config - Open configuration"])
+        -- Show help by default for unknown commands
+        self:Print("VUI AnyFrame commands:")
+        self:Print(" - /va : Open config panel")
+        self:Print(" - /va reset (or r): Reset all frames")
+        self:Print(" - /va lock (or l): Lock all frames")
+        self:Print(" - /va unlock (or u): Unlock all frames")
+        self:Print(" - /va help (or h, ?): Show this help")
     end
 end
 
@@ -168,16 +183,23 @@ end
 
 -- Open the options panel
 function VUIAnyFrame:OpenOptions()
-    AceConfigDialog:Open("VUIAnyFrame")
+    -- First try to open through VUI config if available
+    if VUI and VUI.Config and VUI.Config.OpenModule then
+        VUI.Config:OpenModule("VUIAnyFrame")
+    else
+        -- Fallback to Ace config if VUI config not available
+        AceConfigDialog:Open("VUIAnyFrame")
+    end
 end
 
--- Set up options
-function VUIAnyFrame:SetupOptions()
+-- Get options for configuration panel - standard function name used across VUI modules
+function VUIAnyFrame:GetOptions()
     -- Basic options structure
     local options = {
         name = "VUI AnyFrame",
         handler = self,
         type = "group",
+        icon = "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm.tga",
         args = {
             general = {
                 order = 1,
@@ -239,6 +261,20 @@ function VUIAnyFrame:SetupOptions()
         },
     }
     
+    -- Return the generated options
+    return options
+end
+
+-- Set up options
+function VUIAnyFrame:SetupOptions()
+    local options = self:GetOptions()
+    
+    -- Register with VUI Config system if available
+    if VUI and VUI.Config and VUI.Config.RegisterModuleOptions then
+        VUI.Config:RegisterModuleOptions("VUIAnyFrame", options, "VUI AnyFrame")
+    end
+    
+    -- Also register with AceConfig for backward compatibility
     AceConfigRegistry:RegisterOptionsTable("VUIAnyFrame", options)
     self.optionsFrame = AceConfigDialog:AddToBlizOptions("VUIAnyFrame", "VUIAnyFrame")
 end
