@@ -454,15 +454,21 @@ function VUISkin:OnThemeChanged()
     end
 end
 
--- Register with VUI theme system
-function VUISkin:OnInitialize()
-    -- Call parent OnInitialize
-    self.OnInitialize = nil
-    VUISkin.OnInitialize(self)
-    
+-- Additional initialization for the Core component
+function VUISkin:OnCoreInitialize()
     -- Register with VUI theme system
     VUI:RegisterCallback("OnThemeChanged", function() self:OnThemeChanged() end)
     
     -- Register textures right away
     self:RegisterTextures()
+end
+
+-- Hook into the main OnInitialize method to add our core initialization
+local originalOnInitialize = VUISkin.OnInitialize
+function VUISkin:OnInitialize()
+    -- Call the original OnInitialize first
+    originalOnInitialize(self)
+    
+    -- Then call our core-specific initialization
+    self:OnCoreInitialize()
 end
