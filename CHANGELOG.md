@@ -1,5 +1,35 @@
 # VUI Changelog
 
+## [1.0.0](https://github.com/Vajalol/VUI) (2025-05-10)
+
+### Added
+- Complete module system finalization with all 15 addon modules integrated:
+  - Core Modules: VUIBuffs, VUIAnyFrame, VUIKeystones, VUICC, VUICD, VUIIDs, VUIGfinder, VUITGCD, VUIAuctionator
+  - Specialized Modules: VUINotifications, VUIConsumables, VUIPositionOfPower, VUIMissingRaidBuffs, VUIMouseFireTrail, VUIHealerMana
+  - Full Plater integration with VUIPlater module
+- Comprehensive audit of all VModules to ensure proper:
+  - Structure with consistent file organization
+  - Code completeness with essential functionality
+  - System integration with the VUI core
+  - Media file availability with properly formatted resources
+  - Functionality testing across all core game environments
+  - Visual correctness with consistent UI presentation
+
+### Changed
+- Updated all module version numbers to 1.0 for release
+- Optimized file structures to remove redundant libraries and dependencies
+- Standardized all service files to use consistent path references
+- Enhanced module loading sequence for optimal performance
+- Improved cross-module integration
+
+### Fixed
+- Removed redundant libraries in VUIAnyFrame
+- Fixed texture path references in VUIKeystones and VUIMouseFireTrail
+- Updated font paths in VUIScrollingText
+- Corrected overlapping module references in VUITGCD
+- Fixed VUIAuctionator constants loading
+- Removed duplicate border files in VUIBuffs
+
 ## [0.7.1-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
 
 ### Added
