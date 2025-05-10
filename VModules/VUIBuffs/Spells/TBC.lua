@@ -14,15 +14,8 @@ local L = VUIBuffs.L
 
 ------------------------------------------------]]--
 
- If you are editing this file, you should be aware
- that everything can now be done from the in-game
- interface, including adding custom buffs.
-
- Use the /buffoverlay or /bo command.
-
-------------------------------------------------]]--
-
 -- Lower prio = shown above other buffs
+VUIBuffs.SpellsDB = {
     -- Druid
     [22812] = { class = "DRUID", prio = 50 }, --Barkskin
     [5215] = { class = "DRUID", prio = 70 },

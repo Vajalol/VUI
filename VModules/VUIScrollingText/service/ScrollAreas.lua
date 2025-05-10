@@ -147,13 +147,21 @@ function VUI.ScrollingText:GetScrollAreaForText(textType)
     
     -- Map the configured area to an actual scroll area
     if area == "center" then
-        return textType == "incomingDamage" or textType == "incomingHeal" ? "incoming" : "outgoing"
+        if textType == "incomingDamage" or textType == "incomingHeal" then
+            return "incoming"
+        else
+            return "outgoing"
+        end
     elseif area == "left" then
         return "incoming"
     elseif area == "right" then
         return "outgoing"
     elseif area == "up" then
-        return textType == "incomingDamage" or textType == "incomingHeal" ? "incomingHeal" : "outgoingHeal"
+        if textType == "incomingDamage" or textType == "incomingHeal" then
+            return "incomingHeal"
+        else
+            return "outgoingHeal"
+        end
     elseif area == "down" then
         return "notification"
     else

@@ -318,124 +318,125 @@ end
 -- Get options table for config UI
 function Module:GetOptions()
     return {
-    name = "VUI IDs",
-    desc = "Adds IDs to tooltips",
-    type = "group",
-    order = 60,
-    args = {
-        general = {
-            name = "General",
-            type = "group",
-            order = 10,
-            args = {
-                header = {
-                    name = "Tooltip ID Display",
-                    type = "header",
-                    order = 1,
-                },
-                desc = {
-                    name = "Shows various IDs in tooltips - helps with addon development and debugging.",
-                    type = "description",
-                    order = 2,
-                },
-                enabled = {
-                    name = "Enable",
-                    desc = "Enable tooltip ID display",
-                    type = "toggle",
-                    width = "full",
-                    order = 3,
-                    get = function() return Module.db.profile.enabled end,
-                    set = function(info, val)
-                        Module.db.profile.enabled = val
-                        if val then
-                            Module:Enable()
-                        else
-                            Module:Disable()
-                        end
-                    end,
-                },
-                spacer1 = {
-                    name = "",
-                    type = "description",
-                    order = 10,
-                },
-                showSpellID = {
-                    name = "Show Spell IDs",
-                    desc = "Show IDs for spells",
-                    type = "toggle",
-                    order = 11,
-                    get = function() return Module.db.profile.showSpellID end,
-                    set = function(info, val) Module.db.profile.showSpellID = val end,
-                },
-                showItemID = {
-                    name = "Show Item IDs",
-                    desc = "Show IDs for items",
-                    type = "toggle",
-                    order = 12,
-                    get = function() return Module.db.profile.showItemID end,
-                    set = function(info, val) Module.db.profile.showItemID = val end,
-                },
-                showNPCID = {
-                    name = "Show NPC IDs",
-                    desc = "Show IDs for NPCs",
-                    type = "toggle",
-                    order = 13,
-                    get = function() return Module.db.profile.showNPCID end,
-                    set = function(info, val) Module.db.profile.showNPCID = val end,
-                },
-                showQuestID = {
-                    name = "Show Quest IDs",
-                    desc = "Show IDs for quests",
-                    type = "toggle",
-                    order = 14,
-                    get = function() return Module.db.profile.showQuestID end,
-                    set = function(info, val) Module.db.profile.showQuestID = val end,
-                },
-                showTalentID = {
-                    name = "Show Talent IDs",
-                    desc = "Show IDs for talents",
-                    type = "toggle",
-                    order = 15,
-                    get = function() return Module.db.profile.showTalentID end,
-                    set = function(info, val) Module.db.profile.showTalentID = val end,
-                },
-                showAchievementID = {
-                    name = "Show Achievement IDs",
-                    desc = "Show IDs for achievements",
-                    type = "toggle",
-                    order = 16,
-                    get = function() return Module.db.profile.showAchievementID end,
-                    set = function(info, val) Module.db.profile.showAchievementID = val end,
-                },
-                showEnchantID = {
-                    name = "Show Enchant IDs",
-                    desc = "Show IDs for enchants",
-                    type = "toggle",
-                    order = 17,
-                    get = function() return Module.db.profile.showEnchantID end,
-                    set = function(info, val) Module.db.profile.showEnchantID = val end,
-                },
-                showBonusID = {
-                    name = "Show Bonus IDs",
-                    desc = "Show bonus IDs for items",
-                    type = "toggle",
-                    order = 18,
-                    get = function() return Module.db.profile.showBonusID end,
-                    set = function(info, val) Module.db.profile.showBonusID = val end,
-                },
-                colorText = {
-                    name = "ID Color",
-                    desc = "Set the color of ID values",
-                    type = "color",
-                    order = 20,
-                    get = function()
-                        local c = Module.db.profile.colorText
-                        return c.r, c.g, c.b, c.a
-                    end,
-                    set = function(info, r, g, b, a)
-                        local c = Module.db.profile.colorText
-                        c.r, c.g, c.b, c.a = r, g, b, a
-                    end,
+        name = "VUI IDs",
+        desc = "Adds IDs to tooltips",
+        type = "group",
+        order = 60,
+        args = {
+            general = {
+                name = "General",
+                type = "group",
+                order = 10,
+                args = {
+                    header = {
+                        name = "Tooltip ID Display",
+                        type = "header",
+                        order = 1,
+                    },
+                    desc = {
+                        name = "Shows various IDs in tooltips - helps with addon development and debugging.",
+                        type = "description",
+                        order = 2,
+                    },
+                    enabled = {
+                        name = "Enable",
+                        desc = "Enable tooltip ID display",
+                        type = "toggle",
+                        width = "full",
+                        order = 3,
+                        get = function() return Module.db.profile.enabled end,
+                        set = function(info, val)
+                            Module.db.profile.enabled = val
+                            if val then
+                                Module:Enable()
+                            else
+                                Module:Disable()
+                            end
+                        end,
+                    },
+                    spacer1 = {
+                        name = "",
+                        type = "description",
+                        order = 10,
+                    },
+                    showSpellID = {
+                        name = "Show Spell IDs",
+                        desc = "Show IDs for spells",
+                        type = "toggle",
+                        order = 11,
+                        get = function() return Module.db.profile.showSpellID end,
+                        set = function(info, val) Module.db.profile.showSpellID = val end,
+                    },
+                    showItemID = {
+                        name = "Show Item IDs",
+                        desc = "Show IDs for items",
+                        type = "toggle",
+                        order = 12,
+                        get = function() return Module.db.profile.showItemID end,
+                        set = function(info, val) Module.db.profile.showItemID = val end,
+                    },
+                    showNPCID = {
+                        name = "Show NPC IDs",
+                        desc = "Show IDs for NPCs",
+                        type = "toggle",
+                        order = 13,
+                        get = function() return Module.db.profile.showNPCID end,
+                        set = function(info, val) Module.db.profile.showNPCID = val end,
+                    },
+                    showQuestID = {
+                        name = "Show Quest IDs",
+                        desc = "Show IDs for quests",
+                        type = "toggle",
+                        order = 14,
+                        get = function() return Module.db.profile.showQuestID end,
+                        set = function(info, val) Module.db.profile.showQuestID = val end,
+                    },
+                    showTalentID = {
+                        name = "Show Talent IDs",
+                        desc = "Show IDs for talents",
+                        type = "toggle",
+                        order = 15,
+                        get = function() return Module.db.profile.showTalentID end,
+                        set = function(info, val) Module.db.profile.showTalentID = val end,
+                    },
+                    showAchievementID = {
+                        name = "Show Achievement IDs",
+                        desc = "Show IDs for achievements",
+                        type = "toggle",
+                        order = 16,
+                        get = function() return Module.db.profile.showAchievementID end,
+                        set = function(info, val) Module.db.profile.showAchievementID = val end,
+                    },
+                    showEnchantID = {
+                        name = "Show Enchant IDs",
+                        desc = "Show IDs for enchants",
+                        type = "toggle",
+                        order = 17,
+                        get = function() return Module.db.profile.showEnchantID end,
+                        set = function(info, val) Module.db.profile.showEnchantID = val end,
+                    },
+                    showBonusID = {
+                        name = "Show Bonus IDs",
+                        desc = "Show bonus IDs for items",
+                        type = "toggle",
+                        order = 18,
+                        get = function() return Module.db.profile.showBonusID end,
+                        set = function(info, val) Module.db.profile.showBonusID = val end,
+                    },
+                    colorText = {
+                        name = "ID Color",
+                        desc = "Set the color of ID values",
+                        type = "color",
+                        order = 20,
+                        get = function()
+                            local c = Module.db.profile.colorText
+                            return c.r, c.g, c.b, c.a
+                        end,
+                        set = function(info, r, g, b, a)
+                            local c = Module.db.profile.colorText
+                            c.r, c.g, c.b, c.a = r, g, b, a
+                        end,
+                    },
                 },
             },
         },

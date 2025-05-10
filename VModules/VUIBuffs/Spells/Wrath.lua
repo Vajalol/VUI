@@ -14,14 +14,8 @@ local L = VUIBuffs.L
 
 ------------------------------------------------]]--
 
- If you are editing this file, you should be aware
- that everything can now be done from the in-game
- interface, including adding custom buffs.
-
- Use the /buffoverlay or /bo command.
-
-------------------------------------------------]]
 -- Lower prio = shown above other buffs
+VUIBuffs.SpellsDB = {
     -- Death Knight
     [48707] = { class = "DEATHKNIGHT", prio = 50 }, --Anti-Magic Shell
     [47484] = { class = "DEATHKNIGHT", prio = 50 }, --Huddle (Ghoul)

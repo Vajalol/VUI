@@ -261,7 +261,8 @@ end
 -- Style enemy nameplates
 function PlaterService:StyleEnemyNameplate(unitFrame)
     -- Apply enemy-specific styling
-}
+    -- TODO: Implement enemy nameplates styling
+end
 
 -- Apply name-only mode to a unit frame
 function PlaterService:ApplyNameOnlyMode(unitFrame)
@@ -282,7 +283,7 @@ function PlaterService:ApplyNameOnlyMode(unitFrame)
         unitFrame.name:ClearAllPoints()
         unitFrame.name:SetPoint("CENTER", unitFrame, "CENTER", 0, 0)
     end
-}
+end
 
 -- Return the service object
 return PlaterService
