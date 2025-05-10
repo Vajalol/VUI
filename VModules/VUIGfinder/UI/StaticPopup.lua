@@ -10,97 +10,54 @@ if not Module then return end
 local VUIGfinder = _G.VUIGfinder
 local L = VUIGfinder.L
 
--- Create StaticPopups namespace
-VUIGfinder.StaticPopups = {}
-local StaticPopups = VUIGfinder.StaticPopups
+-- Create a template for static popup dialogs that the module will use
+StaticPopupDialogs["VUIGFINDER_CONFIRM_ACTION"] = {
+    text = "%s",
+    button1 = ACCEPT,
+    button2 = CANCEL,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
 
--- Callback storage
-StaticPopups.confirmCallback = nil
-StaticPopups.inputCallback = nil
+StaticPopupDialogs["VUIGFINDER_MESSAGE"] = {
+    text = "%s",
+    button1 = OKAY,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
 
--- Show confirmation dialog
-function StaticPopups:ShowConfirmation(title, text, callback)
-    if not VUIGfinderConfirmationDialog then return end
-    
-    -- Store callback
-    self.confirmCallback = callback
-    
-    -- Set dialog text
-    VUIGfinderConfirmationDialog.Title:SetText(title or L["Confirmation"])
-    VUIGfinderConfirmationDialogText:SetText(text or L["Are you sure?"])
-    
-    -- Set button text
-    VUIGfinderConfirmationDialogYesButton:SetText(ACCEPT)
-    VUIGfinderConfirmationDialogNoButton:SetText(CANCEL)
-    
-    -- Show dialog
-    VUIGfinderConfirmationDialog:Show()
-end
+StaticPopupDialogs["VUIGFINDER_CONFIRM_RESET"] = {
+    text = L["Are you sure you want to reset all VUI Gfinder settings to defaults?"],
+    button1 = ACCEPT,
+    button2 = CANCEL,
+    OnAccept = function()
+        if VUIGfinder.Settings then
+            VUIGfinder.Settings:Reset()
+            VUIGfinder:Print(L["All settings have been reset to defaults."])
+        end
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
 
--- Execute the stored confirmation callback
-function StaticPopups.ConfirmAction()
-    if StaticPopups.confirmCallback then
-        StaticPopups.confirmCallback()
-        StaticPopups.confirmCallback = nil
-    end
-end
-
--- Show input dialog
-function StaticPopups:ShowInput(title, text, defaultValue, callback)
-    if not VUIGfinderInputDialog then return end
-    
-    -- Store callback
-    self.inputCallback = callback
-    
-    -- Set dialog text
-    VUIGfinderInputDialog.Title:SetText(title or L["Input"])
-    VUIGfinderInputDialogText:SetText(text or L["Enter value:"])
-    
-    -- Set default value if provided
-    VUIGfinderInputDialogInput:SetText(defaultValue or "")
-    VUIGfinderInputDialogInput:HighlightText()
-    
-    -- Set button text
-    VUIGfinderInputDialogOkButton:SetText(ACCEPT)
-    VUIGfinderInputDialogCancelButton:SetText(CANCEL)
-    
-    -- Show dialog
-    VUIGfinderInputDialog:Show()
-end
-
--- Execute the stored input callback
-function StaticPopups.ConfirmInput(input)
-    if StaticPopups.inputCallback then
-        StaticPopups.inputCallback(input)
-        StaticPopups.inputCallback = nil
-    end
-end
-
--- Show a simple alert dialog
-function StaticPopups:ShowAlert(title, text)
-    -- Use the standard confirmation dialog but without the Yes button
-    if not VUIGfinderConfirmationDialog then return end
-    
-    -- Set dialog text
-    VUIGfinderConfirmationDialog.Title:SetText(title or L["Alert"])
-    VUIGfinderConfirmationDialogText:SetText(text or "")
-    
-    -- Hide Yes button, rename No button to OK
-    VUIGfinderConfirmationDialogYesButton:Hide()
-    VUIGfinderConfirmationDialogNoButton:SetText(OKAY)
-    VUIGfinderConfirmationDialogNoButton:ClearAllPoints()
-    VUIGfinderConfirmationDialogNoButton:SetPoint("BOTTOM", VUIGfinderConfirmationDialog, "BOTTOM", 0, 20)
-    
-    -- Show dialog
-    VUIGfinderConfirmationDialog:Show()
-    
-    -- Setup callback to restore button positions when dialog is closed
-    VUIGfinderConfirmationDialog:SetScript("OnHide", function()
-        VUIGfinderConfirmationDialogYesButton:Show()
-        VUIGfinderConfirmationDialogNoButton:ClearAllPoints()
-        VUIGfinderConfirmationDialogNoButton:SetPoint("BOTTOMLEFT", VUIGfinderConfirmationDialog, "BOTTOM", 10, 20)
-        
-        -- Remove this temporary OnHide handler
-        VUIGfinderConfirmationDialog:SetScript("OnHide", nil)
-    end)
-end
+StaticPopupDialogs["VUIGFINDER_CONFIRM_RESET_CATEGORY"] = {
+    text = L["Are you sure you want to reset %s settings to defaults?"],
+    button1 = ACCEPT,
+    button2 = CANCEL,
+    OnAccept = function(self, data)
+        if VUIGfinder.Settings and data then
+            VUIGfinder.Settings:Reset(data)
+            VUIGfinder:Print(string.format(L["%s settings have been reset to defaults."], data))
+        end
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}

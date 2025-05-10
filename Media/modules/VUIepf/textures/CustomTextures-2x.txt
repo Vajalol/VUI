@@ -1,0 +1,5 @@
+This is a placeholder file for the CustomTextures-2x.blp file that would contain high-resolution textures.
+
+These are the 2x resolution versions of the textures in CustomTextures.blp, used for higher resolution displays and UI scaling.
+
+In a real implementation, this file would be a BLP (Blizzard Texture Format) file with higher resolution artwork to ensure the UI elements appear crisp on high-DPI displays.

@@ -1,0 +1,10 @@
+This is a placeholder file for the CustomTextures.blp file that would contain the actual texture artwork.
+
+In a real implementation, these would be BLP (Blizzard Texture Format) files that contain the graphical elements for the custom player frames.
+
+The artwork would include:
+1. Base frame textures for different classes
+2. Custom frame elements like dragon wings, rare silver borders, etc.
+3. Different resolution versions for UI scaling (normal and 2x for high resolution displays)
+
+For a full implementation, these texture files would need to be created by a graphic artist familiar with World of Warcraft's UI styling and exported in the appropriate format.

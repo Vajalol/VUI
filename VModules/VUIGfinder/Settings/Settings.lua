@@ -9,6 +9,7 @@ if not Module then return end
 
 local VUIGfinder = _G.VUIGfinder
 local L = VUIGfinder.L
+local C = VUIGfinder.C
 
 -- Create Settings namespace
 VUIGfinder.Settings = {}
@@ -17,154 +18,233 @@ local Settings = VUIGfinder.Settings
 -- Default settings
 Settings.defaults = {
     profile = {
-        -- General settings
         enabled = true,
-        dialogScale = 1.0,
-        debugMode = false,
+        debug = false,
         
-        -- Feature settings
-        enhancedTooltips = true,
-        oneClickSignUp = true,
-        rememberSignUpNotes = true,
-        signUpOnEnter = true,
-        showFilterButton = true,
+        -- Dungeon filters
+        dungeon = {
+            enabled = true,
+            minimumDifficulty = C.NORMAL,
+            maximumDifficulty = C.MYTHICPLUS,
+            minMythicPlusLevel = 2,
+            maxMythicPlusLevel = 30,
+            tankRoleEnabled = true,
+            healerRoleEnabled = true,
+            dpsRoleEnabled = true,
+            onlyShowTimedRuns = false,
+            excludeBoostGroups = true,
+            requireVoiceChat = false,
+        },
         
-        -- Advanced filter settings
-        enableAdvancedMode = false,
-        defaultFilterExpression = "",
-        enableCustomSorting = false,
-        defaultSortingExpression = "",
+        -- Raid filters
+        raid = {
+            enabled = true,
+            minimumDifficulty = C.NORMAL,
+            maximumDifficulty = C.MYTHIC,
+            tankRoleEnabled = true, 
+            healerRoleEnabled = true,
+            dpsRoleEnabled = true,
+            onlyShowProgression = false,
+            excludeBoostGroups = true,
+            requireVoiceChat = false,
+        },
         
-        -- Last used filters (saved for convenience)
-        lastRaidFilters = {},
-        lastDungeonFilters = {},
-        lastPvPFilters = {},
+        -- Arena filters
+        arena = {
+            enabled = true,
+            minRating = 0,
+            maxRating = 3000,
+            tankRoleEnabled = true,
+            healerRoleEnabled = true,
+            dpsRoleEnabled = true,
+            excludeBoostGroups = true,
+            requireVoiceChat = false,
+        },
+        
+        -- Rated BG filters
+        rbg = {
+            enabled = true,
+            minRating = 0,
+            maxRating = 3000,
+            tankRoleEnabled = true,
+            healerRoleEnabled = true, 
+            dpsRoleEnabled = true,
+            excludeBoostGroups = true,
+            requireVoiceChat = false,
+        },
+        
+        -- Advanced filtering
+        advanced = {
+            enabled = false,
+            expression = "",
+        },
+        
+        -- Custom sorting
+        sorting = {
+            enabled = false,
+            expression = "",
+        },
         
         -- UI settings
-        lastDialogPosition = {},
+        ui = {
+            minimized = false,
+            dialogScale = 1.0,
+            tooltipEnhancement = true,
+            oneClickSignUp = true,
+            persistSignUpNote = true,
+            signUpOnEnter = true,
+            usePGFButton = true,
+        },
         
         -- Saved notes
-        signUpNotes = "",
-    }
+        signUpNotes = {
+            default = "",
+            dungeon = "",
+            raid = "",
+            arena = "",
+            rbg = "",
+        },
+    },
 }
 
 -- Initialize settings
 function Settings:Initialize()
-    -- Register default settings
-    VUIGfinder.db = VUI.db:RegisterNamespace("VUIGfinder", self.defaults)
+    -- Migrate legacy settings if needed
+    self:MigrateSettings()
     
-    -- Apply initial settings
-    self:ApplySettings()
+    -- Set up defaults
+    self:SetDefaults()
     
-    -- Set labels for UI
-    if VUIGfinderSettingsPanelGeneralSettingsEnable then
-        VUIGfinderSettingsPanelGeneralSettingsEnable.Text:SetText(L["Enable"])
-    end
-    
-    if VUIGfinderSettingsPanelFeatureSettingsEnhancedTooltips then
-        VUIGfinderSettingsPanelFeatureSettingsEnhancedTooltips.Text:SetText(L["Enhanced Tooltips"])
-    end
-    
-    if VUIGfinderSettingsPanelFeatureSettingsOneClickSignUp then
-        VUIGfinderSettingsPanelFeatureSettingsOneClickSignUp.Text:SetText(L["One-Click Sign Up"])
-    end
-    
-    if VUIGfinderSettingsPanelFeatureSettingsRememberSignUpNotes then
-        VUIGfinderSettingsPanelFeatureSettingsRememberSignUpNotes.Text:SetText(L["Remember Sign Up Notes"])
-    end
-    
-    if VUIGfinderSettingsPanelFeatureSettingsSignUpOnEnter then
-        VUIGfinderSettingsPanelFeatureSettingsSignUpOnEnter.Text:SetText(L["Sign Up on Enter"])
-    end
-    
-    if VUIGfinderSettingsPanelFeatureSettingsShowFilterButton then
-        VUIGfinderSettingsPanelFeatureSettingsShowFilterButton.Text:SetText(L["Show Filter Button"])
-    end
+    -- Register callbacks for settings changes
+    self:RegisterCallbacks()
 end
 
--- Apply settings to UI components
-function Settings:ApplySettings()
-    -- Apply dialog scale
-    local scale = VUIGfinder.db.profile.dialogScale
-    if VUIGfinderDialog then
-        VUIGfinderDialog:SetScale(scale)
+-- Migrate settings from previous versions
+function Settings:MigrateSettings()
+    -- Check for legacy saved variables format
+    local savedVars = VUI_SavedVariables.VUIGfinder
+    
+    if not savedVars then
+        return
     end
     
-    -- Set logger level based on debug mode
-    if VUIGfinder.Logger then
-        if VUIGfinder.db.profile.debugMode then
-            VUIGfinder.Logger:SetLogLevel(VUIGfinder.Logger.LOG_LEVEL_DEBUG)
+    -- Simple migration - just ensure profile exists
+    if not savedVars.profile then
+        savedVars.profile = {}
+    end
+    
+    -- More complex migrations can be added here
+end
+
+-- Set default settings
+function Settings:SetDefaults()
+    local db = Module.db
+    
+    -- Ensure we have a profile
+    db.profile = db.profile or {}
+    
+    -- Merge defaults into existing settings
+    for category, defaults in pairs(self.defaults.profile) do
+        db.profile[category] = db.profile[category] or {}
+        
+        if type(defaults) == "table" then
+            for key, value in pairs(defaults) do
+                if db.profile[category][key] == nil then
+                    db.profile[category][key] = value
+                end
+            end
         else
-            VUIGfinder.Logger:SetLogLevel(VUIGfinder.Logger.LOG_LEVEL_ERROR)
+            if db.profile[category] == nil then
+                db.profile[category] = defaults
+            end
         end
     end
-    
-    -- Apply other settings as needed
-    -- (each module should check settings when initializing)
 end
 
--- Toggle addon enabled state
-function Settings:ToggleEnabled(enabled)
-    VUIGfinder.db.profile.enabled = enabled
-    self:ApplySettings()
+-- Register callbacks for settings changes
+function Settings:RegisterCallbacks()
+    -- Add callbacks if needed
+end
+
+-- Get a setting value
+function Settings:Get(category, key)
+    local db = Module.db
     
-    if VUIGfinder.OnEnabledStateChanged then
-        VUIGfinder.OnEnabledStateChanged(enabled)
+    if not db.profile then
+        return nil
+    end
+    
+    if not category then
+        return db.profile
+    end
+    
+    if not db.profile[category] then
+        return nil
+    end
+    
+    if not key then
+        return db.profile[category]
+    end
+    
+    return db.profile[category][key]
+end
+
+-- Set a setting value
+function Settings:Set(category, key, value)
+    local db = Module.db
+    
+    if not db.profile then
+        db.profile = {}
+    end
+    
+    if not db.profile[category] then
+        db.profile[category] = {}
+    end
+    
+    db.profile[category][key] = value
+    
+    -- Trigger callbacks
+    self:TriggerCallbacks(category, key, value)
+end
+
+-- Save settings
+function Settings:Save()
+    -- Ensure settings are saved in SavedVariables
+    VUI_SavedVariables.VUIGfinder = Module.db
+end
+
+-- Reset settings to defaults
+function Settings:Reset(category)
+    local db = Module.db
+    
+    if not category then
+        -- Reset all settings
+        db.profile = self.defaults.profile
+    else
+        -- Reset just one category
+        db.profile[category] = self.defaults.profile[category]
+    end
+    
+    -- Trigger callbacks
+    self:TriggerCallbacks(category)
+end
+
+-- Callback system
+Settings.callbacks = {}
+
+-- Register a callback for settings changes
+function Settings:RegisterCallback(callback)
+    table.insert(self.callbacks, callback)
+end
+
+-- Trigger callbacks for settings changes
+function Settings:TriggerCallbacks(category, key, value)
+    for _, callback in ipairs(self.callbacks) do
+        callback(category, key, value)
     end
 end
 
--- Set dialog scale
-function Settings:SetDialogScale(scale)
-    VUIGfinder.db.profile.dialogScale = scale
-    self:ApplySettings()
-end
-
--- Toggle enhanced tooltips
-function Settings:ToggleEnhancedTooltips(enabled)
-    VUIGfinder.db.profile.enhancedTooltips = enabled
-end
-
--- Toggle one-click sign up
-function Settings:ToggleOneClickSignUp(enabled)
-    VUIGfinder.db.profile.oneClickSignUp = enabled
-end
-
--- Toggle remember sign up notes
-function Settings:ToggleRememberSignUpNotes(enabled)
-    VUIGfinder.db.profile.rememberSignUpNotes = enabled
-end
-
--- Toggle sign up on enter
-function Settings:ToggleSignUpOnEnter(enabled)
-    VUIGfinder.db.profile.signUpOnEnter = enabled
-end
-
--- Toggle show filter button
-function Settings:ToggleShowFilterButton(enabled)
-    VUIGfinder.db.profile.showFilterButton = enabled
-    
-    -- Update filter button visibility
-    if VUIGfinder.UpdateFilterButtonVisibility then
-        VUIGfinder.UpdateFilterButtonVisibility()
-    end
-end
-
--- Set advanced mode enabled
-function Settings:SetAdvancedModeEnabled(enabled)
-    VUIGfinder.db.profile.enableAdvancedMode = enabled
-end
-
--- Set filter expression
-function Settings:SetFilterExpression(expression)
-    VUIGfinder.db.profile.defaultFilterExpression = expression
-end
-
--- Set custom sorting enabled
-function Settings:SetCustomSortingEnabled(enabled)
-    VUIGfinder.db.profile.enableCustomSorting = enabled
-end
-
--- Set sorting expression
-function Settings:SetSortingExpression(expression)
-    VUIGfinder.db.profile.defaultSortingExpression = expression
+-- Create options panel for VUI config interface
+function Settings:CreateOptionsPanel()
+    -- Implementation will be in separate UI file
 end

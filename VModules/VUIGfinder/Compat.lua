@@ -1,6 +1,7 @@
 -------------------------------------------------------------------------------
 -- VUI Gfinder (based on Premade Groups Filter)
 -- Module for VUI - Vortex UI Addon Suite
+-- Compatibility layer for different WoW versions
 -------------------------------------------------------------------------------
 
 local VUI = _G.VUI
@@ -9,109 +10,143 @@ if not Module then return end
 
 local VUIGfinder = _G.VUIGfinder
 local L = VUIGfinder.L
-local C = VUIGfinder.C
 
--- Helper functions that are used throughout the addon
-function VUIGfinder.Empty(value)
-    return value == nil or value == ""
-end
+-- Create compatibility namespace
+VUIGfinder.Compat = {}
+local Compat = VUIGfinder.Compat
 
-function VUIGfinder.Table_Copy_Shallow(t)
-    if not t then return nil end
-    local copy = {}
-    for k, v in pairs(t) do
-        copy[k] = v
+-- Get client version
+local _, _, _, tocversion = GetBuildInfo()
+Compat.isClassic = (tocversion < 20000)
+Compat.isTBC = (tocversion >= 20000 and tocversion < 30000)
+Compat.isWotLK = (tocversion >= 30000 and tocversion < 40000)
+Compat.isCata = (tocversion >= 40000 and tocversion < 50000)
+Compat.isMoP = (tocversion >= 50000 and tocversion < 60000)
+Compat.isWoD = (tocversion >= 60000 and tocversion < 70000)
+Compat.isLegion = (tocversion >= 70000 and tocversion < 80000)
+Compat.isBFA = (tocversion >= 80000 and tocversion < 90000)
+Compat.isShadowlands = (tocversion >= 90000 and tocversion < 100000)
+Compat.isDragonflight = (tocversion >= 100000 and tocversion < 110000)
+Compat.isWarWithin = (tocversion >= 110000)
+Compat.isRetail = (not Compat.isClassic and not Compat.isTBC and not Compat.isWotLK)
+
+-- Compatibility function for C_LFGList.GetActivityInfoTable 
+function Compat.GetActivityInfoTable(activityID)
+    -- For WoW versions where this function exists, use it directly
+    if C_LFGList.GetActivityInfoTable then
+        return C_LFGList.GetActivityInfoTable(activityID)
     end
-    return copy
-end
-
-function VUIGfinder.Table_Copy_Deep(t)
-    if type(t) ~= "table" then return t end
-    local copy = {}
-    for k, v in pairs(t) do
-        if type(v) == "table" then
-            copy[k] = VUIGfinder.Table_Copy_Deep(v)
-        else
-            copy[k] = v
-        end
-    end
-    return copy
-end
-
-function VUIGfinder.Table_Count(t)
-    local count = 0
-    for _ in pairs(t) do count = count + 1 end
-    return count
-end
-
-function VUIGfinder.String_Split(str, sep)
-    local fields = {}
-    local pattern = string.format("([^%s]+)", sep)
-    str:gsub(pattern, function(c) fields[#fields+1] = c end)
-    return fields
-end
-
-function VUIGfinder.String_TrimWhitespace(str)
-    return str:match("^%s*(.-)%s*$")
-end
-
-function VUIGfinder.GetMediaPath(subPath)
-    return "Interface\\AddOns\\VUI\\Media\\modules\\VUIGfinder\\" .. subPath
-end
-
-function VUIGfinder.FormatTime(seconds)
-    if seconds < 60 then
-        return string.format("%ds", seconds)
-    elseif seconds < 3600 then
-        return string.format("%dm %ds", math.floor(seconds/60), seconds%60)
-    else
-        return string.format("%dh %dm", math.floor(seconds/3600), math.floor((seconds%3600)/60))
-    end
-end
-
-function VUIGfinder.GetDifficultyNameByID(difficultyID)
-    if not difficultyID then return nil end
-    local difficulty = C.DIFFICULTY_MAP[difficultyID]
-    if not difficulty then return nil end
     
-    if difficulty == C.NORMAL then
-        return L["Normal"]
-    elseif difficulty == C.HEROIC then
-        return L["Heroic"]
-    elseif difficulty == C.MYTHIC then
-        return L["Mythic"]
-    elseif difficulty == C.MYTHICPLUS then
-        return L["Mythic+"]
-    elseif difficulty == C.ARENA2V2 then
-        return L["Arena 2v2"]
-    elseif difficulty == C.ARENA3V3 then
-        return L["Arena 3v3"]
+    -- For older WoW versions, implement our own version
+    local activityInfo = {}
+    local name, shortName, category, group, minLevel, maxLevel, filters, minGS, displayType, orderIndex, useHonorLevel, showQuickJoin = C_LFGList.GetActivityInfo(activityID)
+    
+    activityInfo.fullName = name
+    activityInfo.shortName = shortName or name
+    activityInfo.categoryID = category
+    activityInfo.groupFinderActivityGroupID = group
+    activityInfo.minLevel = minLevel
+    activityInfo.maxLevel = maxLevel
+    activityInfo.filters = filters
+    activityInfo.minItemLevel = minGS
+    activityInfo.displayType = displayType
+    activityInfo.orderIndex = orderIndex
+    activityInfo.useHonorLevel = useHonorLevel
+    activityInfo.showQuickJoin = showQuickJoin
+    
+    return activityInfo
+end
+
+-- Compatibility function for C_LFGList.GetSearchResultInfo
+function Compat.GetSearchResultInfo(searchResultID)
+    -- For WoW versions where this function exists, use it directly
+    if C_LFGList.GetSearchResultInfo then
+        return C_LFGList.GetSearchResultInfo(searchResultID)
+    end
+    
+    -- Fall back to the older function if available
+    local id, name, comment, voiceChat, iLvl, honorLevel, age, numBNetFriends, 
+          numCharFriends, numGuildMates, isDelisted, leaderName, numMembers, 
+          isAutoAccept, questID, leaderOverallDungeonScore, leaderDungeonScoreInfo,
+          leaderPvpRatingInfo, requiredDungeonScore, autoAcceptOption, isWarModeActive,
+          leaderFactionGroup
+    
+    if C_LFGList.GetSearchResultInfo then
+        id, activityID, name, comment, voiceChat, iLvl, honorLevel, age, numBNetFriends, 
+        numCharFriends, numGuildMates, isDelisted, leaderName, numMembers, autoAcceptOption
+            = C_LFGList.GetSearchResultInfo(searchResultID)
+    end
+    
+    local searchResultInfo = {
+        searchResultID = id,
+        activityID = activityID,
+        name = name,
+        comment = comment,
+        voiceChat = voiceChat,
+        requiredItemLevel = iLvl,
+        requiredHonorLevel = honorLevel,
+        age = age,
+        numBNetFriends = numBNetFriends,
+        numCharFriends = numCharFriends,
+        numGuildMates = numGuildMates,
+        isDelisted = isDelisted,
+        leaderName = leaderName,
+        numMembers = numMembers,
+        autoAccept = isAutoAccept or autoAcceptOption == 1,
+        questID = questID,
+        leaderOverallDungeonScore = leaderOverallDungeonScore,
+        leaderDungeonScoreInfo = leaderDungeonScoreInfo,
+        leaderPvpRatingInfo = leaderPvpRatingInfo,
+        requiredDungeonScore = requiredDungeonScore,
+        isWarModeActive = isWarModeActive,
+        leaderFactionGroup = leaderFactionGroup,
+    }
+    
+    -- Add member count info if available
+    local memberCounts = C_LFGList.GetSearchResultMemberCounts and C_LFGList.GetSearchResultMemberCounts(searchResultID)
+    if memberCounts then
+        searchResultInfo.numTanks = memberCounts.tank or 0
+        searchResultInfo.numHealers = memberCounts.healer or 0
+        searchResultInfo.numDamagers = memberCounts.damager or 0
+    end
+    
+    return searchResultInfo
+end
+
+-- Compatibility wrapper for C_LFGList functions
+function Compat.LFGList_HasActiveEntryInfo()
+    if C_LFGList.HasActiveEntryInfo then
+        return C_LFGList.HasActiveEntryInfo()
     else
-        return nil
+        return C_LFGList.GetActiveEntryInfo() ~= nil
     end
 end
 
-function VUIGfinder.GetClassColor(className)
-    if not className then return nil end
-    local color = RAID_CLASS_COLORS[className]
-    if not color then return nil end
-    return color.r, color.g, color.b
-end
-
-function VUIGfinder.IsMythicPlusActivity(activityID)
-    if not activityID then return false end
-    local activityInfo = C_LFGList.GetActivityInfoTable(activityID)
-    if not activityInfo then return false end
-    return C.DIFFICULTY_MAP[activityInfo.difficultyID] == C.MYTHICPLUS
-end
-
-function VUIGfinder.GetRatingInfoForSearchResult(resultID)
-    if not resultID then return nil end
-    local searchResultInfo = C_LFGList.GetSearchResultInfo(resultID)
-    if not searchResultInfo or not searchResultInfo.leaderName then return nil end
+-- Set up overrides for C_LFGList functions
+function Compat.ApplyCompatibilityLayer()
+    -- Only apply compatibility layer if needed
+    if not C_LFGList.GetActivityInfoTable then
+        C_LFGList.GetActivityInfoTable = Compat.GetActivityInfoTable
+    end
     
-    -- In a real implementation, this would extract the rating info from the leader
-    -- Since we don't have the actual game API available, we'll return placeholder values
-    -- In the actual implementation, you would extract this info from the proper API
-    return 0, 0, 0, 0
+    -- Apply other overrides as needed
+    if not VUIGfinder.C_LFGList_HasActiveEntryInfo then
+        VUIGfinder.C_LFGList_HasActiveEntryInfo = Compat.LFGList_HasActiveEntryInfo
+    end
+end
+
+-- Apply compatibility layer immediately
+Compat.ApplyCompatibilityLayer()
+
+-- Additional utility functions for handling version differences
+function Compat.IsVoiceChatSupported()
+    return Compat.isLegion or Compat.isBFA or Compat.isShadowlands or Compat.isDragonflight or Compat.isWarWithin
+end
+
+function Compat.IsMythicPlusSupported()
+    return Compat.isLegion or Compat.isBFA or Compat.isShadowlands or Compat.isDragonflight or Compat.isWarWithin
+end
+
+function Compat.IsRaiderIOSupported()
+    return Compat.isLegion or Compat.isBFA or Compat.isShadowlands or Compat.isDragonflight or Compat.isWarWithin
 end

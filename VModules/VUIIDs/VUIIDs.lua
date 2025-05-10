@@ -83,22 +83,14 @@ local kindOptions = {
 
 -- Initialize module
 function Module:OnInitialize()
-    -- Initialize database
-    if not VUI_SavedVariables.VUIIDs then
-        VUI_SavedVariables.VUIIDs = {}
-    end
-    
-    self.db = VUI_SavedVariables.VUIIDs
-    
-    -- Merge defaults with saved variables
-    for k, v in pairs(self.defaults.profile) do
-        if self.db[k] == nil then
-            self.db[k] = v
-        end
-    end
+    -- Initialize database using VUI namespace system
+    self.db = VUI.db:RegisterNamespace("VUIIDs", self.defaults)
     
     -- Register events
     self:RegisterEvent("PLAYER_LOGIN")
+    
+    -- Register settings with VUI Config
+    VUI.Config:RegisterModuleOptions("VUIIDs", self:GetOptions(), "VUI IDs")
     
     -- Debug message
     self:Debug("VUIIDs initialized")
@@ -106,7 +98,7 @@ end
 
 -- Handle player login event
 function Module:PLAYER_LOGIN()
-    if self.db.enabled then
+    if self.db.profile.enabled then
         self:Enable()
     else
         self:Disable()
@@ -127,7 +119,7 @@ end
 
 -- Debug function
 function Module:Debug(message)
-    if self.db.debug then
+    if self.db.profile.debug then
         print("|cff33ff99VUIIDs:|r " .. message)
     end
 end
@@ -138,14 +130,14 @@ function Module:FormatID(kind, id)
     
     -- Check if this kind of ID should be shown
     local optionKey = kindOptions[kind]
-    if optionKey and self.db[optionKey] == false then
+    if optionKey and self.db.profile[optionKey] == false then
         return
     end
     
-    local r, g, b, a = self.db.colorText.r, self.db.colorText.g, self.db.colorText.b, self.db.colorText.a
+    local r, g, b, a = self.db.profile.colorText.r, self.db.profile.colorText.g, self.db.profile.colorText.b, self.db.profile.colorText.a
     local colorHex = string.format("%02x%02x%02x%02x", a * 255, r * 255, g * 255, b * 255)
     
-    return string.format(self.db.textFormat, kinds[kind], id)
+    return string.format(self.db.profile.textFormat, kinds[kind], id)
 end
 
 -- Add line to tooltip
@@ -216,7 +208,7 @@ function Module:HookTooltips()
         end
         
         -- Bonus IDs
-        if Module.db.showBonusID then
+        if Module.db.profile.showBonusID then
             local bonuses = link:match("item:%d+:%d+:%d+:%d+:%d+:%d+:[-]?%d+:[-]?%d+:%d+:(%d+:?%d*:?%d*)")
             ProcessBonusIDs(self, bonuses)
         end
@@ -323,8 +315,9 @@ function Module:HookTooltips()
     self:Debug("Tooltip hooks applied")
 end
 
--- Register with VUI
-VUI.Config:Register("VUIIDs", {
+-- Get options table for config UI
+function Module:GetOptions()
+    return {
     name = "VUI IDs",
     desc = "Adds IDs to tooltips",
     type = "group",
@@ -351,9 +344,9 @@ VUI.Config:Register("VUIIDs", {
                     type = "toggle",
                     width = "full",
                     order = 3,
-                    get = function() return Module.db.enabled end,
+                    get = function() return Module.db.profile.enabled end,
                     set = function(info, val)
-                        Module.db.enabled = val
+                        Module.db.profile.enabled = val
                         if val then
                             Module:Enable()
                         else
@@ -371,64 +364,64 @@ VUI.Config:Register("VUIIDs", {
                     desc = "Show IDs for spells",
                     type = "toggle",
                     order = 11,
-                    get = function() return Module.db.showSpellID end,
-                    set = function(info, val) Module.db.showSpellID = val end,
+                    get = function() return Module.db.profile.showSpellID end,
+                    set = function(info, val) Module.db.profile.showSpellID = val end,
                 },
                 showItemID = {
                     name = "Show Item IDs",
                     desc = "Show IDs for items",
                     type = "toggle",
                     order = 12,
-                    get = function() return Module.db.showItemID end,
-                    set = function(info, val) Module.db.showItemID = val end,
+                    get = function() return Module.db.profile.showItemID end,
+                    set = function(info, val) Module.db.profile.showItemID = val end,
                 },
                 showNPCID = {
                     name = "Show NPC IDs",
                     desc = "Show IDs for NPCs",
                     type = "toggle",
                     order = 13,
-                    get = function() return Module.db.showNPCID end,
-                    set = function(info, val) Module.db.showNPCID = val end,
+                    get = function() return Module.db.profile.showNPCID end,
+                    set = function(info, val) Module.db.profile.showNPCID = val end,
                 },
                 showQuestID = {
                     name = "Show Quest IDs",
                     desc = "Show IDs for quests",
                     type = "toggle",
                     order = 14,
-                    get = function() return Module.db.showQuestID end,
-                    set = function(info, val) Module.db.showQuestID = val end,
+                    get = function() return Module.db.profile.showQuestID end,
+                    set = function(info, val) Module.db.profile.showQuestID = val end,
                 },
                 showTalentID = {
                     name = "Show Talent IDs",
                     desc = "Show IDs for talents",
                     type = "toggle",
                     order = 15,
-                    get = function() return Module.db.showTalentID end,
-                    set = function(info, val) Module.db.showTalentID = val end,
+                    get = function() return Module.db.profile.showTalentID end,
+                    set = function(info, val) Module.db.profile.showTalentID = val end,
                 },
                 showAchievementID = {
                     name = "Show Achievement IDs",
                     desc = "Show IDs for achievements",
                     type = "toggle",
                     order = 16,
-                    get = function() return Module.db.showAchievementID end,
-                    set = function(info, val) Module.db.showAchievementID = val end,
+                    get = function() return Module.db.profile.showAchievementID end,
+                    set = function(info, val) Module.db.profile.showAchievementID = val end,
                 },
                 showEnchantID = {
                     name = "Show Enchant IDs",
                     desc = "Show IDs for enchants",
                     type = "toggle",
                     order = 17,
-                    get = function() return Module.db.showEnchantID end,
-                    set = function(info, val) Module.db.showEnchantID = val end,
+                    get = function() return Module.db.profile.showEnchantID end,
+                    set = function(info, val) Module.db.profile.showEnchantID = val end,
                 },
                 showBonusID = {
                     name = "Show Bonus IDs",
                     desc = "Show bonus IDs for items",
                     type = "toggle",
                     order = 18,
-                    get = function() return Module.db.showBonusID end,
-                    set = function(info, val) Module.db.showBonusID = val end,
+                    get = function() return Module.db.profile.showBonusID end,
+                    set = function(info, val) Module.db.profile.showBonusID = val end,
                 },
                 colorText = {
                     name = "ID Color",
@@ -436,18 +429,18 @@ VUI.Config:Register("VUIIDs", {
                     type = "color",
                     order = 20,
                     get = function()
-                        local c = Module.db.colorText
+                        local c = Module.db.profile.colorText
                         return c.r, c.g, c.b, c.a
                     end,
                     set = function(info, r, g, b, a)
-                        local c = Module.db.colorText
+                        local c = Module.db.profile.colorText
                         c.r, c.g, c.b, c.a = r, g, b, a
                     end,
                 },
             },
         },
-    },
-})
+    }
+end
 
 -- Return the module
 return Module

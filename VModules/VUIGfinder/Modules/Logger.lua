@@ -10,112 +10,109 @@ if not Module then return end
 local VUIGfinder = _G.VUIGfinder
 local L = VUIGfinder.L
 
--- Create Logger namespace
+-- Create logger namespace
 VUIGfinder.Logger = {}
 local Logger = VUIGfinder.Logger
 
 -- Log levels
-Logger.LOG_LEVEL_NONE = 0
-Logger.LOG_LEVEL_ERROR = 1
-Logger.LOG_LEVEL_WARNING = 2
+Logger.LOG_LEVEL_TRACE = 1
+Logger.LOG_LEVEL_DEBUG = 2
 Logger.LOG_LEVEL_INFO = 3
-Logger.LOG_LEVEL_DEBUG = 4
-Logger.LOG_LEVEL_TRACE = 5
+Logger.LOG_LEVEL_WARN = 4
+Logger.LOG_LEVEL_ERROR = 5
+Logger.LOG_LEVEL_FATAL = 6
+Logger.LOG_LEVEL_NONE = 99
 
--- Current log level (default: errors only)
-Logger.logLevel = Logger.LOG_LEVEL_ERROR
+-- Color codes for log levels
+Logger.LEVEL_COLORS = {
+    [Logger.LOG_LEVEL_TRACE] = "|cff999999", -- Gray
+    [Logger.LOG_LEVEL_DEBUG] = "|cff5555ff", -- Blue
+    [Logger.LOG_LEVEL_INFO]  = "|cff00ff00", -- Green
+    [Logger.LOG_LEVEL_WARN]  = "|cffffff00", -- Yellow
+    [Logger.LOG_LEVEL_ERROR] = "|cffff5555", -- Red
+    [Logger.LOG_LEVEL_FATAL] = "|cffff00ff", -- Purple
+}
 
--- Prefix for all log messages
-Logger.prefix = "|cff33AA33[VUIGfinder]|r "
+-- Level names
+Logger.LEVEL_NAMES = {
+    [Logger.LOG_LEVEL_TRACE] = "TRACE",
+    [Logger.LOG_LEVEL_DEBUG] = "DEBUG",
+    [Logger.LOG_LEVEL_INFO]  = "INFO",
+    [Logger.LOG_LEVEL_WARN]  = "WARN",
+    [Logger.LOG_LEVEL_ERROR] = "ERROR",
+    [Logger.LOG_LEVEL_FATAL] = "FATAL",
+}
 
--- Set log level
+-- Default log level
+Logger.currentLogLevel = Logger.LOG_LEVEL_INFO
+
+-- Initialize the logger
+function Logger:Initialize()
+    self.currentLogLevel = Module.db.profile.debug and self.LOG_LEVEL_DEBUG or self.LOG_LEVEL_INFO
+end
+
+-- Set the log level
 function Logger:SetLogLevel(level)
-    self.logLevel = level
+    self.currentLogLevel = level
 end
 
--- Get current log level
+-- Get the current log level
 function Logger:GetLogLevel()
-    return self.logLevel
+    return self.currentLogLevel
 end
 
--- Internal log function
-function Logger:Log(level, message, ...)
-    if level <= self.logLevel then
-        if select("#", ...) > 0 then
-            message = message:format(...)
-        end
-        
-        local levelPrefix = ""
-        if level == self.LOG_LEVEL_ERROR then
-            levelPrefix = "|cffFF0000ERROR:|r "
-        elseif level == self.LOG_LEVEL_WARNING then
-            levelPrefix = "|cffFFAA00WARNING:|r "
-        elseif level == self.LOG_LEVEL_INFO then
-            levelPrefix = "|cff00AAAINFO:|r "
-        elseif level == self.LOG_LEVEL_DEBUG then
-            levelPrefix = "|cff888888DEBUG:|r "
-        elseif level == self.LOG_LEVEL_TRACE then
-            levelPrefix = "|cff888888TRACE:|r "
-        end
-        
-        print(self.prefix .. levelPrefix .. message)
+-- Format a log message
+function Logger:FormatMessage(level, message, ...)
+    local prefix = string.format(
+        "|cff33BBFF[VUI Gfinder]|r %s[%s]|r ",
+        self.LEVEL_COLORS[level] or "|cffffffff",
+        self.LEVEL_NAMES[level] or "UNKNOWN"
+    )
+    
+    -- Format the message with the provided arguments
+    local formattedMessage
+    if select("#", ...) > 0 then
+        formattedMessage = string.format(message, ...)
+    else
+        formattedMessage = message
     end
+    
+    return prefix .. formattedMessage
 end
 
--- Log error message
-function Logger:Error(message, ...)
-    self:Log(self.LOG_LEVEL_ERROR, message, ...)
+-- Log a message at the specified level
+function Logger:Log(level, message, ...)
+    -- Skip if the log level is too low
+    if level < self.currentLogLevel then
+        return
+    end
+    
+    -- Format and output the message
+    local formattedMessage = self:FormatMessage(level, message, ...)
+    print(formattedMessage)
 end
 
--- Log warning message
-function Logger:Warning(message, ...)
-    self:Log(self.LOG_LEVEL_WARNING, message, ...)
-end
-
--- Log info message
-function Logger:Info(message, ...)
-    self:Log(self.LOG_LEVEL_INFO, message, ...)
-end
-
--- Log debug message
-function Logger:Debug(message, ...)
-    self:Log(self.LOG_LEVEL_DEBUG, message, ...)
-end
-
--- Log trace message
+-- Convenience methods for different log levels
 function Logger:Trace(message, ...)
     self:Log(self.LOG_LEVEL_TRACE, message, ...)
 end
 
--- Convenience function to dump a table to the log at debug level
-function Logger:DumpTable(tbl, indent)
-    if not tbl or type(tbl) ~= "table" then
-        self:Debug("DumpTable: Not a table")
-        return
-    end
-    
-    if self.logLevel < self.LOG_LEVEL_DEBUG then return end
-    
-    indent = indent or 0
-    local spaces = string.rep("  ", indent)
-    
-    for k, v in pairs(tbl) do
-        if type(v) == "table" then
-            self:Debug(spaces .. tostring(k) .. " = {")
-            self:DumpTable(v, indent + 1)
-            self:Debug(spaces .. "}")
-        else
-            self:Debug(spaces .. tostring(k) .. " = " .. tostring(v))
-        end
-    end
+function Logger:Debug(message, ...)
+    self:Log(self.LOG_LEVEL_DEBUG, message, ...)
 end
 
--- Initialize logger
-function Logger:Initialize()
-    -- Check if debug mode is enabled in saved variables
-    if VUIGfinder.db and VUIGfinder.db.profile and VUIGfinder.db.profile.debugMode then
-        self:SetLogLevel(self.LOG_LEVEL_DEBUG)
-    end
-    
-    self:Debug("Logger initialized")
+function Logger:Info(message, ...)
+    self:Log(self.LOG_LEVEL_INFO, message, ...)
+end
+
+function Logger:Warn(message, ...)
+    self:Log(self.LOG_LEVEL_WARN, message, ...)
+end
+
+function Logger:Error(message, ...)
+    self:Log(self.LOG_LEVEL_ERROR, message, ...)
+end
+
+function Logger:Fatal(message, ...)
+    self:Log(self.LOG_LEVEL_FATAL, message, ...)
 end

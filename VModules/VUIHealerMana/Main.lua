@@ -6,6 +6,9 @@ local AddonName, VUI = ...
 local MODNAME = "VUIHealerMana"
 local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
 
+-- Libraries
+local LSM = LibStub("LibSharedMedia-3.0")
+
 -- Localization
 local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
 
@@ -655,8 +658,6 @@ end
 
 -- Get options for configuration panel
 function M:GetOptions()
-    -- Get LibSharedMedia
-    local LSM = LibStub("LibSharedMedia-3.0")
     
     local options = {
         name = self.TITLE,
