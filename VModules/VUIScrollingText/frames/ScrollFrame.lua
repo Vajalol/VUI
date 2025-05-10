@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- Title: VUI Scrolling Text - Scroll Frame
--- Author: Vortex-WoW
+-- Author: VortexQ8
 -- Based on MikScrollingBattleText by Mik
 -------------------------------------------------------------------------------
 

@@ -14,7 +14,7 @@ VUI.Auctionator = {
     title = "VUIAuctionator",
     desc = "Advanced Auction House Tools",
     icon = [[Interface\AddOns\VUI\Media\Icons\tga\vortex_thunderstorm.tga]],
-    author = "Vortex-WoW"
+    author = "VortexQ8"
   }
 }
 

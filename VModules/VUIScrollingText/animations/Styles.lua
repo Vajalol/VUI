@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- Title: VUI Scrolling Text - Animation Styles
--- Author: Vortex-WoW
+-- Author: VortexQ8
 -- Based on MikScrollingBattleText by Mik
 -------------------------------------------------------------------------------
 
