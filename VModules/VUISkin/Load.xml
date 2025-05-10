@@ -1,0 +1,10 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+  <!-- Config -->
+  <Script file="Config\Config.lua"/>
+  
+  <!-- Core -->
+  <Script file="Core\Core.lua"/>
+  
+  <!-- Textures are automatically loaded via LibSharedMedia-3.0 -->
+</Ui>

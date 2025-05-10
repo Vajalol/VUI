@@ -20,7 +20,7 @@ local moduleList = {
     "VUIMissingRaidBuffs", "VUIMouseFireTrail", "VUIHealerMana",
     
     -- Phase 3: New Features
-    "VUIPlater"
+    "VUIPlater", "VUISkin"
 }
 
 function SavedVariables:OnInitialize()

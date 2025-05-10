@@ -468,6 +468,11 @@ local defaults = {
             enemyAlpha = 1.0,
             threatColor = true
         },
+        
+        VUISkin = {
+            enabled = true,
+            autoApply = true,
+        },
     }
 }
 
@@ -546,6 +551,51 @@ function VUI:OnInitialize()
                 if (sub) then color[key] = value - sub else color[key] = value end
             end
             return color
+        end
+    end
+    
+    function self:GetThemeColor()
+        local currentTheme = self.db.profile.general.theme
+        
+        if currentTheme == 'VUI' then
+            return {r = 0.05, g = 0.61, b = 0.9, a = 1.0} -- VUI blue
+        elseif currentTheme == 'PhoenixFlame' then
+            return {r = 0.90, g = 0.30, b = 0.05, a = 1.0} -- Phoenix Flame orange/red
+        elseif currentTheme == 'FelEnergy' then
+            return {r = 0.10, g = 0.80, b = 0.10, a = 1.0} -- Fel Energy green
+        elseif currentTheme == 'ArcaneMystic' then
+            return {r = 0.60, g = 0.20, b = 0.80, a = 1.0} -- Arcane Mystic purple
+        elseif currentTheme == 'Custom' and self.db.profile.general.colors and self.db.profile.general.colors.primary then
+            -- Use custom color if set
+            return self.db.profile.general.colors.primary
+        else
+            -- Fallback to VUI blue if theme not recognized
+            return {r = 0.05, g = 0.61, b = 0.9, a = 1.0}
+        end
+    end
+    
+    -- Stores modules that need to be updated when theme changes
+    self.skinModules = {}
+    
+    -- Register a module to be notified of theme changes
+    function self:RegisterSkinModule(module)
+        if not module then return end
+        
+        -- Add to skin modules list if not already present
+        for i, mod in ipairs(self.skinModules) do
+            if mod == module then return end
+        end
+        
+        table.insert(self.skinModules, module)
+        self:Debug("Registered skin module: " .. (module.moduleName or "Unknown"))
+    end
+    
+    -- Notify all skin modules of theme changes
+    function self:NotifySkinModules()
+        for _, module in ipairs(self.skinModules) do
+            if module.OnThemeChanged then
+                module:OnThemeChanged()
+            end
         end
     end
 

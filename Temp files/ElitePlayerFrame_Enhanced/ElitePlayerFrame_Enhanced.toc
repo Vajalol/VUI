@@ -1,0 +1,21 @@
+## Interface: 110100
+## Title: Elite Player Frame (Enhanced)
+## Version: 1.8.4
+## X-Branch: Mainline
+## AllowLoadGameType: mainline
+## X-Release: release
+## X-Category: Unit Frames
+## IconAtlas: Adventure-Mission-Gold-Dragon
+## Notes: Changes the look of your player frame to various target and custom frames.
+## Author: Zeal Vurte
+## X-Credits: Kryndon for the original Elite Player Frame.
+## X-eMail: mail+game+wow+mod+epf@zealvurte.uk
+## X-Website: https://zealvurte.uk
+## X-Aperture: https://zealvurte.uk/aperture.xml
+## X-License: GPLv3
+## DefaultState: Enabled
+## SavedVariablesPerCharacter: ElitePlayerFrame_Enhanced_Settings
+## AddonCompartmentFunc: ElitePlayerFrame_Enhanced_AddonCompartment_Clicked
+## AddonCompartmentFuncOnEnter: ElitePlayerFrame_Enhanced_AddonCompartment_Entered
+## AddonCompartmentFuncOnLeave: ElitePlayerFrame_Enhanced_AddonCompartment_Left
+ElitePlayerFrame_Enhanced.xml

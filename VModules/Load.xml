@@ -19,4 +19,5 @@
   <Include file="VUIMouseFireTrail\Load.xml"/>
   <Include file="VUIHealerMana\Load.xml"/>
   <Include file="VUIPlater\Load.xml"/>
+  <Include file="VUISkin\Load.xml"/>
 </Ui>

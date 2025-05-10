@@ -1,192 +1,30 @@
 # VUI Changelog
 
-## [1.0.1](https://github.com/Vajalol/VUI) (2025-05-10)
+## v1.0.0 (2025-05-10)
 
-### Added
-- Enhanced configuration integration across all modules:
-  - Added proper VUI.Config:RegisterModuleOptions usage in all modules
-  - Standardized VUIKeystones with GetOptions() function and proper VUI integration
-  - Improved VUICC with GetOptions() and full VUI integration
-  - Added robust configuration synchronization between VUI core and all modules
-- Added pulsing border glow effect for minimap:
-  - Uses theme color for visual integration with overall UI
-  - Configurable pulse speed for personal preference
-  - Smooth animation using VUI animation system
-- Added theme-colored pulse effects for all action bars:
-  - Automatically adapts to current theme (VUI, Phoenix Flame, Fel Energy, Arcane Mystic)
-  - Supports standard action bars and addon bars (Bartender4, Dominos)
-  - Configurable intensity with simple on/off toggle
-- Redesigned installer UI for a premium experience:
-  - Enhanced welcome page with professional styling and inspirational text
-  - Improved module showcase with modern visual elements
-  - Premium completion page with decorative frames and animations
-  - Refined text content for a more professional presentation
+### New Features
+- Added VUISkin module to apply VUI theming to Details! damage meter
+- Enhanced minimap with pulsing border effect that adapts to current theme color
+- Added theme-colored pulse effects to all action bars
+- Completely redesigned installer UI with professional styling and animations
+- Integrated Vortex thunderstorm logo throughout the UI
 
-### Changed
-- Standardized configuration architecture across all modules
-- Implemented consistent module enabling/disabling approach
-- Enhanced user interface with standardized configuration panels
-- Improved cross-module settings synchronization
-- Optimized configuration loading and initialization
+### Improvements
+- Fixed all modules in the VModules directory per FixModules.md specifications
+- Enhanced visual consistency with proper theme integration across all modules
+- Improved configuration interface for better user experience
+- Standardized module settings for easier management
+- Added support for theme color changes in real-time without reload
 
-### Fixed
-- Fixed VUIKeystones configuration integration with main VUI settings panel
-- Fixed syntax errors in multiple module files:
-  - Corrected VUIBuffs spell files (TBC.lua, Wrath.lua, Cata.lua)
-  - Fixed bracket mismatches in VUIIDs.lua
-  - Corrected function closure in PlaterService.lua
-  - Replaced invalid ternary operators in ScrollAreas.lua
-- Corrected VUICC configuration registration and synchronization
-- Fixed configuration inheritance issues in multiple modules
-- Addressed missing enabled flags in module configurations
-- Standardized all configuration naming for easier maintenance
+### Bug Fixes
+- Resolved multiple syntax errors in various module files
+- Fixed inconsistent behavior in VUIPlater module
+- Corrected texture paths in multiple modules
+- Fixed integration issues between modules
+- Addressed performance issues in animation handling
 
-## [1.0.0](https://github.com/Vajalol/VUI) (2025-05-10)
-
-### Added
-- Complete module system finalization with all 15 addon modules integrated:
-  - Core Modules: VUIBuffs, VUIAnyFrame, VUIKeystones, VUICC, VUICD, VUIIDs, VUIGfinder, VUITGCD, VUIAuctionator
-  - Specialized Modules: VUINotifications, VUIConsumables, VUIPositionOfPower, VUIMissingRaidBuffs, VUIMouseFireTrail, VUIHealerMana
-  - Full Plater integration with VUIPlater module
-- Comprehensive audit of all VModules to ensure proper:
-  - Structure with consistent file organization
-  - Code completeness with essential functionality
-  - System integration with the VUI core
-  - Media file availability with properly formatted resources
-  - Functionality testing across all core game environments
-  - Visual correctness with consistent UI presentation
-
-### Changed
-- Updated all module version numbers to 1.0 for release
-- Optimized file structures to remove redundant libraries and dependencies
-- Standardized all service files to use consistent path references
-- Enhanced module loading sequence for optimal performance
-- Improved cross-module integration
-
-### Fixed
-- Removed redundant libraries in VUIAnyFrame
-- Fixed texture path references in VUIKeystones and VUIMouseFireTrail
-- Updated font paths in VUIScrollingText
-- Corrected overlapping module references in VUITGCD
-- Fixed VUIAuctionator constants loading
-- Removed duplicate border files in VUIBuffs
-
-## [0.7.1-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
-
-### Added
-- UI Scale feature in Misc settings panel:
-  - Options to enable/disable UI scaling
-  - Slider for precise scale adjustment (0.5-1.0)
-  - Auto Scale button to calculate optimal scale based on screen resolution
-  - Reset button to quickly return to default scale
-  - Emergency slash command (/vui-reset-scale) to recover from UI scaling issues
-  - Combat-safe scaling that waits until combat ends to apply changes
-
-## [0.7.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
-
-### Added
-- Enhanced General.Stats module with advanced information displays:
-  - Color-changing FPS display (Red, Yellow, Green) based on framerate values
-  - Color-changing MS display (Green, Yellow, Orange, Red) based on latency values
-  - Added loot specialization display showing current loot spec with:
-    - Class-colored text 
-    - Specialization icon
-    - Automatic fallback to current spec if no loot spec is selected
-  - Optimized Stats frame width handling for new display elements
-
-## [0.6.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
-
-### Added
-- Enhanced Castbar features with advanced information display:
-  - Latency Display: Shows network latency in milliseconds on the left side of castbars
-  - Target Name Display: Shows the name of the spell target on the right side of castbars
-  - Color-coded target names based on class
-  - Visual latency indicator for player castbar
-  - Comprehensive configuration options in the Castbars settings panel
-
-## [0.5.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
-
-### Added
-- Enhanced Chat System with advanced features:
-  - Chat History: Persistence of up to 500 lines between game sessions
-  - Chat Copy: Improved copy button with movable, resizable copy window
-  - Emoji Support: Comprehensive emoji conversion system with 34+ emoji textures
-  - Whisper Sound: Custom notification sound when receiving whispers
-  - Comprehensive configuration options in the Chat settings panel
-
-## [0.4.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
-
-### Added
-- Enhanced Tooltip features with extensive unit information:
-  - Target Info: Shows current target of the unit being inspected
-  - Targeted Info: Shows which raid/party members are targeting the current unit
-  - Player Titles: Displays full player titles in tooltips
-  - Guild Ranks: Shows detailed guild information with color-coded ranks
-  - Role Information: Displays unit role (tank, healer, dps) with appropriate icons
-  - Mount Display: Shows the current mount of players with name
-  - Gender Information: Displays player character gender
-  - Item Level: Shows average item level of inspected players with coloring by quality
-  - Comprehensive configuration options in the Tooltip settings panel
-
-## [0.3.0-alpha](https://github.com/Vajalol/VUI) (2025-05-09)
-
-### Added
-- Implemented new Player Stats feature in General module:
-  - Transparent, movable and resizable frame showing detailed player statistics
-  - Displays Crit, Haste, Mastery, Versatility, Speed, Leech, and Avoidance percentages
-  - Color-coded values with pulse animation effects when stats increase significantly
-  - Bloodlust/Heroism tracking with timer and stack count display
-  - Comprehensive configuration options in General settings panel
-  - Position and size saving functionality
-
-## [0.2.0-alpha](https://github.com/Vajalol/VUI) (2025-05-08)
-
-### Added
-- Enhanced configuration layouts for multiple modules:
-  - VUIMissingRaidBuffs: Comprehensive buff tracking options
-  - VUIMouseFireTrail: Expanded particle customization
-  - VUIHealerMana: Enhanced display and color settings
-  - VUIScrollingText: Extensive scroll areas and performance options
-  - VUIPositionOfPower: Improved color settings
-- Created new layout file for VUINotifications with complete configuration panel
-- Standardized all module icons to use vortex_thunderstorm logo
-- Added high-quality TGA version of main logo for better in-game compatibility
-
-### Changed
-- Converted SVG icons to TGA format for better in-game compatibility
-- Improved icon directory structure with dedicated subdirectories
-- Integrated VUIPlater with Nameplates configuration section for better usability
-- Enhanced Media organization with improved folder structure
-
-### Fixed
-- Icon format compatibility with World of Warcraft client
-- Configuration panel consistency across all modules
-- Module organization for better user experience
-
-## [0.1.0-alpha](https://github.com/Vajalol/VUI) (2025-05-07)
-
-### Added
-- Initial release based on SUI framework
-- Complete rebranding from SUI to VUI
-- Comprehensive module system for addon integrations
-- All 10 core addon modules integrated:
-  - VUIBuffs, VUIAnyFrame, VUIKeystones, VUICC, VUICD, VUIIDs
-  - VUIGfinder, VUITGCD, VUIAuctionator, VUINotifications
-- All 5 WeakAura-derived modules implemented:
-  - VUIConsumables, VUIPositionOfPower, VUIMissingRaidBuffs 
-  - VUIMouseFireTrail, VUIHealerMana
-- VUIPlater module with complete Whiiskeyz profile replication
-- Unified configuration panel for all modules
-- Consolidated media directory with consistent structure
-- Enhanced animation system for UI elements
-
-### Changed
-- Standardized all media references to use uppercase "Media" directory
-- Removed test framework in favor of direct in-game error reporting
-- Organized configuration options with improved categorization
-- Streamlined loading process for better performance
-
-### Fixed
-- Media directory case sensitivity issues for cross-OS compatibility
-- Module loading order to ensure proper initialization
-- Framework dependency issues for standalone operation
+## Upcoming Features
+- Further enhancements to VUISkin for additional addons
+- Additional theme options with custom color selection
+- Improved performance for high-resolution displays
+- Enhanced compatibility with other popular addons

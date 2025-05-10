@@ -33,6 +33,12 @@ function Layout:OnEnable()
                         if VUI.SendCallback then
                             VUI:SendCallback("Theme_Changed", newTheme)
                         end
+                        
+                        -- Notify skin modules
+                        if VUI.NotifySkinModules then
+                            VUI:NotifySkinModules()
+                        end
+                        
                         -- Update UI
                         ReloadUI()
                     end

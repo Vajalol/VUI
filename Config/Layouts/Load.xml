@@ -35,4 +35,7 @@
   <Script file="_VUINotifications.lua"/>
   
   <!-- VUIAuctionator handles its own configuration UI -->
+  
+  <!-- Phase 3: New Modules -->
+  <Script file="_VUISkin.lua"/>
 </Ui>
