@@ -27,8 +27,9 @@ function Layout:OnEnable()
                     column = 4,
                     order = 1,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["enabled"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.enabled = self:GetValue()
                         end
                     end
                 },
@@ -42,8 +43,9 @@ function Layout:OnEnable()
                     column = 4,
                     order = 1,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["soundsEnabled"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.soundsEnabled = self:GetValue()
                         end
                     end
                 },
@@ -55,8 +57,9 @@ function Layout:OnEnable()
                     column = 4,
                     order = 2,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["suppressErrors"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.suppressErrors = self:GetValue()
                         end
                     end
                 },
@@ -76,8 +79,9 @@ function Layout:OnEnable()
                     column = 4,
                     order = 1,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["showInterrupts"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.showInterrupts = self:GetValue()
                         end
                     end
                 },
@@ -89,8 +93,9 @@ function Layout:OnEnable()
                     column = 4,
                     order = 2,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["showDispels"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.showDispels = self:GetValue()
                         end
                     end
                 },
@@ -104,8 +109,9 @@ function Layout:OnEnable()
                     column = 4,
                     order = 1,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["showMisses"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.showMisses = self:GetValue()
                         end
                     end
                 },
@@ -117,8 +123,9 @@ function Layout:OnEnable()
                     column = 4,
                     order = 2,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["showReflects"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.showReflects = self:GetValue()
                         end
                     end
                 },
@@ -132,8 +139,9 @@ function Layout:OnEnable()
                     column = 4,
                     order = 1,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["showPetStatus"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.showPetStatus = self:GetValue()
                         end
                     end
                 },
@@ -156,8 +164,9 @@ function Layout:OnEnable()
                     column = 3,
                     order = 1,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["notificationScale"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.notificationScale = self:GetValue()
                         end
                     end
                 },
@@ -172,8 +181,9 @@ function Layout:OnEnable()
                     column = 3,
                     order = 2,
                     callback = function(self)
-                        if VUINotifications and VUI_SavedVariables and VUI_SavedVariables.VUINotifications then
-                            VUI_SavedVariables.VUINotifications["notificationDuration"] = self:GetValue()
+                        local module = VUI:GetModule("VUINotifications")
+                        if module and module.db then
+                            module.db.profile.notificationDuration = self:GetValue()
                         end
                     end
                 },

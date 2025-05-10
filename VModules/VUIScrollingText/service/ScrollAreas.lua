@@ -208,12 +208,16 @@ function VUI.ScrollingText:SaveScrollAreaPosition(name)
     -- Get the current position
     local point, _, relativePoint, xOffset, yOffset = frame:GetPoint()
     
-    -- Save to the config
-    if not VUI_SavedVariables.VUIScrollingText.scrollAreaPositions then
-        VUI_SavedVariables.VUIScrollingText.scrollAreaPositions = {}
+    -- Get the module reference
+    local ST = VUI:GetModule("VUIScrollingText")
+    if not ST or not ST.db then return end
+    
+    -- Save to the config using AceDB structure
+    if not ST.db.profile.scrollAreaPositions then
+        ST.db.profile.scrollAreaPositions = {}
     end
     
-    VUI_SavedVariables.VUIScrollingText.scrollAreaPositions[name] = {
+    ST.db.profile.scrollAreaPositions[name] = {
         point = point,
         relativePoint = relativePoint,
         xOffset = xOffset,
@@ -223,11 +227,13 @@ end
 
 -- Load saved scroll area positions
 function VUI.ScrollingText:LoadScrollAreaPositions()
-    if not VUI_SavedVariables.VUIScrollingText or not VUI_SavedVariables.VUIScrollingText.scrollAreaPositions then
+    -- Get the module reference
+    local ST = VUI:GetModule("VUIScrollingText")
+    if not ST or not ST.db or not ST.db.profile.scrollAreaPositions then
         return
     end
     
-    for name, position in pairs(VUI_SavedVariables.VUIScrollingText.scrollAreaPositions) do
+    for name, position in pairs(ST.db.profile.scrollAreaPositions) do
         local frame = scrollAreas[name]
         if frame then
             frame:ClearAllPoints()
@@ -238,10 +244,12 @@ end
 
 -- Reset all scroll areas to their default positions
 function VUI.ScrollingText:ResetScrollAreaPositions()
-    if not VUI_SavedVariables.VUIScrollingText then return end
+    -- Get the module reference
+    local ST = VUI:GetModule("VUIScrollingText")
+    if not ST or not ST.db then return end
     
     -- Clear saved positions
-    VUI_SavedVariables.VUIScrollingText.scrollAreaPositions = {}
+    ST.db.profile.scrollAreaPositions = {}
     
     -- Recreate all scroll areas
     for name, _ in pairs(scrollAreas) do

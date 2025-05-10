@@ -1,0 +1,41 @@
+## Interface: 110100
+## Author: VortexQ8
+## Version: 1.0
+## Title: |cffea00ffV|r|cff00a2ffUI|r |cff888888Tru|r|cffff9d00fi|r|cffff0000GCD|r
+## Notes: GCD and spell tracking module for VUI
+## SavedVariables: TrufiGCDGlSave
+## SavedVariablesPerCharacter: TrufiGCDChSave
+
+# Initialize with VUI
+Init.lua
+
+# Libraries
+Libs\LibStub\Libstub.lua
+
+# Core module files
+VUITGCD.lua
+Modules\Types.lua
+
+# Utilities
+Modules\Utils\Constants.lua
+Modules\Utils\Utils.lua
+Modules\Utils\MasqueHelper.lua
+
+# Core functionality
+Modules\Core\Units.lua
+Modules\Core\LocationCheck.lua
+Modules\Core\Icon.lua
+Modules\Core\IconQueue.lua
+
+# Settings
+Modules\Settings\Settings.lua
+Modules\Settings\ProfileSettings.lua
+Modules\Settings\LayoutSettings.lua
+Modules\Settings\UnitSettings.lua
+Modules\Settings\InnerBlocklist.lua
+
+# UI Frames
+Modules\Frames\FrameUtils.lua
+Modules\Frames\SettingsFrame.lua
+Modules\Frames\BlocklistFrame.lua
+Modules\Frames\ProfileFrame.lua

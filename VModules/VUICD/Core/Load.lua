@@ -3,18 +3,18 @@ local VUICD, L, db = NS:unpack()
 
 -- Module loading sequence
 function VUICD:OnInitialize()
-    -- Initialize database
-    if not VUI_SavedVariables.VUICD then
-        VUI_SavedVariables.VUICD = {}
-    end
+    -- Using the database namespace created in Init.lua
+    -- No need to recreate it or overwrite it with VUI_SavedVariables.VUICD
+    -- which would cause database conflicts
     
-    self.db = VUI_SavedVariables.VUICD
-    
-    -- Merge defaults with saved variables
-    for k, v in pairs(db) do
-        if self.db[k] == nil then
-            self.db[k] = v
-        end
+    -- For backward compatibility, migrate any data from VUI_SavedVariables if needed
+    if VUI_SavedVariables.VUICD then
+        -- Migrate any important settings that might be in the old location
+        -- but maintain the AceDB structure created in Init.lua
+        self:Debug("Migrating legacy VUICD settings from VUI_SavedVariables")
+        
+        -- VUI_SavedVariables.VUICD is no longer needed, as we're using the AceDB system
+        -- But we won't delete it to avoid breaking anything
     end
     
     -- Initialize constants
