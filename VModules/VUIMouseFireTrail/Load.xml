@@ -4,7 +4,11 @@
   <Script file="locale\enUS.lua"/>
   
   <!-- Load service files -->
-  <Script file="service\ParticleService.lua"/>
+  <Script file="service\TrailSystem.lua"/>
+  <Script file="service\TrailEffects.lua"/>
+  <Script file="service\ShapeGenerator.lua"/>
+  <Script file="service\TextureManager.lua"/>
+  <Script file="service\Config.lua"/>
   
   <!-- Load main module file -->
   <Script file="Main.lua"/>
