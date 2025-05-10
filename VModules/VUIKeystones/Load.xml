@@ -1,6 +1,6 @@
 <Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
     <!-- Load required libraries -->
-    <Script file="libs\LibStub\LibStub.lua"/>
+    <!-- LibStub already loaded by VUI core -->
     <Include file="libs\LibUIDropDownMenu\LibUIDropDownMenu.xml"/>
     
     <!-- Load localizations -->

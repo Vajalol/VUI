@@ -2,8 +2,6 @@
 ..\FrameXML\UI.xsd">
     <!-- Load required libraries (if any) -->
     <Include file="libs\D4Lib\D4Lib.xml"/>
-    <Script file="libs\math.lua"/>
-    <Script file="libs\db.lua"/>
     
     <!-- Load localizations -->
     <Include file="Locales\Locales.xml"/>

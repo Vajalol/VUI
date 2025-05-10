@@ -3,7 +3,6 @@
     <!-- VUIBuffs uses libraries from the main VUI addon instead of embedding duplicates -->
     <!-- The LibStub and libraries are already loaded by VUI's Load.xml -->
     
-    <Script file="Border.lua" />
     <Include file="Border.xml" />
     
     <Script file="Init.lua" />

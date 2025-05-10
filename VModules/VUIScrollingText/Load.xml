@@ -12,7 +12,7 @@
     <Script file="service/Profiles.lua"/>
     
     <!-- Include fonts if needed -->
-    <Font name="VUIScrollingTextFont" font="Interface\AddOns\VUI\VModules\VUIScrollingText\fonts\frizqt__.ttf" virtual="true">
+    <Font name="VUIScrollingTextFont" font="Interface\AddOns\VUI\VModules\VUIScrollingText\fonts\heroic.ttf" virtual="true">
         <FontHeight val="16"/>
         <Shadow>
             <Offset>

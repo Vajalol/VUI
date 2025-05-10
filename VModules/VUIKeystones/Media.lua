@@ -12,7 +12,7 @@ function VUIKeystones:GetMediaPath(mediaType, fileName)
     elseif mediaType == "Textures" or mediaType == "Texture" then
         return MEDIA_PATH .. "textures\\" .. (fileName or "")
     elseif mediaType == "Bar" then
-        return MEDIA_PATH .. "textures\\bar.blp"
+        return "Interface\\AddOns\\VUI\\VModules\\VUIKeystones\\bar.blp"
     elseif mediaType == "Fonts" or mediaType == "Font" then
         return MEDIA_PATH .. "fonts\\" .. (fileName or "")
     elseif mediaType == "Sounds" or mediaType == "Sound" then

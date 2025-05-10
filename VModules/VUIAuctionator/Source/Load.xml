@@ -4,7 +4,7 @@
   <Include file="Utilities\Load.xml"/>
   
   <!-- Load Core files -->
-  <Script file="Constants.lua"/>
+  <Include file="Constants\Manifest.xml"/>
   <Script file="Objects.lua"/>
   
   <!-- Load Configuration -->
