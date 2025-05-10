@@ -6,6 +6,9 @@
   <!-- Load media files -->
   <Script file="media\textures\question.lua"/>
   
+  <!-- Load service files -->
+  <Script file="service\ConsumableService.lua"/>
+  
   <!-- Load main module file -->
   <Script file="Main.lua"/>
 </Ui>
