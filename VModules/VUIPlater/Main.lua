@@ -430,12 +430,17 @@ function M:RegisterFontMedia()
         LSM:Register("font", "Arial Narrow", "Fonts\\ARIALN.TTF")
     end
     
+    -- Register Expressway font if it doesn't exist
     if not LSM:IsValid("font", "Expressway") then
-        if LSM:IsValid("font", "Expressway") then
-            -- If another addon registered it, use that
+        -- Check if VUI addon is loaded and try to use its Expressway font
+        if VUI and VUI.Media and VUI.Media.Fonts and VUI.Media.Fonts.Expressway then
+            -- Use VUI's Expressway font
+            LSM:Register("font", "Expressway", VUI.Media.Fonts.Expressway)
         else
-            -- Fallback to a standard font
-            LSM:Register("font", "Expressway", "Fonts\\FRIZQT__.TTF")
+            -- Try to register with a direct path
+            local expresswayPath = "Interface\\AddOns\\VUI\\Media\\Fonts\\expressway.ttf"
+            LSM:Register("font", "Expressway", expresswayPath)
+            -- Note: LSM will fall back to default if file doesn't exist
         end
     end
     
