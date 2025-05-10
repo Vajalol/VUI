@@ -198,14 +198,6 @@ function VUIBuffs:OnInitialize()
     
     -- Register callbacks for profile changes
     self.db.RegisterCallback(self, "OnProfileChanged", "ProfileChanged")
-    
-    -- Set up the options - use the standardized approach for VUI modules
-    self:SetupOptions()
-    
-    -- Initialize VUI integration if VUI is available
-    if VUI then
-        self:InitVUIIntegration()
-    end
     self.db.RegisterCallback(self, "OnProfileCopied", "ProfileChanged")
     self.db.RegisterCallback(self, "OnProfileReset", "ProfileChanged")
     
@@ -221,8 +213,10 @@ function VUIBuffs:OnInitialize()
     -- Register any events we need
     self:RegisterEvents()
     
-    -- Initialize VUI integration
-    self:InitVUIIntegration()
+    -- Initialize VUI integration if VUI is available
+    if VUI then
+        self:InitVUIIntegration()
+    end
 end
 
 -- Handle slash commands
