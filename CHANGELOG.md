@@ -1,5 +1,28 @@
 # VUI Changelog
 
+## [1.0.1](https://github.com/Vajalol/VUI) (2025-05-10)
+
+### Added
+- Enhanced configuration integration across all modules:
+  - Added proper VUI.Config:RegisterModuleOptions usage in all modules
+  - Standardized VUIKeystones with GetOptions() function and proper VUI integration
+  - Improved VUICC with GetOptions() and full VUI integration
+  - Added robust configuration synchronization between VUI core and all modules
+
+### Changed
+- Standardized configuration architecture across all modules
+- Implemented consistent module enabling/disabling approach
+- Enhanced user interface with standardized configuration panels
+- Improved cross-module settings synchronization
+- Optimized configuration loading and initialization
+
+### Fixed
+- Fixed VUIKeystones configuration integration with main VUI settings panel
+- Corrected VUICC configuration registration and synchronization
+- Fixed configuration inheritance issues in multiple modules
+- Addressed missing enabled flags in module configurations
+- Standardized all configuration naming for easier maintenance
+
 ## [1.0.0](https://github.com/Vajalol/VUI) (2025-05-10)
 
 ### Added
