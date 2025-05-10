@@ -3,6 +3,9 @@
   <!-- Load localization files first -->
   <Script file="locale\enUS.lua"/>
   
+  <!-- Load service files -->
+  <Script file="service\BuffService.lua"/>
+  
   <!-- Load main module file -->
   <Script file="Main.lua"/>
 </Ui>

@@ -19,6 +19,7 @@
     <Script file="Gossip.lua"/>
     <Script file="Splits.lua"/>
     <Script file="Schedule.lua"/>
+    <Script file="Persist.lua"/>
     
     <!-- VUI Integration -->
     <Script file="VUI_Integration.lua"/>
