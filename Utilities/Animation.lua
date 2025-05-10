@@ -761,15 +761,20 @@ function VUI.Animations:RegisterFrame(frame, showPreset, hidePreset, showOptions
     frame.Show = function(self, ...)
         if self:IsShown() and not self.isVUIAnimating then return end
         
+        -- Capture varargs in local variables to avoid scoping issues
+        local args = {...}
+        
         -- Stop any existing animations
         VUI.Animations:StopAnimations(self)
         
         -- Apply show animation
         if showPreset then
-            VUI.Animations:ApplyPreset(self, showPreset, nil, showOptions.duration, showOptions)
+            VUI.Animations:ApplyPreset(self, showPreset, function()
+                -- Additional callback after animation completes, if needed
+            end, showOptions.duration, showOptions)
         else
             -- Call original show if no animation
-            self:VUIOriginalShow(...)
+            self:VUIOriginalShow(unpack(args))
         end
     end
     
@@ -777,10 +782,13 @@ function VUI.Animations:RegisterFrame(frame, showPreset, hidePreset, showOptions
     frame.Hide = function(self, ...)
         if not self:IsShown() then return end
         
+        -- Capture varargs in local variables to avoid scoping issues
+        local args = {...}
+        
         -- Apply hide animation
         if hidePreset and self:IsVisible() then
             VUI.Animations:ApplyPreset(self, hidePreset, function()
-                self:VUIOriginalHide(...)
+                self:VUIOriginalHide(unpack(args))
             end, hideOptions.duration, hideOptions)
         else
             -- Call original hide if no animation
