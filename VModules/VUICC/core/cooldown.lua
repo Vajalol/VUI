@@ -150,6 +150,11 @@ function Cooldown:CanShowText()
 
     -- config checks
     local settings = self._occ_settings
+    
+    -- global module enabled check
+    if not Addon.db.profile.enabled then
+        return false
+    end
 
     -- text enabled
     if not (settings and settings.enableText) then

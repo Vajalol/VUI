@@ -41,11 +41,14 @@ function Config:OnInitialize()
         end
     end)
     
-    -- Create the options panel
-    self:CreateOptions()
+    -- Setup options panel using the standard VUI approach
+    self:SetupOptions()
     
     -- Apply default configuration if needed
     self:ApplyDefaults()
+    
+    -- Initialize VUI integration
+    self:InitVUIIntegration()
 end
 
 -- Apply default configuration values
@@ -60,13 +63,14 @@ function Config:ApplyDefaults()
     end
 end
 
--- Create options panel
-function Config:CreateOptions()
-    -- Create options using AceConfig
+-- Get options for configuration panel - standard function name used across VUI modules
+function Config:GetOptions()
+    -- Create options using standard VUI approach
     local options = {
         name = "VUI Keystones",
         handler = VUIKeystones,
         type = "group",
+        icon = "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm.tga",
         args = {
             general = {
                 order = 1,
@@ -182,9 +186,28 @@ function Config:CreateOptions()
         },
     }
     
-    -- Register with AceConfig
+    -- Register with VUI Config system if available
+    if VUI and VUI.Config and VUI.Config.RegisterModuleOptions then
+        VUI.Config:RegisterModuleOptions("VUIKeystones", options, "VUI Keystones")
+    end
+    
+    -- Also register with AceConfig for backward compatibility
     LibStub("AceConfig-3.0"):RegisterOptionsTable("VUIKeystones", options)
     LibStub("AceConfigDialog-3.0"):AddToBlizOptions("VUIKeystones", "VUI Keystones")
+end
+
+-- Setup options - this is a standard function called in OnInitialize
+function Config:SetupOptions()
+    local options = self:GetOptions()
+    
+    -- Register with VUI Config system if available
+    if VUI and VUI.Config and VUI.Config.RegisterModuleOptions then
+        VUI.Config:RegisterModuleOptions("VUIKeystones", options, "VUI Keystones")
+    end
+    
+    -- Also register with AceConfig for backward compatibility
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("VUIKeystones", options)
+    VUIKeystones.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("VUIKeystones", "VUI Keystones")
 end
 
 -- Get a config option value
@@ -217,4 +240,79 @@ function Config:NotifyUpdate()
             end
         end
     end
+end
+
+-- Initialize VUI integration
+function Config:InitVUIIntegration()
+    -- This function will be called after VUIKeystones is initialized
+    -- It handles integration with the main VUI configuration panel
+    
+    -- Initialize default VUI settings if they don't exist
+    if not VUI_SavedVariables then
+        VUI_SavedVariables = {}
+    end
+    
+    -- Initialize the VUI db if needed
+    if not VUI or not VUI.db or not VUI.db.profile then
+        return
+    end
+    
+    -- Initialize vmodules settings if they don't exist
+    if not VUI.db.profile.vmodules then
+        VUI.db.profile.vmodules = {}
+    end
+    
+    if not VUI.db.profile.vmodules.vuikeystones then
+        VUI.db.profile.vmodules.vuikeystones = {
+            enabled = true,
+            progressTooltip = true,
+            progressTooltipMDT = false,
+            autoGossip = true,
+            silverGoldTimer = false
+        }
+    end
+    
+    -- Sync settings from VUIKeystones to VUI
+    self:SyncSettingsToVUI()
+    
+    -- Hook our settings changed function to update VUI panel settings
+    hooksecurefunc(self, "NotifyUpdate", function()
+        self:SyncSettingsToVUI()
+    end)
+end
+
+-- Sync settings from VUIKeystones to VUI
+function Config:SyncSettingsToVUI()
+    if not VUI or not VUI.db or not VUI.db.profile or not VUI.db.profile.vmodules or not VUI.db.profile.vmodules.vuikeystones then
+        return
+    end
+    
+    -- Copy settings from VUIKeystones to VUI
+    VUI.db.profile.vmodules.vuikeystones.enabled = VUIKeystones.db.profile.general and VUIKeystones.db.profile.general.enabled or true
+    VUI.db.profile.vmodules.vuikeystones.progressTooltip = VUIKeystones.db.profile.progressTooltip
+    VUI.db.profile.vmodules.vuikeystones.progressTooltipMDT = VUIKeystones.db.profile.progressTooltipMDT
+    VUI.db.profile.vmodules.vuikeystones.autoGossip = VUIKeystones.db.profile.autoGossip
+    VUI.db.profile.vmodules.vuikeystones.silverGoldTimer = VUIKeystones.db.profile.silverGoldTimer
+end
+
+-- Sync settings from VUI to VUIKeystones
+function Config:SyncSettingsFromVUI()
+    if not VUI or not VUI.db or not VUI.db.profile or not VUI.db.profile.vmodules or not VUI.db.profile.vmodules.vuikeystones then
+        return
+    end
+    
+    -- Initialize general if it doesn't exist
+    if not VUIKeystones.db.profile.general then
+        VUIKeystones.db.profile.general = {}
+    end
+    
+    -- Copy settings from VUI to VUIKeystones
+    VUIKeystones.db.profile.general.enabled = VUI.db.profile.vmodules.vuikeystones.enabled
+    VUIKeystones.db.profile.progressTooltip = VUI.db.profile.vmodules.vuikeystones.progressTooltip
+    VUIKeystones.db.profile.progressTooltipMDT = VUI.db.profile.vmodules.vuikeystones.progressTooltipMDT
+    VUIKeystones.db.profile.autoGossip = VUI.db.profile.vmodules.vuikeystones.autoGossip
+    VUIKeystones.db.profile.silverGoldTimer = VUI.db.profile.vmodules.vuikeystones.silverGoldTimer
+    
+    -- Notify modules of config changes
+    self:NotifyUpdate()
 end

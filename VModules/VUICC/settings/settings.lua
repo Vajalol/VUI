@@ -36,6 +36,8 @@ function Addon:GetDBDefaults()
             disableBlizzardCooldownText = true
         },
         profile = {
+            -- global module enabled state (for VUI integration)
+            enabled = true,
             rules = {
                 ['**'] = {
                     -- what theme to apply for this rule
