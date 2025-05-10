@@ -662,7 +662,6 @@ function M:GetOptions()
     local options = {
         name = self.TITLE,
         type = "group",
-        icon = "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm.tga",
         args = {
             general = {
                 name = L["General Settings"],

@@ -21,8 +21,8 @@ VUIBuffs.Media = {
     
     -- Textures
     Textures = {
-        Logo = "Interface\\AddOns\\VUI\\Media\\modules\\VUIBuffs\\textures\\logo",
-        LogoTransparent = "Interface\\AddOns\\VUI\\Media\\modules\\VUIBuffs\\textures\\logo_transparent",
+        Logo = "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm",
+        LogoTransparent = "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm",
     },
 }
 
