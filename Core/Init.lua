@@ -267,6 +267,8 @@ local defaults = {
             tracking = false,
             buttons = true,
             expansionbutton = false,
+            pulsingBorder = false,
+            pulseSpeed = 1.5,
         },
         misc = {
             safequeue = true,

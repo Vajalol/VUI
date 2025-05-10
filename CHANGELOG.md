@@ -8,6 +8,10 @@
   - Standardized VUIKeystones with GetOptions() function and proper VUI integration
   - Improved VUICC with GetOptions() and full VUI integration
   - Added robust configuration synchronization between VUI core and all modules
+- Added pulsing border glow effect for minimap:
+  - Uses theme color for visual integration with overall UI
+  - Configurable pulse speed for personal preference
+  - Smooth animation using VUI animation system
 
 ### Changed
 - Standardized configuration architecture across all modules
@@ -18,6 +22,11 @@
 
 ### Fixed
 - Fixed VUIKeystones configuration integration with main VUI settings panel
+- Fixed syntax errors in multiple module files:
+  - Corrected VUIBuffs spell files (TBC.lua, Wrath.lua, Cata.lua)
+  - Fixed bracket mismatches in VUIIDs.lua
+  - Corrected function closure in PlaterService.lua
+  - Replaced invalid ternary operators in ScrollAreas.lua
 - Corrected VUICC configuration registration and synchronization
 - Fixed configuration inheritance issues in multiple modules
 - Addressed missing enabled flags in module configurations

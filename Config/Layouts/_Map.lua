@@ -95,6 +95,39 @@ function Layout:OnEnable()
                     column = 4,
                     order = 3
                 }
+            },
+            {
+                header = {
+                    type = 'header',
+                    label = 'Visual Effects'
+                }
+            },
+            {
+                pulsingBorder = {
+                    key = 'pulsingBorder',
+                    type = 'checkbox',
+                    label = 'Pulsing Border Glow',
+                    tooltip = 'Add a pulsing border glow around the minimap using the theme color',
+                    column = 4,
+                    order = 1,
+                    onChange = function(checkbox)
+                        VUI:GetModule("Maps.Minimap"):UpdateMinimapBorderGlow()
+                    end
+                },
+                pulseSpeed = {
+                    key = 'pulseSpeed',
+                    type = 'slider',
+                    label = 'Pulse Speed',
+                    tooltip = 'Adjust the speed of the pulsing effect',
+                    min = 0.5,
+                    max = 3.0,
+                    step = 0.1,
+                    column = 8,
+                    order = 2,
+                    onChange = function(slider)
+                        VUI:GetModule("Maps.Minimap"):UpdateMinimapBorderGlow()
+                    end
+                }
             }
         },
     }
