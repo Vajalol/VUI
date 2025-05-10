@@ -27,15 +27,19 @@ end
 
 -- Initialize the addon
 function VUIKeystones:OnInitialize()
-    -- Register SavedVariables under the unified VUI_SavedVariables structure
-    if not VUI_SavedVariables then VUI_SavedVariables = {} end
-    if not VUI_SavedVariables.VUIKeystones then VUI_SavedVariables.VUIKeystones = {} end
+    -- Get reference to the main VUI addon
+    local VUI = LibStub("AceAddon-3.0"):GetAddon("VUI")
     
-    self.db = LibStub("AceDB-3.0"):New("VUI_SavedVariables.VUIKeystones", defaults, true)
+    -- Register with VUI's database namespace system
+    self.db = VUI.db:RegisterNamespace("VUIKeystones", {
+        profile = defaults.profile
+    })
     
-    -- Initialize data storage
-    self.data = VUI_SavedVariables.VUIKeystones.data or {}
-    VUI_SavedVariables.VUIKeystones.data = self.data
+    -- Initialize data storage using the module's db
+    if not self.db.profile.data then
+        self.db.profile.data = {}
+    end
+    self.data = self.db.profile.data
     
     -- Register slash commands
     self:RegisterChatCommand("vuikeystones", "SlashCommand")

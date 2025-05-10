@@ -755,14 +755,14 @@ end
 function VUI:OnInitialize()
     -- VUI DB Reset 10.0
     -- Also check _Install.lua for the next reset!
-    if (VUIDB and not VUIDB.profiles.Default.reset) then
-        VUIDB = {}
+    if (VUI_SavedVariables and not VUI_SavedVariables.profiles.Default.reset) then
+        VUI_SavedVariables = {}
         print(
-            '|cffea00ffS|r|cff00a2ffUI|r: |cffff0000You had a broken database from a previous version of VUI, unfortunately we had to reset the profile.|r')
+            '|cffea00ffV|r|cff00a2ffUI|r: |cffff0000You had a broken database from a previous version of VUI, unfortunately we had to reset the profile.|r')
     end
 
     -- Database
-    self.db = LibStub("AceDB-3.0"):New("VUIDB", defaults, true)
+    self.db = LibStub("AceDB-3.0"):New("VUI_SavedVariables", defaults, true)
 
     -- Colors
     local _, class = UnitClass("player")

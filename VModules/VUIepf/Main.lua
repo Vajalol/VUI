@@ -118,7 +118,9 @@ end
 
 function M:OnInitialize()
     -- Register module with VUI
-    self.db = VUI.db:RegisterNamespace(MODNAME, self.defaults)
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
     
     -- Initialize frame data
     self:InitializeFrameData()

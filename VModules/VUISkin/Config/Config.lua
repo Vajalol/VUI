@@ -13,12 +13,10 @@ local defaults = {
     }
 }
 
--- Initialize the module
-function VUISkin:OnInitialize()
-    -- Register default settings
-    self.db = VUI.db:RegisterNamespace("VUISkin", defaults)
-    
-    -- Register module options
+-- Improve config functionality for the module
+-- Note: Main initialization happens in Init.lua
+function VUISkin:SetupConfigOptions()
+    -- Register module options (no need to register namespace again)
     VUI.Config:RegisterModuleCategory("VUISkin", "VUISkin", "Details! Skin")
     VUI.Config:RegisterModuleOptions("VUISkin", "VUISkin")
 

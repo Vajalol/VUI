@@ -175,11 +175,13 @@ local defaults = {
 
 -- Initialize the addon
 function VUIBuffs:OnInitialize()
-    -- Register saved variables under the unified VUI_SavedVariables structure
-    if not VUI_SavedVariables then VUI_SavedVariables = {} end
-    if not VUI_SavedVariables.VUIBuffs then VUI_SavedVariables.VUIBuffs = {} end
+    -- Get reference to the main VUI addon
+    local VUI = LibStub("AceAddon-3.0"):GetAddon("VUI")
     
-    self.db = LibStub("AceDB-3.0"):New("VUI_SavedVariables.VUIBuffs", defaults, true)
+    -- Register with VUI's database namespace system
+    self.db = VUI.db:RegisterNamespace("VUIBuffs", {
+        profile = defaults.profile
+    })
     
     -- Set up minimap button
     self:SetupDataBroker()

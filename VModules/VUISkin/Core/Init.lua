@@ -26,13 +26,15 @@ Module.defaults = {
 
 function Module:OnInitialize()
     -- Create a config DB for the module
-    self.db = VUI.db:RegisterNamespace("VUISkin", self.defaults)
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
     
-    -- Register slash command
-    self:RegisterChatCommand("vuiskin", "SlashCommand")
+    -- Set up config options (calls method in Config.lua)
+    self:SetupConfigOptions()
     
     -- Register the module with VUI's configuration system
-    VUI.Config:RegisterModuleOptions("VUISkin", self:GetOptions(), L["Module Name"])
+    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), L["Module Name"])
 end
 
 function Module:OnEnable()

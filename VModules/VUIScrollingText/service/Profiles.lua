@@ -67,13 +67,13 @@ local DEFAULT_PROFILE = {
     showCooldowns = true,
 }
 
+-- Reference to the core module
+local VUIScrollingTextModule = LibStub("AceAddon-3.0"):GetAddon("VUI"):GetModule("VUIScrollingText")
+
 -- Initialize saved variables
 function VUI.ScrollingText:InitializeProfile()
-    -- Create default settings if they don't exist
-    if not VUI_SavedVariables then VUI_SavedVariables = {} end
-    if not VUI_SavedVariables.VUIScrollingText then
-        VUI_SavedVariables.VUIScrollingText = CopyTable(DEFAULT_PROFILE)
-    end
+    -- Get reference to the module's database
+    self.moduleDB = VUIScrollingTextModule.db.profile
     
     -- Ensure all default settings exist in the saved profile
     self:UpdateProfile()
@@ -81,7 +81,7 @@ end
 
 -- Update the profile with any missing default values
 function VUI.ScrollingText:UpdateProfile()
-    local profile = VUI_SavedVariables.VUIScrollingText
+    local profile = self.moduleDB
     
     -- Check all default settings and add any missing ones
     for key, value in pairs(DEFAULT_PROFILE) do
@@ -100,15 +100,22 @@ end
 
 -- Reset profile to defaults
 function VUI.ScrollingText:ResetProfile()
-    VUI_SavedVariables.VUIScrollingText = CopyTable(DEFAULT_PROFILE)
+    -- Reset the profile to defaults
+    for key in pairs(self.moduleDB) do
+        self.moduleDB[key] = nil
+    end
+    
+    -- Copy the defaults back in
+    for key, value in pairs(DEFAULT_PROFILE) do
+        self.moduleDB[key] = CopyTable(value)
+    end
 end
 
 -- Get a configuration value with fallback to default
 function VUI.ScrollingText:GetConfigValue(key, defaultValue)
-    if VUI_SavedVariables and 
-       VUI_SavedVariables.VUIScrollingText and 
-       VUI_SavedVariables.VUIScrollingText[key] ~= nil then
-        return VUI_SavedVariables.VUIScrollingText[key]
+    -- Check if the key exists in the module's database
+    if self.moduleDB and self.moduleDB[key] ~= nil then
+        return self.moduleDB[key]
     end
     
     -- If the key exists in the default profile, return that
@@ -122,18 +129,25 @@ end
 
 -- Set a configuration value
 function VUI.ScrollingText:SetConfigValue(key, value)
-    if not VUI_SavedVariables then VUI_SavedVariables = {} end
-    if not VUI_SavedVariables.VUIScrollingText then
-        VUI_SavedVariables.VUIScrollingText = {}
+    -- Initialize the module DB if not already done
+    if not self.moduleDB then
+        self:InitializeProfile()
     end
     
-    VUI_SavedVariables.VUIScrollingText[key] = value
+    -- Set the value in the module's database
+    self.moduleDB[key] = value
 end
 
 -- Create a trigger for displaying text when a specific event occurs
 function VUI.ScrollingText:CreateTrigger(triggerType, pattern, text, colorR, colorG, colorB, fontSize, soundFile, scrollArea, animationStyle)
-    if not VUI_SavedVariables.VUIScrollingText.customTriggers then
-        VUI_SavedVariables.VUIScrollingText.customTriggers = {}
+    -- Initialize the module DB if not already done
+    if not self.moduleDB then
+        self:InitializeProfile()
+    end
+    
+    -- Ensure the customTriggers table exists
+    if not self.moduleDB.customTriggers then
+        self.moduleDB.customTriggers = {}
     end
     
     local trigger = {
@@ -147,19 +161,21 @@ function VUI.ScrollingText:CreateTrigger(triggerType, pattern, text, colorR, col
         animationStyle = animationStyle,
     }
     
-    table.insert(VUI_SavedVariables.VUIScrollingText.customTriggers, trigger)
-    return #VUI_SavedVariables.VUIScrollingText.customTriggers
+    table.insert(self.moduleDB.customTriggers, trigger)
+    return #self.moduleDB.customTriggers
 end
 
 -- Delete a trigger
 function VUI.ScrollingText:DeleteTrigger(index)
-    if not VUI_SavedVariables.VUIScrollingText.customTriggers then return end
-    table.remove(VUI_SavedVariables.VUIScrollingText.customTriggers, index)
+    -- Check if the customTriggers table exists
+    if not self.moduleDB or not self.moduleDB.customTriggers then return end
+    table.remove(self.moduleDB.customTriggers, index)
 end
 
 -- Get all triggers
 function VUI.ScrollingText:GetTriggers()
-    return VUI_SavedVariables.VUIScrollingText.customTriggers or {}
+    -- Return the customTriggers table or an empty table if it doesn't exist
+    return (self.moduleDB and self.moduleDB.customTriggers) or {}
 end
 
 -- Check if a message matches any triggers

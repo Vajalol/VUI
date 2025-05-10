@@ -90,7 +90,9 @@ local kindOptions = {
 -- Initialize module
 function Module:OnInitialize()
     -- Initialize database using VUI namespace system
-    self.db = VUI.db:RegisterNamespace("VUIIDs", self.defaults)
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
     
     -- Register events
     self:RegisterEvent("PLAYER_LOGIN")

@@ -18,11 +18,13 @@ local sethiddenSetup = {}
 
 -- Initialize the addon
 function VUIAnyFrame:OnInitialize()
-    -- Register SavedVariables under the unified VUI_SavedVariables structure
-    if not VUI_SavedVariables then VUI_SavedVariables = {} end
-    if not VUI_SavedVariables.VUIAnyFrame then VUI_SavedVariables.VUIAnyFrame = {} end
+    -- Get reference to the main VUI addon
+    local VUI = LibStub("AceAddon-3.0"):GetAddon("VUI")
     
-    self.db = AceDB:New("VUI_SavedVariables.VUIAnyFrame", defaults, true)
+    -- Register with VUI's database namespace system
+    self.db = VUI.db:RegisterNamespace("VUIAnyFrame", {
+        profile = defaults.profile
+    })
     
     -- Set up minimap button
     if LDB and LDBIcon then

@@ -62,7 +62,9 @@ local defaults = {
 -- Module initialization
 function Module:OnInitialize()
     -- Register database
-    self.db = VUI.db:RegisterNamespace("VUIGfinder", defaults)
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = defaults.profile
+    })
     
     -- Set up theme color access
     VUIGfinder.GetThemeColor = function()
