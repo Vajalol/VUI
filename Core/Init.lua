@@ -184,6 +184,10 @@ local defaults = {
                 flash = false,
                 size = 12
             },
+            pulseEffects = {
+                enabled = true,
+                intensity = 0.05
+            },
             menu = {
                 micromenu = 'show',
                 bagbar = 'show'

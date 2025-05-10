@@ -12,6 +12,10 @@
   - Uses theme color for visual integration with overall UI
   - Configurable pulse speed for personal preference
   - Smooth animation using VUI animation system
+- Added theme-colored pulse effects for all action bars:
+  - Automatically adapts to current theme (VUI, Phoenix Flame, Fel Energy, Arcane Mystic)
+  - Supports standard action bars and addon bars (Bartender4, Dominos)
+  - Configurable intensity with simple on/off toggle
 
 ### Changed
 - Standardized configuration architecture across all modules

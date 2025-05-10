@@ -16,6 +16,33 @@ function Layout:OnEnable()
                 },
             },
             {
+                header2 = {
+                    type = 'header',
+                    label = 'Visual Effects'
+                },
+            },
+            {
+                pulseEnabled = {
+                    key = 'pulseEffects.enabled',
+                    type = 'checkbox',
+                    label = 'Enable Pulse Effects',
+                    tooltip = 'Adds a subtle pulsing glow to action buttons using theme colors',
+                    column = 4,
+                    order = 1
+                },
+                pulseIntensity = {
+                    key = 'pulseEffects.intensity',
+                    type = 'slider',
+                    label = 'Pulse Intensity',
+                    tooltip = 'Adjust the intensity of the pulsing effect',
+                    min = 0.01,
+                    max = 0.15,
+                    step = 0.01,
+                    column = 4,
+                    order = 2
+                },
+            },
+            {
                 hotkeys = {
                     key = 'buttons.key',
                     type = 'checkbox',
