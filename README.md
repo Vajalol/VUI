@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="generated-icon.png" alt="VUI Logo" width="200">
+</p>
+
 # <img src="Media/Icons/tga/vortex_thunderstorm.tga" width="30"> VUI - Ultimate WoW UI Enhancement Suite
 
 ![Version](https://img.shields.io/badge/Version-1.0.1-brightgreen)
