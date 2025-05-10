@@ -1,37 +1,29 @@
-local addonName, VUI = ...
+local _, addon = ...
 
--- Custom message handler for UIErrorsFrame to filter unwanted messages
-function VUI.Notifications.ErrorsFrame_AddMessage(self, msg, ...)
-    -- Check if error filtering is enabled in config
-    if VUI_SavedVariables and VUI_SavedVariables.VUINotifications and
-       VUI_SavedVariables.VUINotifications.suppressErrors == false then
-        return self:Original_AddMessage(msg, ...)
-    end
+function addon.ErrorsFrame_AddMessage(self, msg, ...)
     
-    if (VUI.Notifications.isEmpty(msg)) then
+    if (addon.isEmpty(msg)) then
         msg = "unknown"
     end
     
     local lowermsg = string.lower(msg)
-    local contains = VUI.Notifications.tableContains
-    local standardErrorMessages = VUI.Notifications.standardErrorMessages()
+    local contains = addon.tableContains
+    local standardErrorMessages = addon.standardErrorMessages()
 
     if (contains(standardErrorMessages, lowermsg)) then
-        return
+        return;
     end
 
-    return self:Original_AddMessage(msg, ...)
+    return self:Original_AddMessage(msg, ...);
 end
 
--- Hook into the UIErrorsFrame to add our custom message handler
-function VUI.Notifications.HookErrorsFrame()
-    local ef = getglobal("UIErrorsFrame")
-    ef.Original_AddMessage = ef.AddMessage
-    ef.AddMessage = VUI.Notifications.ErrorsFrame_AddMessage
+function addon.HookErrorsFrame()
+    local ef = getglobal("UIErrorsFrame");
+    ef.Original_AddMessage = ef.AddMessage;
+    ef.AddMessage = addon.ErrorsFrame_AddMessage;
 end
 
--- Helper function to check if a table contains a specific value
-function VUI.Notifications.tableContains(tab, val)
+function addon.tableContains(tab, val)
     for index, value in ipairs(tab) do
         if value == val then
             return true
@@ -40,13 +32,11 @@ function VUI.Notifications.tableContains(tab, val)
     return false
 end
         
--- Helper function to check if a string is empty
-function VUI.Notifications.isEmpty(msg)
+function addon.isEmpty(msg)
   return msg == nil or msg == ''
 end
 
--- List of standard error messages that will be suppressed
-function VUI.Notifications.standardErrorMessages()
+function addon.standardErrorMessages()
     return {
         "not enough", "not ready", "nothing to attack", "can't attack",
         "can't do", "unable to move", "must equip", "target is dead",
@@ -54,7 +44,7 @@ function VUI.Notifications.standardErrorMessages()
         "another action", "you are stunned", "wrong way", "out of range",
         "front of you", "you cannot attack", "too far away", "must be in",
         "too close", "requires combo", "in combat", "not in control",
-        "must have", "nothing to dispel", "in an arena", "while pacified", "ready",
+        "must have", "nothing to dispel", "in an arena", "while pacified","ready",
         "interrupted"
     }
 end

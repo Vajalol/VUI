@@ -1,45 +1,41 @@
--- VUICC: Effects manager
--- Adapted from OmniCC (https://github.com/tullamods/OmniCC)
+local _, Addon = ...
+local FX = {}
 
-local AddonName, Addon = "VUI", VUI
-local Module = Addon:GetModule("VUICC")
-local FX = Module.FX
-
--- Available effects
 local effects = {}
 
--- Register a new effect
-function FX:Register(effect, run)
-    effects[effect] = run
-end
-
--- Run an effect
-function FX:Run(effect, ...)
-    -- Default to no effect if not specified
-    effect = effect or 'none'
-    
-    -- Handle unknown effect types
-    local runner = effects[effect]
-    if not runner then
-        print('|cffff0000Unknown effect:', effect, '|r')
-        runner = effects['none']
+function FX:Create(id, name, desc)
+    if type(id) ~= "string" then
+        error('Usage: OmniCC.FX:Create("id", ["name", "description"])', 2)
     end
-    
-    -- Call the effect's implementation
-    return runner(...)
-end
 
--- Get a list of all available effects
-function FX:GetList()
-    local result = {}
-    
-    for k in pairs(effects) do
-        table.insert(result, k)
+    if effects[id] then
+        error(('FX %q already registered'):format(id), 2)
     end
-    
-    table.sort(result)
-    return result
+
+    local fx = { id = id, name = name, desc = desc }
+
+    effects[id] = fx
+
+    return fx
 end
 
--- Update module with FX methods
-Module.FX = FX
+function FX:Get(id)
+    if id then
+        return effects[id]
+    end
+end
+
+function FX:All()
+    return pairs(effects)
+end
+
+function FX:Run(cooldown, effectID)
+    if cooldown:IsForbidden() then return end
+
+    local fx = effects[effectID]
+    if fx then
+        fx:Run(cooldown)
+    end
+end
+
+Addon.FX = FX

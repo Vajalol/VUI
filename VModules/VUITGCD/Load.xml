@@ -4,7 +4,7 @@
   <Script file="Libs\LibStub\Libstub.lua"/>
   
   <!-- Polyfills for compatibility -->
-  <Script file="Polyfills.lua"/>
+  <Include file="Polyfills.xml"/>
   
   <!-- Utility modules -->
   <Script file="Modules\Utils\Utils.lua"/>

@@ -1,85 +1,105 @@
--- VUICC: Shine effect
--- Adapted from OmniCC (https://github.com/tullamods/OmniCC)
+-- a shine finish effect
+local AddonName, Addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
-local AddonName, Addon = "VUI", VUI
-local Module = Addon:GetModule("VUICC")
+local SHINE_TEXTURE = [[Interface\Cooldown\star4]]
+local SHINE_DURATION = 0.75
+local SHINE_SCALE = 5
 
--- Create a shine animation for an icon
-local function createShineAnimation(frame)
-    local shine = CreateFrame('Frame', nil, frame)
-    shine:SetPoint('TOPLEFT', -16, 8)
-    shine:SetPoint('BOTTOMRIGHT', 16, -8)
-    shine:SetAlpha(0)
+local ShineEffect = Addon.FX:Create("shine", L.Shine)
+local ShinePool
+do
+	local function shineAnimation_OnFinished(self)
+		local parent = self:GetParent()
 
-    -- Shine texture
-    local texture = shine:CreateTexture(nil, 'OVERLAY')
-    texture:SetPoint('CENTER')
-    texture:SetWidth(frame:GetWidth() * 2)
-    texture:SetHeight(frame:GetHeight() * 2)
-    texture:SetTexture("Interface\\Cooldown\\star4")
-    texture:SetBlendMode('ADD')
+		if parent:IsShown() then
+			parent:Hide()
+		end
+	end
 
-    -- Animation group
-    local animGroup = shine:CreateAnimationGroup()
-    animGroup:SetLooping('NONE')
+	local function shineAnimation_Create(parent)
+		local group = parent:CreateAnimationGroup()
+		group:SetScript('OnFinished', shineAnimation_OnFinished)
+		group:SetLooping('NONE')
 
-    -- Fade-in
-    local fadeIn = animGroup:CreateAnimation('Alpha')
-    fadeIn:SetFromAlpha(0)
-    fadeIn:SetToAlpha(1)
-    fadeIn:SetDuration(0.2)
-    fadeIn:SetOrder(1)
+		local initiate = group:CreateAnimation('Alpha')
+		initiate:SetFromAlpha(1)
+		initiate:SetDuration(0)
+		initiate:SetToAlpha(0)
+		initiate:SetOrder(0)
 
-    -- Rotation
-    local rotation = animGroup:CreateAnimation('Rotation')
-    rotation:SetDegrees(-90)
-    rotation:SetDuration(0.3)
-    rotation:SetOrder(1)
+		local grow = group:CreateAnimation('Scale')
+		grow:SetOrigin('CENTER', 0, 0)
+		grow:SetScale(SHINE_SCALE, SHINE_SCALE)
+		grow:SetDuration(SHINE_DURATION / 2)
+		grow:SetOrder(1)
 
-    -- Fade-out
-    local fadeOut = animGroup:CreateAnimation('Alpha')
-    fadeOut:SetFromAlpha(1)
-    fadeOut:SetToAlpha(0)
-    fadeOut:SetDuration(0.3)
-    fadeOut:SetOrder(2)
+		local brighten = group:CreateAnimation('Alpha')
+		brighten:SetDuration(SHINE_DURATION / 2)
+		brighten:SetFromAlpha(0)
+		brighten:SetToAlpha(1)
+		brighten:SetOrder(1)
 
-    -- Reset on finish
-    animGroup:SetScript('OnFinished', function()
-        shine:Hide()
-    end)
+		local shrink = group:CreateAnimation('Scale')
+		shrink:SetOrigin('CENTER', 0, 0)
+		shrink:SetScale(1/SHINE_SCALE, 1/SHINE_SCALE)
+		shrink:SetDuration(SHINE_DURATION / 2)
+		shrink:SetOrder(2)
 
-    -- Play function
-    shine.Play = function()
-        shine:Show()
-        animGroup:Play()
-    end
+		local fade = group:CreateAnimation('Alpha')
+		fade:SetDuration(SHINE_DURATION / 2)
+		fade:SetFromAlpha(1)
+		fade:SetToAlpha(0)
+		fade:SetOrder(2)
 
-    return shine
+		return group
+	end
+
+	local function shine_OnHide(self)
+		ShinePool:Release(self)
+	end
+
+	local function pool_OnCreate(self)
+		local shine = CreateFrame('Frame')
+		shine:Hide()
+		shine:SetScript('OnHide', shine_OnHide)
+		shine:SetToplevel(true)
+
+		local icon = shine:CreateTexture(nil, 'OVERLAY')
+		icon:SetPoint('CENTER')
+		icon:SetBlendMode('ADD')
+		icon:SetAllPoints(icon:GetParent())
+		icon:SetTexture(SHINE_TEXTURE)
+
+		shine.animation = shineAnimation_Create(shine)
+
+		return shine
+	end
+
+	local function pool_OnRelease(self, shine)
+		if shine.animation:IsPlaying() then
+			shine.animation:Finish()
+		end
+
+		shine:Hide()
+		shine:SetParent(nil)
+	end
+
+	ShinePool = CreateObjectPool(pool_OnCreate, pool_OnRelease)
 end
 
--- Get the icon from a cooldown frame
-local function getIcon(cooldown)
-    local icon = Module:GetButtonIcon(cooldown:GetParent())
-    if not icon then return end
-    
-    return icon
+function ShineEffect:Run(cooldown)
+	local owner = cooldown:GetParent() or cooldown
+
+	if owner and owner:IsVisible() then
+		local shine = ShinePool:Acquire()
+
+		shine:SetParent(owner)
+		shine:ClearAllPoints()
+		shine:SetAllPoints(cooldown)
+		shine:Show()
+
+		shine.animation:Stop()
+		shine.animation:Play()
+	end
 end
-
--- Register the shine effect
-Module.FX:Register('shine', function(cooldown, options)
-    options = options or {}
-
-    -- Find the icon
-    local icon = getIcon(cooldown)
-    if not icon then return end
-
-    -- Create or retrieve shine animation
-    local shine = icon._occ_shine
-    if not shine then
-        shine = createShineAnimation(icon)
-        icon._occ_shine = shine
-    end
-
-    -- Play the animation
-    shine:Play()
-end)

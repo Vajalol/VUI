@@ -1,269 +1,241 @@
--- VUITGCD Units.lua
--- Manages tracking and display of unit ability history
-
+---@type string, Namespace
 local _, ns = ...
-local VUITGCD = _G.VUI and _G.VUI.TGCD or {}
 
--- Create a class-like structure for Unit
+local trinketIconAliance = "Interface\\Icons\\inv_jewelry_trinketpvp_01"
+local trinketIconHorde = "Interface\\Icons\\inv_jewelry_trinketpvp_02"
+
 ---@class Unit
-ns.Unit = {}
-ns.Unit.__index = ns.Unit
+local Unit = {}
+Unit.__index = Unit
 
----@param unitId string
----@param settings table
----@return Unit
-function ns.Unit:New(unitId, settings)
-    local self = setmetatable({}, ns.Unit)
-    
-    self.unitId = unitId
-    self.settings = settings or {}
-    self.name = UnitName(unitId) or unitId
-    self.class = select(2, UnitClass(unitId)) or "WARRIOR"
-    self.iconQueue = nil
-    self.container = nil
-    self.enabled = true
-    self.trackedSpells = {}
-    self.lastSpellTime = 0
-    self.lastSpellId = 0
-    
-    -- Create frame structure
-    self:CreateFrames()
-    
-    return self
-end
+---@class UnitParams
+---@field unitType UnitType
+---@field layoutType LayoutType
 
--- Create frame structure for this unit
-function ns.Unit:CreateFrames()
-    -- Parent frame
-    self.container = CreateFrame("Frame", nil, UIParent)
-    self.container:SetSize(300, 40)
-    self.container:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-    self.container:SetFrameStrata("MEDIUM")
-    self.container:SetMovable(true)
-    self.container:EnableMouse(true)
-    self.container:RegisterForDrag("LeftButton")
-    self.container:SetScript("OnDragStart", self.container.StartMoving)
-    self.container:SetScript("OnDragStop", function(f)
-        f:StopMovingOrSizing()
-        -- Save position to settings
-        if ns.settings and ns.settings.activeProfile and 
-           ns.settings.activeProfile.layoutSettings and 
-           ns.settings.activeProfile.layoutSettings[self.unitId] then
-            local point, _, relativePoint, xOfs, yOfs = f:GetPoint()
-            if point and relativePoint then
-                ns.settings.activeProfile.layoutSettings[self.unitId].point = point
-                ns.settings.activeProfile.layoutSettings[self.unitId].relativePoint = relativePoint
-                ns.settings.activeProfile.layoutSettings[self.unitId].xOffset = xOfs
-                ns.settings.activeProfile.layoutSettings[self.unitId].yOffset = yOfs
-            end
-        end
-    end)
-    
-    -- Unit label
-    self.unitLabel = self.container:CreateFontString(nil, "OVERLAY")
-    self.unitLabel:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
-    self.unitLabel:SetPoint("BOTTOMLEFT", self.container, "TOPLEFT", 0, 0)
-    self.unitLabel:SetTextColor(1, 1, 1, 1)
-    self.unitLabel:SetText(self.name)
-    
-    -- Create icon queue
-    -- Use settings if available
-    local iconSize = (self.settings and self.settings.iconSize) or ns.constants.defaultIconSize
-    local maxIcons = (self.settings and self.settings.maxIcons) or 8
-    local direction = (self.settings and self.settings.layout) or "horizontal"
-    
-    self.iconQueue = ns.IconQueue:New(self.container, maxIcons, iconSize, direction)
-    self.iconQueue.frame:SetPoint("TOPLEFT", self.container, "TOPLEFT", 0, 0)
-    
-    -- Size container based on icon queue
-    self.container:SetSize(self.iconQueue.frame:GetWidth(), self.iconQueue.frame:GetHeight())
-    
-    -- Apply settings
-    self:ApplySettings()
-end
+---@param params UnitParams
+function Unit:New(params)
+    ---@class Unit
+    local obj = setmetatable({}, Unit)
+    obj.unitType = params.unitType
+    obj.layoutType = params.layoutType
 
--- Apply settings from profile
-function ns:ApplySettings()
-    if not ns.settings or not ns.settings.activeProfile or 
-       not ns.settings.activeProfile.layoutSettings or 
-       not ns.settings.activeProfile.layoutSettings[self.unitId] then
-        return
-    end
-    
-    local unitSettings = ns.settings.activeProfile.layoutSettings[self.unitId]
-    
-    -- Set position if available
-    if unitSettings.point and unitSettings.relativePoint then
-        self.container:ClearAllPoints()
-        self.container:SetPoint(
-            unitSettings.point,
-            UIParent,
-            unitSettings.relativePoint,
-            unitSettings.xOffset or 0,
-            unitSettings.yOffset or 0
-        )
-    end
-    
-    -- Set enabled state
-    self.enabled = unitSettings.enable or false
-    if not self.enabled then
-        self.container:Hide()
-    else
-        self.container:Show()
-    end
-    
-    -- Set icon queue properties
-    if self.iconQueue then
-        if unitSettings.iconSize then
-            self.iconQueue:SetIconSize(unitSettings.iconSize)
-        end
-        
-        if unitSettings.maxIcons then
-            self.iconQueue:SetMaxIcons(unitSettings.maxIcons)
-        end
-        
-        if unitSettings.layout then
-            self.iconQueue:SetDirection(unitSettings.layout)
-        end
-    end
-    
-    -- Update label based on settings
-    if unitSettings.showLabel then
-        self.unitLabel:Show()
-    else
-        self.unitLabel:Hide()
-    end
-    
-    -- Override class color
-    if unitSettings.useClassColor and self.class then
-        local classColor = RAID_CLASS_COLORS[self.class]
-        if classColor then
-            self.unitLabel:SetTextColor(classColor.r, classColor.g, classColor.b, 1)
-        end
-    else
-        self.unitLabel:SetTextColor(1, 1, 1, 1)
-    end
-    
-    -- Update container size
-    if self.iconQueue and self.iconQueue.frame then
-        self.container:SetSize(self.iconQueue.frame:GetWidth(), self.iconQueue.frame:GetHeight())
-    end
-end
+    ---@type number
+    obj.stopMovingTime = GetTime()
 
--- Track a spell cast by this unit
----@param spellId number
----@param timestamp number
----@param targetGUID string|nil
----@param targetName string|nil
-function ns.Unit:TrackSpell(spellId, timestamp, targetGUID, targetName)
-    if not self.enabled or not spellId or spellId == 0 then
-        return
-    end
-    
-    -- Skip if we're not tracking spells that are too close together
-    if (timestamp - self.lastSpellTime) < 0.1 and spellId == self.lastSpellId then
-        return
-    end
-    
-    -- Add to icon queue
-    if self.iconQueue then
-        self.iconQueue:AddIcon(spellId)
-    end
-    
-    -- Store spell in tracked spells
-    table.insert(self.trackedSpells, {
-        id = spellId,
-        time = timestamp,
-        targetGUID = targetGUID,
-        targetName = targetName
+    ---A previously canceled spell - used to remove a cross icon if the spell wasn't actually canceled.
+    obj.canceledSpell = {
+        id = 0,
+        castId = "",
+        iconIndex = 0,
+    }
+
+    ---A previous spell - used to check for supplementary spells that don't need to be displayed.
+    obj.previousSpell = {
+        id = 0,
+        name = ""
+    }
+
+    ---A spell that is currently being casted.
+    obj.currentlyCastedSpell = nil
+
+    obj.iconQueue = ns.IconQueue:New({
+        unitType = obj.unitType,
+        layoutType = obj.layoutType,
     })
-    
-    -- Keep only recent spells
-    while #self.trackedSpells > 50 do
-        table.remove(self.trackedSpells, 1)
-    end
-    
-    -- Update last spell info
-    self.lastSpellTime = timestamp
-    self.lastSpellId = spellId
+
+    return obj
 end
 
--- Clear all tracked spells
-function ns.Unit:Clear()
-    self.trackedSpells = {}
-    self.lastSpellTime = 0
-    self.lastSpellId = 0
-    
-    if self.iconQueue then
-        self.iconQueue:Clear()
-    end
+function Unit:Clear()
+    self.currentlyCastedSpell = nil
+    self.iconQueue:Clear()
 end
 
--- Update the unit (call from OnUpdate)
----@param elapsed number
-function ns.Unit:Update(elapsed)
-    if not self.enabled then
-        return
+---@param from Unit
+function Unit:Copy(from)
+    self.currentlyCastedSpell = nil
+    if from.currentlyCastedSpell then
+        self.currentlyCastedSpell = {
+            id = from.currentlyCastedSpell.id,
+            castId = from.currentlyCastedSpell.castId,
+        }
     end
-    
-    if self.iconQueue then
-        self.iconQueue:Update(elapsed)
-    end
+    self.stopMovingTime = from.stopMovingTime
+    self.iconQueue:Copy(from.iconQueue)
+    -- TODO: copy other fields as well
 end
 
--- Copy spell history from another unit
----@param otherUnit Unit
-function ns.Unit:Copy(otherUnit)
-    if not otherUnit then
-        return
+---@param unitType UnitType
+---@param spellId number
+---@param spellIcon number
+---@return number | string
+local function replaceToTrinketIfNeeded(unitType, spellId, spellIcon)
+    if spellId == 42292 then
+        if UnitFactionGroup(unitType) == "Horde" then
+            return trinketIconHorde
+        else
+            return trinketIconAliance
+        end
     end
-    
-    -- Copy tracked spells
-    self.trackedSpells = {}
-    for _, spell in ipairs(otherUnit.trackedSpells) do
-        table.insert(self.trackedSpells, {
-            id = spell.id,
-            time = spell.time,
-            targetGUID = spell.targetGUID,
-            targetName = spell.targetName
-        })
+
+    return spellIcon
+end
+
+---@param spellId number
+local function checkBlocklist(spellId)
+    if ns.innerBlockList[spellId] then
+        return true
     end
-    
-    -- Copy last spell info
-    self.lastSpellTime = otherUnit.lastSpellTime
-    self.lastSpellId = otherUnit.lastSpellId
-    
-    -- Sync up icon queue
-    if self.iconQueue and otherUnit.iconQueue then
-        -- Clear current icons
-        self.iconQueue:Clear()
-        
-        -- Recreate icons from other unit's tracked spells
-        -- Starting from most recent
-        for i = #self.trackedSpells, 1, -1 do
-            if i > self.iconQueue.maxIcons then
-                break
-            end
-            
-            local spell = self.trackedSpells[i]
-            if spell and spell.id then
-                self.iconQueue:AddIcon(spell.id)
-            end
+
+    for _, blockedSpellId in ipairs(ns.settings.activeProfile.blocklist) do
+        if blockedSpellId == spellId then
+            return true
         end
     end
 end
 
--- Export to global if needed
-if _G.VUI then
-    _G.VUI.TGCD.Unit = ns.Unit
+---@param event string
+---@param spellId number
+---@param unitType UnitType
+---@param castId string | nil The nil value appears for _CHANNEL_ events
+function Unit:OnSpellEvent(event, spellId, unitType, castId)
+    if not ns.settings.activeProfile.layoutSettings[self.layoutType].enable or checkBlocklist(spellId) then
+        return
+    end
+
+    local spellName, _, spellIcon, castTime = ns.utils.getSpellInfo(spellId)
+    local spellLink = ns.utils.getSpellLink(spellId)
+
+    if not spellIcon or not spellLink or not spellName or ns.innerIconsBlocklist[spellIcon] then
+        return
+    end
+
+    -- If the current spell has the same name but a different ID as the previous one,
+    -- it is probably a supplementary spell that doesn't need to be displayed.
+    -- Sometimes, a supplementary spell can appear right before the main spell (e.g. rogue Shadow Dance),
+    -- but it doesn't really matter in our case.
+    if self.previousSpell.name == spellName and self.previousSpell.id ~= spellId then
+        return
+    end
+
+    if event == "UNIT_SPELLCAST_START" then
+        -- Ignore start of spells without castId - they are likely supplemental
+        -- e.g. casts from druid forms create two start events (one without castId)
+        if castId then
+            self:AddSpell(unitType, spellId, spellIcon, spellName)
+            self.currentlyCastedSpell = {
+                id = spellId,
+                castId = castId,
+                name = spellName,
+            }
+            self.stopMovingTime = GetTime()
+        end
+    elseif event == "UNIT_SPELLCAST_CHANNEL_START" or event == "UNIT_SPELLCAST_EMPOWER_START" then
+        -- Channeling and empower spells are different to regular cast spells:
+        -- * they don't have castId
+        -- * their castTime is 0
+        -- * the succeeded event doesn't mean the channeling stopped
+
+        self:AddSpell(unitType, spellId, spellIcon, spellName)
+        self.currentlyCastedSpell = {
+            id = spellId,
+            castId = "channel",
+            name = spellName,
+        }
+        self.stopMovingTime = GetTime()
+    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+        -- If it is a previously canceled spell, just remove the cross icon
+        if self.canceledSpell.castId == castId then
+            self.iconQueue:HideCancel(self.canceledSpell.iconIndex)
+            return
+        end
+
+        -- If a unit is casting, it is one of the following:
+        -- 1. The end of the cast
+        -- 2. An instant spell during the casting
+        -- 3. A supplementary spell during the channeling, e.g. priest penance
+        if self.currentlyCastedSpell then
+            -- If it is the same spell that is being casted
+            if self.currentlyCastedSpell.id == spellId then
+                -- And if it is not a channelling
+                if self.currentlyCastedSpell.castId ~= "channel" then
+                    -- Finish the cast and start moving icons
+                    self.currentlyCastedSpell = nil
+                end
+
+            -- If the spell has the same name with the one that is being casted (and a different spell ID),
+            -- it is likely a supplementary spell that doesn't need to be displayed.
+            elseif self.currentlyCastedSpell.name ~= spellName then
+                -- Show instant spells, e.g. for monk mist spells or mage's Ice Floes
+                self:AddSpell(unitType, spellId, spellIcon, spellName)
+            end
+
+        else
+            -- If a unit is NOT casting, it is an instant spell or the one that became instant because of some buff.
+            if castTime <= 0 then
+                self:AddSpell(unitType, spellId, spellIcon, spellName)
+            end
+        end
+    elseif event == "UNIT_SPELLCAST_STOP" then
+        if not self.currentlyCastedSpell then
+            return
+        end
+
+        self.currentlyCastedSpell = nil
+
+        self.canceledSpell = {
+            id = spellId,
+            castId = castId,
+
+            -- TODO: in refactor branch there is a spell ID passed to ShowCancel
+            iconIndex = self.iconQueue:ShowCancel()
+        }
+    elseif event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_EMPOWER_STOP" then
+        self.currentlyCastedSpell = nil
+    end
 end
 
--- Initialize unit objects
-function ns.InitializeUnits()
-    ns.units = {}
-    
-    -- Create units for all tracked unit types
-    for _, unitType in ipairs(ns.constants.unitTypes) do
-        ns.units[unitType] = ns.Unit:New(unitType)
+
+---@param time number
+---@param interval number
+function Unit:Update(time, interval)
+    -- fix for stale icons
+    if time - self.stopMovingTime > 10 then
+        self.currentlyCastedSpell = nil
     end
+
+    self.iconQueue:Update(time, interval, self.currentlyCastedSpell ~= nil)
+end
+
+---@private
+---@param unitType UnitType
+---@param id number
+---@param icon number
+---@param name string
+function Unit:AddSpell(unitType, id, icon, name)
+    self.iconQueue:AddSpell(id, replaceToTrinketIfNeeded(unitType, id, icon))
+    self.previousSpell.id = id
+    self.previousSpell.name = name
+end
+
+---@type {[UnitType]: LayoutType}
+local unitTypeToLayoutType = {
+    player = "player",
+    party1 = "party",
+    party2 = "party",
+    party3 = "party",
+    party4 = "party",
+    arena1 = "arena",
+    arena2 = "arena",
+    arena3 = "arena",
+    target = "target",
+    focus = "focus",
+}
+
+ns.units = {}
+for unitType, layoutType in pairs(unitTypeToLayoutType) do
+    ns.units[unitType] = Unit:New({
+        unitType = unitType,
+        layoutType = layoutType,
+    })
 end

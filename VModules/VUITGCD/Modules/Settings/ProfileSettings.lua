@@ -1,204 +1,205 @@
--- VUITGCD ProfileSettings.lua
--- Manages profile settings structure
-
+---@type string, Namespace
 local _, ns = ...
-local VUITGCD = _G.VUI and _G.VUI.TGCD or {}
 
--- Define namespace if not created yet
-if not ns.profileSettings then ns.profileSettings = {} end
-
--- Create a class-like structure for ProfileSettings
 ---@class ProfileSettings
-ns.profileSettings.__index = ns.profileSettings
+local ProfileSettings = {}
+ProfileSettings.__index = ProfileSettings
+ns.ProfileSettings = ProfileSettings
 
--- Constructor for ProfileSettings
----@param name string
----@return ProfileSettings
-function ns.profileSettings:New(name)
-    local self = setmetatable({}, ns.profileSettings)
-    
-    self.name = name or "Default"
-    self.enableInWorld = true
-    self.enableInDungeons = true
-    self.enableInRaids = true
-    self.enableInPvP = true
-    self.disableOutOfCombat = false
-    self.disableInCities = true
-    self.showGlow = true
-    self.glowEffect = "blizz"
-    self.showTooltips = true
-    self.showSpellNames = false
-    
-    -- Unit settings
-    self.layoutSettings = {}
-    self.filterSettings = {}
-    
-    -- Blocked spells
-    self.innerBlocklist = {}
-    
-    -- Initialize default settings for each unit type
-    self:InitializeDefaultUnitSettings()
-    
-    -- Initialize default blocklist
-    self:InitializeDefaultBlocklist()
-    
-    return self
-end
+---@param savedVariables ProfileVariablesV1 | ProfileVariablesV2
+function ProfileSettings:New(savedVariables)
+    ---@class ProfileSettings
+    local obj = setmetatable({}, ProfileSettings)
 
--- Initialize default unit settings
-function ns.profileSettings:InitializeDefaultUnitSettings()
-    -- Create layout settings for each tracked unit
-    for _, unitType in ipairs(ns.constants.unitTypes) do
-        self.layoutSettings[unitType] = {
-            enable = (unitType == "player"), -- Only player enabled by default
-            iconSize = ns.constants.defaultIconSize,
-            maxIcons = 8,
-            layout = "horizontal",
-            point = "CENTER",
-            relativePoint = "CENTER",
-            xOffset = 0,
-            yOffset = 0,
-            showLabel = true,
-            useClassColor = true
-        }
-        
-        -- Initialize filter settings
-        self.filterSettings[unitType] = {
-            showFriendlySpells = true,
-            showEnemySpells = true,
-            minDuration = 0,
-            maxDuration = 0,  -- 0 means no maximum
-            minCooldown = 0,
-            maxCooldown = 0   -- 0 means no maximum
-        }
-    end
-end
+    obj.id = ns.utils.uuid()
+    obj.name = ns.utils.defaultProfileName()
 
--- Initialize default blocklist
-function ns.profileSettings:InitializeDefaultBlocklist()
-    for spellId, blocked in pairs(ns.constants.defaultBlocklist) do
-        self.innerBlocklist[spellId] = blocked
-    end
-end
-
--- Load settings from saved data
----@param data table
-function ns.profileSettings:Load(data)
-    if not data then return end
-    
-    -- Load basic settings
-    self.name = data.name or self.name
-    self.enableInWorld = data.enableInWorld
-    self.enableInDungeons = data.enableInDungeons
-    self.enableInRaids = data.enableInRaids
-    self.enableInPvP = data.enableInPvP
-    self.disableOutOfCombat = data.disableOutOfCombat
-    self.disableInCities = data.disableInCities
-    self.showGlow = data.showGlow
-    self.glowEffect = data.glowEffect
-    self.showTooltips = data.showTooltips
-    self.showSpellNames = data.showSpellNames
-    
-    -- Load unit settings
-    if data.layoutSettings then
-        for unitType, settings in pairs(data.layoutSettings) do
-            -- Make sure we only load for valid unit types
-            if self.layoutSettings[unitType] then
-                for k, v in pairs(settings) do
-                    self.layoutSettings[unitType][k] = v
-                end
-            end
-        end
-    end
-    
-    -- Load filter settings
-    if data.filterSettings then
-        for unitType, settings in pairs(data.filterSettings) do
-            -- Make sure we only load for valid unit types
-            if self.filterSettings[unitType] then
-                for k, v in pairs(settings) do
-                    self.filterSettings[unitType][k] = v
-                end
-            end
-        end
-    end
-    
-    -- Load blocklist
-    if data.innerBlocklist then
-        for spellId, blocked in pairs(data.innerBlocklist) do
-            self.innerBlocklist[spellId] = blocked
-        end
-    end
-end
-
--- Save settings to a table
----@return table
-function ns.profileSettings:Save()
-    local data = {
-        name = self.name,
-        enableInWorld = self.enableInWorld,
-        enableInDungeons = self.enableInDungeons,
-        enableInRaids = self.enableInRaids,
-        enableInPvP = self.enableInPvP,
-        disableOutOfCombat = self.disableOutOfCombat,
-        disableInCities = self.disableInCities,
-        showGlow = self.showGlow,
-        glowEffect = self.glowEffect,
-        showTooltips = self.showTooltips,
-        showSpellNames = self.showSpellNames,
-        
-        -- Deep copy layout settings
-        layoutSettings = {},
-        filterSettings = {},
-        innerBlocklist = {}
+    obj.enabledIn = {
+        enabled = true,
+        party = true,
+        arena = true,
+        battleground = true,
+        world = true,
+        raid = true,
+        combatOnly = false,
     }
-    
-    -- Copy layout settings
-    for unitType, settings in pairs(self.layoutSettings) do
-        data.layoutSettings[unitType] = {}
-        for k, v in pairs(settings) do
-            data.layoutSettings[unitType][k] = v
-        end
+
+    obj.iconsScroll = true
+    obj.tooltipEnabled = true
+    obj.tooltipPrintSpellId = false
+    obj.tooltipStopScroll = true
+    obj.iconClickAddsSpellToBlocklist = false
+
+    ---@type number[]
+    obj.blocklist = {
+        6603, --Attack
+        75, --Auto Shot
+        7384, --Overpower
+    }
+
+    ---@type {[UnitType]: UnitSettings}
+    obj.unitSettings = {}
+    for _, unitType in ipairs(ns.constants.unitTypes) do
+        obj.unitSettings[unitType] = ns.UnitSettings:New(unitType)
     end
-    
-    -- Copy filter settings
-    for unitType, settings in pairs(self.filterSettings) do
-        data.filterSettings[unitType] = {}
-        for k, v in pairs(settings) do
-            data.filterSettings[unitType][k] = v
-        end
+
+    ---@type {[LayoutType]: LayoutSettings}
+    obj.layoutSettings = {}
+    for _, layoutType in ipairs(ns.constants.layoutTypes) do
+        obj.layoutSettings[layoutType] = ns.LayoutSettings:New()
     end
-    
-    -- Copy blocklist
-    for spellId, blocked in pairs(self.innerBlocklist) do
-        data.innerBlocklist[spellId] = blocked
-    end
-    
-    return data
+
+    --By default enable only player frame - not many people use anything else
+    obj.layoutSettings.player.enable = true
+
+    obj:SetFromSavedVariables(savedVariables)
+
+    return obj
 end
 
--- Reset profile to defaults
-function ns.profileSettings:Reset()
-    self.enableInWorld = true
-    self.enableInDungeons = true
-    self.enableInRaids = true
-    self.enableInPvP = true
-    self.disableOutOfCombat = false
-    self.disableInCities = true
-    self.showGlow = true
-    self.glowEffect = "blizz"
-    self.showTooltips = true
-    self.showSpellNames = false
-    
-    -- Reset unit settings
-    self:InitializeDefaultUnitSettings()
-    
-    -- Reset blocklist
-    self.innerBlocklist = {}
-    self:InitializeDefaultBlocklist()
+---@private
+---@param savedVariables ProfileVariablesV1 | ProfileVariablesV2
+function ProfileSettings:SetFromSavedVariables(savedVariables)
+    if type(savedVariables.id) == "string" then
+        self.id = savedVariables.id
+    else
+        self.id = ns.utils.uuid()
+    end
+
+    if type(savedVariables.name) == "string" then
+        self.name = savedVariables.name
+    else
+        self.name = ns.utils.defaultProfileName()
+    end
+
+    if type(savedVariables.EnableIn) == "table" then
+        if type(savedVariables.EnableIn.Enable) == "boolean" then
+            self.enabledIn.enabled = savedVariables.EnableIn.Enable
+        end
+        if type(savedVariables.EnableIn.PvE) == "boolean" then
+            self.enabledIn.party = savedVariables.EnableIn.PvE
+        end
+        if type(savedVariables.EnableIn.Arena) == "boolean" then
+            self.enabledIn.arena = savedVariables.EnableIn.Arena
+        end
+        if type(savedVariables.EnableIn.Bg) == "boolean" then
+            self.enabledIn.battleground = savedVariables.EnableIn.Bg
+        end
+        if type(savedVariables.EnableIn.World) == "boolean" then
+            self.enabledIn.world = savedVariables.EnableIn.World
+        end
+        if type(savedVariables.EnableIn.Raid) == "boolean" then
+            self.enabledIn.raid = savedVariables.EnableIn.Raid
+        end
+        if type(savedVariables.EnableIn["Combat only"]) == "boolean" then
+            self.enabledIn.combatOnly = savedVariables.EnableIn["Combat only"]
+        end
+    end
+
+    if type(savedVariables.ModScroll) == "boolean" then
+        self.iconsScroll = savedVariables.ModScroll
+    end
+    if type(savedVariables.TooltipEnable) == "boolean" then
+        self.tooltipEnabled = savedVariables.TooltipEnable
+    end
+    if type(savedVariables.TooltipSpellID) == "boolean" then
+        self.tooltipPrintSpellId = savedVariables.TooltipSpellID
+    end
+    if type(savedVariables.TooltipStopMove) == "boolean" then
+        self.tooltipStopScroll = savedVariables.TooltipStopMove
+    end
+    if type(savedVariables.iconClickAddsSpellToBlocklist) == "boolean" then
+        self.iconClickAddsSpellToBlocklist = savedVariables.iconClickAddsSpellToBlocklist
+    end
+
+    -- Support for V1
+    if type(savedVariables.TrGCDQueueFr) == "table" then
+        for unitIndex = 1, 12 do
+            local unitSaves = savedVariables.TrGCDQueueFr[unitIndex]
+            local unitType = ns.constants.unitTypes[unitIndex]
+            local unitSettings = self.unitSettings[unitType]
+
+            if type(unitSaves) == "table" and unitSettings then
+                unitSettings:SetFromSavedVariables(unitSaves)
+            end
+        end
+
+        ---@type {[LayoutType]: number}
+        local v1UnitSavesMapping = {
+            player = 1,
+            party = 2,
+            arena = 6,
+            target = 11,
+            focus = 12,
+        }
+        for layoutType, layoutSettings in pairs(self.layoutSettings) do
+            local unitIndex = v1UnitSavesMapping[layoutType]
+            local unitSaves = savedVariables.TrGCDQueueFr[unitIndex]
+            if type(unitSaves) == "table" then
+                layoutSettings:SetFromSavedVariables(unitSaves)
+            end
+        end
+    else
+        if type(savedVariables.layouts) == "table" then
+            for layoutType, layoutSaves in pairs(savedVariables.layouts) do
+                if type(layoutSaves) == "table" and self.layoutSettings[layoutType] then
+                    self.layoutSettings[layoutType]:SetFromSavedVariables(layoutSaves)
+                end
+            end
+        end
+        if type(savedVariables.units) == "table" then
+            for unitType, unitSaves in pairs(savedVariables.units) do
+                if type(unitSaves) == "table" and self.unitSettings[unitType] then
+                    self.unitSettings[unitType]:SetFromSavedVariables(unitSaves)
+                end
+            end
+        end
+    end
+
+    self.blocklist = {}
+    if type(savedVariables.TrGCDBL) == "table" then
+        for i, v in ipairs(savedVariables.TrGCDBL) do
+            if type(v) == "number" then
+                self.blocklist[i] = v
+            end
+        end
+    end
 end
 
--- Export to global if needed
-if _G.VUI then
-    _G.VUI.TGCD.ProfileSettings = ns.profileSettings
+function ProfileSettings:GetSavedVariables()
+    ---@type ProfileVariablesV2
+    local savedVariables = {}
+
+    savedVariables.id = self.id
+    savedVariables.name = self.name
+    savedVariables.EnableIn = {}
+    savedVariables.EnableIn.Enable = self.enabledIn.enabled
+    savedVariables.EnableIn.PvE = self.enabledIn.party
+    savedVariables.EnableIn.Arena = self.enabledIn.arena
+    savedVariables.EnableIn.Bg = self.enabledIn.battleground
+    savedVariables.EnableIn.World = self.enabledIn.world
+    savedVariables.EnableIn.Raid = self.enabledIn.raid
+    savedVariables.EnableIn["Combat only"] = self.enabledIn.combatOnly
+    savedVariables.ModScroll = self.iconsScroll
+    savedVariables.TooltipEnable = self.tooltipEnabled
+    savedVariables.TooltipSpellID = self.tooltipPrintSpellId
+    savedVariables.TooltipStopMove = self.tooltipStopScroll
+    savedVariables.iconClickAddsSpellToBlocklist = self.iconClickAddsSpellToBlocklist
+
+    savedVariables.layouts = {}
+    for layoutType, layoutSettings in pairs(self.layoutSettings) do
+        savedVariables.layouts[layoutType] = layoutSettings:GetSavedVariables()
+    end
+
+    savedVariables.units = {}
+    for unitType, unitSettings in pairs(self.unitSettings) do
+        savedVariables.units[unitType] = unitSettings:GetSavedVariables()
+    end
+
+    savedVariables.TrGCDBL = {}
+    for _, v in ipairs(self.blocklist) do
+        table.insert(savedVariables.TrGCDBL, v)
+    end
+
+    return savedVariables
 end

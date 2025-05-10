@@ -1,227 +1,285 @@
--- VUICC: Timer implementation
--- Adapted from OmniCC (https://github.com/tullamods/OmniCC)
+-- A pool of objects for determining what text to display for a given cooldown
+-- and notify subscribers when the text change
 
-local AddonName, Addon = "VUI", VUI
-local Module = Addon:GetModule("VUICC")
-local Timer = Module.Timer
+-- local bindings!
+local AddonName, Addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
--- Local references for performance
-local GetTime = GetTime
-local floor = math.floor
-local min = math.min
-local max = math.max
-local next = next
-local pairs = pairs
-local tonumber = tonumber
+-- time units in ms
+local TENTH = 100
+local SECOND = TENTH * 10
+local MINUTE = SECOND * 60
+local HOUR = MINUTE * 60
+local DAY = HOUR * 24
 
--- Format constants
-local DAY = 86400
-local HOUR = 3600
-local MINUTE = 60
-local SECOND_FORMAT_LONG = '%.1f'
-local SECOND_FORMAT_SHORT = '%.0f'
+-- rounding values in ms
+local HALF_TENTH = TENTH / 2
+local HALF_SECOND = SECOND / 2
+local HALF_MINUTE = MINUTE / 2
+local HALF_HOUR = HOUR / 2
+local HALF_DAY = DAY / 2
 
--- Timer state tracking
-local timers = {}
+-- transition points in ms
+local SOON_THRESHOLD = SECOND * 5.5 -- 5.5 seconds
+local SECONDS_THRESHOLD = MINUTE - HALF_SECOND -- 59.5 seconds
+local MINUTES_THRESHOLD = HOUR - HALF_MINUTE -- 59.5 minutes
+local HOURS_THRESHOLD = DAY - HALF_HOUR -- 23.5 hours
+
+---@type { [string]: OmniCCTimer }
 local active = {}
 
--- Formula: scale = baseScale * min(1, size / minSize)^scaleFactor
-local function getTimerScale(width, height, scale, minSize)
-    local size = min(width, height)
-    
-    if size < minSize then
-        return scale * (size / minSize)
-    end
-    
-    return scale
-end
+---@type { [OmniCCTimer]: true }
+local inactive = setmetatable({}, {__mode = 'k'})
 
--- Create a new timer for a cooldown
-function Timer:Get(cooldown)
-    if timers[cooldown] then
-        return timers[cooldown]
+---@class OmniCCTimer
+local Timer = {}
+
+Timer.__index = Timer
+
+---@param cooldown OmniCCCooldown
+function Timer:GetOrCreate(cooldown)
+    local start = cooldown._occ_start or 0
+    if start <= 0 then
+        return
     end
-    
-    local timer = Module.Display:New(cooldown)
-    
-    if timer then
-        timer:SetScript('OnUpdate', self.OnUpdate)
-        timer.cooldown = cooldown
-        cooldown._occ_timer = timer
-        
-        timers[cooldown] = timer
+
+    local duration = cooldown._occ_duration or 0
+    if duration <= 0 then
+        return
+    end 
+
+    local endTime = (start + duration) * SECOND
+    local kind = cooldown._occ_kind
+    local settings = cooldown._occ_settings
+    local key = strjoin('/', kind, tostring(endTime), tostring(settings or 'NONE'))
+
+    local timer = active[key]
+    if not timer then
+        timer = next(inactive)
+
+        if timer then
+            inactive[timer] = nil
+        else
+            timer = setmetatable({}, Timer)
+        end
+
+        timer.endTime = endTime
+        timer.key = key
+        timer.kind = kind
+        timer.settings = settings
+        timer.subscribers = {}
+        timer.callback = function() timer:Update(key) end
+        timer:Update(key)
+
+        active[key] = timer
     end
-    
+
     return timer
 end
 
--- Main update function for timer
-function Timer:OnUpdate(elapsed)
-    -- This is a method of the timer frame, not the Timer module
-    if self.nextUpdate > 0 then
-        self.nextUpdate = self.nextUpdate - elapsed
+function Timer:Destroy()
+    if not self.key then
         return
     end
-    
-    local cooldown = self.cooldown
-    if not cooldown or cooldown:IsForbidden() then
-        self:Hide()
-        return
+
+    active[self.key] = nil
+
+    -- clear subscribers
+    for subscriber in pairs(self.subscribers) do
+        subscriber:OnTimerDestroyed(self)
     end
-    
-    local remain = cooldown:GetTimeLeft()
+
+    -- reset fields
+    self.endTime = nil
+    self.key = nil
+    self.kind = nil
+    self.settings = nil
+    self.state = nil
+    self.subscribers = nil
+    self.text = nil
+
+    inactive[self] = true
+end
+
+
+function Timer:Refresh()
+    local key = self.key
+    if key then
+        self:Update(key)
+    end
+end
+
+---@param key string?
+function Timer:Update(key)
+    if not (key and self.key == key) then return end
+
+    local remain = (self.endTime or 0) - (GetTime() * SECOND)
     if remain <= 0 then
-        -- Handle finish effect if this is a long cooldown
-        local minEffectDuration = Module.db.minEffectDuration
-        
-        if minEffectDuration and self.duration and self.duration >= minEffectDuration then
-            if not self.waitingForEffect then
-                Module.FX:Run(self.effect, self.cooldown, self.effectParams)
-                self.waitingForEffect = true
-                self.nextUpdate = FINISH_EFFECT_BUFFER
-                return
-            end
-        end
-        
-        -- Hide when finished
-        self:Hide()
+        self:Destroy()
         return
     end
-    
-    -- Update appearance based on time remaining
-    local settings = cooldown:GetSettings()
-    local oldRemainingShown = self.duration
-    local newRemainingShown = remain
-    
-    -- Update displayed time
-    local text, r, g, b, a, scale
-    
-    -- Days
-    if remain >= DAY then
-        local days = floor(remain / DAY)
-        text = days .. 'd'
-        
-        local style = settings.styles.days
-        r, g, b, a = style.r, style.g, style.b, style.a
-        scale = style.scale
-        
-        self.nextUpdate = remain % DAY
-    -- Hours
-    elseif remain >= HOUR then
-        local hours = floor(remain / HOUR)
-        text = hours .. 'h'
-        
-        local style = settings.styles.hours
-        r, g, b, a = style.r, style.g, style.b, style.a
-        scale = style.scale
-        
-        self.nextUpdate = remain % HOUR
-    -- Minutes
-    elseif remain >= MINUTE then
-        local minutes = floor(remain / MINUTE)
-        text = minutes .. 'm'
-        
-        local style = settings.styles.minutes
-        r, g, b, a = style.r, style.g, style.b, style.a
-        scale = style.scale
-        
-        self.nextUpdate = remain % MINUTE
-    -- Seconds
+
+    local text, textSleep = self:GetTimerText(remain)
+    if self.text ~= text then
+        self.text = text
+        for subscriber in pairs(self.subscribers) do
+            subscriber:OnTimerTextUpdated(self, text)
+        end
+    end
+
+    local state, stateSleep = self:GetTimerState(remain)
+    if self.state ~= state then
+        self.state = state
+        for subscriber in pairs(self.subscribers) do
+            subscriber:OnTimerStateUpdated(self, state)
+        end
+    end
+
+    local sleep = min(textSleep, stateSleep)
+    if sleep < DAY then
+        C_Timer.After(max(sleep / SECOND, GetTickTime()), self.callback)
+    end
+end
+
+function Timer:Subscribe(subscriber)
+    if not self.key then
+        return
+    end
+
+    if not self.subscribers[subscriber] then
+        self.subscribers[subscriber] = true
+    end
+end
+
+function Timer:Unsubscribe(subscriber)
+    if not self.key then
+        return
+    end
+
+    if self.subscribers[subscriber] then
+        self.subscribers[subscriber] = nil
+
+        if not next(self.subscribers) then
+            self:Destroy()
+        end
+    end
+end
+
+-- Calculates timer text
+---@param remain number -- The remaining time on the timer, in miliseconds
+---@return string? -- The formatted text for the time remaining
+---@return number -- How long, in miliseconds, until the the next text update
+function Timer:GetTimerText(remain)
+    if remain <= 0 then
+        return '', DAY
+    end
+
+    local tenthsThreshold, mmSSThreshold
+
+    local sets = self.settings
+    if sets then
+        tenthsThreshold = (sets.tenthsDuration or 0) * SECOND
+        mmSSThreshold = (sets.mmSSDuration or 0) * SECOND
     else
-        -- Add tenths of seconds if enabled and time is under the threshold
-        local tenthsThreshold = Module.db.tenthsDuration or 0
-        if remain < tenthsThreshold then
-            text = SECOND_FORMAT_LONG:format(remain)
-        else
-            text = SECOND_FORMAT_SHORT:format(remain)
-        end
-        
-        -- Determine if this is "soon" or just regular seconds
-        if remain < settings.minDuration then
-            local style = settings.styles.soon
-            r, g, b, a = style.r, style.g, style.b, style.a
-            scale = style.scale
-        else
-            local style = settings.styles.seconds
-            r, g, b, a = style.r, style.g, style.b, style.a
-            scale = style.scale
-        end
-        
-        -- Update more frequently for smoother countdown
-        self.nextUpdate = remain % 1
-        if self.nextUpdate < 0.1 then
-            self.nextUpdate = 0.1
-        end
+        tenthsThreshold = 0
+        mmSSThreshold = 0
     end
-    
-    -- Apply settings to the timer
-    if self.text:GetText() ~= text then
-        self.text:SetText(text)
-    end
-    
-    -- Only update appearance if something changed
-    if self.duration ~= newRemainingShown then
-        local width, height = cooldown:GetSize()
-        
-        -- Scale timer text based on cooldown size
-        local fontSize = settings.fontSize * getTimerScale(width, height, scale, settings.minSize)
-        
-        -- Apply text styling
-        self.text:SetFont(settings.fontFace, fontSize, settings.fontOutline)
-        self.text:SetTextColor(r, g, b, a)
-        
-        -- Reposition the text
-        self.text:ClearAllPoints()
-        self.text:SetPoint(settings.anchor, settings.xOff, settings.yOff)
-        
-        -- Save effect for finish
-        self.effect = settings.effect
-        self.effectParams = settings.effectSettings
-        self.duration = newRemainingShown
+
+    if remain < tenthsThreshold then
+        -- tenths of seconds
+        local tenths = (remain + HALF_TENTH) - (remain + HALF_TENTH) % TENTH
+
+        local sleep = remain - (tenths - HALF_TENTH)
+
+        if tenths > 0 then
+            return L.TenthsFormat:format(tenths / SECOND), sleep
+        end
+
+        return '', sleep
+    elseif remain < SECONDS_THRESHOLD then
+        -- seconds
+        local seconds = (remain + HALF_SECOND) - (remain + HALF_SECOND) % SECOND
+
+        local sleep = remain - max(seconds - HALF_SECOND, tenthsThreshold)
+
+        if seconds > 0 then
+            return L.SecondsFormat:format(seconds / SECOND), sleep
+        end
+
+        return '', sleep
+    elseif remain < mmSSThreshold then
+        -- MM:SS
+        local seconds = (remain + HALF_SECOND) - (remain + HALF_SECOND) % SECOND
+
+        local sleep = remain - max(seconds - HALF_SECOND, SECONDS_THRESHOLD)
+
+        return L.MMSSFormat:format(seconds / MINUTE, (seconds % MINUTE) / SECOND), sleep
+    elseif remain < MINUTES_THRESHOLD then
+        -- minutes
+        local minutes = (remain + HALF_MINUTE) - (remain + HALF_MINUTE) % MINUTE
+
+        local wait = max(
+            -- transition point of showing one minute versus another (29.5s, 89.5s, 149.5s, ...)
+            minutes - HALF_MINUTE,
+            -- transition point of displaying minutes to displaying seconds (59.5s)
+            SECONDS_THRESHOLD,
+            -- transition point of displaying MM:SS (user set)
+            mmSSThreshold
+        )
+
+        local sleep = remain - wait
+
+        return L.MinutesFormat:format(minutes / MINUTE), sleep
+    elseif remain < HOURS_THRESHOLD then
+        -- hours
+        local hours = (remain + HALF_HOUR) - (remain + HALF_HOUR) % HOUR
+
+        local sleep = remain - max(hours - HALF_HOUR, MINUTES_THRESHOLD)
+
+        return L.HoursFormat:format(hours / HOUR), sleep
+    elseif remain <= (DAY * 7) then
+        -- days
+        local days = (remain + HALF_DAY) - (remain + HALF_DAY) % DAY
+
+        local sleep = remain - max(days - HALF_DAY, HOURS_THRESHOLD)
+
+        return L.DaysFormat:format(days / DAY), sleep
+    else
+        return '', DAY
     end
 end
 
--- Show/hide functions
-function Timer:Show()
-    active[self] = true
-    self.waitingForEffect = nil
-    self.nextUpdate = 0
-    self:SetScript('OnUpdate', Timer.OnUpdate)
-    
-    -- Update once immediately
-    Timer.OnUpdate(self, 0)
-    self:Show()
+-- Calculates timer state
+---@param remain number -- The remaining time on the timer, in miliseconds
+---@return OmniCCTimerState -- The curent state of the timer
+---@return number -- How long, in miliseconds, until the next timer state
+function Timer:GetTimerState(remain)
+    if self.kind == 'loc' then
+        return 'controlled', math.huge
+    elseif self.kind == 'charge' then
+        return 'charging', math.huge
+    elseif remain < SOON_THRESHOLD then
+        return 'soon', math.huge
+    elseif remain < SECONDS_THRESHOLD then
+        return 'seconds', remain - SOON_THRESHOLD
+    elseif remain < MINUTES_THRESHOLD then
+        return 'minutes', remain - SECONDS_THRESHOLD
+    else
+        return 'hours', remain - MINUTES_THRESHOLD
+    end
 end
 
-function Timer:Hide()
-    active[self] = nil
-    self.waitingForEffect = nil
-    self:SetScript('OnUpdate', nil)
-    self:Hide()
-end
-
--- Update active timers
 function Timer:ForActive(method, ...)
-    for timer in pairs(active) do
-        local func = timer[method]
-        if type(func) == 'function' then
-            func(timer, ...)
-        end
+    local func = self[method]
+
+    if type(func) ~= 'function' then
+        return
+    end
+
+    for _, timer in pairs(active) do
+        func(timer, ...)
     end
 end
 
--- Cleanup when module is disabled
-function Timer:Cleanup()
-    for i, timer in pairs(timers) do
-        timer:Hide()
-        timer:ClearAllPoints()
-        timer:SetParent(nil)
-        timer.cooldown = nil
-        timers[i] = nil
-    end
-    
-    active = {}
-end
-
--- Update module with Timer methods
-Module.Timer = Timer
+-- exports
+Addon.Timer = Timer

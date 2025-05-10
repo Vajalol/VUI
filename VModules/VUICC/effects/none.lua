@@ -1,8 +1,8 @@
--- VUICC: No effect implementation
--- Adapted from OmniCC (https://github.com/tullamods/OmniCC)
+-- an effect that does nothing
+local AddonName, Addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
-local AddonName, Addon = "VUI", VUI
-local Module = Addon:GetModule("VUICC")
+local NoopEffect = Addon.FX:Create("none", L.None)
 
--- Register the "none" effect (does nothing)
-Module.FX:Register('none', function() end)
+function NoopEffect:Run()
+end

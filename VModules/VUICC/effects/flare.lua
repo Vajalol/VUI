@@ -1,86 +1,108 @@
--- VUICC: Flare effect
--- Adapted from OmniCC (https://github.com/tullamods/OmniCC)
+-- a flare finish effect. Artwork by Renaitre
+local ADDON, Addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON)
 
-local AddonName, Addon = "VUI", VUI
-local Module = Addon:GetModule("VUICC")
+local SHINE_TEXTURE = ([[Interface\Addons\%s\media\flare]]):format(ADDON)
+local SHINE_DURATION = 0.75
+local SHINE_SCALE = 5
 
--- Create a flare animation for an icon
-local function createFlareAnimation(frame)
-    local flare = CreateFrame('Frame', nil, frame)
-    flare:SetPoint('CENTER')
-    flare:SetSize(frame:GetWidth(), frame:GetHeight())
-    flare:SetAlpha(0)
-    flare:Hide()
-    
-    -- Flare texture
-    local texture = flare:CreateTexture(nil, 'OVERLAY')
-    texture:SetPoint('CENTER')
-    texture:SetAllPoints(flare)
-    texture:SetTexture("Interface\\AddOns\\VUI\\Media\\modules\\VUICC\\flare")
-    texture:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
-    texture:SetBlendMode('ADD')
-    
-    -- Animation group
-    local animGroup = flare:CreateAnimationGroup()
-    animGroup:SetLooping('NONE')
-    
-    -- Fade in and scale up
-    local fadeIn = animGroup:CreateAnimation('Alpha')
-    fadeIn:SetFromAlpha(0)
-    fadeIn:SetToAlpha(1)
-    fadeIn:SetDuration(0.3)
-    fadeIn:SetOrder(1)
-    
-    local scaleIn = animGroup:CreateAnimation('Scale')
-    scaleIn:SetFromScale(0.5, 0.5)
-    scaleIn:SetToScale(1.5, 1.5)
-    scaleIn:SetDuration(0.3)
-    scaleIn:SetOrder(1)
-    
-    -- Fade out
-    local fadeOut = animGroup:CreateAnimation('Alpha')
-    fadeOut:SetFromAlpha(1)
-    fadeOut:SetToAlpha(0)
-    fadeOut:SetDuration(0.3)
-    fadeOut:SetOrder(2)
-    
-    -- Reset on finish
-    animGroup:SetScript('OnFinished', function()
-        flare:Hide()
-    end)
-    
-    -- Play function
-    flare.Play = function()
-        flare:Show()
-        animGroup:Play()
-    end
-    
-    return flare
+local FlareEffect = Addon.FX:Create("flare", L.Flare)
+local FlarePool
+do
+	local function shineAnimation_OnFinished(self)
+		local parent = self:GetParent()
+		if parent:IsShown() then
+			parent:Hide()
+		end
+	end
+
+	local function shineAnimation_Create(parent)
+		local group = parent:CreateAnimationGroup()
+		group:SetScript('OnFinished', shineAnimation_OnFinished)
+		group:SetLooping('NONE')
+
+		local initiate = group:CreateAnimation('Alpha')
+		initiate:SetFromAlpha(1)
+		initiate:SetDuration(0)
+		initiate:SetToAlpha(0)
+		initiate:SetOrder(0)
+
+		local grow = group:CreateAnimation('Scale')
+		grow:SetOrigin('CENTER', 0, 0)
+		grow:SetScale(SHINE_SCALE, SHINE_SCALE)
+		grow:SetDuration(SHINE_DURATION / 2)
+		grow:SetOrder(1)
+
+		local brighten = group:CreateAnimation('Alpha')
+		brighten:SetDuration(SHINE_DURATION / 2)
+		brighten:SetFromAlpha(0)
+		brighten:SetToAlpha(1)
+		brighten:SetOrder(1)
+
+		local shrink = group:CreateAnimation('Scale')
+		shrink:SetOrigin('CENTER', 0, 0)
+		shrink:SetScale(1/SHINE_SCALE, 1/SHINE_SCALE)
+		shrink:SetDuration(SHINE_DURATION / 2)
+		shrink:SetOrder(2)
+
+		local fade = group:CreateAnimation('Alpha')
+		fade:SetDuration(SHINE_DURATION / 2)
+		fade:SetFromAlpha(1)
+		fade:SetToAlpha(0)
+		fade:SetOrder(2)
+
+		return group
+	end
+
+	local function shine_OnHide(self)
+		if not self.released then
+			FlarePool:Release(self)
+		end
+	end
+
+	local function pool_OnCreate(self)
+		local shine = CreateFrame('Frame')
+		shine:Hide()
+		shine:SetScript('OnHide', shine_OnHide)
+		shine:SetToplevel(true)
+
+		local icon = shine:CreateTexture(nil, 'OVERLAY')
+		icon:SetPoint('CENTER')
+		icon:SetBlendMode('ADD')
+		icon:SetAllPoints(icon:GetParent())
+		icon:SetTexture(SHINE_TEXTURE)
+
+		shine.animation = shineAnimation_Create(shine)
+
+		return shine
+	end
+
+	local function pool_OnRelease(self, shine)
+		self.released = true
+
+		if shine.animation:IsPlaying() then
+			shine.animation:Finish()
+		end
+
+		shine:Hide()
+		shine:SetParent(nil)
+	end
+
+	FlarePool = CreateObjectPool(pool_OnCreate, pool_OnRelease)
 end
 
--- Get the icon from a cooldown frame
-local function getIcon(cooldown)
-    local icon = Module:GetButtonIcon(cooldown:GetParent())
-    if not icon then return end
-    
-    return icon
-end
+function FlareEffect:Run(cooldown)
+	local owner = cooldown:GetParent() or cooldown
 
--- Register the flare effect
-Module.FX:Register('flare', function(cooldown, options)
-    options = options or {}
-    
-    -- Find the icon
-    local icon = getIcon(cooldown)
-    if not icon then return end
-    
-    -- Create or retrieve flare animation
-    local flare = icon._occ_flare
-    if not flare then
-        flare = createFlareAnimation(icon)
-        icon._occ_flare = flare
-    end
-    
-    -- Play the animation
-    flare:Play()
-end)
+	if owner and owner:IsVisible() then
+		local shine = FlarePool:Acquire()
+
+		shine:SetParent(owner)
+		shine:ClearAllPoints()
+		shine:SetAllPoints(cooldown)
+		shine:Show()
+
+		shine.animation:Stop()
+		shine.animation:Play()
+	end
+end

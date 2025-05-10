@@ -1,279 +1,115 @@
--- VUITGCD Settings.lua
--- Manages settings and profiles for the VUITGCD module
-
+---@type string, Namespace
 local _, ns = ...
-local VUITGCD = _G.VUI and _G.VUI.TGCD or {}
 
--- Define namespace if not created yet
-if not ns.settings then
-    ns.settings = {
-        profiles = {},
-        activeProfile = nil,
-        defaultProfile = "Default"
+---@class Settings
+local Settings = {}
+Settings.__index = Settings
+
+local temporalProfileId = "-1"
+
+function Settings:New()
+    ---@class Settings
+    local obj = setmetatable({}, Settings)
+
+    obj.activeProfile = ns.ProfileSettings:New({
+        id = temporalProfileId,
+        name = "Default",
+    })
+
+    ---@type {[string]: ProfileSettings}
+    obj.profiles = {
+        [obj.activeProfile.id] = obj.activeProfile
     }
+
+    return obj
 end
 
--- Initialize default profile
-function ns.settings:InitializeDefaultProfile()
-    if not self.profiles["Default"] then
-        self.profiles["Default"] = {
-            name = "Default",
-            enableInWorld = true,
-            enableInDungeons = true,
-            enableInRaids = true,
-            enableInPvP = true,
-            disableOutOfCombat = false,
-            disableInCities = true,
-            showGlow = true,
-            glowEffect = "blizz",
-            showTooltips = true,
-            showSpellNames = false,
-            
-            -- Unit settings
-            layoutSettings = {},
-            
-            -- Blocked spells
-            innerBlocklist = {}
-        }
-        
-        -- Initialize default layout settings for each unit type
-        for _, unitType in ipairs(ns.constants.unitTypes) do
-            self.profiles["Default"].layoutSettings[unitType] = {
-                enable = (unitType == "player"), -- Only player enabled by default
-                iconSize = ns.constants.defaultIconSize,
-                maxIcons = 8,
-                layout = "horizontal",
-                point = "CENTER",
-                relativePoint = "CENTER",
-                xOffset = 0,
-                yOffset = 0,
-                showLabel = true,
-                useClassColor = true
-            }
-        end
-        
-        -- Set default blocklist
-        for spellId, blocked in pairs(ns.constants.defaultBlocklist) do
-            self.profiles["Default"].innerBlocklist[spellId] = blocked
-        end
-    end
-    
-    -- Set Default as active profile if none exists
-    if not self.activeProfile then
-        self.activeProfile = self.profiles["Default"]
-    end
-end
+function Settings:Load()
+    ---@type CharacterSavedVariablesV1 | CharacterSavedVariablesV2
+    TrufiGCDChSave = TrufiGCDChSave or {}
 
--- Load settings from saved variables
-function ns.settings:Load()
-    local VUI = _G.VUI
-    if not VUI then return end
-    
-    local loaded = false
-    
-    -- Initialize default profile first
-    self:InitializeDefaultProfile()
-    
-    -- Load from VUI saved variables
-    if VUI.db and VUI.db.modules and VUI.db.modules.VUITGCD then
-        local savedSettings = VUI.db.modules.VUITGCD
-        
-        -- Load profiles
-        if savedSettings.profiles then
-            for name, profile in pairs(savedSettings.profiles) do
-                self.profiles[name] = profile
-            end
-            loaded = true
+    ---@type GlobalSavedVariablesV1 | GlobalSavedVariablesV2
+    TrufiGCDGlSave = TrufiGCDGlSave or {}
+
+    self.profiles = {}
+
+    -- Load only a new version of the global saved variables
+    if type(TrufiGCDGlSave.profiles) == "table" then
+        local newGlobalVariables = TrufiGCDGlSave --[[@as GlobalSavedVariablesV1 | GlobalSavedVariablesV2]]
+        for _, profileVariables in pairs(newGlobalVariables.profiles) do
+            local profile = ns.ProfileSettings:New(profileVariables)
+            self.profiles[profile.id] = profile
         end
-        
-        -- Load active profile
-        if savedSettings.activeProfileName and self.profiles[savedSettings.activeProfileName] then
-            self.activeProfile = self.profiles[savedSettings.activeProfileName]
+    end
+
+   if type(TrufiGCDChSave.profileId) == "string" and self.profiles[TrufiGCDChSave.profileId] then
+        self.activeProfile = self.profiles[TrufiGCDChSave.profileId]
+    end
+
+    if next(self.profiles) == nil then
+        local defaultProfile = ns.ProfileSettings:New({
+            id = ns.utils.uuid(),
+            name = UnitName("player") .. " - " .. GetRealmName(),
+        })
+        self.profiles[defaultProfile.id] = defaultProfile
+        self.activeProfile = defaultProfile
+    end
+
+    if self.activeProfile.id == temporalProfileId then
+        if type(TrufiGCDGlSave.lastUsedProfileId) == "string" and self.profiles[TrufiGCDGlSave.lastUsedProfileId] then
+            self.activeProfile = self.profiles[TrufiGCDGlSave.lastUsedProfileId]
         else
-            self.activeProfile = self.profiles["Default"]
+            local _, profile = next(self.profiles)
+            self.activeProfile = profile --[[@as ProfileSettings]]
         end
     end
-    
-    -- Ensure we have a valid active profile
-    if not self.activeProfile then
-        self.activeProfile = self.profiles["Default"]
-    end
-    
-    return loaded
+
+    self:Save()
 end
 
--- Save settings to saved variables
-function ns.settings:Save()
-    local VUI = _G.VUI
-    if not VUI then return end
-    
-    -- Make sure VUI.db and modules exist
-    if not VUI.db then VUI.db = {} end
-    if not VUI.db.modules then VUI.db.modules = {} end
-    
-    -- Create or update VUITGCD settings
-    VUI.db.modules.VUITGCD = {
-        profiles = self.profiles,
-        activeProfileName = self.activeProfile and self.activeProfile.name or "Default"
+function Settings:Save()
+    ---@type GlobalSavedVariablesV2
+    TrufiGCDGlSave = {
+        version = 2,
+        profiles = {},
+        lastUsedProfileId = self.activeProfile.id,
+    }
+
+    for _, profile in pairs(self.profiles) do
+        TrufiGCDGlSave.profiles[profile.id] = profile:GetSavedVariables()
+    end
+
+    ---@type CharacterSavedVariablesV2
+    TrufiGCDChSave = {
+        version = 2,
+        profileId = self.activeProfile.id,
     }
 end
 
--- Get a profile by name
-function ns.settings:GetProfile(name)
-    return self.profiles[name]
+---@param name string
+function Settings:CreateNewProfile(name)
+    local profile = ns.ProfileSettings:New(self.activeProfile:GetSavedVariables())
+    profile.id = ns.utils.uuid()
+    profile.name = name
+
+    self.profiles[profile.id] = profile
+    self.activeProfile = profile
 end
 
--- Create a new profile
-function ns.settings:CreateProfile(name)
-    if not name or name == "" or self.profiles[name] then
-        return nil
-    end
-    
-    -- Create new profile based on current active profile
-    local newProfile = {}
-    if self.activeProfile then
-        -- Deep copy the active profile
-        newProfile = ns.settings:DeepCopy(self.activeProfile)
-        newProfile.name = name
+function Settings:DeleteCurrentProfile()
+    self.profiles[self.activeProfile.id] = nil
+
+    if next(self.profiles) == nil then
+        local defaultProfile = ns.ProfileSettings:New({
+            id = ns.utils.uuid(),
+            name = ns.utils.defaultProfileName(),
+        })
+        self.profiles[defaultProfile.id] = defaultProfile
+        self.activeProfile = defaultProfile
     else
-        -- Use default if no active profile
-        newProfile = ns.settings:DeepCopy(self.profiles["Default"])
-        newProfile.name = name
+        local _, profile = next(self.profiles)
+        self.activeProfile = profile --[[@as ProfileSettings]]
     end
-    
-    -- Store the new profile
-    self.profiles[name] = newProfile
-    
-    -- Save changes
-    self:Save()
-    
-    return newProfile
 end
 
--- Delete a profile
-function ns.settings:DeleteProfile(name)
-    if not name or name == "" or name == "Default" or not self.profiles[name] then
-        return false
-    end
-    
-    -- Remove the profile
-    self.profiles[name] = nil
-    
-    -- If it was the active profile, switch to Default
-    if self.activeProfile and self.activeProfile.name == name then
-        self.activeProfile = self.profiles["Default"]
-    end
-    
-    -- Save changes
-    self:Save()
-    
-    return true
-end
-
--- Set active profile
-function ns.settings:SetActiveProfile(name)
-    if not name or not self.profiles[name] then
-        return false
-    end
-    
-    self.activeProfile = self.profiles[name]
-    
-    -- Save changes
-    self:Save()
-    
-    -- Update all modules that depend on settings
-    if ns.locationCheck and ns.locationCheck.settingsChanged then
-        ns.locationCheck.settingsChanged()
-    end
-    
-    return true
-end
-
--- Reset a profile to defaults
-function ns.settings:ResetProfile(name)
-    if not name or not self.profiles[name] then
-        return false
-    end
-    
-    if name == "Default" then
-        -- Reset default profile
-        self.profiles["Default"] = nil
-        self:InitializeDefaultProfile()
-    else
-        -- Base on Default
-        self.profiles[name] = ns.settings:DeepCopy(self.profiles["Default"])
-        self.profiles[name].name = name
-    end
-    
-    -- Save changes
-    self:Save()
-    
-    -- Update if it was the active profile
-    if self.activeProfile and self.activeProfile.name == name then
-        self.activeProfile = self.profiles[name]
-        
-        -- Update all modules that depend on settings
-        if ns.locationCheck and ns.locationCheck.settingsChanged then
-            ns.locationCheck.settingsChanged()
-        end
-    end
-    
-    return true
-end
-
--- Deep copy a table
-function ns.settings:DeepCopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[ns.settings:DeepCopy(orig_key)] = ns.settings:DeepCopy(orig_value)
-        end
-    else
-        copy = orig
-    end
-    return copy
-end
-
--- Add spell to blocklist
-function ns.settings:AddToBlocklist(spellId)
-    if not spellId or not self.activeProfile then
-        return false
-    end
-    
-    self.activeProfile.innerBlocklist[spellId] = true
-    
-    -- Save changes
-    self:Save()
-    
-    return true
-end
-
--- Remove spell from blocklist
-function ns.settings:RemoveFromBlocklist(spellId)
-    if not spellId or not self.activeProfile then
-        return false
-    end
-    
-    self.activeProfile.innerBlocklist[spellId] = nil
-    
-    -- Save changes
-    self:Save()
-    
-    return true
-end
-
--- Check if spell is in blocklist
-function ns.settings:IsSpellBlocked(spellId)
-    if not spellId or not self.activeProfile then
-        return false
-    end
-    
-    return self.activeProfile.innerBlocklist[spellId] == true
-end
-
--- Export to global if needed
-if _G.VUI then
-    _G.VUI.TGCD.Settings = ns.settings
-end
+ns.settings = Settings:New()

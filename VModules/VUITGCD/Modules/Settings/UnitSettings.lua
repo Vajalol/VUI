@@ -1,146 +1,60 @@
--- VUITGCD UnitSettings.lua
--- Manages unit-specific settings
-
+---@type string, Namespace
 local _, ns = ...
-local VUITGCD = _G.VUI and _G.VUI.TGCD or {}
 
--- Define namespace if not created yet
-if not ns.unitSettings then ns.unitSettings = {} end
+---@type {[UnitType]: string}
+local unitLabels = {
+    player = "Player",
+    party1 = "Party 1",
+    party2 = "Party 2",
+    party3 = "Party 3",
+    party4 = "Party 4",
+    arena1 = "Arena 1",
+    arena2 = "Arena 2",
+    arena3 = "Arena 3",
+    arena4 = "Arena 4",
+    arena5 = "Arena 5",
+    target = "Target",
+    focus = "Focus",
+}
 
--- Create a class-like structure for UnitSettings
 ---@class UnitSettings
-ns.unitSettings.__index = ns.unitSettings
+---@field x number
+---@field y number
+---@field point Point
+---@field text string
+local UnitSettings = {}
+UnitSettings.__index = UnitSettings
+ns.UnitSettings = UnitSettings
 
--- Constructor for UnitSettings
----@param unitId string
----@return UnitSettings
-function ns.unitSettings:New(unitId)
-    local self = setmetatable({}, ns.unitSettings)
-    
-    self.unitId = unitId
-    self.layoutSettings = ns.layoutSettings:New(unitId)
-    self.filterSettings = {}  -- Additional unit-specific filtering options
-    
-    return self
+---@param unitType UnitType
+function UnitSettings:New(unitType)
+    ---@class UnitSettings
+    local obj = setmetatable({}, UnitSettings)
+    obj.text = unitLabels[unitType]
+    obj.x = 0
+    obj.y = 0
+    obj.point = "CENTER"
+    return obj
 end
 
--- Load settings from profile
----@param profileSettings table
-function ns.unitSettings:Load(profileSettings)
-    if not profileSettings then return end
-    
-    -- Load layout settings
-    if profileSettings.layoutSettings and profileSettings.layoutSettings[self.unitId] then
-        self.layoutSettings:Load(profileSettings.layoutSettings[self.unitId])
-    end
-    
-    -- Load filter settings if they exist
-    if profileSettings.filterSettings and profileSettings.filterSettings[self.unitId] then
-        self.filterSettings = {}
-        
-        for k, v in pairs(profileSettings.filterSettings[self.unitId]) do
-            self.filterSettings[k] = v
-        end
-    end
+function UnitSettings:GetSavedVariables()
+    ---@type UnitVariablesV2
+    local savedVariables = {}
+    savedVariables.x = self.x
+    savedVariables.y = self.y
+    savedVariables.point = self.point
+    return savedVariables
 end
 
--- Save settings to profile
----@param profileSettings table
-function ns.unitSettings:Save(profileSettings)
-    if not profileSettings then return end
-    
-    -- Ensure structures exist
-    if not profileSettings.layoutSettings then
-        profileSettings.layoutSettings = {}
+---@param savedVariables UnitVariablesV1 | UnitVariablesV2
+function UnitSettings:SetFromSavedVariables(savedVariables)
+    if type(savedVariables.x) == "number" then
+        self.x = savedVariables.x
     end
-    
-    if not profileSettings.filterSettings then
-        profileSettings.filterSettings = {}
+    if type(savedVariables.y) == "number" then
+        self.y = savedVariables.y
     end
-    
-    -- Save layout settings
-    profileSettings.layoutSettings[self.unitId] = self.layoutSettings:Save()
-    
-    -- Save filter settings
-    profileSettings.filterSettings[self.unitId] = {}
-    for k, v in pairs(self.filterSettings) do
-        profileSettings.filterSettings[self.unitId][k] = v
+    if type(savedVariables.point) == "string" then
+        self.point = savedVariables.point
     end
-end
-
--- Reset settings to defaults
-function ns.unitSettings:Reset()
-    self.layoutSettings:Reset(self.unitId)
-    
-    -- Reset filter settings to defaults
-    self.filterSettings = {
-        showFriendlySpells = true,
-        showEnemySpells = true,
-        minDuration = 0,
-        maxDuration = 0,  -- 0 means no maximum
-        minCooldown = 0,
-        maxCooldown = 0   -- 0 means no maximum
-    }
-end
-
--- Set a filter setting
----@param key string
----@param value any
-function ns.unitSettings:SetFilterSetting(key, value)
-    self.filterSettings[key] = value
-end
-
--- Get a filter setting
----@param key string
----@return any
-function ns.unitSettings:GetFilterSetting(key)
-    return self.filterSettings[key]
-end
-
--- Determine if a spell should be filtered
----@param spellId number
----@param isFriendly boolean
----@param duration number
----@param cooldown number
----@return boolean
-function ns.unitSettings:ShouldFilterSpell(spellId, isFriendly, duration, cooldown)
-    -- Skip if spell is in blocklist
-    if ns.innerBlocklist and ns.innerBlocklist:IsBlocked(spellId) then
-        return true
-    end
-    
-    -- Check friendly/enemy filter
-    if isFriendly and not self.filterSettings.showFriendlySpells then
-        return true
-    end
-    
-    if not isFriendly and not self.filterSettings.showEnemySpells then
-        return true
-    end
-    
-    -- Check duration
-    if duration and self.filterSettings.minDuration > 0 and duration < self.filterSettings.minDuration then
-        return true
-    end
-    
-    if duration and self.filterSettings.maxDuration > 0 and duration > self.filterSettings.maxDuration then
-        return true
-    end
-    
-    -- Check cooldown
-    if cooldown and self.filterSettings.minCooldown > 0 and cooldown < self.filterSettings.minCooldown then
-        return true
-    end
-    
-    if cooldown and self.filterSettings.maxCooldown > 0 and cooldown > self.filterSettings.maxCooldown then
-        return true
-    end
-    
-    -- Spell passes all filters
-    return false
-end
-
--- Export to global if needed
-if _G.VUI then
-    _G.VUI.TGCD.UnitSettings = ns.unitSettings
 end

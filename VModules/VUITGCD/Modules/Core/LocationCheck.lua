@@ -1,134 +1,113 @@
--- VUITGCD LocationCheck.lua
--- Handles logic for when and where ability tracking should be active
-
+---@type string, Namespace
 local _, ns = ...
-local VUITGCD = _G.VUI and _G.VUI.TGCD or {}
 
--- Define namespace
-if not ns.locationCheck then ns.locationCheck = {} end
+---Watches for player location changes and turns on/off the addon according to location settings.
+---@class LocationCheck
+local locationCheck = {}
+ns.locationCheck = locationCheck
 
--- Current state
-ns.locationCheck.inInstance = false
-ns.locationCheck.instanceType = nil
-ns.locationCheck.inCombat = false
-ns.locationCheck.isPvP = false
-ns.locationCheck.isEnabled = true
+local eventFrame = CreateFrame("Frame", nil, UIParent)
+eventFrame:RegisterEvent("PLAYER_ENTERING_BATTLEGROUND")
+eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 
--- Frame for event handling
-ns.locationCheck.frame = CreateFrame("Frame")
+--- @type "unknown" | "world" | "party" | "arena" | "pvp" | "raid"
+local playerLocation = "unknown"
 
--- Initialize location checking
-function ns.locationCheck.Initialize()
-    local frame = ns.locationCheck.frame
-    
-    -- Register necessary events
-    frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-    frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-    frame:RegisterEvent("PLAYER_REGEN_DISABLED")
-    frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-    
-    -- Set event handler
-    frame:SetScript("OnEvent", ns.locationCheck.OnEvent)
-    
-    -- Initial check
-    ns.locationCheck.CheckLocation()
+local addonEnabled = true
+
+locationCheck.isAddonEnabled = function()
+    return addonEnabled
 end
 
--- Event handler
-function ns.locationCheck.OnEvent(self, event, ...)
-    if event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
-        ns.locationCheck.CheckLocation()
-    elseif event == "PLAYER_REGEN_DISABLED" then
-        ns.locationCheck.inCombat = true
-        ns.locationCheck.UpdateState()
-    elseif event == "PLAYER_REGEN_ENABLED" then
-        ns.locationCheck.inCombat = false
-        ns.locationCheck.UpdateState()
-    end
-end
+---@param event string
+local function onEvent(_, event)
+    local _, instanceType = IsInInstance()
+    local enabledIn = ns.settings.activeProfile.enabledIn
 
--- Check current location
-function ns.locationCheck.CheckLocation()
-    -- Check if in instance
-    local inInstance, instanceType = IsInInstance()
-    ns.locationCheck.inInstance = inInstance
-    ns.locationCheck.instanceType = instanceType
-    
-    -- Check if in PvP
-    ns.locationCheck.isPvP = (instanceType == "pvp" or instanceType == "arena")
-    
-    -- Update state
-    ns.locationCheck.UpdateState()
-end
-
--- Update tracking state based on location and settings
-function ns.locationCheck.UpdateState()
-    if not ns.settings or not ns.settings.activeProfile then
-        return
-    end
-    
-    local profile = ns.settings.activeProfile
-    local shouldEnable = false
-    
-    -- Default to enabled
-    shouldEnable = true
-    
-    -- Check conditions for disabling
-    if profile.disableOutOfCombat and not ns.locationCheck.inCombat then
-        shouldEnable = false
-    end
-    
-    if profile.disableInCities and (ns.locationCheck.instanceType == "none" and select(2, IsInInstance()) == "city") then
-        shouldEnable = false
-    end
-    
-    -- Check instance-specific settings
-    if ns.locationCheck.inInstance then
-        if ns.locationCheck.instanceType == "party" and not profile.enableInDungeons then
-            shouldEnable = false
-        elseif ns.locationCheck.instanceType == "raid" and not profile.enableInRaids then
-            shouldEnable = false
-        elseif ns.locationCheck.isPvP and not profile.enableInPvP then
-            shouldEnable = false
+    if event == "PLAYER_REGEN_DISABLED" and enabledIn.combatOnly then -- Entering combat, specific for each zone
+        if instanceType == "arena" then
+            playerLocation = "arena"
+            addonEnabled = enabledIn.arena
+        elseif instanceType == "pvp" then
+            playerLocation = "pvp"
+            addonEnabled = enabledIn.battleground
+        elseif instanceType == "party" then
+            playerLocation = "party"
+            addonEnabled = enabledIn.party
+        elseif instanceType == "raid" then
+            playerLocation = "raid"
+            addonEnabled = enabledIn.raid
+        elseif instanceType ~= "arena" or instanceType ~= "pvp" then
+            playerLocation = "world"
+            addonEnabled = enabledIn.world
         end
-    else
-        -- Open world
-        if not profile.enableInWorld then
-            shouldEnable = false
+    elseif event == "PLAYER_REGEN_ENABLED" and enabledIn.combatOnly then -- Ending combat
+        addonEnabled = false
+    elseif event == "PLAYER_ENTERING_BATTLEGROUND" and not enabledIn.combatOnly then -- if not Combat only, try to load at locations
+        if instanceType == "arena" then
+            playerLocation = "arena"
+            addonEnabled = enabledIn.arena
+        elseif instanceType == "pvp" then
+            playerLocation = "pvp"
+            addonEnabled = enabledIn.battleground
         end
-    end
-    
-    -- Apply the state
-    ns.locationCheck.isEnabled = shouldEnable
-    ns.locationCheck.ApplyState()
-end
-
--- Apply the current state to all units
-function ns.locationCheck.ApplyState()
-    if not ns.units then
-        return
-    end
-    
-    for _, unit in pairs(ns.units) do
-        if unit and unit.container then
-            if ns.locationCheck.isEnabled and unit.enabled then
-                unit.container:Show()
-            else
-                unit.container:Hide()
-            end
+    elseif event == "PLAYER_ENTERING_WORLD" and not enabledIn.combatOnly then -- if not Combat only, try to load at locations
+        if instanceType == "party" then
+            playerLocation = "party"
+            addonEnabled = enabledIn.party
+        elseif instanceType == "raid" then
+            playerLocation = "raid"
+            addonEnabled = enabledIn.raid
+        elseif instanceType ~= "arena" or instanceType ~= "pvp" then
+            playerLocation = "world"
+            addonEnabled = enabledIn.world
+        end
+    elseif event == "PLAYER_ENTERING_BATTLEGROUND" and enabledIn.combatOnly then -- if Combat only and just loaded in location
+        if instanceType == "arena" then
+            playerLocation = "arena"
+            if enabledIn.arena then addonEnabled = false end
+        elseif instanceType == "pvp" then
+            playerLocation = "pvp"
+            if enabledIn.battleground then addonEnabled = false end
+        end
+    elseif event == "PLAYER_ENTERING_WORLD" and enabledIn.combatOnly then -- if Combat only and just loaded in location
+        if instanceType == "party" then
+            playerLocation = "party"
+            if enabledIn.party then addonEnabled = false end
+        elseif instanceType == "raid" then
+            playerLocation = "raid"
+            if enabledIn.raid then addonEnabled = false end
+        elseif instanceType ~= "arena" or instanceType ~= "pvp" then
+            playerLocation = "world"
+            if enabledIn.world then addonEnabled = false end
         end
     end
 end
 
--- Called when settings change
-function ns.locationCheck.settingsChanged()
-    ns.locationCheck.UpdateState()
-end
+eventFrame:SetScript("OnEvent", onEvent)
 
--- Export to global if needed
-if _G.VUI then
-    _G.VUI.TGCD.LocationCheck = ns.locationCheck
-end
+locationCheck.settingsChanged = function()
+    local settings = ns.settings.activeProfile
 
--- Initialize on load
-ns.locationCheck.Initialize()
+    if not settings.enabledIn.enabled or settings.enabledIn.combatOnly then
+        addonEnabled = false
+    elseif playerLocation == "world" then
+        addonEnabled = settings.enabledIn.world
+    elseif playerLocation == "party" then
+        addonEnabled = settings.enabledIn.party
+    elseif playerLocation == "arena" then
+        addonEnabled = settings.enabledIn.arena
+    elseif playerLocation == "pvp" then
+        addonEnabled = settings.enabledIn.battleground
+    elseif playerLocation == "raid" then
+        addonEnabled = settings.enabledIn.raid
+    end
+
+    if not addonEnabled then
+        for _, unit in ipairs(ns.units) do
+            unit:Clear()
+        end
+    end
+end

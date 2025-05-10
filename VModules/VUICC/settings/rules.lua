@@ -1,89 +1,128 @@
--- VUICC: Rule management
--- Adapted from OmniCC (https://github.com/tullamods/OmniCC)
+-- Rules API
+-- Rules are use for looking up what theme to apply to a cooldown
+local _, Addon = ...
 
-local AddonName, Addon = "VUI", VUI
-local Module = Addon:GetModule("VUICC")
-local Rules = {}
+function Addon:AddRule(id, theme)
+	if not id then
+		error("Usage: OmniCC:AddRule('id', [theme])", 2)
+	end
 
--- Get a list of all rules
-function Rules:GetList()
-    return Module.db.rules
+	local rules = self.db.profile.rules
+
+	-- skip if the rule already exists
+	for _, rule in pairs(rules) do
+		if rule.id == id then
+			return false
+		end
+	end
+
+	local rule = {
+		id = id,
+		theme = theme or self:GetDefaultThemeID(),
+		enabled = true,
+		priority = #rules + 1,
+		patterns = { }
+	}
+
+	tinsert(rules, rule)
+	return rule, #rules
 end
 
--- Add a new rule
-function Rules:Add(pattern, theme)
-    if not pattern or pattern == '' then
-        return false
-    end
-    
-    -- Check if rule already exists
-    for _, rule in pairs(Module.db.rules) do
-        if rule.pattern == pattern then
-            return false
-        end
-    end
-    
-    -- Add the rule
-    table.insert(Module.db.rules, {
-        pattern = pattern,
-        theme = theme or 'default'
-    })
-    
-    return true
+function Addon:RemoveRule(id)
+	if not id then
+		error("Usage: OmniCC:RemoveRule('id')", 2)
+	end
+
+	local rules = self.db.profile.rules
+
+	for i, rule in pairs(rules) do
+		if rule.id == id then
+			tremove(rules, i)
+			return true
+		end
+	end
 end
 
--- Delete a rule
-function Rules:Delete(index)
-    if not Module.db.rules[index] then
-        return false
-    end
-    
-    table.remove(Module.db.rules, index)
-    return true
+function Addon:SetRulePriority(id, priority)
+	if not (id and priority) then
+		error("Usage: OmniCC:SetRulePriority('id', priority)", 2)
+	end
+
+	local updated = false
+
+	for _, rule in pairs(self.db.profile.rules) do
+		if rule.id == id and rule.priority ~= priority then
+			rule.priority = priority
+			updated = true
+			break
+		end
+	end
+
+	if updated then
+		self:ReorderRules()
+	end
+
+	return updated
 end
 
--- Update a rule
-function Rules:Update(index, pattern, theme)
-    if not Module.db.rules[index] then
-        return false
-    end
-    
-    local rule = Module.db.rules[index]
-    
-    if pattern and pattern ~= '' then
-        rule.pattern = pattern
-    end
-    
-    if theme then
-        rule.theme = theme
-    end
-    
-    return true
+function Addon:ReorderRules()
+	table.sort(self.db.profile.rules, function(l, r)
+		return l.priority < (r.priority or math.huge)
+	end)
+
+	for i, rule in pairs(self.db.profile.rules) do
+		rule.priority = i
+	end
 end
 
--- Check if a name matches a rule pattern
-function Rules:IsMatch(name, pattern)
-    if not name or not pattern or pattern == '' then
-        return false
-    end
-    
-    return name:match(pattern) ~= nil
+function Addon:HasRule(id)
+	if not id then
+		error("Usage: OmniCC:HasRule('id')", 2)
+	end
+
+	for _, rule in pairs(self.db.profile.rules) do
+		if rule.id == id then
+			return true
+		end
+	end
 end
 
--- Find a matching rule for a cooldown name
-function Rules:GetMatchingRule(name)
-    if not name then
-        return nil
-    end
-    
-    for _, rule in pairs(Module.db.rules) do
-        if self:IsMatch(name, rule.pattern) then
-            return rule
-        end
-    end
-    
-    return nil
+function Addon:GetRulesets()
+	return ipairs(self.db.profile.rules)
 end
 
--- Update module with Rules methods
-Module.Rules = Rules
+function Addon:NumRulesets()
+	return #self.db.profile.rules
+end
+
+do
+	local function nextActiveRule(rules, index)
+		if not rules then return end
+
+		for i = index + 1, #rules do
+			local rule = rules[i]
+			if rule.enabled then
+				return i, rule
+			end
+		end
+	end
+
+	function Addon:GetActiveRulesets()
+		return nextActiveRule, self.db.profile.rules, 0
+	end
+end
+
+function Addon:GetMatchingRule(name)
+	if name then
+		for _, rule in self:GetActiveRulesets() do
+			local patterns = rule.patterns
+			for i = 1, #patterns do
+				if name:match(patterns[i]) then
+					return rule
+				end
+			end
+		end
+	end
+
+	return false
+end
