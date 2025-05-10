@@ -4,11 +4,11 @@ local VUICD, L, db = NS:unpack()
 -- Module loading sequence
 function VUICD:OnInitialize()
     -- Initialize database
-    if not VUI_SavedVariables.VUICD then
-        VUI_SavedVariables.VUICD = {}
+    if not VUI.db.profile.vmodules.vuicd then
+        VUI.db.profile.vmodules.vuicd = {}
     end
     
-    self.db = VUI_SavedVariables.VUICD
+    self.db = VUI.db.profile.vmodules.vuicd
     
     -- Merge defaults with saved variables
     for k, v in pairs(db) do

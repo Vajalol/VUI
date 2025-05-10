@@ -8,9 +8,7 @@ function VUIBuffs:InitVUIIntegration()
     -- It handles integration with the main VUI configuration panel
     
     -- Initialize default VUI settings if they don't exist
-    if not VUI_SavedVariables then
-        VUI_SavedVariables = {}
-    end
+    -- VUI.db handling will be done by the main VUI addon
     
     -- Initialize the VUI db if needed
     if not VUI.db or not VUI.db.profile then
