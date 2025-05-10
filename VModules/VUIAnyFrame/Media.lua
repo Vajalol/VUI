@@ -8,7 +8,7 @@ local MEDIA_PATH = "Interface\\AddOns\\VUI\\Media\\modules\\VUIAnyFrame\\"
 -- Function to get media file path
 function VUIAnyFrame:GetMediaPath(mediaType, fileName)
     if mediaType == "Icons" or mediaType == "Icon" then
-        return MEDIA_PATH .. "textures\\icon_anyframe.svg"
+        return "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm.tga"
     elseif mediaType == "Textures" or mediaType == "Texture" then
         return MEDIA_PATH .. "textures\\" .. fileName
     elseif mediaType == "Fonts" or mediaType == "Font" then

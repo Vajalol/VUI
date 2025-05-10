@@ -8,7 +8,7 @@ local MEDIA_PATH = "Interface\\AddOns\\VUI\\Media\\modules\\VUIKeystones\\"
 -- Function to get media file path
 function VUIKeystones:GetMediaPath(mediaType, fileName)
     if mediaType == "Icons" or mediaType == "Icon" then
-        return MEDIA_PATH .. "textures\\icon_keystones.svg"
+        return "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm.tga"
     elseif mediaType == "Textures" or mediaType == "Texture" then
         return MEDIA_PATH .. "textures\\" .. (fileName or "")
     elseif mediaType == "Bar" then
