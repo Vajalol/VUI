@@ -6,10 +6,16 @@ local VUI = select(2, ...)
 local Module = VUI:NewModule("VUIIDs", "AceEvent-3.0")
 
 -- Cache frequently used globals
-local hooksecurefunc, select, UnitBuff, UnitDebuff, UnitAura, UnitGUID,
-      GetGlyphSocketInfo, tonumber, strfind, strmatch
-    = hooksecurefunc, select, UnitBuff, UnitDebuff, UnitAura, UnitGUID,
-      GetGlyphSocketInfo, tonumber, strfind, strmatch
+local hooksecurefunc = hooksecurefunc
+local select = select
+local UnitBuff = UnitBuff
+local UnitDebuff = UnitDebuff
+local UnitAura = UnitAura
+local UnitGUID = UnitGUID
+local GetGlyphSocketInfo = GetGlyphSocketInfo
+local tonumber = tonumber
+local strfind = strfind
+local strmatch = strmatch
 
 -- Default settings
 Module.defaults = {
