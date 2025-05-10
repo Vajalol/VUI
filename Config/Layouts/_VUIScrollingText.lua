@@ -456,6 +456,43 @@ function Layout:OnEnable()
                     end
                 },
             },
+            {
+                header = {
+                    type = 'header',
+                    label = 'Advanced Options'
+                },
+            },
+            {
+                advancedOptions = {
+                    type = 'button',
+                    label = 'Open Advanced Options',
+                    tooltip = 'Opens the advanced configuration panel with more detailed settings',
+                    column = 4,
+                    order = 1,
+                    callback = function(self)
+                        if VUIScrollingText and VUIScrollingText.RegisterOptions then
+                            VUIScrollingText:RegisterOptions()
+                        end
+                    end
+                },
+                themeIntegration = {
+                    key = 'vmodules.vuiscrollingtext.themeIntegration',
+                    type = 'checkbox',
+                    label = 'Use VUI Theme Colors',
+                    tooltip = 'Apply VUI theme colors to text where applicable',
+                    column = 4,
+                    order = 2,
+                    callback = function(self)
+                        if VUIScrollingText and VUIScrollingText.config then
+                            VUIScrollingText.config.themeIntegration = self:GetValue()
+                            -- Update theme integration
+                            if VUIScrollingText.ApplyTheme then
+                                VUIScrollingText:ApplyTheme()
+                            end
+                        end
+                    end
+                },
+            },
         },
     }
 end

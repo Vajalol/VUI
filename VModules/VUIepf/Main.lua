@@ -41,6 +41,7 @@ M.defaults = {
         observeFrameLevel = false,
         showAddonCompartment = true,
         outputLevel = 3,  -- NOTICE level
+        useThemeColors = true, -- Use VUI theme colors by default
         -- Other settings will be added here
     }
 }
@@ -128,6 +129,9 @@ function M:OnInitialize()
     -- Create our frame
     self.frame = CreateFrame("Frame", "VUIepf_Frame", PlayerFrame, "VUIepfTemplate")
     Mixin(self.frame, VUIepfMixin)
+    
+    -- Register with VUI's theme system
+    self:RegisterWithThemeSystem()
     self.frame:Loaded()
     
     -- Register settings with VUI Config
@@ -250,6 +254,14 @@ function M:ApplyFrameMode(frameMode, customFrameMode)
     elseif frameMode == 4 then
         -- Custom frame
         self:ApplyCustomFrame(customFrameMode)
+    end
+    
+    -- Apply theme colors if enabled
+    if self.db.profile.useThemeColors and frameMode > 0 then
+        -- We check if ApplyTheme exists to avoid errors during initialization
+        if self.ApplyTheme then
+            C_Timer.After(0.1, function() self:ApplyTheme() end)
+        end
     end
 end
 
@@ -402,7 +414,65 @@ function M:GetOptions()
         },
     }
     
+    -- Add theme integration option
+    options.args.themeIntegration = {
+        name = L["Use Theme Colors"],
+        desc = L["Apply VUI theme colors to frame elements"],
+        type = "toggle",
+        width = "full",
+        order = 6,
+        get = function() return self.db.profile.useThemeColors end,
+        set = function(info, value)
+            self.db.profile.useThemeColors = value
+            self:ApplyTheme()
+        end,
+    }
+    
     return options
+end
+
+-- Register with VUI's theme system
+function M:RegisterWithThemeSystem()
+    if VUI.RegisterThemeCallback then
+        VUI:RegisterThemeCallback(function()
+            M:ApplyTheme()
+        end)
+    end
+end
+
+-- Apply current theme to module elements
+function M:ApplyTheme()
+    -- Skip if theme integration is disabled
+    local useTheme = self.db.profile.useThemeColors
+    if not useTheme then return end
+    
+    -- Get the current theme color
+    local themeColor
+    if VUI.GetThemeColor then
+        themeColor = VUI:GetThemeColor()
+    else
+        themeColor = { r = 0, g = 0.77, b = 1 } -- Default VUI blue if theme system not available
+    end
+    
+    -- Apply theme to frame elements
+    if self.playerFrame then
+        if self.playerFrame.DragonBorder and self.db.profile.frameMode ~= 0 then
+            -- Apply theme color to the dragon border with slight adjustments to preserve details
+            self.playerFrame.DragonBorder:SetVertexColor(
+                0.85 + (themeColor.r * 0.15),
+                0.85 + (themeColor.g * 0.15),
+                0.85 + (themeColor.b * 0.15)
+            )
+        end
+        
+        -- Apply to any glow effects if they exist
+        if self.playerFrame.Glow then
+            self.playerFrame.Glow:SetVertexColor(themeColor.r, themeColor.g, themeColor.b)
+        end
+    end
+    
+    -- Reapply frame mode to ensure theme is properly applied
+    self:ApplyFrameMode(self.db.profile.frameMode, self.db.profile.customFrameMode)
 end
 
 -- Register the module

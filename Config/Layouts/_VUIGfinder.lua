@@ -143,6 +143,19 @@ VUI.Config.Layout["VUIGfinder"] = {
                         end
                     end,
                 },
+                useVUITheme = {
+                    name = L and L.USE_VUI_THEME or "Use VUI Theme Color",
+                    desc = L and L.THEME_TOOLTIP or "When enabled, VUI Gfinder will use your VUI theme color",
+                    type = "toggle",
+                    order = 8,
+                    get = function() return Module.db.profile.theme.useVUITheme end,
+                    set = function(info, val)
+                        Module.db.profile.theme.useVUITheme = val
+                        if VUIGfinder and VUIGfinder.ApplyVUITheme then
+                            VUIGfinder.ApplyVUITheme()
+                        end
+                    end,
+                },
                 usePGFButton = {
                     name = "Show Filter Button",
                     desc = "Show a button on the Group Finder to quickly access filters",

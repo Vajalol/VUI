@@ -4,4 +4,5 @@
     <Include file="Core\Core.xml"/>
     <Include file="Modules\Spells\Spells_Mainline.xml"/>
     <Include file="Modules\Modules.xml"/>
+    <Include file="Config\Config.xml"/>
 </Ui>

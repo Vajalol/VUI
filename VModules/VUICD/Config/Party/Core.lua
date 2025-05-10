@@ -1,123 +1,140 @@
-local E, L, C = select(2, ...):unpack()
+local _, VUI = ...
+local E = VUI:GetModule("VUICD")
 local P = E.Party
+local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
 
-P.options = {
-	disabled = function(info)
-		return info[2] and not E:GetModuleEnabled("Party")
-	end,
-	name = FRIENDLY,
-	order = 20,
-	type = "group",
-	get = function(info) return E.profile.Party[ info[#info] ] end,
-	set = function(info, value) E.profile.Party[ info[#info] ] = value end,
-	args = {},
-}
-
-local getEnabled = function(info) return E.profile.Party.visibility[ info[2] ] end
-local setEnabled = function(info, value)
-	local key = info[2]
-	E.profile.Party.visibility[key] = value
-	if P.isInTestMode and P.testZone == key then
-		P:Test()
-	end
-	P:Refresh()
-end
-local getTestMode = function(info) return P.testZone == info[2] and P.isInTestMode end
-local setTestMode = function(info, state) P:Test(state and info[2]) end
-local disableZone = function(info) return info[3] and not E.profile.Party.visibility[ info[2] ] or not E:GetModuleEnabled("Party") end
-local getZoneName = function(info) return E.L_ALL_ZONE[ info[2] ] end
-
-local configZone = {
-	disabled = disableZone,
-	name = getZoneName,
-	type = "group",
-	childGroups = "tab",
-	args = {
-		enabled = {
-			disabled = false,
-			name = ENABLE,
-			desc = L["Enable CD tracking in the current zone"],
-			order = 1,
-			type = "toggle",
-			get = getEnabled,
-			set = setEnabled,
-		},
-		test = {
-			name = L["Test"],
-			desc = L["Toggle raid-style party frame and player spell bar for testing"],
-			order = 2,
-			type = "toggle",
-			get = getTestMode,
-			set = setTestMode,
-		},
-	}
-}
-
-local noCfgZone = {
-	disabled = disableZone,
-	name = getZoneName,
-	type = "group",
-	childGroups = "tab",
-	args = {
-		enabled = {
-			disabled = false,
-			name = ENABLE,
-			desc = L["Enable CD tracking in the current zone"],
-			order = 1,
-			type = "toggle",
-			get = getEnabled,
-			set = setEnabled,
-		},
-		test = {
-			name = L["Test"],
-			desc = L["Toggle raid-style party frame and player spell bar for testing"],
-			order = 2,
-			type = "toggle",
-			get = getTestMode,
-			set = setTestMode,
-		},
-		lb1 = {
-			name = "\n", order = 3, type = "description",
-		},
-		zoneSetting = {
-			name = L["Use Zone Settings From:"],
-			desc = L["Select the zone setting to use for this zone."],
-			order = 4,
-			type = "select",
-			values = E.L_CFG_ZONE,
-			get = function(info) return E.profile.Party[info[2] == "none" and "noneZoneSetting" or "scenarioZoneSetting"] end,
-			set = function(info, value) E.profile.Party[info[2] == "none" and "noneZoneSetting" or "scenarioZoneSetting"] = value
-				P:Refresh()
-			end,
-		},
-	}
-}
-
-for key in pairs(E.L_CFG_ZONE) do
-	P.options.args[key] = configZone
-end
-P.options.args.none = noCfgZone
-P.options.args.scenario = noCfgZone
-
-P.getIcons = function(info) return E.profile.Party[ info[2] ].icons[ info[#info] ] end
-P.setIcons = function(info, value) E.profile.Party[ info[2] ].icons[ info[#info] ] = value P:Refresh() end
-
-function P:IsCurrentZone(key)
-	return E.db == E.profile.Party[key]
+function P:AddPartyOptions(option)
+    option.general = {
+        order = 1,
+        type = "group",
+        name = L["General"],
+        args = {},
+    }
+    
+    option.icons = {
+        order = 2,
+        type = "group",
+        name = L["Icons"],
+        args = {},
+    }
+    
+    option.position = {
+        order = 3,
+        type = "group",
+        name = L["Position"],
+        args = {},
+    }
+    
+    option.visibility = {
+        order = 4,
+        type = "group",
+        name = L["Visibility"],
+        args = {},
+    }
+    
+    option.highlight = {
+        order = 5,
+        type = "group",
+        name = L["Highlight"],
+        args = {},
+    }
+    
+    option.priority = {
+        order = 6,
+        type = "group",
+        name = L["Priority"],
+        args = {},
+    }
+    
+    option.spells = {
+        order = 7,
+        type = "group",
+        name = L["Spells"],
+        args = {},
+    }
+    
+    option.extraBars = {
+        order = 8,
+        type = "group",
+        name = L["Extra Bars"],
+        args = {},
+    }
+    
+    -- Load submodule options
+    P:AddGeneralOptions(option.general.args)
+    P:AddIconsOptions(option.icons.args)
+    P:AddPositionOptions(option.position.args)
+    P:AddVisibilityOptions(option.visibility.args)
+    P:AddHighlightOptions(option.highlight.args)
+    P:AddPriorityOptions(option.priority.args)
+    P:AddSpellsOptions(option.spells.args)
+    P:AddExtraBarsOptions(option.extraBars.args)
 end
 
-function P:ResetOption(key, tab, subtab)
-	if subtab then
-		E.profile.Party[key][tab][subtab] = E:DeepCopy(C.Party[key][tab][subtab])
-	elseif tab then
-		E.profile.Party[key][tab] = E:DeepCopy(C.Party[key][tab])
-	elseif key then
-		E.profile.Party[key] = E:DeepCopy(C.Party[key])
-	else
-		E.profile.Party = E:DeepCopy(C.Party)
-	end
+-- Helper functions for options system
+function P:GetLSMTable(lsmType)
+    local table = {}
+    for k, v in pairs(LibStub("LibSharedMedia-3.0"):HashTable(lsmType)) do
+        table[k] = k
+    end
+    return table
 end
 
-function P:RegisterSubcategory(optionName, optionTable)
-	configZone.args[optionName] = optionTable
+function P:GetThemeEnabled()
+    local useTheme = E.DB.profile.border.themeBorder
+    return useTheme
+end
+
+-- Apply theme color to Party module elements
+function P:ApplyTheme()
+    if not P.bars then
+        return
+    end
+    
+    local themeColor = VUI:GetThemeColor()
+    
+    -- Apply to status bars if theme coloring is enabled
+    for i = 1, #P.bars do
+        local statusBar = P.bars[i].statusBar
+        if statusBar and statusBar.SetStatusBarColor then
+            if P:GetThemeEnabled() then
+                statusBar:SetStatusBarColor(themeColor.r, themeColor.g, themeColor.b)
+            else
+                -- Use class color or default color as appropriate
+                local classColor = P.bars[i].classColor or {r=0.5, g=0.5, b=0.5}
+                statusBar:SetStatusBarColor(classColor.r, classColor.g, classColor.b)
+            end
+        end
+    end
+end
+
+-- Create preview of current settings 
+function P:CreatePreview(frame)
+    if not frame then return end
+    
+    -- Clear existing content
+    frame:ReleaseChildren()
+    
+    -- Create preview image
+    local preview = AceGUI:Create("Icon")
+    preview:SetImage("Interface\\AddOns\\VUI\\VModules\\VUICD\\Media\\preview_party.tga")
+    preview:SetImageSize(350, 180)
+    preview:SetFullWidth(true)
+    preview:SetHeight(200)
+    frame:AddChild(preview)
+    
+    -- Add description text
+    local desc = AceGUI:Create("Label")
+    desc:SetText(L["The party module shows cooldowns from everyone in your party or raid."])
+    desc:SetFullWidth(true)
+    frame:AddChild(desc)
+    
+    -- Test button
+    local testButton = AceGUI:Create("Button")
+    testButton:SetText(L["Test"])
+    testButton:SetWidth(100)
+    testButton:SetCallback("OnClick", function()
+        P:TestMode()
+    end)
+    frame:AddChild(testButton)
 end

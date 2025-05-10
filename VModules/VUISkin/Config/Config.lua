@@ -9,6 +9,7 @@ local defaults = {
     profile = {
         enabled = true,
         autoApply = true,
+        useDefaultProfile = false, -- Default profile is opt-in
     }
 }
 
@@ -53,11 +54,18 @@ function VUISkin:SlashCommand(input)
         else
             VUI:Print("VUISkin module disabled.")
         end
+    elseif input == "profile" or input == "importprofile" then
+        if self.db.profile.enabled then
+            self:ImportDefaultProfile()
+        else
+            VUI:Print("VUISkin module is disabled. Enable it first in the VUI configuration.")
+        end
     else
         VUI:Print("VUISkin commands:")
         VUI:Print("  /vuiskin apply - Apply the VUI skin to Details!")
         VUI:Print("  /vuiskin remove - Remove the VUI skin from Details!")
         VUI:Print("  /vuiskin toggle - Toggle the module on/off")
+        VUI:Print("  /vuiskin profile - Import the VUI default profile for Details!")
     end
 end
 

@@ -317,6 +317,36 @@ function VUISkin:UpdateSkinColors()
     end
 end
 
+-- Function to import the default profile
+function VUISkin:ImportDefaultProfile()
+    -- Check if Details is loaded
+    if not _G.Details then
+        VUI:Print("Details! is not loaded. Cannot import profile.")
+        return false
+    end
+    
+    -- Check if we have a default profile
+    if not self.DefaultProfileImport then
+        VUI:Print("Default profile not available.")
+        return false
+    end
+    
+    -- Import the profile
+    local profileString = self.DefaultProfileImport
+    if profileString and _G.Details.ImportProfile then
+        local profileLoaded = _G.Details:ImportProfile(profileString, "VUI Default")
+        if profileLoaded then
+            VUI:Print("VUI Default profile for Details! has been imported.")
+            return true
+        else
+            VUI:Print("Failed to import VUI Default profile for Details!.")
+            return false
+        end
+    end
+    
+    return false
+end
+
 -- Function to apply the skin to all Details windows
 function VUISkin:ApplySkin()
     -- Check if Details is loaded
@@ -337,6 +367,11 @@ function VUISkin:ApplySkin()
         if (instance and instance.baseframe and instance.ativa) then
             instance:ChangeSkin(skinName)
         end
+    end
+    
+    -- Import default profile if enabled
+    if self.db.profile.useDefaultProfile then
+        self:ImportDefaultProfile()
     end
     
     -- Hook into Details theme system

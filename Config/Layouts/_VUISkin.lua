@@ -31,6 +31,14 @@ function Layout:OnEnable()
                     tooltip = 'Automatically apply the skin when Details! is loaded',
                     column = 3,
                     order = 2
+                },
+                useDefaultProfile = {
+                    key = 'useDefaultProfile',
+                    type = 'checkbox',
+                    label = 'Use VUI Default Profile',
+                    tooltip = 'Import the VUI optimized profile when applying the skin',
+                    column = 3,
+                    order = 3
                 }
             },
             {
@@ -73,6 +81,22 @@ function Layout:OnEnable()
                     end,
                     column = 3,
                     order = 2
+                },
+                importProfile = {
+                    type = 'button',
+                    text = 'Import VUI Default Profile',
+                    onClick = function()
+                        local VUISkin = VUI:GetModule("VUISkin")
+                        if VUISkin then
+                            VUISkin:ImportDefaultProfile()
+                        end
+                    end,
+                    disabled = function() 
+                        local VUISkin = VUI:GetModule("VUISkin")
+                        return not VUISkin or not db.profile.enabled
+                    end,
+                    column = 3,
+                    order = 3
                 }
             },
             {
@@ -86,6 +110,7 @@ function Layout:OnEnable()
                     type = 'description',
                     text = "This module applies the VUI theme to Details! Damage Meter windows.\n\n" ..
                            "The skin will automatically update when you change the VUI theme color.\n\n" ..
+                           "Enable 'Use VUI Default Profile' to import an optimized profile that works perfectly with the VUI skin.\n\n" ..
                            "Note: Details! must be installed for this module to work.",
                     column = 3,
                     order = 1

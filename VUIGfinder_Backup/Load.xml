@@ -1,0 +1,73 @@
+<Ui xmlns='http://www.blizzard.com/wow/ui/'>
+  <!-- Core Files -->
+  <Script file='Init.lua'/>
+  <Script file='Compat.lua'/>
+  
+  <!-- Localization -->
+  <Script file='Localization\enUS.lua'/>
+  <Script file='Localization\frFR.lua'/>
+  <Script file='Localization\deDE.lua'/>
+  <Script file='Localization\koKR.lua'/>
+  <Script file='Localization\zhCN.lua'/>
+  <Script file='Localization\zhTW.lua'/>
+  <Script file='Localization\ruRU.lua'/>
+  <Script file='Localization\esES.lua'/>
+  <Script file='Localization\itIT.lua'/>
+  
+  <!-- Modules -->
+  <Script file='Modules\Logger.lua'/>
+  <Script file='Fixes\FixReportAdvertisement.lua'/>
+  <Include file='UI\StaticPopup.xml'/>
+  <Script file='UI\StaticPopup.lua'/>
+  <Script file='Modules\Util.lua'/>
+  <Script file='Modules\Activity.lua'/>
+  <Script file='Modules\ActivityKeywords.lua'/>
+  <Script file='Modules\AdvancedFilter.lua'/>
+  <Script file='Modules\Specializations.lua'/>
+  <Script file='Modules\MemberInfo.lua'/>
+  <Script file='Modules\RemainingSlots.lua'/>
+  <Script file='Modules\ApplicationStatus.lua'/>
+  <Script file='Modules\Lockout.lua'/>
+  <Script file='Modules\Expression.lua'/>
+  <Script file='Modules\PlayerInfo.lua'/>
+  <Script file='Modules\Macro.lua'/>
+  <Script file='Modules\GroupTooltip.lua'/>
+  <Script file='Modules\RoleIndicators.lua'/>
+  <Script file='Modules\RatingInfo.lua'/>
+  <Script file='Modules\OneClickSignUp.lua'/>
+  <Script file='Modules\PersistSignUpNote.lua'/>
+  <Script file='Modules\SignUpOnEnter.lua'/>
+  
+  <!-- Main Code -->
+  <Script file='Main.lua'/>
+  
+  <!-- Plugins -->
+  <Script file='Plugins\PremadeRegions.lua'/>
+  <Script file='Plugins\RaiderIO.lua'/>
+  
+  <!-- Settings -->
+  <Include file='Settings\Settings.xml'/>
+  <Script file='Settings\Settings.lua'/>
+  
+  <!-- UI Components -->
+  <Script file='UI\Common.lua'/>
+  <Include file='UI\PopupMenu.xml'/>
+  <Script file='UI\PopupMenu.lua'/>
+  <Script file='UI\Help.lua'/>
+  <Include file='UI\Templates.xml'/>
+  <Include file='UI\Dialog.xml'/>
+  <Script file='UI\Dialog.lua'/>
+  <Include file='UI\DungeonPanel.xml'/>
+  <Script file='UI\DungeonPanel.lua'/>
+  <Include file='UI\RolePanel.xml'/>
+  <Script file='UI\RolePanel.lua'/>
+  <Include file='UI\ArenaPanel.xml'/>
+  <Script file='UI\ArenaPanel.lua'/>
+  <Include file='UI\RBGPanel.xml'/>
+  <Script file='UI\RBGPanel.lua'/>
+  <Include file='UI\RaidPanel.xml'/>
+  <Script file='UI\RaidPanel.lua'/>
+  <Include file='UI\MiniPanel.xml'/>
+  <Script file='UI\MiniPanel.lua'/>
+  <Script file='UI\UsePGFButton.lua'/>
+</Ui>

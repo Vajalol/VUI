@@ -6,5 +6,8 @@
   <!-- Core -->
   <Script file="Core\Core.lua"/>
   
+  <!-- Default Profile -->
+  <Script file="Profile_Default.lua"/>
+  
   <!-- Textures are automatically loaded via LibSharedMedia-3.0 -->
 </Ui>

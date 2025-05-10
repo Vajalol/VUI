@@ -1,80 +1,58 @@
--------------------------------------------------------------------------------
--- VUI Gfinder (based on Premade Groups Filter)
--- Module for VUI - Vortex UI Addon Suite
--------------------------------------------------------------------------------
+-- VUIGfinder German Localization
+local L = PGFinderLocals;
+if not L then return end
 
-local VUI = _G.VUI
-local Module = VUI:GetModule("VUIGfinder")
-if not Module then return end
-
-local VUIGfinder = _G.VUIGfinder
-local L = VUIGfinder.L
-
+-- Only overwrite non-default values
 if GetLocale() ~= "deDE" then return end
 
--- German localization
--- Values set to true use the English default
+-- German translations here (kept from original PGFinder)
+L.OPTIONS_ROLE = "Anmelden als:";
+L.OPTIONS_MIN_LEADER_SCORE = "Min. Anführer Punkte:";
+L.OPTIONS_DUNGEON_DIFFICULTY = "Schwierigkeit";
+L.OPTIONS_RAID_SELECT = "Raid auswählen";
+L.OPTIONS_BLIZZARD_SEARCH_INFO = "Blizzard begrenzt alle Suchergebnisse auf etwa 100, damit du mehr Ergebnisse erhältst, sei so spezifisch wie möglich.\n\n Zum Beispiel füge die Schlüsselstufen hinzu, wähle 1 Dungeon / Raid aus, da dann nur nach dieser Aktivität gesucht wird. Diese Begrenzung existiert auch in der eigenen Version ohne Addons.";
+L.OPTIONS_REFRESH_BUTTON_DISABLED = "Neue Aktualisierung verfügbar in: ";
 
--- General
-L["VUI Gfinder"] = "VUI Gfinder"
-L["Enhances the Group Finder with advanced filtering"] = "Erweitert den Gruppensucher mit fortgeschrittener Filterung"
+L.SPEC_BLOOD = "Blut";
+L.SPEC_FROST = "Frost";
+L.SPEC_UNHOLY = "Unheilig";
+L.SPEC_HAVOC = "Verwüstung";
+L.SPEC_VENGENACE = "Rachsucht";
+L.SPEC_BALANCE = "Gleichgewicht";
+L.SPEC_FERAL = "Wildheit";
+L.SPEC_GUARDIAN = "Wächter";
+L.SPEC_RESTORATION = "Wiederherstellung";
+L.SPEC_DEVASTATION = "Verwüstung";
+L.SPEC_PRESERVATION = "Bewahrung";
+L.SPEC_BEASTMASTERY = "Tierherrschaft";
+L.SPEC_MARKSMANSHIP = "Treffsicherheit";
+L.SPEC_SURVIVAL = "Überleben";
+L.SPEC_ARCANE = "Arkan";
+L.SPEC_FIRE = "Feuer";
+L.SPEC_BREWMASTER = "Braumeister";
+L.SPEC_WINDWALKER = "Windläufer";
+L.SPEC_MISTWEAVER = "Nebelwirker";
+L.SPEC_HOLY = "Heilig";
+L.SPEC_PROTECTION = "Schutz";
+L.SPEC_RETRIBUTION = "Vergeltung";
+L.SPEC_DISCIPLINE = "Disziplin";
+L.SPEC_SHADOW = "Schatten";
+L.SPEC_ASSASSINATION = "Meucheln";
+L.SPEC_OUTLAW = "Gesetzlosigkeit";
+L.SPEC_SUBTLETY = "Täuschung";
+L.SPEC_ELEMENTAL = "Elementar";
+L.SPEC_ENHANCEMENT = "Verstärkung";
+L.SPEC_AFFLICTION = "Gebrechen";
+L.SPEC_DEMONOLOGY = "Dämonologie";
+L.SPEC_DESTRUCTION = "Zerstörung";
+L.SPEC_ARMS = "Waffen";
+L.SPEC_FURY = "Furor";
 
--- UI Text
-L["Enable"] = "Aktivieren"
-L["Open Filter Dialog"] = "Filter-Dialog öffnen"
-L["Dialog Scale"] = "Dialog-Skalierung"
-L["Enhanced Tooltips"] = "Verbesserte Tooltips"
-L["One-Click Sign Up"] = "Ein-Klick-Anmeldung"
-L["Remember Sign Up Notes"] = "Anmeldungsnotizen speichern"
-L["Sign Up on Enter"] = "Anmelden mit Enter"
-L["Show Filter Button"] = "Filter-Button anzeigen"
+L.WARNING_OUTOFDATEMESSAGE = "Es ist eine neuere Version von VUI Gfinder verfügbar!";
 
--- Advanced Filter
-L["Enable Advanced Mode"] = "Erweiterten Modus aktivieren"
-L["Filter Expression"] = "Filter-Ausdruck"
-L["Enable Custom Sorting"] = "Benutzerdefinierte Sortierung aktivieren"
-L["Sorting Expression"] = "Sortierungs-Ausdruck"
+L.FORTIFIED = "Verstärkt";
+L.TYRANNICAL = "Tyrannisch";
 
--- Difficulties
-L["Normal"] = "Normal"
-L["Heroic"] = "Heroisch"
-L["Mythic"] = "Mythisch"
-L["Mythic+"] = "Mythisch+"
-L["Arena 2v2"] = "Arena 2v2"
-L["Arena 3v3"] = "Arena 3v3"
-
--- Dialog
-L["Minimum Difficulty"] = "Mindest-Schwierigkeit"
-L["Maximum Difficulty"] = "Maximale Schwierigkeit"
-L["Min Mythic+ Level"] = "Min. Mythisch+ Stufe"
-L["Max Mythic+ Level"] = "Max. Mythisch+ Stufe"
-L["Min Rating"] = "Mind. Wertung"
-L["Max Rating"] = "Max. Wertung"
-L["Find Groups"] = "Gruppen finden"
-L["Reset Filters"] = "Filter zurücksetzen"
-L["Close"] = "Schließen"
-
--- Tooltip
-L["Group Details"] = "Gruppendetails"
-L["Activity"] = "Aktivität"
-L["Difficulty"] = "Schwierigkeit"
-L["Leader Score"] = "Anführer-Bewertung"
-L["Members"] = "Mitglieder"
-L["Created"] = "Erstellt"
-L["ago"] = "vor"
-
--- Categories
-L["Dungeon"] = "Dungeon"
-L["Raid"] = "Schlachtzug"
-L["Arena"] = "Arena"
-L["Rated Battleground"] = "Bewertetes Schlachtfeld"
-
--- Roles
-L["Tank"] = "Tank"
-L["Healer"] = "Heiler"
-L["DPS"] = "DPS"
-
--- Misc
-L["Advanced Filtering"] = "Erweiterte Filterung"
-L["Use Expression"] = "Ausdruck verwenden"
-L["Expression Help"] = "Ausdrucks-Hilfe"
+-- VUI Specific
+L.USE_VUI_THEME = "VUI-Themenfarbe verwenden";
+L.THEME_TOOLTIP = "Wenn aktiviert, verwendet VUI Gfinder Ihre VUI-Themenfarbe";

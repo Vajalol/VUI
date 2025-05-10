@@ -11,6 +11,9 @@
     <Script file="service/Parser.lua"/>
     <Script file="service/Profiles.lua"/>
     
+    <!-- Options -->
+    <Script file="options/Options.lua"/>
+    
     <!-- Include fonts if needed -->
     <Font name="VUIScrollingTextFont" font="Interface\AddOns\VUI\VModules\VUIScrollingText\fonts\heroic.ttf" virtual="true">
         <FontHeight val="16"/>

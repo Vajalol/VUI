@@ -467,6 +467,9 @@ function VUI.ScrollingText:Initialize()
     -- Set up default scroll areas
     self:CreateDefaultScrollAreas()
     
+    -- Register with VUI's theme system
+    self:RegisterWithThemeSystem()
+    
     -- Add slash command
     SLASH_VUISCROLLINGTEXT1 = "/vuist"
     SLASH_VUISCROLLINGTEXT2 = "/vuiscrollingtext"
@@ -493,6 +496,69 @@ end
 function VUI.ScrollingText:CreateDefaultScrollAreas()
     -- Placeholder - will be implemented with actual scroll area creation
     -- This will create the default scrolling text areas when the module loads
+end
+
+-- Register with VUI's theme system
+function VUI.ScrollingText:RegisterWithThemeSystem()
+    if VUI.RegisterThemeCallback then
+        VUI:RegisterThemeCallback(function()
+            VUI.ScrollingText:ApplyTheme()
+        end)
+    end
+end
+
+-- Apply current theme to module elements
+function VUI.ScrollingText:ApplyTheme()
+    -- Skip if theme integration is disabled
+    local useTheme = self:GetConfigValue("themeIntegration", true)
+    if not useTheme then return end
+    
+    -- Get the current theme color
+    local themeColor
+    if VUI.GetThemeColor then
+        themeColor = VUI:GetThemeColor()
+    else
+        themeColor = { r = 0, g = 0.77, b = 1 } -- Default VUI blue if theme system not available
+    end
+    
+    -- Update critical text color to match theme but more saturated
+    self.criticalTextColor = {
+        r = math.min(themeColor.r * 1.2, 1.0),
+        g = math.min(themeColor.g * 1.2, 1.0),
+        b = math.min(themeColor.b * 1.2, 1.0)
+    }
+    
+    -- Update proc text color to match theme
+    self.procTextColor = {
+        r = themeColor.r,
+        g = themeColor.g,
+        b = themeColor.b
+    }
+    
+    -- Apply to scroll areas and their elements if they exist
+    if scrollAreas then
+        for name, area in pairs(scrollAreas) do
+            if area.border then
+                area.border:SetVertexColor(themeColor.r, themeColor.g, themeColor.b)
+            end
+            
+            -- Update any active animations
+            if area.activeAnimations then
+                for _, anim in pairs(area.activeAnimations) do
+                    if anim.isCritical and anim.text then
+                        anim.text:SetTextColor(self.criticalTextColor.r, self.criticalTextColor.g, self.criticalTextColor.b)
+                    elseif anim.isProc and anim.text then
+                        anim.text:SetTextColor(self.procTextColor.r, self.procTextColor.g, self.procTextColor.b)
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Log theme application
+    if VUI.Utilities and VUI.Utilities.Logger then
+        VUI.Utilities.Logger:Log("VUIScrollingText applied theme")
+    end
 end
 
 -- Method to check cooldowns
