@@ -39,7 +39,7 @@ local defaults = {
             },
             cosmetic = {
                 afkscreen = true,
-                talkhead = false,
+                talkhead = true,
                 errors = false
             },
             display = {
@@ -282,7 +282,7 @@ local defaults = {
             dragonflying = true,
             uiscale = {
                 enabled = false,
-                scale = 1.0,
+                scale = 0.65,
                 helpShown = false,
             },
         },
