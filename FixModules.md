@@ -13,13 +13,13 @@ Perform a comprehensive diagnosis, validation, and cleanup of all modules in the
 9. ✅ VUIHealerMana ( From https://wago.io/ebWkTh8By ) goal is 100% identical we rename this module to VUI Healer Mana.
 10. ✅ VUIIDs   ( From https://github.com/wow-addon/idTip ) goal is 100% identical same feautres but we rename it to VUIIDs and make it intgrate with our addon VUI.
 11. ✅ VUIKeystones ( From https://github.com/Ermad/angry-keystones ) goal is 100% identical we rename it to VUIKeystones and make it intgrate with our addon VUI.
-12. VUIMissingRaidBuffs ( From https://wago.io/BQce7Fj5J ) goal is 100% identical we rename this module to VUI Missing Raid Buffs.
-13. VUIMouseFireTrail ( From https://wago.io/RzZVq4F1a ) goal is 100% identical we rename this module to VUI mouse fire trail.
-14. VUINotifications ( From https://github.com/jobackman/SpellNotifications ) goal is 100% identical same feautres but we rename it to VUINotifications and make it intgrate with our addon VUI.
-15. VUIPlater ( From https://wago.io/whiiskeyzplater ) goal is 100% identical should provide all the textures needed to be 100% identical and we name it VUI Plater.
-16. VUIPositionOfPower ( From  https://wago.io/MTSDyaGz9 ) goal is 100% identical we rename this module to VUI Position of Power.
-17. VUIScrollingText  ( From https://www.curseforge.com/wow/addons/mik-scrolling-battle-text/download/5781390 ) goal is 100% identical same feautres but we rename it to VUIScrollingText and make it intgrate with our addon VUI.
-18. VUITGCD    ( From https://github.com/Trufi/TrufiGCD ) goal is 100% identical same feautres but we rename it to VUITGCD and make it intgrate with our addon VUI.
+12. ✅ VUIMissingRaidBuffs ( From https://wago.io/BQce7Fj5J ) goal is 100% identical we rename this module to VUI Missing Raid Buffs.
+13. ✅ VUIMouseFireTrail ( From https://wago.io/RzZVq4F1a ) goal is 100% identical we rename this module to VUI mouse fire trail.
+14. ✅ VUINotifications ( From https://github.com/jobackman/SpellNotifications ) goal is 100% identical same feautres but we rename it to VUINotifications and make it intgrate with our addon VUI.
+15. ✅ VUIPlater ( From https://wago.io/whiiskeyzplater ) goal is 100% identical should provide all the textures needed to be 100% identical and we name it VUI Plater.
+16. ✅ VUIPositionOfPower ( From  https://wago.io/MTSDyaGz9 ) goal is 100% identical we rename this module to VUI Position of Power.
+17. ✅ VUIScrollingText  ( From https://www.curseforge.com/wow/addons/mik-scrolling-battle-text/download/5781390 ) goal is 100% identical same feautres but we rename it to VUIScrollingText and make it intgrate with our addon VUI.
+18. ✅ VUITGCD    ( From https://github.com/Trufi/TrufiGCD ) goal is 100% identical same feautres but we rename it to VUITGCD and make it intgrate with our addon VUI.
 
 ✅ What to Check in Each Module
 1. Structure Audit
