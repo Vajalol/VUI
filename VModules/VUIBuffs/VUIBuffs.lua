@@ -175,7 +175,7 @@ local defaults = {
 
 -- Initialize the addon
 function VUIBuffs:OnInitialize()
-    -- Register SavedVariables under the unified VUI_SavedVariables structure
+    -- Register saved variables under the unified VUI_SavedVariables structure
     if not VUI_SavedVariables then VUI_SavedVariables = {} end
     if not VUI_SavedVariables.VUIBuffs then VUI_SavedVariables.VUIBuffs = {} end
     
@@ -198,6 +198,14 @@ function VUIBuffs:OnInitialize()
     
     -- Register callbacks for profile changes
     self.db.RegisterCallback(self, "OnProfileChanged", "ProfileChanged")
+    
+    -- Set up the options - use the standardized approach for VUI modules
+    self:SetupOptions()
+    
+    -- Initialize VUI integration if VUI is available
+    if VUI then
+        self:InitVUIIntegration()
+    end
     self.db.RegisterCallback(self, "OnProfileCopied", "ProfileChanged")
     self.db.RegisterCallback(self, "OnProfileReset", "ProfileChanged")
     
@@ -219,7 +227,7 @@ end
 
 -- Handle slash commands
 function VUIBuffs:SlashCommand(input)
-    input = input:trim()
+    input = input:trim():lower()
     
     if input == "test" or input == "t" then
         self:ToggleTestMode()
@@ -227,7 +235,15 @@ function VUIBuffs:SlashCommand(input)
         self:ResetPositions()
     elseif input == "unlock" or input == "u" then
         self:ToggleLock()
+    elseif input == "help" or input == "h" or input == "?" then
+        self:Print("VUI Buffs commands:")
+        self:Print(" - /vb : Open config panel")
+        self:Print(" - /vb test (or t): Toggle test mode")
+        self:Print(" - /vb reset (or r): Reset positions")
+        self:Print(" - /vb unlock (or u): Toggle frame lock")
+        self:Print(" - /vb help (or h, ?): Show this help")
     else
+        -- Default to opening options
         self:OpenOptions()
     end
 end
@@ -301,16 +317,23 @@ end
 
 -- Open the options panel
 function VUIBuffs:OpenOptions()
-    AceConfigDialog:Open("VUIBuffs")
+    -- First try to open through VUI config if available
+    if VUI and VUI.Config and VUI.Config.OpenModule then
+        VUI.Config:OpenModule("VUIBuffs")
+    else
+        -- Fallback to Ace config if VUI config not available
+        AceConfigDialog:Open("VUIBuffs")
+    end
 end
 
--- Set up options
-function VUIBuffs:SetupOptions()
+-- Get options for configuration panel - standard function name used across VUI modules
+function VUIBuffs:GetOptions()
     -- Basic options structure
     local options = {
         name = "VUI Buffs",
         handler = self,
         type = "group",
+        icon = "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm.tga",
         args = {
             general = {
                 order = 1,
@@ -336,6 +359,19 @@ function VUIBuffs:SetupOptions()
         },
     }
     
+    return options
+end
+
+-- Set up options
+function VUIBuffs:SetupOptions()
+    local options = self:GetOptions()
+    
+    -- Register with VUI Config system if available
+    if VUI and VUI.Config and VUI.Config.RegisterModuleOptions then
+        VUI.Config:RegisterModuleOptions("VUIBuffs", options, "VUI Buffs")
+    end
+    
+    -- Also register with AceConfig for backward compatibility
     AceRegistry:RegisterOptionsTable("VUIBuffs", options)
     self.optionsFrame = AceConfigDialog:AddToBlizOptions("VUIBuffs", "VUIBuffs")
 end

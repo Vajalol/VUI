@@ -40,6 +40,9 @@ function VUIBuffs:InitVUIIntegration()
     hooksecurefunc(self, "UpdateAllDisplays", function()
         self:SyncSettingsToVUI()
     end)
+    
+    -- The VUI Config registration will be handled in SetupOptions,
+    -- which is called in OnInitialize
 end
 
 -- Sync settings from VUIBuffs to VUI
