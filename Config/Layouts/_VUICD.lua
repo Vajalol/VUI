@@ -28,8 +28,8 @@ function Layout:OnEnable()
                     column = 4,
                     order = 1,
                     callback = function(self)
-                        if VUICD and VUICD.DB then
-                            VUICD.DB.profile.enable = self:GetValue()
+                        if VUICD and VUICD.db then
+                            VUICD.db.enable = self:GetValue()
                             VUICD:ToggleModule()
                         end
                     end
@@ -46,7 +46,7 @@ function Layout:OnEnable()
                         end
                     end,
                     disabled = function() 
-                        return not VUICD or not VUICD.DB or not VUICD.DB.profile.enable
+                        return not VUICD or not VUICD.db or not VUICD.db.enable
                     end,
                     column = 4,
                     order = 2
