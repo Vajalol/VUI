@@ -105,42 +105,46 @@ function BuffService:ScanMissingBuffs()
     
     -- Check each raid buff
     for buffKey, buffData in pairs(M.raidBuffs) do
+        -- Skip under certain conditions but continue with the loop
+        local skipThisBuff = false
+        
         -- Skip if not tracking this buff
         if not M.db.profile[buffData.track] then
-            goto continue
+            skipThisBuff = true
         end
         
         -- Skip temporary buffs (like Bloodlust) for normal checks
-        if buffData.temporary then
-            goto continue
+        if not skipThisBuff and buffData.temporary then
+            skipThisBuff = true
         end
         
         -- Skip if no provider available in group
-        if not buffProviders[buffKey] and M.db.profile.displayInGroupOnly then
-            goto continue
+        if not skipThisBuff and not buffProviders[buffKey] and M.db.profile.displayInGroupOnly then
+            skipThisBuff = true
         end
         
-        local hasThisBuff = false
-        
-        -- Use the specific check function if provided
-        if buffData.checkFunction then
-            hasThisBuff = buffData.checkFunction()
-        else
-            -- Check for any of the spell IDs
-            for spellID, _ in pairs(buffData.spellIDs or {}) do
-                if self:HasBuff("player", spellID) then
-                    hasThisBuff = true
-                    break
+        -- Process the buff if not skipped
+        if not skipThisBuff then
+            local hasThisBuff = false
+            
+            -- Use the specific check function if provided
+            if buffData.checkFunction then
+                hasThisBuff = buffData.checkFunction()
+            else
+                -- Check for any of the spell IDs
+                for spellID, _ in pairs(buffData.spellIDs or {}) do
+                    if self:HasBuff("player", spellID) then
+                        hasThisBuff = true
+                        break
+                    end
                 end
             end
+            
+            -- Add to missing buffs if not found
+            if not hasThisBuff then
+                missingBuffs[buffKey] = buffData
+            end
         end
-        
-        -- Add to missing buffs if not found
-        if not hasThisBuff then
-            missingBuffs[buffKey] = buffData
-        end
-        
-        ::continue::
     end
     
     return missingBuffs
