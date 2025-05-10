@@ -209,11 +209,11 @@ function VUI.ScrollingText:SaveScrollAreaPosition(name)
     local point, _, relativePoint, xOffset, yOffset = frame:GetPoint()
     
     -- Save to the config
-    if not VUI.db.profile.vmodules.vuiscrollingtext.scrollAreaPositions then
-        VUI.db.profile.vmodules.vuiscrollingtext.scrollAreaPositions = {}
+    if not VUI_SavedVariables.VUIScrollingText.scrollAreaPositions then
+        VUI_SavedVariables.VUIScrollingText.scrollAreaPositions = {}
     end
     
-    VUI.db.profile.vmodules.vuiscrollingtext.scrollAreaPositions[name] = {
+    VUI_SavedVariables.VUIScrollingText.scrollAreaPositions[name] = {
         point = point,
         relativePoint = relativePoint,
         xOffset = xOffset,
@@ -223,11 +223,11 @@ end
 
 -- Load saved scroll area positions
 function VUI.ScrollingText:LoadScrollAreaPositions()
-    if not VUI.db.profile.vmodules.vuiscrollingtext or not VUI.db.profile.vmodules.vuiscrollingtext.scrollAreaPositions then
+    if not VUI_SavedVariables.VUIScrollingText or not VUI_SavedVariables.VUIScrollingText.scrollAreaPositions then
         return
     end
     
-    for name, position in pairs(VUI.db.profile.vmodules.vuiscrollingtext.scrollAreaPositions) do
+    for name, position in pairs(VUI_SavedVariables.VUIScrollingText.scrollAreaPositions) do
         local frame = scrollAreas[name]
         if frame then
             frame:ClearAllPoints()
@@ -238,10 +238,10 @@ end
 
 -- Reset all scroll areas to their default positions
 function VUI.ScrollingText:ResetScrollAreaPositions()
-    if not VUI.db.profile.vmodules.vuiscrollingtext then return end
+    if not VUI_SavedVariables.VUIScrollingText then return end
     
     -- Clear saved positions
-    VUI.db.profile.vmodules.vuiscrollingtext.scrollAreaPositions = {}
+    VUI_SavedVariables.VUIScrollingText.scrollAreaPositions = {}
     
     -- Recreate all scroll areas
     for name, _ in pairs(scrollAreas) do
