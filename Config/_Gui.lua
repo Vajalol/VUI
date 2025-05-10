@@ -193,7 +193,7 @@ function Gui:OnEnable()
 
     --Categories
     local categories = {
-        -- Core SUI Modules
+        -- Core VUI Modules
         { title = 'General', name = 'General', layout = options['General'] },
         { title = 'Unitframes', name = 'Unitframes', layout = options['Unitframes'] },
         { title = 'Nameplates', name = 'Nameplates', layout = options['Nameplates'] },

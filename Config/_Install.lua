@@ -151,28 +151,66 @@ local function CreateWelcomePage(parent)
     page:SetAllPoints()
     page:Hide() -- Initially hidden for animation
     
-    -- VUI Logo
-    local logoPanel = VUIConfig:Panel(page, 250, 120)
+    -- VUI Logo with enhanced visual style
+    local logoPanel = VUIConfig:Panel(page, 280, 140)
     logoPanel:SetPoint("TOP", 0, -20)
     VUIConfig:ApplyBackdrop(logoPanel, "panel")
     
+    -- Create a glow frame behind the logo for a more premium look
+    local glowFrame = CreateFrame("Frame", nil, logoPanel)
+    glowFrame:SetPoint("CENTER")
+    glowFrame:SetSize(280, 140)
+    
+    local glowTexture = glowFrame:CreateTexture(nil, "BACKGROUND")
+    glowTexture:SetAllPoints()
+    glowTexture:SetTexture("Interface\\AddOns\\VUI\\Media\\Textures\\UI-Achievement-Guild-Glow")
+    glowTexture:SetBlendMode("ADD")
+    glowTexture:SetVertexColor(0.3, 0.6, 1, 0.3) -- Soft blue glow
+    
+    -- Create a border frame for a premium feel
+    local borderFrame = CreateFrame("Frame", nil, logoPanel)
+    borderFrame:SetPoint("TOPLEFT", -2, 2)
+    borderFrame:SetPoint("BOTTOMRIGHT", 2, -2)
+    borderFrame:SetBackdrop({
+        edgeFile = "Interface\\AddOns\\VUI\\Media\\Textures\\UI-Tooltip-Border",
+        edgeSize = 16,
+    })
+    borderFrame:SetBackdropBorderColor(0.7, 0.4, 0.9, 0.7) -- Subtle purple border
+    
+    -- Add the Vortex thunderstorm icon for branding
+    local logoIcon = logoPanel:CreateTexture(nil, "ARTWORK")
+    logoIcon:SetSize(64, 64) 
+    logoIcon:SetPoint("LEFT", logoPanel, "LEFT", 20, 0)
+    logoIcon:SetTexture("Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm")
+    
     local logoText = VUIConfig:Label(logoPanel, "|cffea00ffV|r|cff00a2ffUI|r")
-    logoText:SetPoint("CENTER", 0, 0)
-    logoText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 72, "OUTLINE")
+    logoText:SetPoint("CENTER", 20, 0) -- Shift text slightly to balance with the icon
+    logoText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 84, "OUTLINE")
+    
+    -- Add version text for professional appearance
+    local versionText = VUIConfig:Label(logoPanel, "v1.0.1")
+    versionText:SetPoint("BOTTOM", 0, 10)
+    versionText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 14)
+    versionText:SetTextColor(0.8, 0.8, 0.8)
     
     -- Welcome panel with animated border
     local welcomePanel = VUIConfig:Panel(page, 650, 120)
     welcomePanel:SetPoint("TOP", logoPanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(welcomePanel, "panel", "border")
     
-    -- Welcome text
-    local welcomeText = VUIConfig:Label(welcomePanel, "Welcome to VUI (Vortex UI)")
+    -- Welcome text with more inspiring message
+    local welcomeText = VUIConfig:Label(welcomePanel, "Welcome to the Future of WoW UI")
     welcomeText:SetPoint("TOP", 0, -15)
-    welcomeText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 18)
-    VUIConfig:SetTextColor(welcomeText, "header")
+    welcomeText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 22)
+    welcomeText:SetTextColor(0.9, 0.4, 1) -- Vibrant purple
     
-    local welcomeDesc = VUIConfig:Label(welcomePanel, "A comprehensive user interface enhancement suite for World of Warcraft.\n\nVUI brings together the best addons and features in a unified, customizable package to improve your gameplay experience.")
-    welcomeDesc:SetPoint("TOP", welcomeText, "BOTTOM", 0, -10)
+    local taglineText = VUIConfig:Label(welcomePanel, "VUI - Vortex UI")
+    taglineText:SetPoint("TOP", welcomeText, "BOTTOM", 0, -5)
+    taglineText:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
+    taglineText:SetTextColor(0, 0.7, 1) -- Bright blue
+    
+    local welcomeDesc = VUIConfig:Label(welcomePanel, "Transform your gameplay with the most advanced UI enhancement suite ever created for World of Warcraft. VUI seamlessly blends performance and aesthetics to elevate your gaming experience to new heights.")
+    welcomeDesc:SetPoint("TOP", taglineText, "BOTTOM", 0, -10)
     welcomeDesc:SetWidth(600)
     welcomeDesc:SetJustifyH("CENTER")
     
@@ -181,20 +219,28 @@ local function CreateWelcomePage(parent)
     featuresPanel:SetPoint("TOP", welcomePanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(featuresPanel, "panel", "border")
     
-    -- Features header
-    local featuresHeader = VUIConfig:Label(featuresPanel, "Key Features")
+    -- Features header with more premium styling
+    local featuresHeader = VUIConfig:Label(featuresPanel, "PREMIUM FEATURES")
     featuresHeader:SetPoint("TOP", 0, -15)
-    featuresHeader:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
-    VUIConfig:SetTextColor(featuresHeader, "header")
+    featuresHeader:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 18, "OUTLINE")
+    featuresHeader:SetTextColor(0.95, 0.85, 0.45) -- Gold color for premium feel
     
-    -- Feature list using individual labels for animation
+    -- Add a separator line for professional look
+    local separatorTexture = featuresPanel:CreateTexture(nil, "ARTWORK")
+    separatorTexture:SetTexture("Interface\\AddOns\\VUI\\Media\\Textures\\UI-Tooltip-Border")
+    separatorTexture:SetSize(400, 2)
+    separatorTexture:SetPoint("TOP", featuresHeader, "BOTTOM", 0, -5)
+    separatorTexture:SetTexCoord(0.2, 0.8, 0.25, 0.75) -- Use just the center part of the texture
+    separatorTexture:SetVertexColor(0.6, 0.4, 0.8) -- Purple tint
+    
+    -- Feature list using individual labels for animation - more inspirational wording
     local features = {
-        "• Modular design - Enable only what you need",
-        "• Enhanced combat feedback and tracking",
-        "• Streamlined auction house interface",
-        "• Advanced raid and party tools",
-        "• Customizable notifications",
-        "• Comprehensive cooldown management"
+        "• Intelligent Modular Architecture — Customize to Your Perfect UI",
+        "• Dynamic Combat Analytics — Gain the Competitive Edge",
+        "• Streamlined Auction & Economic Tools — Maximize Your Profits",
+        "• Premium Raid & Party Frames — Lead With Confidence",
+        "• Intuitive Notification System — Never Miss Critical Events",
+        "• Advanced Cooldown Visualization — Perfect Your Rotation"
     }
     
     local featureLabels = {}
@@ -612,33 +658,132 @@ local function CreateCompletionPage(parent)
     page:SetAllPoints()
     page:Hide() -- Initially hidden for animation
     
-    -- Completion header panel
-    local headerPanel = VUIConfig:Panel(page, 700, 100)
+    -- Premium styled completion header panel
+    local headerPanel = VUIConfig:Panel(page, 700, 120)
     headerPanel:SetPoint("TOP", 0, -20)
     VUIConfig:ApplyBackdrop(headerPanel, "panel")
     
-    -- "Setup Complete" title with special styling
-    local title = VUIConfig:Label(headerPanel, "Setup Complete!")
-    title:SetPoint("CENTER", 0, 10)
-    title:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 32)
-    title:SetTextColor(0, 0.9, 1) -- Bright blue
+    -- Add a decorative border for premium feel
+    local borderFrame = CreateFrame("Frame", nil, headerPanel)
+    borderFrame:SetPoint("TOPLEFT", -3, 3)
+    borderFrame:SetPoint("BOTTOMRIGHT", 3, -3)
+    borderFrame:SetBackdrop({
+        edgeFile = "Interface\\AddOns\\VUI\\Media\\Textures\\UI-Tooltip-Border",
+        edgeSize = 16,
+    })
+    borderFrame:SetBackdropBorderColor(0.8, 0.7, 0.2, 0.7) -- Gold border for achievement feel
     
-    -- VUI logo with special effect
-    local logoPanel = VUIConfig:Panel(page, 250, 100)
+    -- Add decorative corners for elegant design
+    local function CreateCornerTexture(parent, position)
+        local texture = parent:CreateTexture(nil, "OVERLAY")
+        texture:SetSize(32, 32)
+        texture:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Corner")
+        
+        if position == "TOPLEFT" then
+            texture:SetPoint("TOPLEFT", parent, "TOPLEFT", -5, 5)
+            texture:SetTexCoord(0, 0.5, 0, 0.5)
+        elseif position == "TOPRIGHT" then
+            texture:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 5, 5)
+            texture:SetTexCoord(0.5, 1, 0, 0.5)
+        elseif position == "BOTTOMLEFT" then
+            texture:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", -5, -5)
+            texture:SetTexCoord(0, 0.5, 0.5, 1)
+        elseif position == "BOTTOMRIGHT" then
+            texture:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 5, -5)
+            texture:SetTexCoord(0.5, 1, 0.5, 1)
+        end
+        
+        return texture
+    end
+    
+    CreateCornerTexture(headerPanel, "TOPLEFT")
+    CreateCornerTexture(headerPanel, "TOPRIGHT")
+    CreateCornerTexture(headerPanel, "BOTTOMLEFT")
+    CreateCornerTexture(headerPanel, "BOTTOMRIGHT")
+    
+    -- "Setup Complete" title with premium styling
+    local title = VUIConfig:Label(headerPanel, "Installation Complete!")
+    title:SetPoint("CENTER", 0, 20)
+    title:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 36, "OUTLINE")
+    
+    -- Create a gradient color effect for the text
+    local titleAnimation = title:CreateAnimationGroup()
+    titleAnimation:SetLooping("REPEAT")
+    
+    local colorShift = titleAnimation:CreateAnimation("Color")
+    colorShift:SetDuration(3)
+    colorShift:SetColorType("Vertex")
+    colorShift:SetFromAlpha(1)
+    colorShift:SetToAlpha(1)
+    colorShift:SetFromR(0.1)
+    colorShift:SetFromG(0.6)
+    colorShift:SetFromB(1)
+    colorShift:SetToR(0.8)
+    colorShift:SetToG(0.3)
+    colorShift:SetToB(1)
+    
+    titleAnimation:Play()
+    
+    -- Add a subtitle for extra polish
+    local subtitle = VUIConfig:Label(headerPanel, "Your journey to a perfect UI begins now")
+    subtitle:SetPoint("TOP", title, "BOTTOM", 0, -5)
+    subtitle:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 18)
+    subtitle:SetTextColor(0.9, 0.9, 0.9)
+    
+    -- VUI logo with Vortex thunderstorm icon
+    local logoPanel = VUIConfig:Panel(page, 300, 100)
     logoPanel:SetPoint("TOP", headerPanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(logoPanel, "panel")
     
+    -- Add the Vortex thunderstorm icon
+    local logoIcon = logoPanel:CreateTexture(nil, "ARTWORK")
+    logoIcon:SetSize(64, 64) 
+    logoIcon:SetPoint("LEFT", logoPanel, "LEFT", 30, 0)
+    logoIcon:SetTexture("Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm")
+    
+    -- Add a subtle pulse animation to the icon
+    local iconAnimGroup = logoIcon:CreateAnimationGroup()
+    iconAnimGroup:SetLooping("REPEAT")
+    
+    local iconGrowth = iconAnimGroup:CreateAnimation("Scale")
+    iconGrowth:SetScaleFrom(1.0, 1.0)
+    iconGrowth:SetScaleTo(1.1, 1.1)
+    iconGrowth:SetDuration(1.5)
+    iconGrowth:SetOrder(1)
+    
+    local iconShrink = iconAnimGroup:CreateAnimation("Scale")
+    iconShrink:SetScaleFrom(1.1, 1.1)
+    iconShrink:SetScaleTo(1.0, 1.0)
+    iconShrink:SetDuration(1.5)
+    iconShrink:SetOrder(2)
+    
+    iconAnimGroup:Play()
+    
     local logo = VUIConfig:Label(logoPanel, "|cffea00ffV|r|cff00a2ffUI|r")
-    logo:SetPoint("CENTER", 0, 0)
+    logo:SetPoint("CENTER", 20, 0) -- Shift text to balance with icon
     logo:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 64, "OUTLINE")
     
-    -- Congratulations panel
-    local congratsPanel = VUIConfig:Panel(page, 700, 120)
+    -- Enhanced congratulations panel with professional styling
+    local congratsPanel = VUIConfig:Panel(page, 700, 140)
     congratsPanel:SetPoint("TOP", logoPanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(congratsPanel, "panel")
     
-    local finalText = VUIConfig:Label(congratsPanel, "Congratulations! VUI is now set up with recommended settings.\n\nAfter clicking 'Finish', the VUI configuration panel will open where you can further customize every aspect of the interface to your liking.")
-    finalText:SetPoint("CENTER", 0, 0)
+    -- Add a subtle texture background for more visual interest
+    local bgTexture = congratsPanel:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetAllPoints()
+    bgTexture:SetTexture("Interface\\AddOns\\VUI\\Media\\Textures\\UI-GuildAchievement-Parchment-Horizontal")
+    bgTexture:SetTexCoord(0.1, 0.9, 0.1, 0.9) -- Adjust to show just the clean part
+    bgTexture:SetAlpha(0.15) -- Very subtle
+    
+    -- Create a header for the congratulations text
+    local congratsHeader = VUIConfig:Label(congratsPanel, "Begin Your Enhanced WoW Experience")
+    congratsHeader:SetPoint("TOP", 0, -15)
+    congratsHeader:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 20)
+    congratsHeader:SetTextColor(0.2, 0.8, 0.4) -- Emerald green for success
+    
+    -- Main congratulations text with more inspiring message
+    local finalText = VUIConfig:Label(congratsPanel, "You've successfully installed the most advanced UI enhancement suite available for World of Warcraft. VUI has been configured with optimal settings to provide both performance and visual excellence.\n\nYour next step is to explore the wealth of customization options that await you in the VUI configuration panel.")
+    finalText:SetPoint("TOP", congratsHeader, "BOTTOM", 0, -10)
     finalText:SetWidth(650)
     finalText:SetJustifyH("CENTER")
     
@@ -654,22 +799,42 @@ local function CreateCompletionPage(parent)
     commandExample:SetPoint("BOTTOM", 0, 10)
     commandExample:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
     
-    -- Tips panel
-    local tipsPanel = VUIConfig:Panel(page, 700, 120)
+    -- Enhanced tips panel with professional styling
+    local tipsPanel = VUIConfig:Panel(page, 700, 140)
     tipsPanel:SetPoint("TOP", commandPanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(tipsPanel, "panel")
     
-    local tipsHeader = VUIConfig:Label(tipsPanel, "Quick Tips")
-    tipsHeader:SetPoint("TOP", 0, -10)
-    tipsHeader:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
-    VUIConfig:SetTextColor(tipsHeader, "header")
+    -- Add subtle golden glow around the tips panel for premium feel
+    local glowFrame = CreateFrame("Frame", nil, tipsPanel)
+    glowFrame:SetPoint("TOPLEFT", -5, 5)
+    glowFrame:SetPoint("BOTTOMRIGHT", 5, -5)
+    local glowTexture = glowFrame:CreateTexture(nil, "BACKGROUND")
+    glowTexture:SetAllPoints()
+    glowTexture:SetTexture("Interface\\AddOns\\VUI\\Media\\Textures\\UI-Achievement-Guild-Glow")
+    glowTexture:SetBlendMode("ADD")
+    glowTexture:SetVertexColor(0.7, 0.7, 0.2, 0.1) -- Subtle gold
     
-    -- Create individual tip items for animation
+    -- Premium styled header with icon
+    local tipsHeaderFrame = CreateFrame("Frame", nil, tipsPanel)
+    tipsHeaderFrame:SetSize(200, 28)
+    tipsHeaderFrame:SetPoint("TOP", 0, -10)
+    
+    local tipsIcon = tipsHeaderFrame:CreateTexture(nil, "ARTWORK")
+    tipsIcon:SetSize(24, 24)
+    tipsIcon:SetPoint("LEFT", tipsHeaderFrame, "LEFT")
+    tipsIcon:SetTexture("Interface\\AddOns\\VUI\\Media\\Textures\\Config\\Icon")
+    
+    local tipsHeader = VUIConfig:Label(tipsHeaderFrame, "PRO TIPS")
+    tipsHeader:SetPoint("LEFT", tipsIcon, "RIGHT", 10, 0)
+    tipsHeader:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 18, "OUTLINE")
+    tipsHeader:SetTextColor(0.95, 0.85, 0.45) -- Gold color for premium feel
+    
+    -- Create individual tip items with more professional wording
     local tips = {
-        "• Hover over options in the configuration panel for detailed tooltips",
-        "• Use VUI profiles to save different configurations for different characters",
-        "• Most modules can be enabled/disabled independently",
-        "• Type /vui help for a list of all available commands"
+        "• Explore tooltips in the configuration panel for advanced feature insights",
+        "• Utilize VUI profiles to create specialized setups for different play styles",
+        "• Fine-tune your experience by selectively enabling just the modules you need",
+        "• Access the complete command reference with '/vui help' anytime"
     }
     
     local tipLabels = {}

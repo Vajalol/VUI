@@ -16,6 +16,11 @@
   - Automatically adapts to current theme (VUI, Phoenix Flame, Fel Energy, Arcane Mystic)
   - Supports standard action bars and addon bars (Bartender4, Dominos)
   - Configurable intensity with simple on/off toggle
+- Redesigned installer UI for a premium experience:
+  - Enhanced welcome page with professional styling and inspirational text
+  - Improved module showcase with modern visual elements
+  - Premium completion page with decorative frames and animations
+  - Refined text content for a more professional presentation
 
 ### Changed
 - Standardized configuration architecture across all modules
