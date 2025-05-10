@@ -3,6 +3,9 @@ local _, VUI = ...
 local MSBTOptions = {}
 local VUIScrollingText = VUI:GetModule("VUIScrollingText")
 
+-- Theme elements to update when the theme changes
+local themeElements = {}
+
 -- Global references for "globals" used in callbacks.
 local currentTab
 local tabFrames = {}
@@ -36,12 +39,19 @@ function VUIScrollingText:CreateOptionsFrame()
     optionsFrame:SetHeight(550)
     optionsFrame:SetFrameStrata("MEDIUM")
     optionsFrame:SetToplevel(true)
+    
+    -- Set up themed backdrop
+    optionsFrame.useVUITheme = true
     optionsFrame:SetBackdrop({
         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
         edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
         tile = true, tileSize = 32, edgeSize = 32,
         insets = { left = 11, right = 12, top = 12, bottom = 11 }
     })
+    
+    -- Store reference for theme updates
+    table.insert(themeElements, {frame = optionsFrame, type = "frame"})
+    
     optionsFrame:SetPoint("CENTER")
     optionsFrame:EnableMouse(true)
     optionsFrame:SetMovable(true)
@@ -49,10 +59,13 @@ function VUIScrollingText:CreateOptionsFrame()
     optionsFrame:SetScript("OnDragStart", optionsFrame.StartMoving)
     optionsFrame:SetScript("OnDragStop", optionsFrame.StopMovingOrSizing)
     
-    -- Create title
+    -- Create title with theme support
     local title = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOP", 0, -20)
     title:SetText("VUI Scrolling Text Options")
+    
+    -- Store title for theme updates
+    table.insert(themeElements, {frame = title, type = "fontstring"})
     
     -- Create close button
     local closeButton = CreateFrame("Button", nil, optionsFrame, "UIPanelCloseButton")
@@ -98,6 +111,7 @@ function VUIScrollingText:CreateTabs(tabContainerFrame, tabInfo)
         local tabButton = CreateFrame("Button", "VUIScrollingTextOptions" .. name .. "TabButton", tabContainerFrame, "OptionsFrameTabButtonTemplate")
         tabButton.name = name
         tabButton.tooltip = info.tooltip
+        tabButton.useVUITheme = true
         tabButton:SetID(index)
         
         if (index == 1) then
@@ -110,6 +124,13 @@ function VUIScrollingText:CreateTabs(tabContainerFrame, tabInfo)
         tabButton:SetScript("OnClick", function(self)
             VUIScrollingText:ChangeTab(self.name)
         end)
+        
+        -- Make tab text color match theme
+        local tabText = tabButton:GetFontString()
+        table.insert(themeElements, {frame = tabText, type = "fontstring"})
+        
+        -- Add button to themed elements
+        table.insert(themeElements, {frame = tabButton, type = "button"})
         
         -- Calculate width
         local textWidth = tabButton:GetFontString():GetStringWidth()
@@ -538,10 +559,64 @@ function VUIScrollingText:CreateProfilesTab(tabFrame)
     resetButton:SetText("Reset")
 end
 
+-- Apply VUI theme to UI elements
+function VUIScrollingText:ApplyTheme()
+    if not VUI or not VUI.GetThemeColor then return end
+    
+    local themeColor = VUI:GetThemeColor()
+    
+    -- Update all themed elements
+    for _, element in ipairs(themeElements) do
+        if element.type == "frame" and element.frame.useVUITheme then
+            -- Apply theme border color to frames
+            if element.frame.SetBackdropBorderColor then
+                element.frame:SetBackdropBorderColor(themeColor.r, themeColor.g, themeColor.b, 1)
+            end
+        elseif element.type == "fontstring" then
+            -- Apply theme color to fontstrings
+            element.frame:SetTextColor(themeColor.r, themeColor.g, themeColor.b)
+        elseif element.type == "button" then
+            -- Apply theme to buttons (color when highlighted)
+            if element.frame.SetHighlightTexture then
+                local texture = element.frame:GetHighlightTexture()
+                if texture then
+                    texture:SetVertexColor(themeColor.r, themeColor.g, themeColor.b, 0.3)
+                end
+            end
+        end
+    end
+    
+    -- Update sub-modules
+    if self.ScrollingText then
+        -- Update animations module
+        if self.ScrollingText.AnimationStyles and self.ScrollingText.AnimationStyles.ApplyTheme then
+            self.ScrollingText.AnimationStyles.ApplyTheme()
+        end
+        
+        -- Update cooldowns module
+        if self.ScrollingText.Cooldowns and self.ScrollingText.Cooldowns.ApplyTheme then
+            self.ScrollingText.Cooldowns.ApplyTheme()
+        end
+        
+        -- Update loot module
+        if self.ScrollingText.Loot and self.ScrollingText.Loot.ApplyTheme then
+            self.ScrollingText.Loot.ApplyTheme()
+        end
+        
+        -- Update triggers module
+        if self.ScrollingText.Triggers and self.ScrollingText.Triggers.ApplyTheme then
+            self.ScrollingText.Triggers.ApplyTheme()
+        end
+    end
+end
+
 -- Register the options panel with VUI
 function VUIScrollingText:RegisterOptions()
     -- Create options frame
     local optionsFrame = self:CreateOptionsFrame()
+    
+    -- Store reference to the options frame
+    self.optionsFrame = optionsFrame
     
     -- Add to VUI configuration
     VUI.Config:RegisterModuleOptions("VUIScrollingText", function()
@@ -552,4 +627,16 @@ function VUIScrollingText:RegisterOptions()
     self:RegisterChatCommand("vuiscroll", function()
         optionsFrame:Show()
     end)
+    
+    -- Register with theme system
+    if VUI.RegisterCallback then
+        VUI:RegisterCallback("OnThemeChanged", function()
+            self:ApplyTheme()
+        end)
+    end
+    
+    -- Apply theme immediately
+    self:ApplyTheme()
+    
+    return optionsFrame
 end
