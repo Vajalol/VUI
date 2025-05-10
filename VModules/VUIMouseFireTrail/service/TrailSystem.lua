@@ -336,34 +336,31 @@ function M:UpdateParticleTrail()
         -- Skip frames with no position yet
         if trailPositions[i].x == 0 and trailPositions[i].y == 0 then
             frame:Hide()
-            goto continue
-        end
-        
-        -- Position and size the frame
-        frame:ClearAllPoints()
-        frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", trailPositions[i].x, trailPositions[i].y)
-        
-        -- Scale down with distance from head
-        local scale = 1 - ((i - 1) / self.db.profile.trailCount) * 0.5
-        local size = trailPositions[i].size * scale
-        frame:SetSize(size, size)
-        
-        -- Update alpha
-        frame:SetAlpha(trailPositions[i].alpha)
-        
-        -- Hide if alpha is too low
-        if trailPositions[i].alpha < 0.02 then
-            frame:Hide()
         else
-            frame:Show()
+            -- Position and size the frame
+            frame:ClearAllPoints()
+            frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", trailPositions[i].x, trailPositions[i].y)
+            
+            -- Scale down with distance from head
+            local scale = 1 - ((i - 1) / self.db.profile.trailCount) * 0.5
+            local size = trailPositions[i].size * scale
+            frame:SetSize(size, size)
+            
+            -- Update alpha
+            frame:SetAlpha(trailPositions[i].alpha)
+            
+            -- Hide if alpha is too low
+            if trailPositions[i].alpha < 0.02 then
+                frame:Hide()
+            else
+                frame:Show()
+            end
+            
+            -- Update rainbow color if needed
+            if self.db.profile.colorMode == "RAINBOW" then
+                self:UpdateRainbowColor(i)
+            end
         end
-        
-        -- Update rainbow color if needed
-        if self.db.profile.colorMode == "RAINBOW" then
-            self:UpdateRainbowColor(i)
-        end
-        
-        ::continue::
     end
 end
 
