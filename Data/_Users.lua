@@ -3,6 +3,7 @@ local Colors = VUI:GetModule('Data.Colors');
 
 Data.team = {
   { text = Colors.aut .. 'VortexQ8|r' },
+}
 
 Data.specials = {
   { text = Colors.rog .. 'Holyface|r' },
