@@ -3,6 +3,9 @@ local addonName, VUI = ...
 -- ScrollAreas service for VUIScrollingText
 -- This handles creating and managing the scroll areas where text will appear
 
+-- Module reference
+local M = VUI:GetModule("VUIScrollingText")
+
 -- Local references
 local CreateFrame = CreateFrame
 local UIParent = UIParent

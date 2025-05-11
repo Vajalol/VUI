@@ -16,7 +16,7 @@ local resultsInfoFrame
 -- Initialize the UI
 function InitializeUI()
     VUI = _G.VUI
-    VUIGfinderModule = VUI and VUI:GetModule("VUIGfinder")
+    VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
     
     -- Create main UI frame if it doesn't exist yet
     if not mainFrame then

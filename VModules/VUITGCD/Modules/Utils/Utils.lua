@@ -2,7 +2,7 @@
 -- Utility functions for the VUITGCD module
 
 local _, ns = ...
-local VUITGCD = _G.VUI and _G.VUI.TGCD or {}
+local VUITGCD = _G.VUI and (_G.VUI.VUITGCD or _G.VUI:GetModule("VUITGCD")) or {}
 
 -- Define namespace
 if not ns.utils then ns.utils = {} end

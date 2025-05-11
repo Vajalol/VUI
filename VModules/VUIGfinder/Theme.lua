@@ -1,7 +1,8 @@
 -- VUIGfinder Theme Integration
 -- Handles theme color integration with VUI
 
-local VUI, VUIGfinderModule
+local VUI = _G.VUI
+local VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
 local L = PGFinderLocals; -- Strings
 
 -- Theme elements that need to be updated

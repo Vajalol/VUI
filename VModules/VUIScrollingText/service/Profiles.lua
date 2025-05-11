@@ -3,6 +3,9 @@ local addonName, VUI = ...
 -- Profiles service for VUIScrollingText
 -- This handles loading, saving, and managing user profiles/settings
 
+-- Module reference
+local M = VUI:GetModule("VUIScrollingText")
+
 -- Local references
 local pairs = pairs
 local type = type

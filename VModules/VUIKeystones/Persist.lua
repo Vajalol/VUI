@@ -1,5 +1,5 @@
 local VUI = select(2, ...)
-local Module = VUI:GetModule("VUIKeystones")
+local Module = VUI.VUIKeystones or VUI:GetModule("VUIKeystones")
 local Persist = Module:NewSubmodule("Persist")
 
 local challengeMapID

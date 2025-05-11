@@ -2,7 +2,8 @@
 -- Core filtering functionality for VUIGfinder
 
 local L = PGFinderLocals; -- Strings
-local VUI, VUIGfinderModule
+local VUI = _G.VUI
+local VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
 
 -- Cache commonly used functions
 local C_LFGList = C_LFGList
@@ -46,8 +47,6 @@ local lastRefreshTime = 0
 
 -- Initialize filter module
 local function InitializeFilter()
-    VUI = _G.VUI
-    VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
     
     -- Load settings from VUI database
     LoadSettings()
