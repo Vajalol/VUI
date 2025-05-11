@@ -1,4 +1,5 @@
 local addonName, VUI = ...
+local M = VUI:GetModule("VUIAuctionator")
 local Auctionator = VUI.Auctionator
 
 -- Event handling related to the Auction House

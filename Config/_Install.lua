@@ -12,7 +12,7 @@ local function CreateInstallWizard()
     Install:EnableMouse(true)
     
     -- Add VUI logo
-    local logo = VUIConfig:Texture(Install.titlePanel, 120, 35, "Interface\\AddOns\\VUI\\Media\\Textures\\Config\\Logo")
+    local logo = VUIConfig:Texture(Install.titlePanel, 120, 35, "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm")
     VUIConfig:GlueLeft(logo, Install.titlePanel, 10, 0)
     
     -- Subtitle
