@@ -1,5 +1,5 @@
 -- VUIKeystones - Configuration handling
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
+local VUIKeystones = _G.VUIKeystones or {}
 local Config = VUIKeystones:NewModule('Config')
 local L = VUIKeystones.L
 

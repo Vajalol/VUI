@@ -1,5 +1,5 @@
 -- VUIKeystones - Progress Tracker functionality
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
+local VUIKeystones = _G.VUIKeystones or {}
 local ProgressTracker = VUIKeystones:NewModule('ProgressTracker')
 local L = VUIKeystones.L
 

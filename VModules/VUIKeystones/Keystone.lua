@@ -1,5 +1,5 @@
 -- VUIKeystones - Keystone functionality
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
+local VUIKeystones = _G.VUIKeystones or {}
 local Keystone = VUIKeystones:NewModule('Keystone')
 local L = VUIKeystones.L
 

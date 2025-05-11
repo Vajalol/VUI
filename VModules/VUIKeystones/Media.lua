@@ -1,5 +1,5 @@
 -- VUIKeystones - Media path handler
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
+local VUIKeystones = _G.VUIKeystones or {}
 local L = VUIKeystones.L
 
 -- Media paths
