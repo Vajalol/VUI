@@ -3,13 +3,14 @@
 -- Enhances buff/debuff display with configurable frames
 -------------------------------------------------------------------------------
 
--- Register VUIBuffs as a standalone addon for compatibility with existing module structure
-local VUIBuffs = LibStub("AceAddon-3.0"):NewAddon("VUIBuffs", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
-_G.VUIBuffs = VUIBuffs
-
--- Reference VUI and prepare for module registration
+-- Standard module registration
 local AddonName, VUI = ...
 local MODNAME = "VUIBuffs"
+local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
+
+-- For backward compatibility
+_G.VUIBuffs = M
+VUI.VUIBuffs = M
 
 -- Localization setup
 VUIBuffs.L = VUIBuffs.L or {}
@@ -113,27 +114,18 @@ VUIBuffs.defaults = {
     }
 }
 
--- Initialize the VUIBuffs addon
-function VUIBuffs:OnInitialize()
-    -- Create and register VUIBuffs as a VUI module
-    if VUI and VUI.NewModule then
-        self.module = VUI:NewModule(MODNAME)
-        VUI.VUIBuffs = self.module
-        
-        -- Copy VUIBuffs functions to the module
-        for k, v in pairs(self) do
-            if type(v) == "function" and not self.module[k] then
-                self.module[k] = v
-            end
-        end
-    end
+-- Initialize the VUIBuffs module
+function M:OnInitialize()
+    -- Module constants
+    self.NAME = MODNAME
+    self.TITLE = "VUI Buffs"
+    self.DESCRIPTION = "Enhances buff/debuff display with configurable frames"
+    self.VERSION = VUI.Version or "1.0"
     
     -- Create the database using VUI's db
-    if VUI and VUI.db then
-        self.db = VUI.db:RegisterNamespace(MODNAME, {
-            profile = self.defaults.profile
-        })
-    end
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
     
     -- Register callback for theme changes
     if VUI then
@@ -179,7 +171,7 @@ function VUIBuffs:OnInitialize()
 end
 
 -- Enable the module
-function VUIBuffs:OnEnable()
+function M:OnEnable()
     -- Register events
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("UNIT_AURA")
@@ -188,13 +180,11 @@ function VUIBuffs:OnEnable()
     self:RegisterEvent("GROUP_ROSTER_UPDATE")
     
     -- Debug message
-    if VUI and VUI.Debug then
-        VUI:Debug(MODNAME .. " enabled")
-    end
+    self:Debug("enabled")
 end
 
 -- Disable the module
-function VUIBuffs:OnDisable()
+function M:OnDisable()
     -- Unregister all events
     self:UnregisterAllEvents()
     
@@ -208,7 +198,12 @@ function VUIBuffs:OnDisable()
     end
     
     -- Debug message
+    self:Debug("disabled")
+end
+
+-- Helper function for standardized debugging
+function M:Debug(...)
     if VUI and VUI.Debug then
-        VUI:Debug(MODNAME .. " disabled")
+        VUI:Debug(self.NAME, ...)
     end
 end

@@ -4,23 +4,22 @@
 -- Based on MoveAny by D4KiR with VUI integration
 -------------------------------------------------------------------------------
 
--- Register VUIAnyFrame as a standalone addon for compatibility with existing module structure
-local VUIAnyFrame = LibStub("AceAddon-3.0"):NewAddon("VUIAnyFrame", "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
-_G.VUIAnyFrame = VUIAnyFrame
-
--- Reference VUI and prepare for module registration
+-- Standard module registration
 local AddonName, VUI = ...
 local MODNAME = "VUIAnyFrame"
+local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
+
+-- For backward compatibility
+_G.VUIAnyFrame = M
+VUI.VUIAnyFrame = M
 
 -- Localization
 VUIAnyFrame.L = VUIAnyFrame.L or {}
 local L = VUIAnyFrame.L
 
--- Module Constants
-VUIAnyFrame.NAME = MODNAME
-VUIAnyFrame.TITLE = "VUI Any Frame"
-VUIAnyFrame.DESCRIPTION = "Move, scale, and customize any UI element"
-VUIAnyFrame.VERSION = "1.0"
+-- Localization (changing to use M instead of VUIAnyFrame)
+M.L = M.L or {}
+local L = M.L
 
 -- Default settings
 VUIAnyFrame.defaults = {
