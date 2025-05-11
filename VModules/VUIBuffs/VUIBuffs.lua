@@ -1,5 +1,5 @@
 ---@class VUIBuffs: AceModule
-local VUIBuffs = LibStub("AceAddon-3.0"):GetAddon("VUIBuffs")
+local VUIBuffs = _G.VUIBuffs or {} -- Reference the global VUIBuffs created in Init.lua
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceRegistry = LibStub("AceConfigRegistry-3.0")
 local LDB = LibStub("LibDataBroker-1.1")

@@ -3,18 +3,23 @@
 -- Enhances buff/debuff display with configurable frames
 -------------------------------------------------------------------------------
 
+-- Register VUIBuffs as a standalone addon for compatibility with existing module structure
+local VUIBuffs = LibStub("AceAddon-3.0"):NewAddon("VUIBuffs", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
+_G.VUIBuffs = VUIBuffs
+
+-- Reference VUI and prepare for module registration
 local AddonName, VUI = ...
 local MODNAME = "VUIBuffs"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
 
--- Module Constants
-M.NAME = MODNAME
-M.TITLE = "VUI Buffs"
-M.DESCRIPTION = "Enhanced buff and debuff display with configurable frames"
-M.VERSION = "1.0"
+-- Localization setup
+VUIBuffs.L = VUIBuffs.L or {}
+local L = VUIBuffs.L
+
+-- Provide compatibility function for localizations
+VUIBuffs.GetSpellInfo = GetSpellInfo
 
 -- Default settings
-M.defaults = {
+VUIBuffs.defaults = {
     profile = {
         enabled = true,
         locked = true,
@@ -108,35 +113,48 @@ M.defaults = {
     }
 }
 
--- Initialize the module
-function M:OnInitialize()
-    -- Create the database
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
-    
-    -- Create a reference in VUIBuffs (existing code expects this)
-    _G.VUIBuffs = _G.VUIBuffs or {}
-    _G.VUIBuffs.db = self.db
-    
-    -- Copy functions from the existing VUIBuffs module
-    for key, func in pairs(VUIBuffs) do
-        if type(func) == "function" and not self[key] then
-            self[key] = func
+-- Initialize the VUIBuffs addon
+function VUIBuffs:OnInitialize()
+    -- Create and register VUIBuffs as a VUI module
+    if VUI and VUI.NewModule then
+        self.module = VUI:NewModule(MODNAME)
+        VUI.VUIBuffs = self.module
+        
+        -- Copy VUIBuffs functions to the module
+        for k, v in pairs(self) do
+            if type(v) == "function" and not self.module[k] then
+                self.module[k] = v
+            end
         end
     end
     
-    -- Initialize the configuration panel
-    self:InitializeConfig()
+    -- Create the database using VUI's db
+    if VUI and VUI.db then
+        self.db = VUI.db:RegisterNamespace(MODNAME, {
+            profile = self.defaults.profile
+        })
+    end
     
     -- Register callback for theme changes
-    VUI:RegisterCallback("OnThemeChanged", function()
-        if self.UpdateTheme then
-            self:UpdateTheme()
-        end
-    end)
+    if VUI then
+        VUI:RegisterCallback("OnThemeChanged", function()
+            if self.UpdateTheme then
+                self:UpdateTheme()
+            end
+        end)
+    end
     
-    -- Initialize UI components (using existing code)
+    -- Register with VUI's configuration system
+    if VUI and VUI.Config then
+        VUI.Config:RegisterModuleOptions(MODNAME, function()
+            -- Open the configuration panel
+            if self.OpenOptions then
+                self:OpenOptions()
+            end
+        end)
+    end
+    
+    -- Initialize UI components
     if self.CreateFrames then
         self:CreateFrames()
     end
@@ -155,11 +173,13 @@ function M:OnInitialize()
     end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " initialized")
+    if VUI and VUI.Debug then
+        VUI:Debug(MODNAME .. " initialized")
+    end
 end
 
 -- Enable the module
-function M:OnEnable()
+function VUIBuffs:OnEnable()
     -- Register events
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("UNIT_AURA")
@@ -168,11 +188,13 @@ function M:OnEnable()
     self:RegisterEvent("GROUP_ROSTER_UPDATE")
     
     -- Debug message
-    VUI:Debug(self.NAME .. " enabled")
+    if VUI and VUI.Debug then
+        VUI:Debug(MODNAME .. " enabled")
+    end
 end
 
 -- Disable the module
-function M:OnDisable()
+function VUIBuffs:OnDisable()
     -- Unregister all events
     self:UnregisterAllEvents()
     
@@ -186,19 +208,7 @@ function M:OnDisable()
     end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " disabled")
+    if VUI and VUI.Debug then
+        VUI:Debug(MODNAME .. " disabled")
+    end
 end
-
--- Configuration initialization
-function M:InitializeConfig()
-    -- Register with VUI's configuration system
-    VUI.Config:RegisterModuleOptions(self.NAME, function()
-        -- Open the configuration panel
-        if self.OpenOptions then
-            self:OpenOptions()
-        end
-    end)
-end
-
--- Export the module to VUI namespace
-VUI.VUIBuffs = M
