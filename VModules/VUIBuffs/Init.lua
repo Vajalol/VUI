@@ -5,8 +5,7 @@
 
 -- Standard module registration
 local AddonName, VUI = ...
-local MODNAME = "VUIBuffs"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
+local M = VUI:NewModule("VUIBuffs", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
 
 -- For backward compatibility
 _G.VUIBuffs = M

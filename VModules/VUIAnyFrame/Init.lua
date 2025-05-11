@@ -6,8 +6,7 @@
 
 -- Standard module registration
 local AddonName, VUI = ...
-local MODNAME = "VUIAnyFrame"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
+local M = VUI:NewModule("VUIAnyFrame", "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
 
 -- For backward compatibility
 _G.VUIAnyFrame = M
@@ -22,7 +21,7 @@ M.L = M.L or {}
 local L = M.L
 
 -- Default settings
-VUIAnyFrame.defaults = {
+M.defaults = {
     profile = {
         enabled = true,
         
@@ -53,27 +52,18 @@ VUIAnyFrame.defaults = {
     }
 }
 
--- Initialize the VUIAnyFrame addon
-function VUIAnyFrame:OnInitialize()
-    -- Create and register VUIAnyFrame as a VUI module
-    if VUI and VUI.NewModule then
-        self.module = VUI:NewModule(MODNAME)
-        VUI.VUIAnyFrame = self.module
-        
-        -- Copy VUIAnyFrame functions to the module
-        for k, v in pairs(self) do
-            if type(v) == "function" and not self.module[k] then
-                self.module[k] = v
-            end
-        end
-    end
+-- Initialize the VUIAnyFrame module
+function M:OnInitialize()
+    -- Module constants
+    self.NAME = "VUIAnyFrame"
+    self.TITLE = "VUI Any Frame"
+    self.DESCRIPTION = "Move, scale, and customize any UI element"
+    self.VERSION = VUI.Version or "1.0"
     
     -- Create the database using VUI's db
-    if VUI and VUI.db then
-        self.db = VUI.db:RegisterNamespace(MODNAME, {
-            profile = self.defaults.profile
-        })
-    end
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
     
     -- Register callback for theme changes
     if VUI then
@@ -103,7 +93,7 @@ function VUIAnyFrame:OnInitialize()
 end
 
 -- Enable the module
-function VUIAnyFrame:OnEnable()
+function M:OnEnable()
     -- Register events
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -116,13 +106,11 @@ function VUIAnyFrame:OnEnable()
     end
     
     -- Debug message
-    if VUI and VUI.Debug then
-        VUI:Debug(MODNAME .. " enabled")
-    end
+    self:Debug("enabled")
 end
 
 -- Disable the module
-function VUIAnyFrame:OnDisable()
+function M:OnDisable()
     -- Unregister all events
     self:UnregisterAllEvents()
     
@@ -132,13 +120,18 @@ function VUIAnyFrame:OnDisable()
     end
     
     -- Debug message
+    self:Debug("disabled")
+end
+
+-- Helper function for standardized debugging
+function M:Debug(...)
     if VUI and VUI.Debug then
-        VUI:Debug(MODNAME .. " disabled")
+        VUI:Debug(self.NAME, ...)
     end
 end
 
 -- Slash command handler
-function VUIAnyFrame:SlashCommand(input)
+function M:SlashCommand(input)
     if input == "toggle" then
         self.db.profile.enabled = not self.db.profile.enabled
         if VUI and VUI.Print then
@@ -155,7 +148,7 @@ function VUIAnyFrame:SlashCommand(input)
 end
 
 -- Configuration initialization
-function VUIAnyFrame:InitializeConfig()
+function M:InitializeConfig()
     -- Register with VUI's configuration system
     if VUI and VUI.Config then
         VUI.Config:RegisterModuleOptions(self.NAME, function()
@@ -168,7 +161,7 @@ function VUIAnyFrame:InitializeConfig()
 end
 
 -- Event handler for PLAYER_ENTERING_WORLD
-function VUIAnyFrame:PLAYER_ENTERING_WORLD()
+function M:PLAYER_ENTERING_WORLD()
     -- Apply frame settings after world loads
     if self.ApplyAllFrameSettings then
         C_Timer.After(1, function()
