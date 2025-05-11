@@ -3,7 +3,7 @@
 -- Based on source: https://wago.io/MTSDyaGz9
 
 local AddonName, VUI = ...
-local M = VUI:GetModule("VUIPositionOfPower")
+local M = VUI.VUIPositionOfPower or VUI:GetModule("VUIPositionOfPower")
 local PositionService = {}
 M.PositionService = PositionService
 

@@ -68,7 +68,7 @@ local DEFAULT_PROFILE = {
 }
 
 -- Reference to the core module
-local VUIScrollingTextModule = LibStub("AceAddon-3.0"):GetAddon("VUI"):GetModule("VUIScrollingText")
+local VUIScrollingTextModule = VUI.VUIScrollingText or VUI:GetModule("VUIScrollingText")
 
 -- Initialize saved variables
 function VUI.ScrollingText:InitializeProfile()

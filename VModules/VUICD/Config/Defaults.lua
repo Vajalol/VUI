@@ -1,5 +1,5 @@
 local _, VUI = ...
-local E = VUI:GetModule("VUICD")
+local E = VUI.VUICD or VUI:GetModule("VUICD")
 local P = E.Party
 
 -- Default configuration values

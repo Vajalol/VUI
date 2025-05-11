@@ -1,5 +1,5 @@
 local _, VUI = ...
-local E = VUI:GetModule("VUICD")
+local E = VUI.VUICD or VUI:GetModule("VUICD")
 local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
 
 -- Add the general options to the option table

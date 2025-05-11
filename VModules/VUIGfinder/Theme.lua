@@ -59,7 +59,7 @@ end
 -- Initialize theme support
 function InitializeThemeSupport()
     VUI = _G.VUI
-    VUIGfinderModule = VUI:GetModule("VUIGfinder")
+    VUIGfinderModule = VUI.VUIGfinder or VUI:GetModule("VUIGfinder")
     
     -- Set up callback when theme changes
     if VUI and VUI.RegisterCallback then

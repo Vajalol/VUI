@@ -5,7 +5,7 @@
 -------------------------------------------------------------------------------
 
 local addonName, VUI = ...
-local VUIScrollingText = VUI:GetModule("VUIScrollingText")
+local VUIScrollingText = VUI.VUIScrollingText or VUI:GetModule("VUIScrollingText")
 local ST = VUI.ScrollingText
 if not ST then return end
 

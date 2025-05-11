@@ -3,7 +3,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local VUIConfig = LibStub("VUIConfig-1.0")
-local VUICD = VUI:GetModule("VUICD")
+local VUICD = VUI.VUICD or VUI:GetModule("VUICD")
 
 -- Configuration variables
 local E = VUICD

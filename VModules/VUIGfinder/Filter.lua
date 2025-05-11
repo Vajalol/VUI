@@ -47,7 +47,7 @@ local lastRefreshTime = 0
 -- Initialize filter module
 local function InitializeFilter()
     VUI = _G.VUI
-    VUIGfinderModule = VUI and VUI:GetModule("VUIGfinder")
+    VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
     
     -- Load settings from VUI database
     LoadSettings()

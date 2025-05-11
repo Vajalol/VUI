@@ -2,7 +2,7 @@
 local AddonName, VUI = ...
 
 -- Get our module
-local VUISkin = VUI:GetModule("VUISkin")
+local VUISkin = VUI.VUISkin or VUI:GetModule("VUISkin")
 
 -- Local variables
 local LSM = LibStub('LibSharedMedia-3.0')

@@ -1,7 +1,7 @@
 -- VUIScrollingText Options
 local _, VUI = ...
 local MSBTOptions = {}
-local VUIScrollingText = VUI:GetModule("VUIScrollingText")
+local VUIScrollingText = VUI.VUIScrollingText or VUI:GetModule("VUIScrollingText")
 
 -- Theme elements to update when the theme changes
 local themeElements = {}
