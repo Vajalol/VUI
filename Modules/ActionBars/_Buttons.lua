@@ -1,4 +1,4 @@
-﻿local Module = VUI:NewModule("ActionBars.Buttons");
+local Module = VUI:NewModule("ActionBars.Buttons");
 
 function Module:OnEnable()
 

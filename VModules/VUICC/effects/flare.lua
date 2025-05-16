@@ -1,12 +1,13 @@
 -- a flare finish effect. Artwork by Renaitre
 local ADDON, Addon = ...
-local L = LibStub("AceLocale-3.0"):GetLocale(ADDON)
+-- Use global reference pattern for localization
+local L = _G["VUICC"].L or {Flare = "Flare"}
 
 local SHINE_TEXTURE = ([[Interface\Addons\%s\media\flare]]):format(ADDON)
 local SHINE_DURATION = 0.75
 local SHINE_SCALE = 5
 
-local FlareEffect = Addon.FX:Create("flare", L.Flare)
+local FlareEffect = _G["VUICC"].FX:Create("flare", L.Flare)
 local FlarePool
 do
 	local function shineAnimation_OnFinished(self)

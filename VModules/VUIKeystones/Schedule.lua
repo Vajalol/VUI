@@ -1,5 +1,16 @@
 local ADDON, Addon = ...
-local Mod = Addon:NewModule('Schedule')
+-- Use the global reference to VUIKeystones to ensure module is accessible regardless of load order
+local Mod
+if _G["VUIKeystones"] and _G["VUIKeystones"].NewModule then
+    Mod = _G["VUIKeystones"]:NewModule('Schedule')
+else
+    -- If VUIKeystones isn't fully initialized yet, create a placeholder
+    Mod = {}
+    -- Once VUIKeystones is ready, it will properly initialize this module
+    _G["VUIKeystones"] = _G["VUIKeystones"] or {}
+    _G["VUIKeystones"].Modules = _G["VUIKeystones"].Modules or {}
+    _G["VUIKeystones"].Modules.Schedule = Mod
+end
 
 local rowCount = 3
 

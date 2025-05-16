@@ -2,12 +2,154 @@
 -- Provides cooldown text on action buttons and items
 -- Based on OmniCC with VUI integration
 
+-- Create a global placeholder to ensure references work even during initialization
+_G["VUICC"] = _G["VUICC"] or {}
+
+-- Add FX namespace to global VUICC reference which is used by effect files
+_G["VUICC"].FX = _G["VUICC"].FX or {
+    -- Add Create method used by effect files
+    Create = function(self, id, name, tip)
+        local effect = {}
+        return effect
+    end
+}
+
+-- Also create a global placeholder for second argument in module files (_, Addon = ...)
+-- This ensures that even files using the Addon variable directly will work
+_G["VUI_ADDON"] = _G["VUI_ADDON"] or {}
+
+-- Add necessary functions to the global addon reference for submodules
+if not _G["VUI_ADDON"].CreateHiddenFrame then
+    _G["VUI_ADDON"].CreateHiddenFrame = function(self, frameType, name, parent, ...)
+        return CreateFrame(frameType or "Frame", name, parent or UIParent, ...)
+    end
+end
+
+-- Add FX namespace which is used by effect files
+_G["VUI_ADDON"].FX = _G["VUI_ADDON"].FX or {
+    -- Add Create method used by effect files
+    Create = function(self, id, name, tip)
+        local effect = {}
+        return effect
+    end
+}
+
+-- Add GetButtonIcon method used by effects
+_G["VUI_ADDON"].GetButtonIcon = function(self, button)
+    if not button then return end
+    
+    local icon = button.icon
+    if not icon then
+        local children = {button:GetChildren()}
+        for i = 1, #children do
+            local child = children[i]
+            if child:GetObjectType() == "Texture" and child:GetTexture() then
+                icon = child
+                break
+            end
+        end
+    end
+    
+    return icon
+end
+
+-- Now attempt to initialize the module properly
 local AddonName, VUI = ...
 local MODNAME = "VUICC"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceHook-3.0")
 
--- Localization
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+-- Ensure our global reference is populated with the actual Addon from this file
+-- This is critical because Core/*.lua files use the Addon variable directly
+_G["VUI_ADDON"] = _G["VUI_ADDON"] or {}
+
+-- Safety check to ensure VUI is available before calling NewModule
+local M
+if VUI and VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceHook-3.0")
+    -- Update the global references with the actual module
+    _G["VUICC"] = M
+    
+    -- This is critical: update VUI_ADDON to be the same as the second argument from "..."
+    -- which is used by Core/*.lua files
+    for key, value in pairs(_G["VUI_ADDON"]) do
+        if not M[key] then
+            M[key] = value
+        end
+    end
+    _G["VUI_ADDON"] = M
+else
+    -- If VUI isn't ready, use the placeholder as a fallback
+    M = _G["VUICC"]
+    
+    -- Add minimal Ace library functionality to the placeholder
+    if not M.RegisterEvent then
+        M.RegisterEvent = function(self, ...) end
+    end
+    if not M.RegisterChatCommand then
+        M.RegisterChatCommand = function(self, ...) end
+    end
+    if not M.UnregisterEvent then
+        M.UnregisterEvent = function(self, ...) end
+    end
+    if not M.UnregisterAllEvents then
+        M.UnregisterAllEvents = function(self, ...) end
+    end
+    if not M.RegisterMessage then
+        M.RegisterMessage = function(self, ...) end
+    end
+    -- Add the missing CreateHiddenFrame method that's used in cooldown.lua
+    if not M.CreateHiddenFrame then
+        M.CreateHiddenFrame = function(self, frameType, name, parent, ...)
+            return CreateFrame(frameType or "Frame", name, parent or UIParent, ...)
+        end
+    end
+    -- Check if the method to hook scripts needs to be added
+    if not M.SecureHook then
+        M.SecureHook = function(self, ...) end
+    end
+    if not M.SecureHookScript then
+        M.SecureHookScript = function(self, ...) end
+    end
+end
+
+-- Localization with fallback mechanism
+local L
+-- Try to get the locale safely, with a pcall to catch errors
+local success, result = pcall(function() return LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if success then
+    L = result
+else
+    -- If the locale isn't registered yet, create a fallback table with common strings
+    L = {
+        -- Common UI strings
+        Enable = "Enable",
+        Enable_Desc = "Enable or disable this module",
+        DISABLE_BLIZZARD_COOLDOWN = "Disable Blizzard cooldown text",
+        DISABLE_BLIZZARD_COOLDOWN_DESC = "Hide Blizzard's built-in cooldown text (requires UI reload)",
+        
+        -- Timer formats (used in Core/timer.lua)
+        TenthsFormat = "%.1f",
+        SecondsFormat = "%d",
+        MMSSFormat = "%d:%02d",
+        MinutesFormat = "%dm",
+        HoursFormat = "%dh",
+        DaysFormat = "%dd",
+        
+        -- Alert effect strings (used in Effects/*.lua)
+        Alert = "Alert",
+        AlertTip = "Flashes the icon in the center of the screen when the cooldown completes",
+        Pulse = "Pulse",
+        PulseTip = "Pulses the cooldown's icon when the cooldown completes",
+        Shine = "Shine",
+        ShineTip = "Shines the cooldown's icon when the cooldown completes",
+        None = "None",
+        NoneTip = "No finish effect",
+        Flare = "Flare",
+        FlareTip = "Flares the cooldown's icon when the cooldown completes"
+    }
+    
+    -- Make this available to the entire addon to prevent duplicate fallbacks
+    _G["VUICC"].L = L
+end
 
 -- Module Constants
 M.NAME = MODNAME

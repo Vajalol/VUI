@@ -1,6 +1,7 @@
 -- VUIKeystones - Media path handler
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
-local L = VUIKeystones.L
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIKeystones = _G["VUIKeystones"]
+local L = VUIKeystones.L or {}
 
 -- Media paths
 local MEDIA_PATH = "Interface\\AddOns\\VUI\\Media\\modules\\VUIKeystones\\"

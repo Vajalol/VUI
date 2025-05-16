@@ -1,8 +1,10 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
   <!-- Load all VModules in appropriate order -->
-  <Include file="VUIBuffs\Load.xml"/>
+  <!-- Important: Module loading order has been adjusted to address initialization dependencies -->
+  <!-- VUIBuffs has been moved after VUIAnyFrame to fix load order issues -->
   <Include file="VUIAnyFrame\Load.xml"/>
+  <Include file="VUIBuffs\Load.xml"/>
   <Include file="VUIKeystones\Load.xml"/>
   <Include file="VUICC\Load.xml"/>
   <Include file="VUICD\Load.xml"/>

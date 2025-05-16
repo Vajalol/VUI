@@ -1,6 +1,7 @@
 -- a finish effect that displays the cooldown at the center of the screen
 local AddonName, Addon = ...
-local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
+-- Use global reference pattern for localization
+local L = _G["VUICC"].L or {Alert = "Alert", AlertTip = "Displays cooldown at center of screen"}
 
 local AlertFrame = CreateFrame("Frame", nil, UIParent)
 AlertFrame:SetPoint("CENTER")
@@ -37,10 +38,10 @@ newAnim("Alpha", 1, 0, .7)
 newAnim("Scale", 2, -2.5)
 newAnim("Alpha", 2, .7, 0)
 
-local AlertEffect = Addon.FX:Create("alert", L.Alert, L.AlertTip)
+local AlertEffect = _G["VUICC"].FX:Create("alert", L.Alert, L.AlertTip)
 
 function AlertEffect:Run(cooldown)
-	local buttonIcon = Addon:GetButtonIcon(cooldown:GetParent())
+	local buttonIcon = _G["VUICC"]:GetButtonIcon(cooldown:GetParent())
 	if not buttonIcon then
 		return
 	end

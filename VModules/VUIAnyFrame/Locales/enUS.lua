@@ -1,6 +1,11 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("VUIAnyFrame", "enUS", true)
+-- Ensure localization table exists
+_G["VUIAnyFrame"] = _G["VUIAnyFrame"] or {}
+_G["VUIAnyFrame"].L = _G["VUIAnyFrame"].L or {}
 
-if not L then return end
+-- Reference the localization table
+local L = _G["VUIAnyFrame"].L
+
+-- Default locale (enUS)
 
 -- General strings
 L["Enable"] = true

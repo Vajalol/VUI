@@ -1,7 +1,8 @@
 -- VUIKeystones - Keystone functionality
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
-local Keystone = VUIKeystones:NewModule('Keystone')
-local L = VUIKeystones.L
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIKeystones = _G["VUIKeystones"]
+local Keystone = VUIKeystones.Modules and VUIKeystones:NewModule('Keystone') or {}
+local L = VUIKeystones.L or {}
 
 -- Local variables
 local isHooked = false

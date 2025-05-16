@@ -3,7 +3,15 @@
 
 -- local bindings!
 local AddonName, Addon = ...
-local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
+-- Use global reference pattern for localization
+local L = _G["VUICC"].L or {
+    TenthsFormat = "%.1f", 
+    SecondsFormat = "%d", 
+    MinutesFormat = "%dm", 
+    MMSSFormat = "%d:%02d",
+    HoursFormat = "%dh", 
+    DaysFormat = "%dd"
+}
 
 -- time units in ms
 local TENTH = 100
@@ -37,15 +45,16 @@ local Timer = {}
 Timer.__index = Timer
 
 ---@param cooldown OmniCCCooldown
+---@return OmniCCTimer|nil
 function Timer:GetOrCreate(cooldown)
     local start = cooldown._occ_start or 0
     if start <= 0 then
-        return
+        return nil
     end
 
     local duration = cooldown._occ_duration or 0
     if duration <= 0 then
-        return
+        return nil
     end 
 
     local endTime = (start + duration) * SECOND
@@ -53,8 +62,10 @@ function Timer:GetOrCreate(cooldown)
     local settings = cooldown._occ_settings
     local key = strjoin('/', kind, tostring(endTime), tostring(settings or 'NONE'))
 
+    ---@type OmniCCTimer|nil
     local timer = active[key]
     if not timer then
+        ---@type OmniCCTimer|nil
         timer = next(inactive)
 
         if timer then
@@ -282,4 +293,4 @@ function Timer:ForActive(method, ...)
 end
 
 -- exports
-Addon.Timer = Timer
+_G["VUICC"].Timer = Timer

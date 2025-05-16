@@ -1,5 +1,8 @@
 local AddonName, VUI = ...
-local M = VUI.VUICD -- Already initialized in Init.lua
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local M = _G["VUICD"]
 
 -- Additional Module initialization (supplements Init.lua)
 function M:SetupModules()

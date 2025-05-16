@@ -1,8 +1,27 @@
 local AddOnName, NS = ...
-local VUICD, L, db = NS:unpack()
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Use global reference for localization
+local L = _G["VUICD"].L or {}
+local db = VUICD.db or {}
 
 -- Module loading sequence
-function VUICD:OnInitialize()
+-- Store the original functions if they exist so we can call them later
+local original_OnInitialize = VUICD.OnInitialize
+local original_OnEnable = VUICD.OnEnable
+local original_OnDisable = VUICD.OnDisable
+
+-- Override the initializers with our enhanced version
+-- This avoids the duplicate field error by properly extending the existing function
+VUICD.OnInitialize = function(self)
+    -- Call original if it exists and is a function
+    if original_OnInitialize and type(original_OnInitialize) == "function" then
+        original_OnInitialize(self)
+    end
+    
     -- Using the database namespace created in Init.lua
     -- No need to recreate it or overwrite it with VUI_SavedVariables.VUICD
     -- which would cause database conflicts
@@ -97,12 +116,24 @@ function VUICD:OnInitialize()
     end
 end
 
-function VUICD:OnEnable()
+-- Use hook pattern for OnEnable
+VUICD.OnEnable = function(self)
+    -- Call original if it exists and is a function
+    if original_OnEnable and type(original_OnEnable) == "function" then
+        original_OnEnable(self)
+    end
+    
     -- Module was enabled
     self:Debug("VUICD enabled")
 end
 
-function VUICD:OnDisable()
+-- Use hook pattern for OnDisable
+VUICD.OnDisable = function(self)
+    -- Call original if it exists and is a function
+    if original_OnDisable and type(original_OnDisable) == "function" then
+        original_OnDisable(self)
+    end
+    
     -- Module was disabled
     self:Debug("VUICD disabled")
     

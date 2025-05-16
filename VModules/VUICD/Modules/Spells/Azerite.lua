@@ -1,8 +1,17 @@
 local AddOnName, NS = ...
-local VUICD, L, db = NS:unpack()
 
--- Cache references
-local Spells = VUICD.Spells
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Get localization through global reference or fallback
+local L = VUICD.L or {}
+
+-- Get database reference
+local db = VUICD.db or {}
+
+-- Cache references with fallback
+local Spells = VUICD.Spells or {}
 
 -- Azerite traits that affect cooldowns
 local azeriteTraits = {

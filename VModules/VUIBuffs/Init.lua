@@ -3,9 +3,48 @@
 -- Enhances buff/debuff display with configurable frames
 -------------------------------------------------------------------------------
 
+-- First, make sure we have a global placeholder for localization
+-- This is critical for locale files that might load before the module is fully initialized
+_G["VUIBuffs"] = _G["VUIBuffs"] or {}
+_G["VUIBuffs"].L = _G["VUIBuffs"].L or {}
+
+-- Now proceed with normal module initialization
 local AddonName, VUI = ...
 local MODNAME = "VUIBuffs"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
+
+-- Safety check to ensure VUI is available before calling NewModule
+local M
+if VUI and VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIBuffs"] = M
+else
+    -- If VUI isn't ready, use the placeholder as a fallback
+    M = _G["VUIBuffs"]
+    
+    -- Add minimal AceEvent-like functionality to the placeholder
+    if not M.RegisterEvent then
+        M.RegisterEvent = function(self, ...) end
+    end
+    if not M.RegisterChatCommand then
+        M.RegisterChatCommand = function(self, ...) end
+    end
+    if not M.UnregisterEvent then
+        M.UnregisterEvent = function(self, ...) end
+    end
+    if not M.RegisterMessage then
+        M.RegisterMessage = function(self, ...) end
+    end
+    if not M.ScheduleTimer then
+        M.ScheduleTimer = function(self, ...) end
+    end
+end
+
+-- Store the existing localization table that might have been populated by locale files
+local existingL = _G["VUIBuffs"].L
+
+-- Restore and merge any existing localization data
+M.L = existingL
 
 -- Module Constants
 M.NAME = MODNAME

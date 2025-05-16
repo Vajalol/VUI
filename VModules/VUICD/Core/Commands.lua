@@ -1,5 +1,12 @@
 local AddOnName, NS = ...
-local VUICD, L, db = NS:unpack()
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Use global reference for localization
+local L = _G["VUICD"].L or {}
+local db = VUICD.db or {}
 
 -- Slash commands
 VUICD.Commands = {}
@@ -154,9 +161,14 @@ end
 
 -- Config command
 function VUICD.Commands:ConfigCommand(args)
-    -- Open VUI config panel and navigate to VUICD settings
-    VUI.Config:Toggle()
-    VUI.Config:SelectTab("VUICD")
+    -- Open VUI config panel and navigate to VUICD settings using global reference
+    -- This ensures the Config module is accessible regardless of load order
+    if _G["VUI_ADDON"] and _G["VUI_ADDON"].Config then
+        _G["VUI_ADDON"].Config:Toggle()
+        _G["VUI_ADDON"].Config:SelectTab("VUICD")
+    else
+        print("|cff33ff99VUICD:|r Config UI not available")
+    end
 end
 
 -- Unlock command

@@ -1,4 +1,4 @@
-﻿local Module = VUI:NewModule("ActionBars.Pulse")
+local Module = VUI:NewModule("ActionBars.Pulse")
 
 function Module:OnEnable()
     -- Skip if disabled in config

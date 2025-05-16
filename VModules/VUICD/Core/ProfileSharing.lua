@@ -2,8 +2,16 @@
 -- Handles export and import of profile data
 
 local AddonName, VUI = ...
-local CD = VUI.VUICD
-local L = CD.L
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local CD = _G["VUICD"]
+
+-- Use global reference for localization
+local L = CD.L or {}
+
+-- Ensure the ProfileSharing namespace exists
+CD.ProfileSharing = CD.ProfileSharing or {}
 
 -- Libraries
 local AceSerializer = LibStub("AceSerializer-3.0")

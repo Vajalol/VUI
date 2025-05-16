@@ -1,10 +1,28 @@
 ---@class VUIBuffs: AceModule
-local VUIBuffs = LibStub("AceAddon-3.0"):GetAddon("VUIBuffs")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local AceRegistry = LibStub("AceConfigRegistry-3.0")
-local LDB = LibStub("LibDataBroker-1.1")
-local LCG = LibStub("LibCustomGlow-1.0")
-local LDBIcon = LibStub("LibDBIcon-1.0")
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIBuffs = _G["VUIBuffs"]
+-- Create safe LibStub wrappers that won't crash the addon if libraries aren't loaded yet
+local function SafeLibStub(name)
+    if LibStub then
+        -- Use pcall to catch errors rather than crashing
+        local success, result = pcall(function() return LibStub(name) end)
+        if success then
+            return result
+        else
+            -- Return a no-op table if lib can't be found
+            return {}
+        end
+    else
+        return {}
+    end
+end
+
+-- Safely load libraries
+local AceConfigDialog = SafeLibStub("AceConfigDialog-3.0")
+local AceRegistry = SafeLibStub("AceConfigRegistry-3.0")
+local LDB = SafeLibStub("LibDataBroker-1.1")
+local LCG = SafeLibStub("LibCustomGlow-1.0")
+local LDBIcon = SafeLibStub("LibDBIcon-1.0")
 local version = C_AddOns.GetAddOnMetadata("VUI", "Version")
 local Masque
 

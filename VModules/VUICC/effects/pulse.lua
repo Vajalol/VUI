@@ -1,11 +1,12 @@
 -- a pulse finish effect
 local AddonName, Addon = ...
-local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
+-- Use global reference pattern for localization
+local L = _G["VUICC"].L or {Pulse = "Pulse", PulseTip = "Pulse the icon when a cooldown completes"}
 
 local PULSE_SCALE = 2.5
 local PULSE_DURATION = 0.6
 
-local PulseEffect = Addon.FX:Create("pulse", L.Pulse, L.PulseTip)
+local PulseEffect = _G["VUICC"].FX:Create("pulse", L.Pulse, L.PulseTip)
 
 function PulseEffect:Run(cooldown)
 	local parent = cooldown:GetParent()
@@ -13,7 +14,7 @@ function PulseEffect:Run(cooldown)
 		return
 	end
 
-	local icon = Addon:GetButtonIcon(parent)
+	local icon = _G["VUICC"]:GetButtonIcon(parent)
 	if icon then
 		self:Start(self:Get(parent) or self:Create(parent), icon)
 	end
@@ -78,7 +79,7 @@ do
 	end
 
 	function PulseEffect:Create(owner)
-		local pulse = Addon:CreateHiddenFrame("Frame", nil, owner)
+		local pulse = _G["VUICC"]:CreateHiddenFrame("Frame", nil, owner)
 
 		pulse:SetAllPoints(owner)
 		pulse:SetToplevel(true)

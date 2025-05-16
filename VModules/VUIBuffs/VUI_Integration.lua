@@ -1,6 +1,7 @@
 ---@class VUIBuffs: AceModule
-local VUIBuffs = LibStub("AceAddon-3.0"):GetAddon("VUIBuffs")
-local L = VUIBuffs.L
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIBuffs = _G["VUIBuffs"]
+local L = VUIBuffs.L or {}
 
 -- Initialize VUI integration
 function VUIBuffs:InitVUIIntegration()

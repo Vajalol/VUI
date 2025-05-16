@@ -1,5 +1,6 @@
 ---@class VUIBuffs: AceModule
-local VUIBuffs = LibStub("AceAddon-3.0"):GetAddon("VUIBuffs")
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIBuffs = _G["VUIBuffs"]
 local L = VUIBuffs.L
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceRegistry = LibStub("AceConfigRegistry-3.0")

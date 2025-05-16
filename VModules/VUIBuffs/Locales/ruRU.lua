@@ -1,6 +1,11 @@
----@class VUIBuffs: AceModule
-local VUIBuffs = LibStub("AceAddon-3.0"):GetAddon("VUIBuffs")
+-- Access the global VUIBuffs object directly without any local reference
+-- This avoids any nil-value errors if the object structure changes during loading
 
-local L = VUIBuffs.L
+-- Make sure the L table exists in the global namespace
+_G["VUIBuffs"] = _G["VUIBuffs"] or {}
+_G["VUIBuffs"].L = _G["VUIBuffs"].L or {}
+
+-- Use a direct reference to the global table to prevent localization issues
+local L = _G["VUIBuffs"].L
 
 --@localization(locale="ruRU", format="lua_additive_table", handle-subnamespaces="none")@

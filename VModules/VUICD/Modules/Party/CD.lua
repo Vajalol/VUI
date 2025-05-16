@@ -1,5 +1,14 @@
 local AddOnName, NS = ...
-local VUICD, L, db = NS:unpack()
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Get localization through global reference or fallback
+local L = VUICD.L or {}
+
+-- Get database reference
+local db = VUICD.db or {}
 local P = VUICD.Party
 local CD = {}
 P.CD = CD

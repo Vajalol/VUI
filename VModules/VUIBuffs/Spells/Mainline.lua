@@ -1,7 +1,8 @@
 if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
 
 ---@class VUIBuffs: AceModule
-local VUIBuffs = LibStub("AceAddon-3.0"):GetAddon("VUIBuffs")
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIBuffs = _G["VUIBuffs"]
 local L = VUIBuffs.L
 
 --[[------------------------------------------------

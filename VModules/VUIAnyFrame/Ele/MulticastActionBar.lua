@@ -1,5 +1,6 @@
 -- VUIAnyFrame - MulticastActionBar Element (Totem Bar)
-local VUIAnyFrame = LibStub("AceAddon-3.0"):GetAddon("VUIAnyFrame")
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIAnyFrame = _G["VUIAnyFrame"]
 local L = VUIAnyFrame.L
 
 -- Register multicast action bar (totem bar for shamans)

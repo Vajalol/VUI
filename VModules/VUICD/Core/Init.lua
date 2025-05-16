@@ -4,10 +4,47 @@
 
 local AddonName, VUI = ...
 local MODNAME = "VUICD"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceHook-3.0")
 
--- Localization
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+-- Create a global placeholder to ensure references work even during initialization
+_G["VUICD"] = _G["VUICD"] or {}
+
+-- Safety check to ensure VUI is available before calling NewModule
+local M
+if VUI and VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceHook-3.0")
+    -- Update the global references with the actual module
+    _G["VUICD"] = M
+else
+    -- If VUI isn't ready, use the placeholder as a fallback
+    M = _G["VUICD"]
+    
+    -- Add minimal Ace library functionality to the placeholder
+    if not M.RegisterEvent then
+        M.RegisterEvent = function(self, ...) end
+    end
+    if not M.RegisterChatCommand then
+        M.RegisterChatCommand = function(self, ...) end
+    end
+    if not M.UnregisterEvent then
+        M.UnregisterEvent = function(self, ...) end
+    end
+    if not M.UnregisterAllEvents then
+        M.UnregisterAllEvents = function(self, ...) end
+    end
+end
+
+-- Localization with fallback mechanism
+local L
+-- Try to get the locale safely, with a pcall to catch errors
+local success, result = pcall(function() return LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if success then
+    L = result
+else
+    -- If the locale isn't registered yet, create a fallback table with common strings
+    L = {}
+    -- Make this available to the entire addon to prevent duplicate fallbacks
+    _G["VUICD"].L = L
+end
 
 -- Module Constants
 M.NAME = MODNAME

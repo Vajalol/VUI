@@ -1,5 +1,6 @@
 -- VUIKeystones - Configuration handling
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIKeystones = _G["VUIKeystones"]
 local Config = VUIKeystones:NewModule('Config')
 local L = VUIKeystones.L
 

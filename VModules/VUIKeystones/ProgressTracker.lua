@@ -1,7 +1,8 @@
 -- VUIKeystones - Progress Tracker functionality
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
-local ProgressTracker = VUIKeystones:NewModule('ProgressTracker')
-local L = VUIKeystones.L
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIKeystones = _G["VUIKeystones"]
+local ProgressTracker = VUIKeystones.Modules and VUIKeystones:NewModule('ProgressTracker') or {}
+local L = VUIKeystones.L or {}
 
 -- Local variables
 local isProgressHooked = false

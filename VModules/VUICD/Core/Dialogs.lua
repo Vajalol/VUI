@@ -2,14 +2,44 @@
 -- Handles various confirmation dialogs and user interactions
 
 local AddonName, VUI = ...
-local CD = VUI.VUICD
-local L = CD.L
 
--- AceGUI for our dialogs
-local AceGUI = LibStub("AceGUI-3.0")
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local CD = _G["VUICD"]
 
--- Create a namespace for all dialogs
-CD.Dialogs = {}
+-- Ensure the Dialogs namespace exists
+CD.Dialogs = CD.Dialogs or {}
+
+-- Use global reference for localization
+local L = CD.L or {}
+
+-- Safely get AceGUI library with fallback
+local AceGUI = LibStub and LibStub:GetLibrary("AceGUI-3.0", true) or {}
+if not AceGUI or not AceGUI.Create then
+    AceGUI = {
+        Create = function(self, type) 
+            return {
+                SetCallback = function() end,
+                SetLayout = function() end,
+                SetWidth = function() end, 
+                SetHeight = function() end,
+                SetTitle = function() end,
+                SetText = function() end,
+                SetFullWidth = function() end,
+                AddChild = function() end,
+                Release = function() end,
+                DisableButton = function() end,
+                SetLabel = function() end,
+                SetNumLines = function() end,
+                GetText = function() return "" end,
+                HighlightText = function() end,
+                SetFocus = function() end
+            }
+        end,
+        Release = function() end
+    }
+    CD:Debug("AceGUI-3.0 library not found - dialogs will be disabled")
+ end
 
 -- Dialog Types
 local DIALOG_TYPES = {

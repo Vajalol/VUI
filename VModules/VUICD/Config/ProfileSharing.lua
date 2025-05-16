@@ -1,6 +1,13 @@
 local _, VUI = ...
-local E = VUI:GetModule("VUICD")
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local E = _G["VUICD"]
+
+-- Get localization through global reference or fallback if not available
+local L = (E.L or LibStub("AceLocale-3.0"):GetLocale("VUI")) or {}
+
+-- Libraries
 local LibDeflate = LibStub("LibDeflate")
 local AceSerializer = LibStub("AceSerializer-3.0")
 

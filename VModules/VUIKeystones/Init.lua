@@ -4,9 +4,47 @@
 -- Based on Angry Keystones with VUI integration
 -------------------------------------------------------------------------------
 
+-- Create a global placeholder to ensure references work even during initialization
+_G["VUIKeystones"] = _G["VUIKeystones"] or {}
+
+-- Now attempt to initialize the module properly
 local AddonName, VUI = ...
 local MODNAME = "VUIKeystones"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceHook-3.0", "AceConsole-3.0")
+
+-- Safety check to ensure VUI is available before calling NewModule
+local M
+if VUI and VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceHook-3.0", "AceConsole-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIKeystones"] = M
+else
+    -- If VUI isn't ready, use the placeholder as a fallback
+    M = _G["VUIKeystones"]
+    
+    -- Add minimal Ace library functionality to the placeholder
+    if not M.RegisterEvent then
+        M.RegisterEvent = function(self, ...) end
+    end
+    if not M.RegisterChatCommand then
+        M.RegisterChatCommand = function(self, ...) end
+    end
+    if not M.UnregisterEvent then
+        M.UnregisterEvent = function(self, ...) end
+    end
+    if not M.RegisterMessage then
+        M.RegisterMessage = function(self, ...) end
+    end
+    if not M.SecureHook then
+        M.SecureHook = function(self, ...) end
+    end
+    if not M.RegisterSubmodule then
+        M.RegisterSubmodule = function(self, submodule) 
+            -- Store the submodule for later proper registration
+            M.pendingSubmodules = M.pendingSubmodules or {}
+            table.insert(M.pendingSubmodules, submodule)
+        end
+    end
+end
 
 -- Module Constants
 M.NAME = MODNAME

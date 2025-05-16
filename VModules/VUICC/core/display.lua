@@ -10,7 +10,7 @@ local DEFAULT_STATE = 'seconds'
 local displays = {}
 
 ---@class OmniCCDisplay
-local Display = Addon:CreateHiddenFrame('Frame')
+local Display = _G["VUICC"]:CreateHiddenFrame('Frame')
 
 Display.__index = Display
 
@@ -31,7 +31,7 @@ function Display:GetOrCreate(owner)
 end
 
 function Display:Create(owner)
-    local display = setmetatable(Addon:CreateHiddenFrame('Frame', nil, owner), Display)
+    local display = setmetatable(_G["VUICC"]:CreateHiddenFrame('Frame', nil, owner), Display)
 
     display.text = display:CreateFontString(nil, 'OVERLAY')
     display.cooldowns = {}

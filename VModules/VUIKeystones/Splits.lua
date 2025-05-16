@@ -5,9 +5,24 @@
     Based on AngryKeystones by Ermad (https://github.com/Ermad/angry-keystones)
 ]]
 
-local ADDON, Addon = ...
-local Mod = Addon:NewModule('Splits')
-local L = Addon.L
+-- Use global reference instead of ADDON,Addon pattern to fix load order issues
+local VUIKeystones = _G["VUIKeystones"]
+
+-- Safe module creation with fallback
+local Mod
+if VUIKeystones and VUIKeystones.Modules then
+    Mod = VUIKeystones:NewModule('Splits')
+else
+    -- Create a placeholder module if VUIKeystones isn't ready
+    Mod = {}
+    -- Will be attached to VUIKeystones later when it's fully initialized
+    if not _G["VUIKeystones"].Modules then
+        _G["VUIKeystones"].Modules = {}
+    end
+    _G["VUIKeystones"].Modules.Splits = Mod
+end
+
+local L = VUIKeystones.L or {}
 
 -- Blizzard APIs
 local C_ChallengeMode = C_ChallengeMode

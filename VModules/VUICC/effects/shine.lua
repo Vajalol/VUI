@@ -1,12 +1,13 @@
 -- a shine finish effect
 local AddonName, Addon = ...
-local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
+-- Use global reference pattern for localization
+local L = _G["VUICC"].L or {Shine = "Shine"}
 
 local SHINE_TEXTURE = [[Interface\Cooldown\star4]]
 local SHINE_DURATION = 0.75
 local SHINE_SCALE = 5
 
-local ShineEffect = Addon.FX:Create("shine", L.Shine)
+local ShineEffect = _G["VUICC"].FX:Create("shine", L.Shine)
 local ShinePool
 do
 	local function shineAnimation_OnFinished(self)

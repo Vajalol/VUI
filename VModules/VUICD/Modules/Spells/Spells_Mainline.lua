@@ -1,6 +1,17 @@
 local AddOnName, NS = ...
-local VUICD, L, db = NS:unpack()
-local LSM = VUICD.Libs.LSM
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Get localization through global reference or fallback
+local L = VUICD.L or {}
+
+-- Get database reference
+local db = VUICD.db or {}
+
+-- Get LibSharedMedia reference safely
+local LSM = (VUICD.Libs and VUICD.Libs.LSM) or LibStub and LibStub("LibSharedMedia-3.0", true) or {}
 
 -- Class spell database - The War Within Season 2
 local spellData = {}

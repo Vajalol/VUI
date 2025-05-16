@@ -1,5 +1,6 @@
 -- VUIKeystones - Core functionality
-local VUIKeystones = LibStub("AceAddon-3.0"):GetAddon("VUIKeystones")
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUIKeystones = _G["VUIKeystones"]
 local L = VUIKeystones.L
 
 -- Initialize any shared variables or utility functions

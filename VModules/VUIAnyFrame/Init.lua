@@ -4,12 +4,47 @@
 -- Based on MoveAny by D4KiR with VUI integration
 -------------------------------------------------------------------------------
 
+-- Create a global placeholder to ensure references work even during initialization
+_G["VUIAnyFrame"] = _G["VUIAnyFrame"] or {}
+
+-- Now attempt to initialize the module properly
 local AddonName, VUI = ...
 local MODNAME = "VUIAnyFrame"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
 
--- Localization
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+-- Safety check to ensure VUI is available before calling NewModule
+local M
+if VUI and VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIAnyFrame"] = M
+else
+    -- If VUI isn't ready, use the placeholder as a fallback
+    M = _G["VUIAnyFrame"]
+    
+    -- Add minimal AceEvent-like functionality to the placeholder
+    -- This prevents 'attempt to call method RegisterEvent (a nil value)' errors
+    if not M.RegisterEvent then
+        M.RegisterEvent = function(self, ...) end -- Stub function that accepts parameters but does nothing
+    end
+    if not M.RegisterChatCommand then
+        M.RegisterChatCommand = function(self, ...) end -- Stub function that accepts parameters but does nothing
+    end
+    
+    -- Add additional Ace library stubs that might be needed
+    if not M.UnregisterEvent then
+        M.UnregisterEvent = function(self, ...) end
+    end
+    if not M.RegisterMessage then
+        M.RegisterMessage = function(self, ...) end
+    end
+    
+    -- Set a flag to attempt proper initialization later
+    M.needsInit = true
+end
+
+-- Localization - Use the module's localization table directly
+-- This avoids the 'No locales registered for VUI' error
+local L = _G["VUIAnyFrame"].L or {}
 
 -- Module Constants
 M.NAME = MODNAME

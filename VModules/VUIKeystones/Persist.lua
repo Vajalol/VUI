@@ -1,6 +1,24 @@
 local VUI = select(2, ...)
-local Module = VUI:GetModule("VUIKeystones")
-local Persist = Module:NewSubmodule("Persist")
+
+-- Use the global reference to VUIKeystones to ensure module is accessible regardless of load order
+local Module = _G["VUIKeystones"]
+
+-- Create a basic placeholder for Persist if VUIKeystones isn't fully initialized
+local Persist = {}
+
+-- Check if Module has the necessary methods
+if Module and Module.NewSubmodule then
+    Persist = Module:NewSubmodule("Persist")
+elseif Module then
+    -- Register the module in the Modules table for later initialization
+    Module.Modules = Module.Modules or {}
+    Module.Modules.Persist = Persist
+else
+    -- If VUIKeystones isn't available at all, create global placeholders
+    _G["VUIKeystones"] = _G["VUIKeystones"] or {}
+    _G["VUIKeystones"].Modules = _G["VUIKeystones"].Modules or {}
+    _G["VUIKeystones"].Modules.Persist = Persist
+end
 
 local challengeMapID
 

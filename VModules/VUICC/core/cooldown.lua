@@ -347,7 +347,7 @@ end
 do
     local pending = {}
 
-    local updater = Addon:CreateHiddenFrame('Frame')
+    local updater = _G["VUICC"]:CreateHiddenFrame('Frame')
 
     updater:SetScript('OnUpdate', function(self)
         for cooldown in pairs(pending) do
@@ -439,7 +439,7 @@ function Cooldown:TryShowFinishEffect()
     local show, effect = Cooldown.CanShowFinishEffect(self)
 
     if show then
-        Addon.FX:Run(self, effect)
+        _G["VUICC"].FX:Run(self, effect)
 
         -- reset start/duration so that we don't trigger again
         self._occ_start = 0
