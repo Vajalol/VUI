@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-  <Script file="CancellingTab.lua"/>
+  <Script file="CancellingTabMixin.lua"/>
   <Script file="UndercutScanMixin.lua"/>
   <Script file="ResultsListingMixin.lua"/>
 </Ui> 

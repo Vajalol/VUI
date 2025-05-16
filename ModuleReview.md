@@ -1,5 +1,6 @@
 # VUI Module Review and Investigation
-
+Goal is to make it exactly provide the same functionality as the original modules.
+after fully completed, we need to update the Layout and update them to adapt to the new changes.
 ## 🎯 Summary of Completed Work
 
 **All high-priority errors have been fixed:**
@@ -43,7 +44,7 @@ For each module, we follow these steps:
 | Module | Original | Status | Missing Features | Errors | Priority |
 |--------|----------|--------|------------------|--------|----------|
 | VUIAnyFrame | MoveAny | ✅ Complete | None | None | Medium |
-| VUIAuctionator | Auctionator | 🔄 Reviewing | TBD | None identified | Medium |
+| VUIAuctionator | Auctionator | 🟡 In Progress | Tab system, Selling/Shopping/Cancelling functionality | None identified | Medium |
 | VUICC | OmniCC | 🔄 Reviewing | TBD | None identified | Medium |
 | VUICD | OmniCD | 🔄 Reviewing | TBD | None identified | Medium |
 | VUIConsumables | N/A (Custom) | 🔄 Reviewing | N/A | None identified | Low |
@@ -58,10 +59,9 @@ For each module, we follow these steps:
 | VUIPlater | Plater (similar) | ✅ Fixed | Texture paths, profile import | Texture path references updated, profile import added | Medium |
 | VUIPositionOfPower | N/A (Custom) | 🔄 Reviewing | N/A | None identified | Low |
 | VUIScrollingText | MikScrollingBattleText | 🔄 Reviewing | TBD | None identified | Medium |
-| VUISkin | N/A (Custom) | 🔄 Reviewing | N/A | None identified | Low |
+| VUISkin | Details_TWW  | 🔄 Reviewing | N/A | None identified | Low |
 | VUITGCD | TrufiGCD | 🔄 Reviewing | TBD | None identified | Medium |
 | VUIBuffs | BuffOverlay | ✅ Complete | None | Test function fixed, Masque and display conditions added | High |
-| Details_TWW | Details (modified) | ✅ Complete | 100% | Integrated into VUIskin | Medium |
 | VUIConfig | N/A (Core Library) | ✅ Fixed | N/A | ColorPicker nil error fixed | High |
 
 ## Detailed Module Reviews
@@ -262,7 +262,45 @@ For each module, we follow these steps:
 - ✅ Added comprehensive configuration options
 - ✅ Updated layout menu for integration with VUI
 
-### 6. VUIScrollingText (vs MikScrollingBattleText)
+### 6. VUIAuctionator (vs Auctionator)
+
+**Review Date:** July 1, 2024
+
+**Feature Comparison:**
+- ✅ Tab system with Auctionator/Selling/Shopping/Cancelling tabs
+- ✅ Selling interface with price history
+- ✅ Shopping list management
+- ✅ Cancellation scanning
+- ✅ Tooltip price information
+- ✅ UI customization and theming
+- ✅ Database storage of price history
+- ✅ Multi-item purchase support
+
+**Integration Assessment:**
+- ✅ Uses VUI.Config for settings
+- ✅ Properly integrates with VUI theme system
+- ✅ Uses VUI database for settings storage
+- ✅ Integration with AuctionHouse UI
+
+**Current Progress:**
+1. Implemented core tab framework with proper mixins
+2. Created UI templates for tab system
+3. Implemented tab container functionality
+4. Completed implementations for Selling, Shopping, and Cancelling tabs
+5. Integrated with AuctionHouse UI to show custom tabs
+6. Implemented item selling with price history, undercutting, and posting
+7. Implemented shopping lists with search and purchase functionality
+8. Implemented cancellation scanning for undercut auctions
+9. Added tooltip price information
+
+**Next Steps:**
+1. Complete main Auctionator tab with:
+   - Configuration options
+   - Statistics display
+2. Add more robust error handling
+3. Implement additional features like multi-account syncing
+
+### 7. VUIScrollingText (vs MikScrollingBattleText)
 
 **Review Date:** Current
 
@@ -285,7 +323,7 @@ For each module, we follow these steps:
 2. Verify all trigger events match original
 3. Test integration with other combat text systems
 
-### 7. VUIMouseFireTrail (vs EasyCursorTrails)
+### 8. VUIMouseFireTrail (vs EasyCursorTrails)
 
 **Review Date:** Current
 
@@ -306,7 +344,7 @@ For each module, we follow these steps:
 2. Verify customization options match original
 3. Test performance impact with different trail settings
 
-### 8. VUIepf (vs ElitePlayerFrame_Enhanced)
+### 9. VUIepf (vs ElitePlayerFrame_Enhanced)
 
 **Review Date:** May 15, 2024
 

@@ -1,0 +1,228 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Frame name="AuctionatorShoppingTabFrameTemplate" virtual="true" mixin="AuctionatorShoppingTabMixin">
+    <Size x="550" y="400"/>
+    
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentBackground" parentKey="Background" setAllPoints="true">
+          <Color r="0.1" g="0.1" b="0.1" a="0.8"/>
+        </Texture>
+      </Layer>
+      <Layer level="BORDER">
+        <Texture name="$parentBorder" parentKey="Border" setAllPoints="true">
+          <Color r="0.6" g="0.6" b="0.6" a="0.5"/>
+        </Texture>
+      </Layer>
+      <Layer level="ARTWORK">
+        <FontString name="$parentTitleText" parentKey="TitleText" inherits="GameFontNormal" text="Shopping">
+          <Anchors>
+            <Anchor point="TOP" x="0" y="-10"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    
+    <Frames>
+      <!-- Shopping List Section -->
+      <Frame name="$parentShoppingLists" parentKey="ShoppingLists">
+        <Size x="200" y="350"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" x="10" y="-30"/>
+        </Anchors>
+        
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString name="$parentTitle" parentKey="Title" inherits="GameFontHighlight" text="Shopping Lists">
+              <Anchors>
+                <Anchor point="TOP" x="0" y="5"/>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        
+        <Frames>
+          <!-- List Dropdown -->
+          <Frame name="$parentListDropDown" parentKey="ListDropDown" inherits="UIDropDownMenuTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT" x="0" y="-20"/>
+            </Anchors>
+          </Frame>
+          
+          <!-- Buttons -->
+          <Button name="$parentNewButton" parentKey="NewButton" inherits="UIPanelButtonTemplate" text="New">
+            <Size x="60" y="22"/>
+            <Anchors>
+              <Anchor point="TOPLEFT" relativeKey="$parent.ListDropDown" relativePoint="BOTTOMLEFT" x="15" y="-5"/>
+            </Anchors>
+          </Button>
+          
+          <Button name="$parentRenameButton" parentKey="RenameButton" inherits="UIPanelButtonTemplate" text="Rename">
+            <Size x="60" y="22"/>
+            <Anchors>
+              <Anchor point="LEFT" relativeKey="$parent.NewButton" relativePoint="RIGHT" x="5" y="0"/>
+            </Anchors>
+          </Button>
+          
+          <Button name="$parentDeleteButton" parentKey="DeleteButton" inherits="UIPanelButtonTemplate" text="Delete">
+            <Size x="60" y="22"/>
+            <Anchors>
+              <Anchor point="LEFT" relativeKey="$parent.RenameButton" relativePoint="RIGHT" x="5" y="0"/>
+            </Anchors>
+          </Button>
+          
+          <!-- Search Entry -->
+          <EditBox name="$parentSearchBox" parentKey="SearchBox" inherits="SearchBoxTemplate">
+            <Size x="180" y="20"/>
+            <Anchors>
+              <Anchor point="TOPLEFT" relativeKey="$parent.NewButton" relativePoint="BOTTOMLEFT" x="-10" y="-10"/>
+            </Anchors>
+          </EditBox>
+          
+          <Button name="$parentAddItemButton" parentKey="AddItemButton" inherits="UIPanelButtonTemplate" text="Add Item">
+            <Size x="90" y="22"/>
+            <Anchors>
+              <Anchor point="TOP" relativeKey="$parent.SearchBox" relativePoint="BOTTOM" x="0" y="-5"/>
+            </Anchors>
+          </Button>
+          
+          <!-- Scroll Frame for List Items -->
+          <ScrollFrame name="$parentScrollFrame" parentKey="ScrollFrame" inherits="VUIAuctionatorScrollFrameTemplate">
+            <Size x="180" y="200"/>
+            <Anchors>
+              <Anchor point="TOPLEFT" relativeKey="$parent.AddItemButton" relativePoint="BOTTOMLEFT" x="-15" y="-10"/>
+              <Anchor point="BOTTOM" y="10"/>
+            </Anchors>
+          </ScrollFrame>
+        </Frames>
+      </Frame>
+      
+      <!-- Results Section -->
+      <Frame name="$parentResultsListing" parentKey="ResultsListing">
+        <Size x="320" y="350"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeKey="$parent.ShoppingLists" relativePoint="TOPRIGHT" x="10" y="0"/>
+          <Anchor point="BOTTOMRIGHT" x="-10" y="10"/>
+        </Anchors>
+        
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString name="$parentTitle" parentKey="Title" inherits="GameFontHighlight" text="Search Results">
+              <Anchors>
+                <Anchor point="TOP" x="0" y="5"/>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        
+        <Frames>
+          <Button name="$parentSearchButton" parentKey="SearchButton" inherits="UIPanelButtonTemplate" text="Search">
+            <Size x="100" y="22"/>
+            <Anchors>
+              <Anchor point="TOPRIGHT" x="-10" y="-20"/>
+            </Anchors>
+          </Button>
+          
+          <!-- Results Header -->
+          <Frame name="$parentListHeader" parentKey="ListHeader">
+            <Size x="310" y="24"/>
+            <Anchors>
+              <Anchor point="TOPLEFT" x="0" y="-50"/>
+            </Anchors>
+            
+            <Frames>
+              <Button name="$parentItemHeader" parentKey="ItemHeader" inherits="AuctionatorColumnHeaderTemplate">
+                <Size x="150" y="24"/>
+                <Anchors>
+                  <Anchor point="LEFT"/>
+                </Anchors>
+                <KeyValues>
+                  <KeyValue key="columnName" value="Item" type="string"/>
+                </KeyValues>
+                <Layers>
+                  <Layer level="OVERLAY">
+                    <FontString parentKey="Text" inherits="GameFontHighlight" justifyH="LEFT" text="Item">
+                      <Anchors>
+                        <Anchor point="LEFT" x="5" y="0"/>
+                        <Anchor point="RIGHT" x="-5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </Button>
+              
+              <Button name="$parentQuantityHeader" parentKey="QuantityHeader" inherits="AuctionatorColumnHeaderTemplate">
+                <Size x="40" y="24"/>
+                <Anchors>
+                  <Anchor point="LEFT" relativeKey="$parent.ItemHeader" relativePoint="RIGHT"/>
+                </Anchors>
+                <KeyValues>
+                  <KeyValue key="columnName" value="Quantity" type="string"/>
+                </KeyValues>
+                <Layers>
+                  <Layer level="OVERLAY">
+                    <FontString parentKey="Text" inherits="GameFontHighlight" justifyH="RIGHT" text="Qty">
+                      <Anchors>
+                        <Anchor point="LEFT" x="5" y="0"/>
+                        <Anchor point="RIGHT" x="-5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </Button>
+              
+              <Button name="$parentPriceHeader" parentKey="PriceHeader" inherits="AuctionatorColumnHeaderTemplate">
+                <Size x="120" y="24"/>
+                <Anchors>
+                  <Anchor point="LEFT" relativeKey="$parent.QuantityHeader" relativePoint="RIGHT"/>
+                </Anchors>
+                <KeyValues>
+                  <KeyValue key="columnName" value="Price" type="string"/>
+                </KeyValues>
+                <Layers>
+                  <Layer level="OVERLAY">
+                    <FontString parentKey="Text" inherits="GameFontHighlight" justifyH="RIGHT" text="Price">
+                      <Anchors>
+                        <Anchor point="LEFT" x="5" y="0"/>
+                        <Anchor point="RIGHT" x="-5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </Button>
+            </Frames>
+          </Frame>
+          
+          <!-- Results Scroll Frame -->
+          <ScrollFrame name="$parentScrollFrame" parentKey="ScrollFrame" inherits="AuctionatorResultsScrollFrameTemplate">
+            <Size x="300" y="250"/>
+            <Anchors>
+              <Anchor point="TOPLEFT" relativeKey="$parent.ListHeader" relativePoint="BOTTOMLEFT" x="0" y="0"/>
+              <Anchor point="BOTTOMRIGHT" x="-10" y="30"/>
+            </Anchors>
+          </ScrollFrame>
+          
+          <Slider name="$parentScrollBar" parentKey="ScrollBar" inherits="AuctionatorResultsScrollBarTemplate">
+            <Anchors>
+              <Anchor point="TOPRIGHT" relativeKey="$parent.ScrollFrame" relativePoint="TOPRIGHT" x="10" y="0"/>
+              <Anchor point="BOTTOMRIGHT" relativeKey="$parent.ScrollFrame" relativePoint="BOTTOMRIGHT" x="10" y="0"/>
+            </Anchors>
+          </Slider>
+          
+          <!-- Buy Button -->
+          <Button name="$parentBuyButton" parentKey="BuyButton" inherits="UIPanelButtonTemplate" text="Buy">
+            <Size x="100" y="22"/>
+            <Anchors>
+              <Anchor point="BOTTOM" x="0" y="5"/>
+            </Anchors>
+          </Button>
+        </Frames>
+      </Frame>
+    </Frames>
+    
+    <Scripts>
+      <OnLoad method="OnLoad"/>
+      <OnShow method="OnShow"/>
+      <OnEvent method="OnEvent"/>
+    </Scripts>
+  </Frame>
+</Ui> 

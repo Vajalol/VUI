@@ -1,0 +1,18 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Frame name="AuctionatorTabTemplate" virtual="true" inherits="AuctionatorTabFrameTemplate" mixin="AuctionatorAuctionatorTabMixin">
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString parentKey="TitleText" inherits="GameFontNormal" text="Auctionator">
+          <Anchors>
+            <Anchor point="TOP" x="0" y="-8"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <Scripts>
+      <OnLoad method="OnLoad"/>
+      <OnShow method="OnShow"/>
+      <OnEvent method="OnEvent"/>
+    </Scripts>
+  </Frame>
+</Ui> 

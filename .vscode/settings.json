@@ -1075,6 +1075,8 @@
         "GameTooltipTooltip",
         "ButtonFrameTemplate_HideButtonBar",
         "ProfessionsRecipeSchematicFormMixin",
-        "HP"
+        "HP",
+        "UIDropDownMenu_SetSelectedValue",
+        "UIDropDownMenu_GetSelectedValue"
     ]
 }

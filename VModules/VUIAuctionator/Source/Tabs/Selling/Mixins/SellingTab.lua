@@ -33,10 +33,10 @@ end
 
 function AuctionatorSellingTabMixin:RegisterEvents()
   -- Register for auction events
-  self:RegisterEvent("AUCTION_HOUSE_AUCTION_CREATED")
-  self:RegisterEvent("COMMODITY_SEARCH_RESULTS_UPDATED")
-  self:RegisterEvent("ITEM_SEARCH_RESULTS_UPDATED")
-  self:RegisterEvent("INVENTORY_ITEM_UNLOCKED")
+  self:RegisterTabEvent("AUCTION_HOUSE_AUCTION_CREATED")
+  self:RegisterTabEvent("COMMODITY_SEARCH_RESULTS_UPDATED")
+  self:RegisterTabEvent("ITEM_SEARCH_RESULTS_UPDATED")
+  self:RegisterTabEvent("INVENTORY_ITEM_UNLOCKED")
 end
 
 function AuctionatorSellingTabMixin:OnShow()

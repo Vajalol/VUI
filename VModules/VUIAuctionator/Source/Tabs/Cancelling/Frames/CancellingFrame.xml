@@ -1,0 +1,118 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Frame name="AuctionatorCancellingTabFrameTemplate" virtual="true" mixin="AuctionatorCancellingTabMixin">
+    <Size x="550" y="400"/>
+    
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentBackground" parentKey="Background" setAllPoints="true">
+          <Color r="0.1" g="0.1" b="0.1" a="0.8"/>
+        </Texture>
+      </Layer>
+      <Layer level="BORDER">
+        <Texture name="$parentBorder" parentKey="Border" setAllPoints="true">
+          <Color r="0.6" g="0.6" b="0.6" a="0.5"/>
+        </Texture>
+      </Layer>
+      <Layer level="ARTWORK">
+        <FontString name="$parentTitle" parentKey="Title" inherits="GameFontNormal" text="Active Auctions">
+          <Anchors>
+            <Anchor point="TOP" x="0" y="-10"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    
+    <Frames>
+      <!-- Action Buttons -->
+      <Button name="$parentRefreshButton" parentKey="RefreshButton" inherits="UIPanelButtonTemplate" text="Refresh">
+        <Size x="100" y="22"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" x="20" y="-35"/>
+        </Anchors>
+      </Button>
+      
+      <Button name="$parentCancelButton" parentKey="CancelButton" inherits="UIPanelButtonTemplate" text="Cancel Selected">
+        <Size x="120" y="22"/>
+        <Anchors>
+          <Anchor point="LEFT" relativeKey="$parent.RefreshButton" relativePoint="RIGHT" x="10" y="0"/>
+        </Anchors>
+      </Button>
+      
+      <Button name="$parentCancelAllButton" parentKey="CancelAllButton" inherits="UIPanelButtonTemplate" text="Cancel All Undercut">
+        <Size x="140" y="22"/>
+        <Anchors>
+          <Anchor point="LEFT" relativeKey="$parent.CancelButton" relativePoint="RIGHT" x="10" y="0"/>
+        </Anchors>
+      </Button>
+      
+      <!-- Results Listing -->
+      <Frame name="$parentResultsListing" parentKey="ResultsListing">
+        <Size x="510" y="320"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" x="20" y="-70"/>
+          <Anchor point="BOTTOMRIGHT" x="-20" y="20"/>
+        </Anchors>
+        
+        <Layers>
+          <Layer level="OVERLAY">
+            <!-- Column Headers -->
+            <FontString inherits="GameFontHighlight" text="Item" justifyH="LEFT">
+              <Size x="250" y="20"/>
+              <Anchors>
+                <Anchor point="TOPLEFT" x="5" y="0"/>
+              </Anchors>
+              <Color r="1" g="0.82" b="0"/>
+            </FontString>
+            
+            <FontString inherits="GameFontHighlight" text="Price" justifyH="RIGHT">
+              <Size x="100" y="20"/>
+              <Anchors>
+                <Anchor point="TOPLEFT" x="265" y="0"/>
+              </Anchors>
+              <Color r="1" g="0.82" b="0"/>
+            </FontString>
+            
+            <FontString inherits="GameFontHighlight" text="Time Left" justifyH="RIGHT">
+              <Size x="80" y="20"/>
+              <Anchors>
+                <Anchor point="TOPLEFT" x="375" y="0"/>
+              </Anchors>
+              <Color r="1" g="0.82" b="0"/>
+            </FontString>
+            
+            <FontString inherits="GameFontHighlight" text="Status" justifyH="RIGHT">
+              <Size x="50" y="20"/>
+              <Anchors>
+                <Anchor point="TOPRIGHT" x="-5" y="0"/>
+              </Anchors>
+              <Color r="1" g="0.82" b="0"/>
+            </FontString>
+          </Layer>
+        </Layers>
+        
+        <Frames>
+          <!-- Results Scroll Frame -->
+          <ScrollFrame name="$parentScrollFrame" parentKey="ScrollFrame" inherits="AuctionatorResultsScrollFrameTemplate">
+            <Anchors>
+              <Anchor point="TOPLEFT" x="0" y="-25"/>
+              <Anchor point="BOTTOMRIGHT" x="-20" y="5"/>
+            </Anchors>
+          </ScrollFrame>
+          
+          <Slider name="$parentScrollBar" parentKey="ScrollBar" inherits="AuctionatorResultsScrollBarTemplate">
+            <Anchors>
+              <Anchor point="TOPRIGHT" relativeKey="$parent.ScrollFrame" relativePoint="TOPRIGHT" x="20" y="0"/>
+              <Anchor point="BOTTOMRIGHT" relativeKey="$parent.ScrollFrame" relativePoint="BOTTOMRIGHT" x="20" y="0"/>
+            </Anchors>
+          </Slider>
+        </Frames>
+      </Frame>
+    </Frames>
+    
+    <Scripts>
+      <OnLoad method="OnLoad"/>
+      <OnShow method="OnShow"/>
+      <OnEvent method="OnEvent"/>
+    </Scripts>
+  </Frame>
+</Ui> 

@@ -1,10 +1,14 @@
 <!-- Tabs directory manifest -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <!-- Base Tab Files -->
+  <Script file="TabMixin.lua" />
+
+  <!-- Components & Providers -->
   <Include file="DataProviders\Manifest.xml" />
   <Include file="ResultsListing\Manifest.xml" />
-
   <Include file="Frames\Manifest.xml"/>
 
+  <!-- Tab Implementations -->
   <Include file="Shopping\Manifest.xml" />
   <Include file="Selling\Manifest.xml" />
   <Include file="Cancelling\Manifest.xml" />

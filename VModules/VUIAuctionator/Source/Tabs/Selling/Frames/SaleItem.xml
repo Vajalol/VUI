@@ -1,0 +1,230 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Frame name="AuctionatorSaleItemTemplate" virtual="true" mixin="AuctionatorSaleItemMixin">
+    <Size x="550" y="120"/>
+    
+    <Frames>
+      <!-- Item Icon -->
+      <Frame parentKey="Icon" enableMouse="true">
+        <Size x="42" y="42"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" x="15" y="-15"/>
+        </Anchors>
+        <Layers>
+          <Layer level="BACKGROUND">
+            <Texture parentKey="Background" file="Interface\Common\UI-ModelControlPanel">
+              <Size x="42" y="42"/>
+              <Anchors>
+                <Anchor point="TOPLEFT"/>
+              </Anchors>
+              <TexCoords left="0.625" right="0.75" top="0.375" bottom="0.5"/>
+            </Texture>
+          </Layer>
+          <Layer level="ARTWORK">
+            <Texture parentKey="IconTexture">
+              <Anchors>
+                <Anchor point="TOPLEFT" x="2" y="-2"/>
+                <Anchor point="BOTTOMRIGHT" x="-2" y="2"/>
+              </Anchors>
+            </Texture>
+          </Layer>
+          <Layer level="OVERLAY">
+            <FontString parentKey="Count" inherits="NumberFontNormal" justifyH="RIGHT">
+              <Anchors>
+                <Anchor point="BOTTOMRIGHT" x="-5" y="5"/>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Scripts>
+          <OnEnter>
+            if self:GetParent().itemLink then
+              GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+              GameTooltip:SetHyperlink(self:GetParent().itemLink)
+              GameTooltip:Show()
+            end
+          </OnEnter>
+          <OnLeave>
+            GameTooltip:Hide()
+          </OnLeave>
+          <OnMouseDown>
+            if self:GetParent().OnItemIconClicked then
+              self:GetParent():OnItemIconClicked()
+            end
+          </OnMouseDown>
+        </Scripts>
+      </Frame>
+      
+      <!-- Item Name and Details -->
+      <Frame parentKey="ItemInfo">
+        <Size x="200" y="50"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeKey="$parent.Icon" relativePoint="TOPRIGHT" x="10" y="0"/>
+        </Anchors>
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString parentKey="Name" inherits="GameFontHighlight" justifyH="LEFT" text="">
+              <Size x="200" y="0"/>
+              <Anchors>
+                <Anchor point="TOPLEFT"/>
+              </Anchors>
+            </FontString>
+            <FontString parentKey="Quality" inherits="GameFontNormalSmall" justifyH="LEFT" text="">
+              <Size x="200" y="0"/>
+              <Anchors>
+                <Anchor point="TOPLEFT" relativeKey="$parent.Name" relativePoint="BOTTOMLEFT" x="0" y="-2"/>
+              </Anchors>
+              <Color r="0.6" g="0.6" b="0.6"/>
+            </FontString>
+            <FontString parentKey="Level" inherits="GameFontNormalSmall" justifyH="LEFT" text="">
+              <Size x="200" y="0"/>
+              <Anchors>
+                <Anchor point="TOPLEFT" relativeKey="$parent.Quality" relativePoint="BOTTOMLEFT" x="0" y="-2"/>
+              </Anchors>
+              <Color r="0.6" g="0.6" b="0.6"/>
+            </FontString>
+          </Layer>
+        </Layers>
+      </Frame>
+      
+      <!-- Quantity Input -->
+      <Frame parentKey="QuantityInput">
+        <Size x="200" y="30"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeKey="$parent.ItemInfo" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+        </Anchors>
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString parentKey="Label" inherits="GameFontNormal" text="Quantity:">
+              <Anchors>
+                <Anchor point="LEFT"/>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Frames>
+          <EditBox parentKey="InputBox" numeric="true" autoFocus="false">
+            <Size x="60" y="20"/>
+            <Anchors>
+              <Anchor point="LEFT" relativeKey="$parent.Label" relativePoint="RIGHT" x="10" y="0"/>
+            </Anchors>
+            <Layers>
+              <Layer level="BACKGROUND">
+                <Texture parentKey="Background" file="Interface\Common\Common-Input-Border">
+                  <Size x="60" y="20"/>
+                  <Anchors>
+                    <Anchor point="TOPLEFT" x="-5" y="5"/>
+                    <Anchor point="BOTTOMRIGHT" x="5" y="-5"/>
+                  </Anchors>
+                  <TexCoords left="0.0625" right="0.9375" top="0" bottom="0.625"/>
+                </Texture>
+              </Layer>
+            </Layers>
+            <FontString inherits="ChatFontNormal"/>
+            <Scripts>
+              <OnEscapePressed>
+                self:ClearFocus()
+              </OnEscapePressed>
+              <OnEnterPressed>
+                self:ClearFocus()
+              </OnEnterPressed>
+              <OnTextChanged>
+                if self:GetParent():GetParent().OnQuantityChanged then
+                  self:GetParent():GetParent():OnQuantityChanged()
+                end
+              </OnTextChanged>
+            </Scripts>
+          </EditBox>
+          <Button parentKey="MaxButton" inherits="UIPanelButtonTemplate" text="Max">
+            <Size x="50" y="22"/>
+            <Anchors>
+              <Anchor point="LEFT" relativeKey="$parent.InputBox" relativePoint="RIGHT" x="10" y="0"/>
+            </Anchors>
+            <Scripts>
+              <OnClick>
+                if self:GetParent():GetParent().OnMaxQuantityClicked then
+                  self:GetParent():GetParent():OnMaxQuantityClicked()
+                end
+              </OnClick>
+            </Scripts>
+          </Button>
+        </Frames>
+      </Frame>
+      
+      <!-- Price Input -->
+      <Frame parentKey="PriceInput" inherits="AuctionatorMoneyInputTemplate">
+        <Size x="200" y="30"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeKey="$parent.Icon" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+        </Anchors>
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString parentKey="Label" inherits="GameFontNormal" text="Price Per Item:">
+              <Anchors>
+                <Anchor point="TOPLEFT" x="0" y="0"/>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Frames>
+          <Button parentKey="UndercutButton" inherits="UIPanelButtonTemplate" text="Undercut">
+            <Size x="80" y="22"/>
+            <Anchors>
+              <Anchor point="LEFT" relativeKey="$parent.CopperBox" relativePoint="RIGHT" x="20" y="0"/>
+            </Anchors>
+            <Scripts>
+              <OnClick>
+                if self:GetParent():GetParent().OnUndercutButtonClicked then
+                  self:GetParent():GetParent():OnUndercutButtonClicked()
+                end
+              </OnClick>
+            </Scripts>
+          </Button>
+        </Frames>
+      </Frame>
+      
+      <!-- Duration Dropdown -->
+      <Frame parentKey="Duration">
+        <Size x="200" y="30"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeKey="$parent.PriceInput" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+        </Anchors>
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString parentKey="Label" inherits="GameFontNormal" text="Duration:">
+              <Anchors>
+                <Anchor point="LEFT"/>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Frames>
+          <Frame parentKey="DropDown" inherits="UIDropDownMenuTemplate">
+            <Anchors>
+              <Anchor point="LEFT" relativeKey="$parent.Label" relativePoint="RIGHT" x="10" y="-3"/>
+            </Anchors>
+          </Frame>
+        </Frames>
+      </Frame>
+      
+      <!-- Post Button -->
+      <Button parentKey="PostButton" inherits="UIPanelButtonTemplate" text="Post">
+        <Size x="80" y="22"/>
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT" x="-15" y="15"/>
+        </Anchors>
+        <Scripts>
+          <OnClick>
+            if self:GetParent().OnPostButtonClicked then
+              self:GetParent():OnPostButtonClicked()
+            end
+          </OnClick>
+        </Scripts>
+      </Button>
+    </Frames>
+
+    <Scripts>
+      <OnLoad method="OnLoad"/>
+      <OnShow method="OnShow"/>
+    </Scripts>
+  </Frame>
+</Ui> 
