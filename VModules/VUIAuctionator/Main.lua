@@ -86,6 +86,54 @@ VUI.Auctionator.Events = VUI.Auctionator.Utilities.CreateEventBus()
 -- Module reference for shorter access
 local Auctionator = VUI.Auctionator
 
+-- Create the main tab container
+function Auctionator:CreateAuctionatorTabs()
+    local tabContainer = CreateFrame("Frame", "AuctionatorTabs", AuctionHouseFrame, "AuctionatorTabContainerTemplate")
+    tabContainer:SetPoint("TOPLEFT", AuctionHouseFrame, "TOPRIGHT", 3, -18)
+    tabContainer:SetPoint("BOTTOMRIGHT", AuctionHouseFrame, "BOTTOMRIGHT", 300, 0)
+    self.TabContainer = tabContainer
+    
+    -- Register tabs
+    tabContainer:Register({
+        name = "Auctionator",
+        textLabel = "Auctionator",
+        tabTemplate = "AuctionatorTabFrameTemplate",
+        frameTemplate = "AuctionatorTabTemplate",
+        frameType = "AuctionatorTab",
+        selectedTab = true,
+    })
+    
+    tabContainer:Register({
+        name = "Selling",
+        textLabel = "Sell",
+        tabTemplate = "AuctionatorTabFrameTemplate",
+        frameTemplate = "AuctionatorSellingTabFrameTemplate",
+        frameType = "Selling",
+    })
+    
+    tabContainer:Register({
+        name = "Shopping",
+        textLabel = "Buy",
+        tabTemplate = "AuctionatorTabFrameTemplate",
+        frameTemplate = "AuctionatorShoppingTabFrameTemplate",
+        frameType = "Shopping",
+    })
+    
+    tabContainer:Register({
+        name = "Cancelling",
+        textLabel = "Cancel",
+        tabTemplate = "AuctionatorTabFrameTemplate", 
+        frameTemplate = "AuctionatorCancellingTabFrameTemplate",
+        frameType = "Cancelling",
+    })
+    
+    -- Set up tab container
+    tabContainer:Layout()
+    tabContainer:Show()
+    
+    return tabContainer
+end
+
 function Auctionator:Initialize()
   if self.Initialized then
     return
@@ -132,6 +180,9 @@ function Auctionator:Initialize()
   if self.UI and self.UI.MainFrame and self.UI.MainFrame.Initialize then
     self.UI.MainFrame:Initialize()
   end
+  
+  -- Hook into Auction House
+  self:SetupAuctionHouseHooks()
   
   -- Set up tooltips
   self:SetupTooltips()
@@ -299,6 +350,25 @@ function Auctionator:SetupTooltips()
   -- Hook all game tooltips
   HookTooltip(GameTooltip)
   HookTooltip(ItemRefTooltip)
+end
+
+-- Hook into Blizzard Auction House
+function Auctionator:SetupAuctionHouseHooks()
+  -- Create our tabs when the auction house opens
+  hooksecurefunc(AuctionHouseFrame, "OnShow", function()
+    if not self.TabContainer then
+      self.TabContainer = self:CreateAuctionatorTabs()
+    else
+      self.TabContainer:Show()
+    end
+  end)
+  
+  -- Handle cleanup when auction house closes
+  hooksecurefunc(AuctionHouseFrame, "OnHide", function()
+    if self.TabContainer then
+      self.TabContainer:Hide()
+    end
+  end)
 end
 
 -- If in development mode, enable debugging

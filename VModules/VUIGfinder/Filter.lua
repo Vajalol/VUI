@@ -1,12 +1,18 @@
 -- VUIGfinder Filter Implementation
 -- Core filtering functionality for VUIGfinder
 
+<<<<<<< HEAD
 -- Create global aliases for backward compatibility
 _G.VUIFinder = _G.VUIFinder or _G.VUIGfinder or {}
 _G.VUIGfinder = _G.VUIGfinder or {}
 
 local L = PGFinderLocals or {}; -- Strings with fallback
 local VUI, VUIGfinderModule
+=======
+local L = PGFinderLocals; -- Strings
+local VUI = _G.VUI
+local VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Cache commonly used functions
 local C_LFGList = C_LFGList
@@ -129,6 +135,7 @@ local lastRefreshTime = 0
 
 -- Initialize filter module
 local function InitializeFilter()
+<<<<<<< HEAD
     VUI = _G.VUI
     if not VUI then return end
     
@@ -188,6 +195,8 @@ local function InitializeFilter()
             maxRating = 3000
         }
     end
+=======
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     
     -- Load settings from VUI database
     if VUIGfinder.LoadSettings and type(VUIGfinder.LoadSettings) == "function" then

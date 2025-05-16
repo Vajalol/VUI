@@ -1,0 +1,5 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Include file="AuctionatorFrame.xml"/>
+  <Include file="Config.xml"/>
+  <Include file="Summary.xml"/>
+</Ui> 

@@ -4,6 +4,12 @@ local addonName, VUI = ...
 VUI.Notifications = VUI.Notifications or {}
 
 -- Define affiliations for combat log filtering
+-- Module reference
+local M = VUI:GetModule("VUINotifications")
+
+-- Ensure backward compatibility
+VUI.Notifications = VUI.Notifications or {}
+
 function VUI.Notifications.Affiliations()
     return {
         ["MINE"] = COMBATLOG_OBJECT_AFFILIATION_MINE,

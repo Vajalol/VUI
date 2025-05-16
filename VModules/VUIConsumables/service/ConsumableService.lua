@@ -2,7 +2,7 @@
 -- Provides utility functions for tracking and analyzing consumable effects
 
 local AddonName, VUI = ...
-local M = VUI.VUIConsumables
+local M = VUI:GetModule("VUIConsumables")
 if not M then return end -- Safety check
 
 -- Create the service namespace

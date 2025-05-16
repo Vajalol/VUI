@@ -1,0 +1,5 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Include file="CancellingFrame.xml"/>
+  <Include file="UndercutScan.xml"/>
+  <Include file="ResultsListing.xml"/>
+</Ui> 

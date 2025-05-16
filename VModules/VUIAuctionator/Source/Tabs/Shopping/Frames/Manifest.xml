@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Include file="ShoppingFrame.xml"/>
+  <Include file="SearchHistory.xml"/>
+  <Include file="SearchList.xml"/>
+  <Include file="ResultsListing.xml"/>
+</Ui> 

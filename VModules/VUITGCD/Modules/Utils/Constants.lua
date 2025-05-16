@@ -2,6 +2,7 @@
 -- Contains constants and defaults for the VUITGCD module
 
 local _, ns = ...
+<<<<<<< HEAD
 local addonName, VUI = ...
 
 -- Create TGCD namespace if it doesn't exist
@@ -9,6 +10,9 @@ if _G.VUI and not _G.VUI.TGCD then
     _G.VUI.TGCD = {}
 end
 local VUITGCD = _G.VUI and _G.VUI.TGCD or {}
+=======
+local VUITGCD = _G.VUI and (_G.VUI.VUITGCD or _G.VUI:GetModule("VUITGCD")) or {}
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Define namespace if not created yet
 if not ns.constants then ns.constants = {} end

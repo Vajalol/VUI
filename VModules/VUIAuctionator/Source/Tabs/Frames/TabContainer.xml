@@ -1,0 +1,11 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Frame name="AuctionatorTabContainerTemplate" inherits="BackdropTemplate" virtual="true" mixin="AuctionatorTabContainerMixin">
+    <KeyValues>
+      <KeyValue key="backdropInfo" value="BACKDROP_DIALOG_32_32" type="global"/>
+    </KeyValues>
+    <Scripts>
+      <OnLoad method="OnLoad"/>
+      <OnHide method="OnHide"/>
+    </Scripts>
+  </Frame>
+</Ui> 

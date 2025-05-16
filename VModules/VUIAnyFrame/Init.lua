@@ -4,6 +4,7 @@
 -- Based on MoveAny by D4KiR with VUI integration
 -------------------------------------------------------------------------------
 
+<<<<<<< HEAD
 -- Create a global placeholder to ensure references work even during initialization
 _G["VUIAnyFrame"] = _G["VUIAnyFrame"] or {}
 
@@ -45,12 +46,23 @@ end
 -- Localization - Use the module's localization table directly
 -- This avoids the 'No locales registered for VUI' error
 local L = _G["VUIAnyFrame"].L or {}
+=======
+-- Standard module registration
+local AddonName, VUI = ...
+local M = VUI:NewModule("VUIAnyFrame", "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
 
--- Module Constants
-M.NAME = MODNAME
-M.TITLE = "VUI Any Frame"
-M.DESCRIPTION = "Move, scale, and customize any UI element"
-M.VERSION = "1.0"
+-- For backward compatibility
+_G.VUIAnyFrame = M
+VUI.VUIAnyFrame = M
+
+-- Localization
+VUIAnyFrame.L = VUIAnyFrame.L or {}
+local L = VUIAnyFrame.L
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
+
+-- Localization (changing to use M instead of VUIAnyFrame)
+M.L = M.L or {}
+local L = M.L
 
 -- Default settings
 M.defaults = {
@@ -84,8 +96,9 @@ M.defaults = {
     }
 }
 
--- Initialize the module
+-- Initialize the VUIAnyFrame module
 function M:OnInitialize()
+<<<<<<< HEAD
     -- Create the database with proper error handling
     if VUI and VUI.db then
         -- Make sure namespaces exists to avoid nil indexing
@@ -110,23 +123,32 @@ function M:OnInitialize()
         }
         VUI:Debug(self.NAME .. " using fallback database")
     end
+=======
+    -- Module constants
+    self.NAME = "VUIAnyFrame"
+    self.TITLE = "VUI Any Frame"
+    self.DESCRIPTION = "Move, scale, and customize any UI element"
+    self.VERSION = VUI.Version or "1.0"
     
-    -- Create a reference for compatibility
-    _G.VUIAnyFrame = _G.VUIAnyFrame or {}
-    _G.VUIAnyFrame.db = self.db
+    -- Create the database using VUI's db
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     
-    -- Copy functions from the existing VUIAnyFrame module
-    if _G.VUIAnyFrame then
-        for key, func in pairs(_G.VUIAnyFrame) do
-            if type(func) == "function" and not self[key] then
-                self[key] = func
+    -- Register callback for theme changes
+    if VUI then
+        VUI:RegisterCallback("OnThemeChanged", function()
+            if self.UpdateTheme then
+                self:UpdateTheme()
             end
-        end
+        end)
     end
     
     -- Initialize the configuration panel
     self:InitializeConfig()
     
+<<<<<<< HEAD
     -- Register callback for theme changes
     if VUI and VUI.RegisterCallback then
         VUI:RegisterCallback("OnThemeChanged", function()
@@ -136,6 +158,8 @@ function M:OnInitialize()
         end)
     end
     
+=======
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     -- Set up minimap button
     if self.SetupDataBroker then
         self:SetupDataBroker()
@@ -147,7 +171,11 @@ function M:OnInitialize()
     
     -- Debug message
     if VUI and VUI.Debug then
+<<<<<<< HEAD
         VUI:Debug(self.NAME .. " initialized")
+=======
+        VUI:Debug(MODNAME .. " initialized")
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     end
 end
 
@@ -165,9 +193,13 @@ function M:OnEnable()
     end
     
     -- Debug message
+<<<<<<< HEAD
     if VUI and VUI.Debug then
         VUI:Debug(self.NAME .. " enabled")
     end
+=======
+    self:Debug("enabled")
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 end
 
 -- Disable the module
@@ -181,8 +213,18 @@ function M:OnDisable()
     end
     
     -- Debug message
+<<<<<<< HEAD
     if VUI and VUI.Debug then
         VUI:Debug(self.NAME .. " disabled")
+=======
+    self:Debug("disabled")
+end
+
+-- Helper function for standardized debugging
+function M:Debug(...)
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME, ...)
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     end
 end
 
@@ -190,16 +232,25 @@ end
 function M:SlashCommand(input)
     if input == "toggle" then
         self.db.profile.enabled = not self.db.profile.enabled
+<<<<<<< HEAD
         if VUI and type(VUI.Print) == "function" then
             VUI:Print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
         else
             print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+=======
+        if VUI and VUI.Print then
+            VUI:Print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
         end
     else
         -- Open configuration
         if self.ShowOptions then
             self:ShowOptions()
+<<<<<<< HEAD
         elseif VUI and VUI.Config and type(VUI.Config.OpenToCategory) == "function" then
+=======
+        elseif VUI and VUI.Config then
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
             VUI.Config:OpenToCategory(self.TITLE)
         end
     end
@@ -208,7 +259,11 @@ end
 -- Configuration initialization
 function M:InitializeConfig()
     -- Register with VUI's configuration system
+<<<<<<< HEAD
     if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+=======
+    if VUI and VUI.Config then
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
         VUI.Config:RegisterModuleOptions(self.NAME, function()
             -- Open the configuration panel
             if self.ShowOptions then
@@ -227,6 +282,3 @@ function M:PLAYER_ENTERING_WORLD()
         end)
     end
 end
-
--- Export the module to VUI namespace
-VUI.VUIAnyFrame = M

@@ -100,6 +100,126 @@
     </HighlightTexture>
   </Button>
   
+  <!-- Auctionator Tab Button with Mixin -->
+  <Button name="AuctionatorTabButtonTemplate" virtual="true" mixin="AuctionatorTabButtonMixin">
+    <Size x="140" y="32"/>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentLeftCapTexture" parentKey="LeftCapTexture" file="Interface\PaperDollInfoFrame\UI-Character-InactiveTab">
+          <Size x="20" y="32"/>
+          <Anchors>
+            <Anchor point="TOPLEFT"/>
+          </Anchors>
+          <TexCoords left="0" right="0.15625" top="0" bottom="1.0"/>
+        </Texture>
+        <Texture name="$parentRightCapTexture" parentKey="RightCapTexture" file="Interface\PaperDollInfoFrame\UI-Character-InactiveTab">
+          <Size x="20" y="32"/>
+          <Anchors>
+            <Anchor point="TOPRIGHT"/>
+          </Anchors>
+          <TexCoords left="0.84375" right="1.0" top="0" bottom="1.0"/>
+        </Texture>
+        <Texture name="$parentMiddleTexture" parentKey="MiddleTexture" file="Interface\PaperDollInfoFrame\UI-Character-InactiveTab">
+          <Size y="32"/>
+          <Anchors>
+            <Anchor point="TOPLEFT" relativeKey="$parent.LeftCapTexture" relativePoint="TOPRIGHT" x="0" y="0"/>
+            <Anchor point="TOPRIGHT" relativeKey="$parent.RightCapTexture" relativePoint="TOPLEFT" x="0" y="0"/>
+          </Anchors>
+          <TexCoords left="0.15625" right="0.84375" top="0" bottom="1.0"/>
+        </Texture>
+      </Layer>
+      <Layer level="HIGHLIGHT">
+        <Texture name="$parentHighlightTexture" parentKey="HighlightTexture" file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
+          <Size y="32"/>
+          <Anchors>
+            <Anchor point="TOPLEFT" x="10" y="5"/>
+            <Anchor point="TOPRIGHT" x="-10" y="5"/>
+          </Anchors>
+          <Color r="1" g="1" b="1" a="0.3"/>
+        </Texture>
+      </Layer>
+      <Layer level="OVERLAY">
+        <FontString name="$parentText" parentKey="Text" inherits="GameFontNormal">
+          <Anchors>
+            <Anchor point="CENTER" x="0" y="-3"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <Scripts>
+      <OnLoad method="OnLoad"/>
+      <OnClick method="OnClick"/>
+      <OnEnter method="OnEnter"/>
+      <OnLeave method="OnLeave"/>
+    </Scripts>
+    <NormalFont style="GameFontNormal"/>
+    <HighlightFont style="GameFontHighlight"/>
+  </Button>
+  
+  <Frame name="AuctionatorTabSelectedTemplate" virtual="true" mixin="AuctionatorTabSelectedMixin">
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentLeftSelectedTexture" parentKey="LeftSelectedTexture" file="Interface\PaperDollInfoFrame\UI-Character-ActiveTab">
+          <Size x="20" y="32"/>
+          <Anchors>
+            <Anchor point="TOPLEFT" x="0" y="0"/>
+          </Anchors>
+          <TexCoords left="0" right="0.15625" top="0" bottom="1.0"/>
+        </Texture>
+        <Texture name="$parentRightSelectedTexture" parentKey="RightSelectedTexture" file="Interface\PaperDollInfoFrame\UI-Character-ActiveTab">
+          <Size x="20" y="32"/>
+          <Anchors>
+            <Anchor point="TOPRIGHT" x="0" y="0"/>
+          </Anchors>
+          <TexCoords left="0.84375" right="1.0" top="0" bottom="1.0"/>
+        </Texture>
+        <Texture name="$parentSelectedTexture" parentKey="SelectedTexture" file="Interface\PaperDollInfoFrame\UI-Character-ActiveTab">
+          <Size y="32"/>
+          <Anchors>
+            <Anchor point="TOPLEFT" relativeKey="$parent.LeftSelectedTexture" relativePoint="TOPRIGHT" x="0" y="0"/>
+            <Anchor point="TOPRIGHT" relativeKey="$parent.RightSelectedTexture" relativePoint="TOPLEFT" x="0" y="0"/>
+          </Anchors>
+          <TexCoords left="0.15625" right="0.84375" top="0" bottom="1.0"/>
+        </Texture>
+      </Layer>
+      <Layer level="HIGHLIGHT">
+        <Texture name="$parentHighlightTexture" parentKey="HighlightTexture" file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
+          <Size y="32"/>
+          <Anchors>
+            <Anchor point="TOPLEFT" relativeKey="$parent.LeftSelectedTexture" relativePoint="TOPRIGHT" x="0" y="0"/>
+            <Anchor point="TOPRIGHT" relativeKey="$parent.RightSelectedTexture" relativePoint="TOPLEFT" x="0" y="0"/>
+          </Anchors>
+          <Color r="1" g="1" b="1" a="0.3"/>
+        </Texture>
+      </Layer>
+    </Layers>
+    <Scripts>
+      <OnLoad method="OnLoad"/>
+      <OnShow method="OnShow"/>
+      <OnHide method="OnHide"/>
+    </Scripts>
+  </Frame>
+  
+  <Frame name="AuctionatorTabFrameTemplate" virtual="true" mixin="AuctionatorTabFrameMixin">
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentBackground" parentKey="Background" setAllPoints="true">
+          <Color r="0.1" g="0.1" b="0.1" a="0.8"/>
+        </Texture>
+      </Layer>
+      <Layer level="BORDER">
+        <Texture name="$parentBorder" parentKey="Border" setAllPoints="true">
+          <Color r="0.6" g="0.6" b="0.6" a="0.5"/>
+        </Texture>
+      </Layer>
+    </Layers>
+    <Scripts>
+      <OnLoad method="OnLoad"/>
+      <OnShow method="OnShow"/>
+      <OnHide method="OnHide"/>
+    </Scripts>
+  </Frame>
+  
   <!-- Tooltip Template -->
   <GameTooltip name="VUIAuctionatorTooltip" inherits="GameTooltipTemplate" parent="UIParent" hidden="true"/>
   
@@ -208,6 +328,114 @@
     </ScrollChild>
   </ScrollFrame>
   
+  <!-- ScrollFrame Templates -->
+  <ScrollFrame name="AuctionatorResultsScrollFrameTemplate" virtual="true">
+    <Anchors>
+      <Anchor point="TOPLEFT"/>
+      <Anchor point="BOTTOMRIGHT"/>
+    </Anchors>
+    <ScrollChild>
+      <Frame name="$parentScrollChild" parentKey="scrollChild">
+        <Size x="1" y="1"/>
+      </Frame>
+    </ScrollChild>
+    <Scripts>
+      <OnVerticalScroll>
+        if self.ScrollBar then
+          self.ScrollBar:SetValue(offset);
+        end
+        if self.resultsListing then
+          self.resultsListing:OnVerticalScroll(offset)
+        end
+      </OnVerticalScroll>
+    </Scripts>
+  </ScrollFrame>
+  
+  <Slider name="AuctionatorResultsScrollBarTemplate" inherits="UIPanelScrollBarTemplate" virtual="true">
+    <Size x="16" y="0"/>
+    <Anchors>
+      <Anchor point="TOPRIGHT" x="0" y="-16"/>
+      <Anchor point="BOTTOMRIGHT" x="0" y="16"/>
+    </Anchors>
+    <Scripts>
+      <OnValueChanged>
+        local parent = self:GetParent();
+        parent:SetVerticalScroll(value);
+        if parent.resultsListing then
+          parent.resultsListing:OnVerticalScroll(value)
+        end
+      </OnValueChanged>
+    </Scripts>
+  </Slider>
+  
+  <!-- Results Row Templates -->
+  <Button name="AuctionatorResultsListingRowTemplate" virtual="true">
+    <Size x="0" y="20"/>
+    <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" tile="true">
+      <Color r="0" g="0" b="0" a="0.5"/>
+      <BorderColor r="0.5" g="0.5" b="0.5"/>
+      <Anchors>
+        <Anchor point="TOPLEFT" x="0" y="0"/>
+        <Anchor point="BOTTOMRIGHT" x="0" y="0"/>
+      </Anchors>
+      <TileSize>
+        <AbsValue val="4"/>
+      </TileSize>
+    </Backdrop>
+    <HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD">
+      <Color r="1" g="1" b="1" a="0.5"/>
+      <Anchors>
+        <Anchor point="TOPLEFT" x="0" y="0"/>
+        <Anchor point="BOTTOMRIGHT" x="0" y="0"/>
+      </Anchors>
+    </HighlightTexture>
+  </Button>
+  
+  <Button name="AuctionatorLoadAllResultsButtonTemplate" virtual="true">
+    <Size x="200" y="30"/>
+    <Layers>
+      <Layer level="OVERLAY">
+        <FontString inherits="GameFontNormal" text="Load More Results">
+          <Anchors>
+            <Anchor point="CENTER" x="0" y="0"/>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <NormalTexture file="Interface\Buttons\UI-Button-Outline">
+      <Color r="0.6" g="0.6" b="1" a="1"/>
+    </NormalTexture>
+    <HighlightTexture file="Interface\Buttons\UI-Button-Outline" alphaMode="ADD">
+      <Color r="0.6" g="0.6" b="1" a="0.5"/>
+    </HighlightTexture>
+  </Button>
+  
+  <!-- Column Header Templates -->
+  <Button name="AuctionatorColumnHeaderTemplate" virtual="true">
+    <Size x="0" y="24"/>
+    <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentBackground" parentKey="Background" setAllPoints="true">
+          <Color r="0.2" g="0.2" b="0.2" a="1"/>
+        </Texture>
+      </Layer>
+      <Layer level="OVERLAY">
+        <FontString name="$parentText" parentKey="Text" inherits="GameFontHighlight" justifyH="LEFT">
+          <Anchors>
+            <Anchor point="LEFT" x="5" y="0"/>
+            <Anchor point="RIGHT" x="-15" y="0"/>
+          </Anchors>
+        </FontString>
+        <Texture name="$parentSortArrow" parentKey="SortArrow" hidden="true" file="Interface\MainMenuBar\UI-MainMenu-ArrowUp">
+          <Size x="10" y="10"/>
+          <Anchors>
+            <Anchor point="RIGHT" x="-5" y="0"/>
+          </Anchors>
+        </Texture>
+      </Layer>
+    </Layers>
+  </Button>
+
   <!-- Listing Template (for auction results) -->
   <Button name="VUIAuctionatorListingTemplate" virtual="true">
     <Size x="568" y="20"/>

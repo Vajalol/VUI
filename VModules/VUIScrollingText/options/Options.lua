@@ -9,11 +9,15 @@ if not VUI or not M then
 end
 
 local MSBTOptions = {}
+<<<<<<< HEAD
 -- Get the module safely
 local VUIScrollingText = VUI and VUI.VUIScrollingText or {}
 
 -- If no module was found, exit early
 if not VUIScrollingText then return end
+=======
+local VUIScrollingText = VUI.VUIScrollingText or VUI:GetModule("VUIScrollingText")
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Theme elements to update when the theme changes
 local themeElements = {}

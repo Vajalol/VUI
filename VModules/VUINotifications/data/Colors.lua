@@ -7,6 +7,12 @@ if not VUI then VUI = {} end
 VUI.Notifications = VUI.Notifications or {}
 
 -- Define colors used for notifications
+-- Module reference
+local M = VUI:GetModule("VUINotifications")
+
+-- Ensure backward compatibility
+VUI.Notifications = VUI.Notifications or {}
+
 function VUI.Notifications.Colors()
     return {
         ["BLUE"] = {

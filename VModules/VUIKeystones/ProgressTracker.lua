@@ -1,8 +1,14 @@
 -- VUIKeystones - Progress Tracker functionality
+<<<<<<< HEAD
 -- Use global reference instead of AceAddon-3.0 to fix load order issues
 local VUIKeystones = _G["VUIKeystones"]
 local ProgressTracker = VUIKeystones.Modules and VUIKeystones:NewModule('ProgressTracker') or {}
 local L = VUIKeystones.L or {}
+=======
+local VUIKeystones = _G.VUIKeystones or {}
+local ProgressTracker = VUIKeystones:NewModule('ProgressTracker')
+local L = VUIKeystones.L
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Local variables
 local isProgressHooked = false

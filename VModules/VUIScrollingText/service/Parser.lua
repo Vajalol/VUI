@@ -3,6 +3,9 @@ local addonName, VUI = ...
 -- Combat Parser service for VUIScrollingText
 -- This handles parsing combat log events and extracting relevant information
 
+-- Module reference
+local M = VUI:GetModule("VUIScrollingText")
+
 -- Local references
 local bit_band = bit.band
 local string_find = string.find

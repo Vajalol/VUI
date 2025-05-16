@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Include file="SellingFrame.xml"/>
+  <Include file="SaleItem.xml"/>
+  <Include file="BagItems.xml"/>
+  <Include file="PriceHistory.xml"/>
+</Ui> 

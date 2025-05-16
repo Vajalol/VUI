@@ -3,6 +3,7 @@
 -- Enhances buff/debuff display with configurable frames
 -------------------------------------------------------------------------------
 
+<<<<<<< HEAD
 -- First, make sure we have a global placeholder for localization
 -- This is critical for locale files that might load before the module is fully initialized
 _G["VUIBuffs"] = _G["VUIBuffs"] or {}
@@ -65,15 +66,25 @@ local existingL = _G["VUIBuffs"].L
 
 -- Restore and merge any existing localization data
 M.L = existingL
+=======
+-- Standard module registration
+local AddonName, VUI = ...
+local M = VUI:NewModule("VUIBuffs", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
--- Module Constants
-M.NAME = MODNAME
-M.TITLE = "VUI Buffs"
-M.DESCRIPTION = "Enhanced buff and debuff display with configurable frames"
-M.VERSION = "1.0"
+-- For backward compatibility
+_G.VUIBuffs = M
+VUI.VUIBuffs = M
+
+-- Localization setup
+VUIBuffs.L = VUIBuffs.L or {}
+local L = VUIBuffs.L
+
+-- Provide compatibility function for localizations
+VUIBuffs.GetSpellInfo = GetSpellInfo
 
 -- Default settings
-M.defaults = {
+VUIBuffs.defaults = {
     profile = {
         enabled = true,
         locked = true,
@@ -167,8 +178,9 @@ M.defaults = {
     }
 }
 
--- Initialize the module
+-- Initialize the VUIBuffs module
 function M:OnInitialize()
+<<<<<<< HEAD
     -- Create the database with consistent naming
     if VUI and VUI.db then
         -- Make sure namespaces exists to avoid nil indexing
@@ -199,29 +211,39 @@ function M:OnInitialize()
         -- Fallback if VUI.db isn't available
         self.db = {profile = self.defaults.profile}
     end
+=======
+    -- Module constants
+    self.NAME = MODNAME
+    self.TITLE = "VUI Buffs"
+    self.DESCRIPTION = "Enhances buff/debuff display with configurable frames"
+    self.VERSION = VUI.Version or "1.0"
     
-    -- Create a reference in VUIBuffs (existing code expects this)
-    _G.VUIBuffs = _G.VUIBuffs or {}
-    _G.VUIBuffs.db = self.db
-    
-    -- Copy functions from the existing VUIBuffs module
-    for key, func in pairs(VUIBuffs) do
-        if type(func) == "function" and not self[key] then
-            self[key] = func
-        end
-    end
-    
-    -- Initialize the configuration panel
-    self:InitializeConfig()
+    -- Create the database using VUI's db
+    self.db = VUI.db:RegisterNamespace(self.NAME, {
+        profile = self.defaults.profile
+    })
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     
     -- Register callback for theme changes
-    VUI:RegisterCallback("OnThemeChanged", function()
-        if self.UpdateTheme then
-            self:UpdateTheme()
-        end
-    end)
+    if VUI then
+        VUI:RegisterCallback("OnThemeChanged", function()
+            if self.UpdateTheme then
+                self:UpdateTheme()
+            end
+        end)
+    end
     
-    -- Initialize UI components (using existing code)
+    -- Register with VUI's configuration system
+    if VUI and VUI.Config then
+        VUI.Config:RegisterModuleOptions(MODNAME, function()
+            -- Open the configuration panel
+            if self.OpenOptions then
+                self:OpenOptions()
+            end
+        end)
+    end
+    
+    -- Initialize UI components
     if self.CreateFrames then
         self:CreateFrames()
     end
@@ -240,7 +262,9 @@ function M:OnInitialize()
     end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " initialized")
+    if VUI and VUI.Debug then
+        VUI:Debug(MODNAME .. " initialized")
+    end
 end
 
 -- Enable the module
@@ -253,7 +277,7 @@ function M:OnEnable()
     self:RegisterEvent("GROUP_ROSTER_UPDATE")
     
     -- Debug message
-    VUI:Debug(self.NAME .. " enabled")
+    self:Debug("enabled")
 end
 
 -- Disable the module
@@ -271,9 +295,10 @@ function M:OnDisable()
     end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " disabled")
+    self:Debug("disabled")
 end
 
+<<<<<<< HEAD
 -- Configuration initialization
 function M:InitializeConfig()
     -- Register with VUI's configuration system
@@ -289,3 +314,11 @@ end
 
 -- Export the module to VUI namespace
 VUI.VUIBuffs = M
+=======
+-- Helper function for standardized debugging
+function M:Debug(...)
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME, ...)
+    end
+end
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc

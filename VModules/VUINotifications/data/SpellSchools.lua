@@ -4,6 +4,12 @@ local addonName, VUI = ...
 VUI.Notifications = VUI.Notifications or {}
 
 -- Define spell schools for interrupt notifications
+-- Module reference
+local M = VUI:GetModule("VUINotifications")
+
+-- Ensure backward compatibility
+VUI.Notifications = VUI.Notifications or {}
+
 function VUI.Notifications.SpellSchools()
     return {
         [1] = "Physical",

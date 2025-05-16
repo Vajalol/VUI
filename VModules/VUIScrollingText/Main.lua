@@ -5,6 +5,7 @@
 -------------------------------------------------------------------------------
 
 local addonName, VUI = ...
+<<<<<<< HEAD
 -- Ensure VUI exists and VUI.ScrollingText is established
 if not VUI then
     print("VUIScrollingText: VUI namespace not available")
@@ -13,6 +14,9 @@ end
 
 -- Ensure VUI.ScrollingText namespace exists
 VUI.ScrollingText = VUI.ScrollingText or {}
+=======
+local VUIScrollingText = VUI.VUIScrollingText or VUI:GetModule("VUIScrollingText")
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 local ST = VUI.ScrollingText
 
 -- Create VUIScrollingText module if it doesn't exist

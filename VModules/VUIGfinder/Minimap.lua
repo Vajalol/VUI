@@ -15,6 +15,7 @@ local minimapButton
 -- Initialize the minimap button
 function InitializeMinimapButton()
     VUI = _G.VUI
+<<<<<<< HEAD
     
     -- Try to get the module, but handle the case where it doesn't exist
     if VUI then
@@ -32,6 +33,9 @@ function InitializeMinimapButton()
             }
         end
     end
+=======
+    VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     
     -- Check for LibDataBroker and LibDBIcon
     if not LibStub then return end

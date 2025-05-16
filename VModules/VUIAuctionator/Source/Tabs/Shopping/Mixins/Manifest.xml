@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Script file="ShoppingTab.lua"/>
+  <Script file="SearchHistoryMixin.lua"/>
+  <Script file="SearchListMixin.lua"/>
+  <Script file="ResultsListingMixin.lua"/>
+</Ui> 

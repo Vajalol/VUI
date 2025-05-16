@@ -1,4 +1,5 @@
 local addonName, VUI = ...
+<<<<<<< HEAD
 local Auctionator = VUI.Auctionator or {}
 VUI.Auctionator = Auctionator
 
@@ -47,6 +48,10 @@ if not Auctionator.Utilities.CreateEventBus then
         return eventBus
     end
 end
+=======
+local M = VUI:GetModule("VUIAuctionator")
+local Auctionator = VUI.Auctionator
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Initialize the event system
 Auctionator.Events = Auctionator.Utilities.CreateEventBus()

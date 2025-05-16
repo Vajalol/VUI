@@ -1,0 +1,7 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Script file="SellingTab.lua"/>
+  <Script file="BagItemMixin.lua"/>
+  <Script file="BagDataProvider.lua"/>
+  <Script file="SaleItemMixin.lua"/>
+  <Script file="PriceHistoryMixin.lua"/>
+</Ui> 

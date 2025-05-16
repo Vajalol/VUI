@@ -1,0 +1,5 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Script file="AuctionatorTab.lua"/>
+  <Script file="ConfigMixin.lua"/>
+  <Script file="SummaryMixin.lua"/>
+</Ui> 

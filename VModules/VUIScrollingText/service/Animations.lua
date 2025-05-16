@@ -3,6 +3,9 @@ local addonName, VUI = ...
 -- Animation service for VUIScrollingText
 -- This handles creating, configuring, and managing text animations
 
+-- Module reference
+local M = VUI:GetModule("VUIScrollingText")
+
 -- Local references
 local CreateFrame = CreateFrame
 local UIParent = UIParent

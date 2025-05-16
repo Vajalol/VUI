@@ -1,10 +1,12 @@
 <!-- Tabs\Frames directory manifest -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Include file="TabContainer.xml"/>
+  
+  <Script file="TabButton.lua"/>
+  <Script file="TabSelected.lua"/>
+  <Script file="TabFrame.lua"/>
+  <Script file="TabContainer.lua"/>
   <Script file="MinimapButton.lua" />
-  <Script file="TabButton.lua" />
-  <Script file="TabSelected.lua" />
-  <Script file="TabFrame.lua" />
-  <Script file="TabContainer.lua" />
   <Script file="SummaryView.lua" />
   <Script file="MoneyInput.lua" />
   <Script file="SearchEditBox.lua" />

@@ -2,10 +2,14 @@
 -- Core system for managing and rendering cursor trails
 
 local AddonName, VUI = ...
+<<<<<<< HEAD
 local M = VUI and VUI.VUIMouseFireTrail or {}
 
 -- Skip if module isn't available
 if not M then return end
+=======
+local M = VUI.VUIMouseFireTrail or VUI:GetModule("VUIMouseFireTrail")
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Local variables
 local GetCursorPosition = GetCursorPosition

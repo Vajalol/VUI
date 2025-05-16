@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 local addonName, VUI = ...
 if not VUI then return end
 
@@ -30,6 +31,9 @@ local function safeAnimations()
     end
     return VUI.Animations
 end
+=======
+local Module = VUI:NewModule("ActionBars.Pulse")
+>>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 function Module:OnEnable()
     -- Skip if disabled in config
