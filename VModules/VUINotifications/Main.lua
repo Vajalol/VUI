@@ -69,6 +69,8 @@ local reflected = {}
 local duration
 local warnOP
 local warnCS
+local notificationQueue = {}
+local isInCombat = false
 
 -- Default settings
 M.defaults = {
@@ -185,16 +187,39 @@ function M:OnEnable()
     if self.RegisterEvent and type(self.RegisterEvent) == "function" then
         pcall(function()
             self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+            self:RegisterEvent("UNIT_HEALTH")
+            self:RegisterEvent("PLAYER_TARGET_CHANGED")
+            self:RegisterEvent("PLAYER_REGEN_DISABLED") -- enter combat
+            self:RegisterEvent("PLAYER_REGEN_ENABLED") -- leave combat
+            self:RegisterEvent("PLAYER_ENTERING_WORLD")
+            self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
         end)
     else
         -- Fallback for when RegisterEvent isn't available
         local frame = CreateFrame("Frame")
         frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-        frame:SetScript("OnEvent", function(_, ...)
-            if self and self.COMBAT_LOG_EVENT_UNFILTERED then
-                self:COMBAT_LOG_EVENT_UNFILTERED(...)
+        frame:RegisterEvent("UNIT_HEALTH")
+        frame:RegisterEvent("PLAYER_TARGET_CHANGED")
+        frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+        frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame:RegisterEvent("ACTIONBAR_UPDATE_STATE")
+        
+        frame:SetScript("OnEvent", function(_, event, ...)
+            if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+                if self and self.COMBAT_LOG_EVENT_UNFILTERED then
+                    self:COMBAT_LOG_EVENT_UNFILTERED()
+                end
+            elseif event == "PLAYER_REGEN_DISABLED" then
+                isInCombat = true
+            elseif event == "PLAYER_REGEN_ENABLED" then
+                isInCombat = false
+                self:ProcessNotificationQueue()
+            elseif self and self[event] then
+                self[event](self, ...)
             end
         end)
+        
         -- Store the frame for later cleanup
         self.eventFrame = frame
     end
@@ -251,8 +276,18 @@ function M:CreateFrame()
 end
 
 -- Show a notification
-function M:ShowNotification(message, notificationType)
+function M:ShowNotification(message, notificationType, sound)
     if not self.db.profile.enabled then return end
+    
+    -- If we're in combat and have too many notifications, queue them
+    if isInCombat then
+        table.insert(notificationQueue, {message = message, type = notificationType, sound = sound})
+        -- Only process immediately if we have space
+        if #notificationQueue <= 3 then
+            self:ProcessNextNotification()
+        end
+        return
+    end
     
     -- Set the text color based on notification type
     local color = self.db.profile.colors[notificationType] or {r = 1, g = 1, b = 1, a = 1}
@@ -263,15 +298,39 @@ function M:ShowNotification(message, notificationType)
     self.frame:Show()
     
     -- Play sound if enabled
-    if self.db.profile.soundsEnabled then
-        -- Use pcall to handle missing sound
-        pcall(function() PlaySound(SOUNDKIT.ALARM_WARNING_SOUND) end)
+    if self.db.profile.soundsEnabled and sound then
+        -- Try VUI sound system first
+        local soundPath = "Interface\\AddOns\\VUI\\VModules\\VUINotifications\\sounds\\" .. sound .. ".mp3"
+        if not pcall(function() PlaySoundFile(soundPath, "Master") end) then
+            -- Fallback to WoW sound kit
+            pcall(function() PlaySound(SOUNDKIT.ALARM_WARNING_SOUND) end)
+        end
     end
     
     -- Hide after duration
     C_Timer.After(self.db.profile.notificationDuration, function()
         self.frame:Hide()
+        -- Process next notification in queue if any
+        self:ProcessNextNotification()
     end)
+end
+
+-- Process the notification queue
+function M:ProcessNotificationQueue()
+    -- Process next notification if any
+    self:ProcessNextNotification()
+end
+
+-- Process the next notification in the queue
+function M:ProcessNextNotification()
+    -- If frame is visible or queue is empty, return
+    if self.frame:IsVisible() or #notificationQueue == 0 then return end
+    
+    -- Get the next notification
+    local notification = table.remove(notificationQueue, 1)
+    
+    -- Show it
+    self:ShowNotification(notification.message, notification.type, notification.sound)
 end
 
 -- Configuration initialization
@@ -354,7 +413,24 @@ function M:InitializeConfig()
                 get = function() return self.db.profile.suppressErrors end,
                 set = function(_, val) self.db.profile.suppressErrors = val end,
             },
-            -- Additional options would go here
+            showReflects = {
+                type = "toggle",
+                name = L["Show Reflects"] or "Show Reflects",
+                desc = L["Show_Reflects_Desc"] or "Show notifications for reflected spells",
+                width = "full",
+                order = 8,
+                get = function() return self.db.profile.showReflects end,
+                set = function(_, val) self.db.profile.showReflects = val end,
+            },
+            showPetStatus = {
+                type = "toggle",
+                name = L["Show Pet Status"] or "Show Pet Status",
+                desc = L["Show_Pet_Status_Desc"] or "Show notifications when your pet dies",
+                width = "full",
+                order = 9,
+                get = function() return self.db.profile.showPetStatus end,
+                set = function(_, val) self.db.profile.showPetStatus = val end,
+            },
         }
     }
     
@@ -410,6 +486,169 @@ end
 
 -- Event handler
 function M:COMBAT_LOG_EVENT_UNFILTERED()
-    -- This function would process combat log events and trigger notifications
-    -- Implementation would go here
+    -- Get combat log info
+    local timeStamp, event, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = CombatLogGetCurrentEventInfo()
+    
+    -- Exit if notifications are disabled
+    if not self.db.profile.enabled then return end
+
+    -- Get player data
+    local _, playerClass = UnitClass("player")
+    local affiliation = VUI.Notifications.Affiliations and VUI.Notifications.Affiliations() or {MINE = 0x00000001, FRIENDLY = 0x00000007, PET = 0x00001000}
+    local sizes = VUI.Notifications.Sizes and VUI.Notifications.Sizes() or {SMALL = "small", LARGE = "large"}
+    local colors = VUI.Notifications.Colors and VUI.Notifications.Colors() or {
+        GREEN = {R = 0, G = 1, B = 0},
+        WHITE = {R = 1, G = 1, B = 1},
+        YELLOW = {R = 1, G = 1, B = 0},
+        RED = {R = 1, G = 0, B = 0},
+        BLUE = {R = 0, G = 0.5, B = 1}
+    }
+    
+    -- Helper functions for flag checking
+    local ME, FRIENDLY, PET = affiliation.MINE, affiliation.FRIENDLY, affiliation.PET
+    
+    local cast = {}
+    function cast.by(affiliation)
+        return bit.band(sourceFlags, affiliation) > 0
+    end
+    function cast.on(affiliation)
+        return bit.band(destFlags, affiliation) > 0
+    end
+    function cast.notOn(affiliation)
+        return bit.band(destFlags, affiliation) <= 0
+    end
+
+    -- INTERRUPTS
+    if event == "SPELL_INTERRUPT" and cast.by(ME) and self.db.profile.showInterrupts then
+        local extraSchool = select(17, CombatLogGetCurrentEventInfo())
+        local spellSchool = VUI.Notifications.SpellSchools and VUI.Notifications.SpellSchools()[extraSchool] or "unknown spell school"
+
+        if spellSchool == nil then
+            spellSchool = "unknown spell school"
+        end
+        
+        self:ShowNotification("Interrupted " .. string.lower(spellSchool), "interrupt")
+    end
+
+    -- DISPEL AND PURGE
+    if event == "SPELL_DISPEL" and cast.by(ME) and self.db.profile.showDispels then
+        local spellName = select(16, CombatLogGetCurrentEventInfo());
+        if cast.on(FRIENDLY) then
+            self:ShowNotification("Dispelled " .. spellName, "dispel")
+        else
+            self:ShowNotification("Dispelled " .. spellName, "dispel")
+        end
+    end
+
+    -- SPELLSTEAL
+    if event == "SPELL_STOLEN" and cast.by(ME) and self.db.profile.showDispels then
+        local spellName = select(16, CombatLogGetCurrentEventInfo());
+        self:ShowNotification("Stole " .. spellName, "dispel")
+    end
+
+    -- PET DIED
+    if ((event == "UNIT_DIED" or event == "UNIT_DESTROYED" or event == "UNIT_DISSIPATES") and
+        cast.on(ME) and cast.on(PET) and self.db.profile.showPetStatus)
+    then
+        self:ShowNotification("Pet dead", "pet", "buzz")
+    end
+
+    -- REFLECTED SPELLS
+    if (event == "SPELL_AURA_APPLIED" or event == "SPELL_AURA_REMOVED") and cast.by(ME) and self.db.profile.showReflects then
+        local spellName = select(13, CombatLogGetCurrentEventInfo())
+        if spellName == "Mass Spell Reflection" then
+            if event == "SPELL_AURA_APPLIED" then
+                reflected[destGUID] = true
+            else
+                reflected[destGUID] = false
+            end
+        end
+    end
+
+    if event == "SPELL_MISSED" and cast.notOn(ME) and self.db.profile.showReflects then
+        local spellName, _, missType = select(13, CombatLogGetCurrentEventInfo())
+        if missType == "REFLECT" then
+            if reflected[destGUID] ~= nil and reflected[destGUID] then
+                self:ShowNotification("Reflected " .. spellName, "reflect")
+            end
+        end
+    end
+
+    -- REFLECTED & GROUNDED
+    if event == "SPELL_MISSED" and cast.on(ME) and self.db.profile.showReflects then
+        local spellName, _, missType = select(13, CombatLogGetCurrentEventInfo())
+        if missType == "REFLECT" then
+            self:ShowNotification("Reflected " .. spellName, "reflect")
+        elseif destName == "Grounding Totem" and cast.on(ME) then
+            self:ShowNotification("Grounded " .. spellName, "reflect")
+        end
+    end
+
+    -- GROUNDED SPELLS
+    if event == "SPELL_DAMAGE" and cast.on(ME) and self.db.profile.showReflects then
+        local spellName = select(13, CombatLogGetCurrentEventInfo())
+        if destName == "Grounding Totem" then
+            self:ShowNotification("Grounded " .. spellName, "reflect")
+        end
+    end
+
+    -- MISSED SPELLS
+    if event == "SPELL_MISSED" and cast.by(ME) and self.db.profile.showMisses then
+        if (
+            destGUID == UnitGUID("target") or
+            destGUID == UnitGUID("targettarget") or
+            destGUID == UnitGUID("focus") or
+            destGUID == UnitGUID("player") or
+            destGUID == UnitGUID("pet") or
+            destGUID == UnitGUID("pettarget") or
+            destGUID == UnitGUID("mouseover") or
+            destGUID == UnitGUID("mouseovertarget") or
+            destGUID == UnitGUID("arena1") or
+            destGUID == UnitGUID("arena2") or
+            destGUID == UnitGUID("arena3") or
+            destGUID == UnitGUID("arena4") or
+            destGUID == UnitGUID("arena5") or
+            destGUID == UnitGUID("party1") or
+            destGUID == UnitGUID("party2") or
+            destGUID == UnitGUID("party3") or
+            destGUID == UnitGUID("party4") or
+            destGUID == UnitGUID("party5")
+        ) then
+            local spellName, _, missType = select(13, CombatLogGetCurrentEventInfo())
+            local missTypes = VUI.Notifications.MissTypes and VUI.Notifications.MissTypes() or {
+                ["REFLECT"] = "reflected",
+                ["IMMUNE"] = "immune",
+                ["EVADE"] = "evaded",
+                ["PARRY"] = "parried",
+                ["DODGE"] = "dodged",
+                ["BLOCK"] = "blocked",
+                ["DEFLECT"] = "deflected",
+                ["RESIST"] = "resisted"
+            }
+            local resistMethod = missTypes[missType]
+
+            if (missType == "ABSORB") then
+                return
+            elseif (destName == "Grounding Totem") then
+                resistMethod = "grounded"
+            elseif (missType == "REFLECT") then
+                resistMethod = "reflected"
+            elseif (resistMethod == nil) then
+                resistMethod = "missed"
+            end
+
+            self:ShowNotification(spellName .. " " .. resistMethod, "miss")
+        end
+    end
+end
+
+-- Handle PLAYER_REGEN_DISABLED event
+function M:PLAYER_REGEN_DISABLED()
+    isInCombat = true
+end
+
+-- Handle PLAYER_REGEN_ENABLED event
+function M:PLAYER_REGEN_ENABLED()
+    isInCombat = false
+    self:ProcessNotificationQueue()
 end

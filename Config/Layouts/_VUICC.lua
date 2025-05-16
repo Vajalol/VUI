@@ -1,12 +1,12 @@
 --[[
-    VUI CC Module Configuration
-    Advanced crowd control tracking for PvP and dungeons
+    VUI Cooldown Counter Module Configuration
+    Adds text to cooldowns to indicate when they'll be ready (OmniCC equivalent)
 ]]
 
 local Layout = VUI:NewModule('Config.Layout.VUICC')
 
 -- Initialize with the standard layout helper
-VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUICC", "VUI Crowd Control", "vmodules.vuicc")
+VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUICC", "VUI Cooldown Counter", "vmodules.vuicc")
 
 -- Define module-specific layout construction
 function Layout:BuildModuleLayout(module, db)
@@ -14,521 +14,293 @@ function Layout:BuildModuleLayout(module, db)
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Display Settings'
+            label = 'Cooldown Text Settings'
         },
     })
     
     -- Add basic settings
     table.insert(Layout.layout.rows, {
-        lockFrames = {
-            key = 'vmodules.vuicc.lockFrames',
+        enabled = {
+            key = 'vmodules.vuicc.enabled',
             type = 'checkbox',
-            label = 'Lock Frames',
-            tooltip = 'Lock or unlock VUI CC frames',
+            label = 'Enable Cooldown Text',
+            tooltip = 'Enable text on cooldowns to indicate when they\'ll be ready',
             column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.general.lockFrames = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
+                    module.db.profile.enabled = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
                     end
                 end
             end
         },
-        showIcons = {
-            key = 'vmodules.vuicc.showIcons',
+        disableBlizzardCooldownText = {
+            key = 'vmodules.vuicc.disableBlizzardCooldownText',
             type = 'checkbox',
-            label = 'Show Icons',
-            tooltip = 'Show spell icons in the CC display',
+            label = 'Disable Blizzard Cooldown Text',
+            tooltip = 'Hide Blizzard\'s built-in cooldown text (requires UI reload)',
             column = 4,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showIcons = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.disableBlizzardCooldownText = self:GetValue()
+                    StaticPopup_Show("VUI_RELOAD_UI")
                 end
             end
         },
-        showTimers = {
-            key = 'vmodules.vuicc.showTimers',
-            type = 'checkbox',
-            label = 'Show Timers',
-            tooltip = 'Show countdown timers for active CCs',
+        cooldownOpacity = {
+            key = 'vmodules.vuicc.cooldownOpacity',
+            type = 'slider',
+            label = 'Cooldown Opacity',
+            tooltip = 'Set the opacity of the cooldown spiral animation',
+            min = 0,
+            max = 1,
+            step = 0.05,
             column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showTimers = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
+                    module.db.profile.cooldownOpacity = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
                     end
                 end
             end
         },
     })
     
-    -- Size and position configuration
+    -- Font settings
     table.insert(Layout.layout.rows, {
-        iconSize = {
-            key = 'vmodules.vuicc.iconSize',
+        header = {
+            type = 'header',
+            label = 'Font Settings'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        fontSize = {
+            key = 'vmodules.vuicc.fontSize',
             type = 'slider',
-            label = 'Icon Size',
-            tooltip = 'Set the size of CC spell icons',
-            min = 16,
-            max = 64,
+            label = 'Font Size',
+            tooltip = 'Set the size of the cooldown text font',
+            min = 8,
+            max = 36,
             step = 1,
             column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.iconSize = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
+                    module.db.profile.fontSize = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
                     end
                 end
             end
         },
-        maxIcons = {
-            key = 'vmodules.vuicc.maxIcons',
-            type = 'slider',
-            label = 'Maximum Icons',
-            tooltip = 'Maximum number of CC icons to display',
-            min = 3,
-            max = 20,
-            step = 1,
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.maxIcons = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-        growDirection = {
-            key = 'vmodules.vuicc.growDirection',
+        fontOutline = {
+            key = 'vmodules.vuicc.fontOutline',
             type = 'dropdown',
-            label = 'Grow Direction',
-            tooltip = 'Direction in which new icons are added',
+            label = 'Font Outline',
+            tooltip = 'Select the type of outline for cooldown text',
             options = {
-                {value = "DOWN", text = "Down"},
-                {value = "UP", text = "Up"},
-                {value = "LEFT", text = "Left"},
-                {value = "RIGHT", text = "Right"}
+                {value = "NONE", text = "None"},
+                {value = "OUTLINE", text = "Outline"},
+                {value = "THICKOUTLINE", text = "Thick Outline"},
+                {value = "MONOCHROME", text = "Monochrome"}
             },
             column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.fontOutline = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
+                    end
+                end
+            end
+        },
+        scaleText = {
+            key = 'vmodules.vuicc.scaleText',
+            type = 'checkbox',
+            label = 'Scale Text With Icon',
+            tooltip = 'Scale the cooldown text based on the icon size',
+            column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.growDirection = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
+                    module.db.profile.scaleText = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
                     end
                 end
             end
         },
     })
     
-    -- Text and visual settings
+    -- Duration thresholds
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Text and Visuals'
+            label = 'Display Thresholds'
         },
     })
     
-    table.insert(Layout.layout.rows, {
-        showSpellNames = {
-            key = 'vmodules.vuicc.showSpellNames',
-            type = 'checkbox',
-            label = 'Show Spell Names',
-            tooltip = 'Show the names of CC spells',
-            column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.showSpellNames = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-        showTargetNames = {
-            key = 'vmodules.vuicc.showTargetNames',
-            type = 'checkbox',
-            label = 'Show Target Names',
-            tooltip = 'Show the names of CC targets',
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.showTargetNames = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-        textSize = {
-            key = 'vmodules.vuicc.textSize',
-            type = 'slider',
-            label = 'Text Size',
-            tooltip = 'Size of text displayed with CC icons',
-            min = 8,
-            max = 24,
-            step = 1,
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.textSize = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-    })
-    
-    -- Icon appearance
-    table.insert(Layout.layout.rows, {
-        showBorders = {
-            key = 'vmodules.vuicc.showBorders',
-            type = 'checkbox',
-            label = 'Show Icon Borders',
-            tooltip = 'Show borders around CC icons',
-            column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.showBorders = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-        colorByType = {
-            key = 'vmodules.vuicc.colorByType',
-            type = 'checkbox',
-            label = 'Color by CC Type',
-            tooltip = 'Color borders based on CC type (stun, silence, etc.)',
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.colorByType = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-        pulseOnEnd = {
-            key = 'vmodules.vuicc.pulseOnEnd',
-            type = 'checkbox',
-            label = 'Pulse on End',
-            tooltip = 'Make icons pulse when CC is about to end',
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.pulseOnEnd = self:GetValue()
-                end
-            end
-        },
-    })
-    
-    -- Filter settings
-    table.insert(Layout.layout.rows, {
-        header = {
-            type = 'header',
-            label = 'Filter Settings'
-        },
-    })
-    
-    table.insert(Layout.layout.rows, {
-        trackPlayer = {
-            key = 'vmodules.vuicc.trackPlayerCC',
-            type = 'checkbox',
-            label = 'Track Player CCs',
-            tooltip = 'Track crowd control effects applied by you',
-            column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.trackPlayerCC = self:GetValue()
-                end
-            end
-        },
-        trackParty = {
-            key = 'vmodules.vuicc.trackPartyCC',
-            type = 'checkbox',
-            label = 'Track Party CCs',
-            tooltip = 'Track crowd control effects applied by party members',
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.trackPartyCC = self:GetValue()
-                end
-            end
-        },
-        trackEnemy = {
-            key = 'vmodules.vuicc.trackEnemyCC',
-            type = 'checkbox',
-            label = 'Track Enemy CCs',
-            tooltip = 'Track crowd control effects applied by enemies',
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.trackEnemyCC = self:GetValue()
-                end
-            end
-        },
-    })
-    
-    -- CC Type filtering
-    table.insert(Layout.layout.rows, {
-        trackStuns = {
-            key = 'vmodules.vuicc.trackStuns',
-            type = 'checkbox',
-            label = 'Track Stuns',
-            tooltip = 'Track stun effects',
-            column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.trackStuns = self:GetValue()
-                end
-            end
-        },
-        trackSilences = {
-            key = 'vmodules.vuicc.trackSilences',
-            type = 'checkbox',
-            label = 'Track Silences',
-            tooltip = 'Track silence effects',
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.trackSilences = self:GetValue()
-                end
-            end
-        },
-        trackIncapacitates = {
-            key = 'vmodules.vuicc.trackIncapacitates',
-            type = 'checkbox',
-            label = 'Track Incapacitates',
-            tooltip = 'Track incapacitate effects (sap, polymorph, etc.)',
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.trackIncapacitates = self:GetValue()
-                end
-            end
-        },
-    })
-    
-    table.insert(Layout.layout.rows, {
-        trackRoots = {
-            key = 'vmodules.vuicc.trackRoots',
-            type = 'checkbox',
-            label = 'Track Roots',
-            tooltip = 'Track root effects',
-            column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.trackRoots = self:GetValue()
-                end
-            end
-        },
-    })
-    
-    -- Duration filter
     table.insert(Layout.layout.rows, {
         minDuration = {
             key = 'vmodules.vuicc.minDuration',
             type = 'slider',
             label = 'Minimum Duration',
-            tooltip = 'Minimum CC duration to track (in seconds)',
+            tooltip = 'Minimum cooldown duration to display text (in seconds)',
             min = 0,
-            max = 10,
+            max = 30,
             step = 0.5,
-            column = 6,
+            column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.filter.minDuration = self:GetValue()
+                    module.db.profile.minDuration = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
+                    end
                 end
             end
         },
-        maxTracked = {
-            key = 'vmodules.vuicc.maxTracked',
+        minScale = {
+            key = 'vmodules.vuicc.minScale',
             type = 'slider',
-            label = 'Maximum Tracked',
-            tooltip = 'Maximum number of CCs to track per target',
-            min = 1,
-            max = 5,
-            step = 1,
-            column = 6,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.maxTracked = self:GetValue()
-                end
-            end
-        },
-    })
-    
-    -- Notification settings
-    table.insert(Layout.layout.rows, {
-        header = {
-            type = 'header',
-            label = 'Notification Settings'
-        },
-    })
-    
-    table.insert(Layout.layout.rows, {
-        enableSounds = {
-            key = 'vmodules.vuicc.enableSounds',
-            type = 'checkbox',
-            label = 'Enable Sounds',
-            tooltip = 'Play sounds for important CC events',
-            column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.notifications.enableSounds = self:GetValue()
-                end
-            end
-        },
-        announceBreaks = {
-            key = 'vmodules.vuicc.announceBreaks',
-            type = 'checkbox',
-            label = 'Announce Breaks',
-            tooltip = 'Announce when CC effects are broken early',
+            label = 'Minimum Scale',
+            tooltip = 'Minimum scale of an icon to show cooldown text (relative to action button size)',
+            min = 0.1,
+            max = 1,
+            step = 0.05,
             column = 4,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.notifications.announceBreaks = self:GetValue()
+                    module.db.profile.minScale = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
+                    end
                 end
             end
         },
-        showCountdown = {
-            key = 'vmodules.vuicc.showCountdown',
-            type = 'checkbox',
-            label = 'Show Countdown',
-            tooltip = 'Show countdown for CC duration',
+        mmssThreshold = {
+            key = 'vmodules.vuicc.mmssThreshold',
+            type = 'slider',
+            label = 'MM:SS Format Threshold',
+            tooltip = 'Show MM:SS format when cooldown is greater than this value (in seconds)',
+            min = 0,
+            max = 300,
+            step = 10,
             column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.notifications.showCountdown = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
+                    module.db.profile.mmssThreshold = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
                     end
                 end
             end
         },
     })
     
-    -- Instance-specific settings
+    table.insert(Layout.layout.rows, {
+        tenthsThreshold = {
+            key = 'vmodules.vuicc.tenthsThreshold',
+            type = 'slider',
+            label = 'Tenths Format Threshold',
+            tooltip = 'Show tenths of seconds when cooldown is less than this value (in seconds)',
+            min = 0,
+            max = 10,
+            step = 0.5,
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.tenthsThreshold = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Color settings
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Instance Settings'
+            label = 'Color Settings'
         },
     })
     
     table.insert(Layout.layout.rows, {
-        enableInWorld = {
-            key = 'vmodules.vuicc.enableInWorld',
+        useThemeColors = {
+            key = 'vmodules.vuicc.useThemeColors',
             type = 'checkbox',
-            label = 'Enable in World',
-            tooltip = 'Enable CC tracking in the open world',
+            label = 'Use Theme Colors',
+            tooltip = 'Use the VUI theme colors for cooldown text',
             column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.instances.enableInWorld = self:GetValue()
+                    module.db.profile.useThemeColors = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
+                    end
                 end
             end
         },
-        enableInArenas = {
-            key = 'vmodules.vuicc.enableInArenas',
+        useClassColors = {
+            key = 'vmodules.vuicc.useClassColors',
             type = 'checkbox',
-            label = 'Enable in Arenas',
-            tooltip = 'Enable CC tracking in arena PvP',
+            label = 'Use Class Colors',
+            tooltip = 'Use class colors for cooldown text',
             column = 4,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.instances.enableInArenas = self:GetValue()
-                end
-            end
-        },
-        enableInBattlegrounds = {
-            key = 'vmodules.vuicc.enableInBattlegrounds',
-            type = 'checkbox',
-            label = 'Enable in Battlegrounds',
-            tooltip = 'Enable CC tracking in battleground PvP',
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.instances.enableInBattlegrounds = self:GetValue()
+                    module.db.profile.useClassColors = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
+                    end
                 end
             end
         },
     })
     
+    -- Finish effect
     table.insert(Layout.layout.rows, {
-        enableInDungeons = {
-            key = 'vmodules.vuicc.enableInDungeons',
-            type = 'checkbox',
-            label = 'Enable in Dungeons',
-            tooltip = 'Enable CC tracking in dungeons',
-            column = 4,
+        header = {
+            type = 'header',
+            label = 'Finish Effects'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        effect = {
+            key = 'vmodules.vuicc.effect',
+            type = 'dropdown',
+            label = 'Finish Effect',
+            tooltip = 'Effect to show when a cooldown completes',
+            options = {
+                {value = "NONE", text = "None"},
+                {value = "PULSE", text = "Pulse"},
+                {value = "SHINE", text = "Shine"},
+                {value = "ALERT", text = "Alert"},
+                {value = "FLARE", text = "Flare"}
+            },
+            column = 6,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.instances.enableInDungeons = self:GetValue()
-                end
-            end
-        },
-        enableInRaids = {
-            key = 'vmodules.vuicc.enableInRaids',
-            type = 'checkbox',
-            label = 'Enable in Raids',
-            tooltip = 'Enable CC tracking in raids',
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.instances.enableInRaids = self:GetValue()
-                end
-            end
-        },
-        testMode = {
-            type = 'button',
-            label = 'Test Mode',
-            tooltip = 'Toggle test mode to preview CC display',
-            column = 4,
-            order = 3,
-            callback = function()
-                if module and module.ToggleTestMode then
-                    module:ToggleTestMode()
+                    module.db.profile.effect = self:GetValue()
+                    if module.RefreshConfig then
+                        module:RefreshConfig()
+                    end
                 end
             end
         },
@@ -543,30 +315,18 @@ function Layout:BuildModuleLayout(module, db)
     })
     
     table.insert(Layout.layout.rows, {
-        openConfig = {
+        openOptions = {
             type = 'button',
             label = 'Open Full Configuration',
-            tooltip = 'Open the detailed VUICC configuration panel',
+            tooltip = 'Open the detailed cooldown counter configuration panel',
             column = 6,
             order = 1,
             callback = function()
-                if module and module.OpenOptions then
-                    module:OpenOptions()
+                if module and module.SlashCommand then
+                    module:SlashCommand("")
                 end
             end
-        },
-        resetPositions = {
-            type = 'button',
-            label = 'Reset Positions',
-            tooltip = 'Reset the position of all frames',
-            column = 6,
-            order = 2,
-            callback = function()
-                if module and module.ResetPositions then
-                    module:ResetPositions()
-                end
-            end
-        },
+        }
     })
 end
 

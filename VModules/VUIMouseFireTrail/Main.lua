@@ -181,6 +181,11 @@ function M:OnEnable()
         pcall(function() self:InitializeTrailSystem() end)
     end
     
+    -- Call the TrailSystem Initialize method if it exists
+    if self.Initialize and type(self.Initialize) == "function" then
+        pcall(function() self:Initialize() end)
+    end
+    
     -- Register events with safety check
     if self.RegisterEvent and type(self.RegisterEvent) == "function" then
         pcall(function() self:RegisterEvent("PLAYER_ENTERING_WORLD") end)
@@ -275,4 +280,60 @@ end
 -- Debug function
 function M:Debug(...)
     VUI:Debug(self.NAME, ...)
+end
+
+-- UpdateSettings function to handle configuration changes
+function M:UpdateSettings()
+    -- Re-create the trail frames with new settings
+    if self.InitializeTrailSystem and type(self.InitializeTrailSystem) == "function" then
+        pcall(function() 
+            -- If the system is already initialized, just recreate the frames
+            if self.parentFrame then
+                self:CreateTrailFrames()
+            else
+                -- Otherwise fully initialize the system
+                self:InitializeTrailSystem() 
+            end
+        end)
+    end
+    
+    -- Update any theme-related settings
+    if self.UpdateTheme and type(self.UpdateTheme) == "function" then
+        pcall(function() self:UpdateTheme() end)
+    end
+    
+    -- Validate textures if settings changed
+    if self.ValidateTextures and type(self.ValidateTextures) == "function" then
+        pcall(function() self:ValidateTextures() end)
+    end
+    
+    -- Debug message
+    self:Debug("Settings updated")
+end
+
+-- Function to open configuration panel
+function M:OpenConfig()
+    if VUI and VUI.Config and VUI.Config.OpenToCategory then
+        VUI.Config:OpenToCategory(self.TITLE)
+    end
+end
+
+-- Clean up effects and frames
+function M:CleanupEffects()
+    if self.parentFrame then
+        self.parentFrame:SetScript("OnUpdate", nil)
+        self.parentFrame:Hide()
+    end
+    
+    -- Clean up any line textures
+    if self.lineTextures then
+        for i = 1, #self.lineTextures do
+            if self.lineTextures[i] then
+                self.lineTextures[i]:Hide()
+                self.lineTextures[i]:SetParent(nil)
+                self.lineTextures[i] = nil
+            end
+        end
+        wipe(self.lineTextures)
+    end
 end

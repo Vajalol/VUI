@@ -1,7 +1,6 @@
 -- VUIGfinder Theme Integration
 -- Handles theme color integration with VUI
 
-<<<<<<< HEAD
 -- Create global aliases for backward compatibility
 _G.VUIFinder = _G.VUIFinder or _G.VUIGfinder or {}
 _G.VUIGfinder = _G.VUIGfinder or {}
@@ -9,11 +8,6 @@ _G.VUIGfinder = _G.VUIGfinder or {}
 local VUI = _G.VUI
 local VUIGfinderModule
 local L = PGFinderLocals or {}; -- Strings with fallback
-=======
-local VUI = _G.VUI
-local VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
-local L = PGFinderLocals; -- Strings
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Theme elements that need to be updated
 local themeElements = {}
@@ -96,7 +90,6 @@ end
 -- Initialize theme support
 local function InitializeThemeSupport()
     VUI = _G.VUI
-<<<<<<< HEAD
     if not VUI then 
         -- Create a minimal fallback for VUIGfinderModule if VUI isn't available
         VUIGfinderModule = {
@@ -135,9 +128,6 @@ local function InitializeThemeSupport()
     elseif not VUIGfinderModule.db.profile.theme then
         VUIGfinderModule.db.profile.theme = {useVUITheme = true}
     end
-=======
-    VUIGfinderModule = VUI.VUIGfinder or VUI:GetModule("VUIGfinder")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     
     -- Set up callback when theme changes
     if VUI and VUI.RegisterCallback and type(VUI.RegisterCallback) == "function" then

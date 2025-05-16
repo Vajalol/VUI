@@ -3,12 +3,8 @@
 -- Based on source: https://wago.io/whiiskeyzplater
 
 local AddonName, VUI = ...
-<<<<<<< HEAD
 local M = VUI and VUI.VUIPlater or {}
 if not M then return end
-=======
-local M = VUI.VUIPlater or VUI:GetModule("VUIPlater")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 local PlaterService = {}
 M.PlaterService = PlaterService
 

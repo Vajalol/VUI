@@ -1,14 +1,8 @@
 -- VUIKeystones - Keystone functionality
-<<<<<<< HEAD
 -- Use global reference instead of AceAddon-3.0 to fix load order issues
 local VUIKeystones = _G["VUIKeystones"]
 local Keystone = VUIKeystones.Modules and VUIKeystones:NewModule('Keystone') or {}
 local L = VUIKeystones.L or {}
-=======
-local VUIKeystones = _G.VUIKeystones or {}
-local Keystone = VUIKeystones:NewModule('Keystone')
-local L = VUIKeystones.L
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Local variables
 local isHooked = false

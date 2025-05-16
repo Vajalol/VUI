@@ -1,5 +1,4 @@
 local _, VUI = ...
-<<<<<<< HEAD
 
 -- Use global reference pattern to avoid load order issues
 _G["VUICD"] = _G["VUICD"] or {}
@@ -50,11 +49,6 @@ if not try then
     AceGUI.Create = function() return {} end
     print("VUICD Error: AceGUI-3.0 not found")
 end
-=======
-local E = VUI.VUICD or VUI:GetModule("VUICD")
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
-local AceGUI = LibStub("AceGUI-3.0")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Spell Editor for VUICD
 local editor = {}

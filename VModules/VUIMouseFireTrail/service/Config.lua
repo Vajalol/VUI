@@ -2,12 +2,8 @@
 -- Handles configuration options and integration with VUI config panel
 
 local AddonName, VUI = ...
-<<<<<<< HEAD
 local M = VUI and VUI.VUIMouseFireTrail or {}
 if not M then return end
-=======
-local M = VUI.VUIMouseFireTrail or VUI:GetModule("VUIMouseFireTrail")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Open the config panel
 function M:OpenConfig()

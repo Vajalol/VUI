@@ -1,5 +1,4 @@
 local _, VUI = ...
-<<<<<<< HEAD
 
 -- Use global reference pattern to avoid load order issues
 _G["VUICD"] = _G["VUICD"] or {}
@@ -37,9 +36,6 @@ VUICD.L = VUICD.L or L
 
 -- Local references
 local E = VUICD
-=======
-local E = VUI.VUICD or VUI:GetModule("VUICD")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 local P = E.Party
 
 -- Ensure Party module DB exists

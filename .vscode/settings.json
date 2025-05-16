@@ -12,7 +12,7 @@
         "utf8": "disable"
     },
     "Lua.workspace.library": [
-        "c:\\Users\\HaMNi\\.cursor\\extensions\\ketho.wow-api-0.20.6\\Annotations\\Core"
+        "c:\\Users\\HaMNi\\.windsurf\\extensions\\ketho.wow-api-0.20.6\\Annotations\\Core"
     ],
     "Lua.diagnostics.globals": [
         "ReloadUI",
@@ -1077,6 +1077,36 @@
         "ProfessionsRecipeSchematicFormMixin",
         "HP",
         "UIDropDownMenu_SetSelectedValue",
-        "UIDropDownMenu_GetSelectedValue"
+        "UIDropDownMenu_GetSelectedValue",
+        "ERR_ABILITY_COOLDOWN",
+        "ERR_ATTACK_CHARMED",
+        "ERR_ATTACK_CONFUSED",
+        "ERR_ATTACK_DEAD",
+        "ERR_ATTACK_FLEEING",
+        "ERR_ATTACK_PACIFIED",
+        "ERR_ATTACK_STUNNED",
+        "ERR_AUTOFOLLOW_TOO_FAR",
+        "ERR_BADATTACKFACING",
+        "ERR_BADATTACKPOS",
+        "ERR_CLIENT_LOCKED_OUT",
+        "ERR_GENERIC_NO_TARGET",
+        "ERR_INVALID_ATTACK_TARGET",
+        "ERR_ITEM_COOLDOWN",
+        "ERR_NOEMOTEWHILERUNNING",
+        "ERR_NOT_ENOUGH_MONEY",
+        "ERR_OUT_OF_ENERGY",
+        "ERR_OUT_OF_FOCUS",
+        "ERR_OUT_OF_HEALTH",
+        "ERR_OUT_OF_MANA",
+        "ERR_OUT_OF_RAGE",
+        "ERR_OUT_OF_RANGE",
+        "ERR_OUT_OF_RUNES",
+        "ERR_OUT_OF_RUNIC_POWER",
+        "ERR_SPELL_COOLDOWN",
+        "ERR_SPELL_OUT_OF_RANGE",
+        "ERR_SPELL_FAILED_ANOTHER_IN_PROGRESS",
+        "SPELL_FAILED_NOT_BEHIND",
+        "SPELL_FAILED_TOO_CLOSE",
+        "SPELL_FAILED_CUSTOM_ERROR_162"
     ]
 }

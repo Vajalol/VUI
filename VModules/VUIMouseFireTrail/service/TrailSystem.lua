@@ -2,14 +2,10 @@
 -- Core system for managing and rendering cursor trails
 
 local AddonName, VUI = ...
-<<<<<<< HEAD
 local M = VUI and VUI.VUIMouseFireTrail or {}
 
 -- Skip if module isn't available
 if not M then return end
-=======
-local M = VUI.VUIMouseFireTrail or VUI:GetModule("VUIMouseFireTrail")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Local variables
 local GetCursorPosition = GetCursorPosition
@@ -447,7 +443,6 @@ function M:UpdateGlowTrail()
         -- Create glow if it doesn't exist
         if not frame.glow then
             frame.glow = frame:CreateTexture(nil, "BACKGROUND")
-            frame.glow:SetAllPoints()
             frame.glow:SetTexture(frame.texture:GetTexture())
             frame.glow:SetBlendMode("ADD")
         end
@@ -458,14 +453,27 @@ function M:UpdateGlowTrail()
         
         -- Animate glow if pulsing is enabled
         if self.db.profile.pulsingGlow then
-            -- Simple pulsing animation
-            local factor = (math.sin(GetTime() * 3) + 1) / 2 -- 0 to 1
-            local pulsedSize = size * (1 + factor * 0.3)
+            -- Simple pulsing animation based on time
+            local pulseFactor = (math.sin(GetTime() * 3) + 1) / 2 -- 0 to 1
+            local pulsedSize = size * (1 + pulseFactor * 0.3)
+            
+            -- Apply the pulsing effect
+            frame.glow:ClearAllPoints()
+            frame.glow:SetPoint("CENTER", frame, "CENTER")
             frame.glow:SetSize(pulsedSize, pulsedSize)
+            
+            -- Also pulse the alpha for more dramatic effect
+            local pulseAlpha = 0.4 + (pulseFactor * 0.3)
+            frame.glow:SetAlpha(pulseAlpha)
         else
             -- Static glow
+            frame.glow:ClearAllPoints()
             frame.glow:SetAllPoints()
+            frame.glow:SetAlpha(0.7)
         end
+        
+        -- Show the glow
+        frame.glow:Show()
     elseif frame.glow then
         -- Hide glow if disabled
         frame.glow:Hide()
@@ -474,8 +482,100 @@ end
 
 -- Connect trail segments with lines
 function M:ConnectTrailSegments()
-    -- This would need a LineTexture implementation
-    -- For now, we'll just leave it as a placeholder
+    -- Skip if less than 2 visible segments
+    local visibleCount = 0
+    local visibleFrames = {}
+    
+    -- Find visible frames
+    for i = 1, self.db.profile.trailCount do
+        if trailFrames[i] and trailFrames[i]:IsVisible() then
+            visibleCount = visibleCount + 1
+            visibleFrames[visibleCount] = i
+        end
+    end
+    
+    -- Need at least 2 frames to connect
+    if visibleCount < 2 then return end
+    
+    -- Create or get the line textures
+    if not self.lineTextures then
+        self.lineTextures = {}
+    end
+    
+    -- Ensure we have enough line textures
+    while #self.lineTextures < visibleCount - 1 do
+        local lineFrame = CreateFrame("Frame", nil, self.parentFrame)
+        lineFrame:SetFrameStrata("BACKGROUND")
+        lineFrame:SetFrameLevel(1) -- Below particle frames
+        
+        local texture = lineFrame:CreateTexture(nil, "ARTWORK")
+        texture:SetTexture("Interface\\AddOns\\VUI\\VModules\\VUIMouseFireTrail\\media\\textures\\glow.tga")
+        texture:SetBlendMode("ADD")
+        
+        -- Get color from first trail frame
+        if trailFrames[1] and trailFrames[1].texture then
+            local r, g, b = trailFrames[1].texture:GetVertexColor()
+            texture:SetVertexColor(r, g, b, 0.5) -- Half alpha for lines
+        else
+            texture:SetVertexColor(1, 1, 1, 0.5)
+        end
+        
+        lineFrame.texture = texture
+        table.insert(self.lineTextures, lineFrame)
+    end
+    
+    -- Draw lines between visible frames
+    for i = 1, visibleCount - 1 do
+        local idx1 = visibleFrames[i]
+        local idx2 = visibleFrames[i+1]
+        local frame1 = trailFrames[idx1]
+        local frame2 = trailFrames[idx2]
+        
+        -- Get positions
+        local x1, y1 = frame1:GetCenter()
+        local x2, y2 = frame2:GetCenter()
+        
+        -- Calculate line properties
+        local distance = math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+        local angle = math.atan2(y2 - y1, x2 - x1)
+        
+        -- Apply properties to the line texture
+        local lineFrame = self.lineTextures[i]
+        lineFrame:ClearAllPoints()
+        lineFrame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", (x1 + x2) / 2, (y1 + y2) / 2)
+        lineFrame:SetWidth(distance)
+        lineFrame:SetHeight(self.db.profile.trailSize / 4) -- Thinner than particles
+        
+        -- Adjust texture coordinates to rotate instead of using SetRotation
+        -- We'll use the texture itself to handle rotation
+        if lineFrame.texture then
+            -- Store the rotation angle on the frame for future reference
+            lineFrame.rotation = angle
+            
+            -- Apply the rotation by adjusting the texture coordinates
+            local sin, cos = math.sin(angle), math.cos(angle)
+            lineFrame.texture:SetTexCoord(
+                0.5 - cos * 0.5 - sin * 0.5, 0.5 + cos * 0.5 - sin * 0.5,
+                0.5 - cos * 0.5 + sin * 0.5, 0.5 + cos * 0.5 + sin * 0.5
+            )
+            
+            -- Make sure texture covers the full frame
+            lineFrame.texture:SetAllPoints()
+        end
+        
+        lineFrame:Show()
+        
+        -- Update line color to match particles
+        if frame1.texture then
+            local r, g, b = frame1.texture:GetVertexColor()
+            lineFrame.texture:SetVertexColor(r, g, b, 0.5)
+        end
+    end
+    
+    -- Hide unused line textures
+    for i = visibleCount, #self.lineTextures do
+        self.lineTextures[i]:Hide()
+    end
 end
 
 -- Initialize the module

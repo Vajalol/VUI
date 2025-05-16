@@ -20,7 +20,6 @@ local resultsInfoFrame
 -- Initialize the UI
 local function InitializeUI()
     VUI = _G.VUI
-<<<<<<< HEAD
     
     -- Try to get the module, but handle the case where it doesn't exist
     if VUI then
@@ -37,9 +36,6 @@ local function InitializeUI()
             }
         end
     end
-=======
-    VUIGfinderModule = VUI and (VUI.VUIGfinder or VUI:GetModule("VUIGfinder"))
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
     
     -- Create main UI frame if it doesn't exist yet
     if not mainFrame then

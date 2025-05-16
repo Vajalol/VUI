@@ -1,12 +1,7 @@
 -- VUIKeystones - Media path handler
-<<<<<<< HEAD
 -- Use global reference instead of AceAddon-3.0 to fix load order issues
 local VUIKeystones = _G["VUIKeystones"]
 local L = VUIKeystones.L or {}
-=======
-local VUIKeystones = _G.VUIKeystones or {}
-local L = VUIKeystones.L
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Media paths
 local MEDIA_PATH = "Interface\\AddOns\\VUI\\Media\\modules\\VUIKeystones\\"

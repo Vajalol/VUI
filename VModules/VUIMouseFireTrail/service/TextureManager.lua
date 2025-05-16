@@ -153,77 +153,45 @@ function M:ValidateTextures()
 
     -- Function to validate a texture file
     local function validateTexture(path)
-        -- Extract just the filename part
-        local filename = path:match("([^\\]+)%.tga$")
-        if not filename then
-            return false
-        end
-        
-        -- Check if texture exists by trying to create a test frame
-        local testFrame = CreateFrame("Frame", nil, UIParent)
-        local texture = testFrame:CreateTexture(nil, "ARTWORK")
+        -- Create a test frame with the texture to check if it loads
+        local testFrame = CreateFrame("Frame")
+        local texture = testFrame:CreateTexture()
         texture:SetTexture(path)
         
-        -- Get dimensions to check if texture is valid
-        local width, height = texture:GetTexCoord()
+        -- Try to get the width of the texture - invalid textures will have zero width
+        local width = texture:GetWidth()
         testFrame:Hide()
         
-        -- If dimensions are 0, texture is missing
-        if width == 0 and height == 0 then
-            table.insert(missingTextures, path)
-            return false
-        end
-        
-        return true
+        return width and width > 0
     end
     
-    -- Define fallback textures for each category
-    local fallbackTextures = {
-        Basic = "Interface\\ICONS\\INV_Enchant_EssenceCosmicGreater",
-        Flame = "Interface\\ICONS\\Spell_Fire_Fire",
-        Bubble = "Interface\\ICONS\\INV_Alchemy_Elixir_04",
-        Circle = "Interface\\ICONS\\INV_Misc_Coin_01",
-        Fantasy = "Interface\\ICONS\\Spell_Holy_HolyBolt",
-        Heart = "Interface\\ICONS\\INV_ValentinesCard02",
-        Magic = "Interface\\ICONS\\Spell_Arcane_Arcane01",
-        Military = "Interface\\ICONS\\INV_ThrowingAxe_01",
-        Nature = "Interface\\ICONS\\INV_Misc_Herb_01",
-        Shapes = "Interface\\ICONS\\INV_Jewelry_Ring_36",
-        Star = "Interface\\ICONS\\Spell_Holy_BlessingOfProtection",
-    }
-    
-    -- Validate all textures in all categories
+    -- Check each texture in each category
     for category, textures in pairs(M.Textures) do
-        local useFallback = false
+        VUI:Debug("VUIMouseFireTrail", "Validating " .. category .. " textures")
         
-        -- Check if any texture in this category is valid
         for i, path in ipairs(textures) do
             if not validateTexture(path) then
-                useFallback = true
-                break
+                VUI:Debug("VUIMouseFireTrail", "Missing texture: " .. path)
+                table.insert(missingTextures, path)
+                
+                -- Replace with fallback texture
+                M.Textures[category][i] = "Interface\\ICONS\\INV_Misc_QuestionMark"
             end
-        end
-        
-        -- If we need to use fallbacks for this category
-        if useFallback then
-            -- Find an appropriate fallback texture
-            local fallbackTexture = fallbackTextures[category] or "Interface\\Icons\\INV_Misc_QuestionMark"
-            
-            -- Replace all textures in this category
-            local newTextures = {}
-            table.insert(newTextures, fallbackTexture)
-            
-            -- Replace the textures table for this category
-            M.Textures[category] = newTextures
-            M.DefaultTextures[category] = fallbackTexture
-            
-            -- Log that we're using fallbacks
-            print("|cffff9900VUIMouseFireTrail:|r Using fallback textures for category: " .. category)
         end
     end
     
-    -- Return the list of missing textures
-    return missingTextures
+    -- Check if glow.tga exists, as it's used for line connections
+    if not validateTexture("Interface\\AddOns\\VUI\\VModules\\VUIMouseFireTrail\\media\\textures\\glow.tga") then
+        -- Create a simple fallback
+        VUI:Debug("VUIMouseFireTrail", "Missing glow texture, using fallback")
+    end
+    
+    -- Report if any textures were missing
+    if #missingTextures > 0 then
+        VUI:Debug("VUIMouseFireTrail", "Total missing textures: " .. #missingTextures)
+    else
+        VUI:Debug("VUIMouseFireTrail", "All textures validated")
+    end
 end
 
 -- Create a plain color texture for testing or when files are missing
@@ -239,5 +207,12 @@ function M:CreateColorTexture(r, g, b, a)
         local tex = frame:CreateTexture(nil, "ARTWORK")
         tex:SetColorTexture(r, g, b, a)
         return tex
+    end
+end
+
+-- Apply all changes to the module
+for k, v in pairs(M) do
+    if type(v) == "function" then
+        VUI.VUIMouseFireTrail[k] = v
     end
 end

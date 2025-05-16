@@ -1,18 +1,754 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-  <Frame name="AuctionatorTabTemplate" virtual="true" inherits="AuctionatorTabFrameTemplate" mixin="AuctionatorAuctionatorTabMixin">
+  <Frame name="AuctionatorConfigTabFrameTemplate" virtual="true" mixin="AuctionatorConfigTabMixin">
+    <Size x="550" y="400"/>
+    
     <Layers>
+      <Layer level="BACKGROUND">
+        <Texture name="$parentBackground" parentKey="Background" setAllPoints="true">
+          <Color r="0.1" g="0.1" b="0.1" a="0.8"/>
+        </Texture>
+      </Layer>
+      <Layer level="BORDER">
+        <Texture name="$parentBorder" parentKey="Border" setAllPoints="true">
+          <Color r="0.6" g="0.6" b="0.6" a="0.5"/>
+        </Texture>
+      </Layer>
       <Layer level="ARTWORK">
-        <FontString parentKey="TitleText" inherits="GameFontNormal" text="Auctionator">
+        <FontString name="$parentTitle" parentKey="Title" inherits="GameFontNormal" text="Auctionator Settings">
           <Anchors>
-            <Anchor point="TOP" x="0" y="-8"/>
+            <Anchor point="TOP" x="0" y="-10"/>
           </Anchors>
         </FontString>
       </Layer>
     </Layers>
+    
+    <Frames>
+      <!-- Category List Frame -->
+      <Frame name="$parentCategoryList" parentKey="CategoryList">
+        <Size x="140" y="335"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" x="15" y="-40"/>
+          <Anchor point="BOTTOMLEFT" x="15" y="25"/>
+        </Anchors>
+        
+        <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+          <BackgroundInsets>
+            <AbsInset left="4" right="4" top="4" bottom="4"/>
+          </BackgroundInsets>
+          <TileSize>
+            <AbsValue val="16"/>
+          </TileSize>
+          <EdgeSize>
+            <AbsValue val="16"/>
+          </EdgeSize>
+        </Backdrop>
+        
+        <Frames>
+          <!-- Category Buttons -->
+          <Button name="$parentCategory1" parentKey="Category1" inherits="UIPanelButtonTemplate">
+            <Size x="120" y="24"/>
+            <Anchors>
+              <Anchor point="TOP" x="0" y="-10"/>
+            </Anchors>
+            <Layers>
+              <Layer level="OVERLAY">
+                <FontString name="$parentText" parentKey="Text" inherits="GameFontNormal" text="General">
+                  <Anchors>
+                    <Anchor point="CENTER"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+          </Button>
+          
+          <Button name="$parentCategory2" parentKey="Category2" inherits="UIPanelButtonTemplate">
+            <Size x="120" y="24"/>
+            <Anchors>
+              <Anchor point="TOP" relativeKey="$parent.Category1" relativePoint="BOTTOM" x="0" y="-5"/>
+            </Anchors>
+            <Layers>
+              <Layer level="OVERLAY">
+                <FontString name="$parentText" parentKey="Text" inherits="GameFontNormal" text="Selling">
+                  <Anchors>
+                    <Anchor point="CENTER"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+          </Button>
+          
+          <Button name="$parentCategory3" parentKey="Category3" inherits="UIPanelButtonTemplate">
+            <Size x="120" y="24"/>
+            <Anchors>
+              <Anchor point="TOP" relativeKey="$parent.Category2" relativePoint="BOTTOM" x="0" y="-5"/>
+            </Anchors>
+            <Layers>
+              <Layer level="OVERLAY">
+                <FontString name="$parentText" parentKey="Text" inherits="GameFontNormal" text="Shopping">
+                  <Anchors>
+                    <Anchor point="CENTER"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+          </Button>
+          
+          <Button name="$parentCategory4" parentKey="Category4" inherits="UIPanelButtonTemplate">
+            <Size x="120" y="24"/>
+            <Anchors>
+              <Anchor point="TOP" relativeKey="$parent.Category3" relativePoint="BOTTOM" x="0" y="-5"/>
+            </Anchors>
+            <Layers>
+              <Layer level="OVERLAY">
+                <FontString name="$parentText" parentKey="Text" inherits="GameFontNormal" text="Cancelling">
+                  <Anchors>
+                    <Anchor point="CENTER"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+          </Button>
+          
+          <Button name="$parentCategory5" parentKey="Category5" inherits="UIPanelButtonTemplate">
+            <Size x="120" y="24"/>
+            <Anchors>
+              <Anchor point="TOP" relativeKey="$parent.Category4" relativePoint="BOTTOM" x="0" y="-5"/>
+            </Anchors>
+            <Layers>
+              <Layer level="OVERLAY">
+                <FontString name="$parentText" parentKey="Text" inherits="GameFontNormal" text="Tooltips">
+                  <Anchors>
+                    <Anchor point="CENTER"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+          </Button>
+          
+          <Button name="$parentCategory6" parentKey="Category6" inherits="UIPanelButtonTemplate">
+            <Size x="120" y="24"/>
+            <Anchors>
+              <Anchor point="TOP" relativeKey="$parent.Category5" relativePoint="BOTTOM" x="0" y="-5"/>
+            </Anchors>
+            <Layers>
+              <Layer level="OVERLAY">
+                <FontString name="$parentText" parentKey="Text" inherits="GameFontNormal" text="Advanced">
+                  <Anchors>
+                    <Anchor point="CENTER"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+          </Button>
+        </Frames>
+      </Frame>
+      
+      <!-- Content Frame -->
+      <Frame name="$parentContent" parentKey="Content">
+        <Size x="365" y="335"/>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeKey="$parent.CategoryList" relativePoint="TOPRIGHT" x="10" y="0"/>
+          <Anchor point="BOTTOMLEFT" relativeKey="$parent.CategoryList" relativePoint="BOTTOMRIGHT" x="10" y="0"/>
+        </Anchors>
+        
+        <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+          <BackgroundInsets>
+            <AbsInset left="4" right="4" top="4" bottom="4"/>
+          </BackgroundInsets>
+          <TileSize>
+            <AbsValue val="16"/>
+          </TileSize>
+          <EdgeSize>
+            <AbsValue val="16"/>
+          </EdgeSize>
+        </Backdrop>
+        
+        <!-- Configuration Sections -->
+        
+        <!-- General Options -->
+        <Frames>
+          <Frame name="$parentGeneralOptions" parentKey="GeneralOptions">
+            <Size x="340" y="310"/>
+            <Anchors>
+              <Anchor point="CENTER"/>
+            </Anchors>
+            
+            <Frames>
+              <CheckButton name="$parentAuctionChatMessages" parentKey="AuctionChatMessages" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" x="10" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Show auction chat messages">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentAutoOpenBrowse" parentKey="AutoOpenBrowse" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.AuctionChatMessages" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Auto open Browse tab">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentAutoOpenSell" parentKey="AutoOpenSell" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.AutoOpenBrowse" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Auto open Selling tab">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentShowBidPrice" parentKey="ShowBidPrice" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.AutoOpenSell" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Show bid prices">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <!-- Default Duration Dropdown -->
+              <Frame name="$parentDefaultDuration" parentKey="DefaultDuration" inherits="UIDropDownMenuTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.ShowBidPrice" relativePoint="BOTTOMLEFT" x="-15" y="-40"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentLabel" inherits="GameFontNormal" text="Default auction duration:">
+                      <Anchors>
+                        <Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" x="20" y="5"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </Frame>
+            </Frames>
+          </Frame>
+          
+          <!-- Selling Options -->
+          <Frame name="$parentSellingOptions" parentKey="SellingOptions" hidden="true">
+            <Size x="340" y="310"/>
+            <Anchors>
+              <Anchor point="CENTER"/>
+            </Anchors>
+            
+            <Frames>
+              <CheckButton name="$parentAutomaticUndercut" parentKey="AutomaticUndercut" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" x="10" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Automatically undercut prices">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentSaveLastPriceAsDefault" parentKey="SaveLastPriceAsDefault" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.AutomaticUndercut" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Save last used price as default">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentShowStackSize" parentKey="ShowStackSize" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.SaveLastPriceAsDefault" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Show stack size in listings">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentAutoSelectNext" parentKey="AutoSelectNext" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.ShowStackSize" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Auto-select next item after posting">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <!-- Undercut Percentage -->
+              <EditBox name="$parentUndercutPercentage" parentKey="UndercutPercentage" autoFocus="false" inherits="InputBoxTemplate">
+                <Size x="50" y="22"/>
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.AutoSelectNext" relativePoint="BOTTOMLEFT" x="25" y="-25"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentLabel" inherits="GameFontNormal" text="Undercut percentage:">
+                      <Anchors>
+                        <Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" x="-25" y="5"/>
+                      </Anchors>
+                    </FontString>
+                    <FontString name="$parentSuffix" inherits="GameFontNormal" text="%">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </EditBox>
+            </Frames>
+          </Frame>
+          
+          <!-- Shopping Options -->
+          <Frame name="$parentShoppingOptions" parentKey="ShoppingOptions" hidden="true">
+            <Size x="340" y="310"/>
+            <Anchors>
+              <Anchor point="CENTER"/>
+            </Anchors>
+            
+            <Frames>
+              <CheckButton name="$parentShowHistoryInTooltip" parentKey="ShowHistoryInTooltip" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" x="10" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Show search history in tooltip">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentAutoFocusSearchBox" parentKey="AutoFocusSearchBox" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.ShowHistoryInTooltip" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Auto-focus search box">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentConfirmBidPurchase" parentKey="ConfirmBidPurchase" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.AutoFocusSearchBox" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Confirm before bidding">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+            </Frames>
+          </Frame>
+          
+          <!-- Cancelling Options -->
+          <Frame name="$parentCancellingOptions" parentKey="CancellingOptions" hidden="true">
+            <Size x="340" y="310"/>
+            <Anchors>
+              <Anchor point="CENTER"/>
+            </Anchors>
+            
+            <Frames>
+              <CheckButton name="$parentAutoRefreshUndercutScan" parentKey="AutoRefreshUndercutScan" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" x="10" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Auto-refresh undercut scan">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentConfirmCancelAll" parentKey="ConfirmCancelAll" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.AutoRefreshUndercutScan" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Confirm before cancelling multiple auctions">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+            </Frames>
+          </Frame>
+          
+          <!-- Tooltip Options -->
+          <Frame name="$parentTooltipOptions" parentKey="TooltipOptions" hidden="true">
+            <Size x="340" y="310"/>
+            <Anchors>
+              <Anchor point="CENTER"/>
+            </Anchors>
+            
+            <Frames>
+              <CheckButton name="$parentShowVendorPrice" parentKey="ShowVendorPrice" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" x="10" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Show vendor price">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentShowAuctionPrice" parentKey="ShowAuctionPrice" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.ShowVendorPrice" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Show auction price">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentShowDisenchantPrice" parentKey="ShowDisenchantPrice" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.ShowAuctionPrice" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Show disenchant value">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <CheckButton name="$parentShowHistoricalPrice" parentKey="ShowHistoricalPrice" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.ShowDisenchantPrice" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Show historical price">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+            </Frames>
+          </Frame>
+          
+          <!-- Advanced Options -->
+          <Frame name="$parentAdvancedOptions" parentKey="AdvancedOptions" hidden="true">
+            <Size x="340" y="310"/>
+            <Anchors>
+              <Anchor point="CENTER"/>
+            </Anchors>
+            
+            <Frames>
+              <CheckButton name="$parentDebug" parentKey="Debug" inherits="UICheckButtonTemplate">
+                <Anchors>
+                  <Anchor point="TOPLEFT" x="10" y="-10"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentText" inherits="GameFontNormal" text="Enable debug mode">
+                      <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="5" y="0"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </CheckButton>
+              
+              <!-- Full Scan Interval -->
+              <EditBox name="$parentFullScanInterval" parentKey="FullScanInterval" autoFocus="false" inherits="InputBoxTemplate">
+                <Size x="50" y="22"/>
+                <Anchors>
+                  <Anchor point="TOPLEFT" relativeKey="$parent.Debug" relativePoint="BOTTOMLEFT" x="25" y="-25"/>
+                </Anchors>
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentLabel" inherits="GameFontNormal" text="Full scan interval (minutes):">
+                      <Anchors>
+                        <Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" x="-25" y="5"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </EditBox>
+            </Frames>
+          </Frame>
+          
+          <!-- Statistics Panel -->
+          <Frame name="$parentStatistics" parentKey="Statistics" hidden="true">
+            <Size x="340" y="310"/>
+            <Anchors>
+              <Anchor point="CENTER"/>
+            </Anchors>
+            
+            <Layers>
+              <Layer level="ARTWORK">
+                <FontString name="$parentHeader" inherits="GameFontNormalLarge" text="Auction Statistics">
+                  <Anchors>
+                    <Anchor point="TOPLEFT" x="10" y="-10"/>
+                  </Anchors>
+                </FontString>
+              </Layer>
+            </Layers>
+            
+            <Frames>
+              <!-- Selling Stats -->
+              <Frame name="$parentSellingStats" parentKey="SellingStats">
+                <Size x="320" y="80"/>
+                <Anchors>
+                  <Anchor point="TOP" x="0" y="-40"/>
+                </Anchors>
+                
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentHeader" inherits="GameFontNormal" text="Selling Statistics:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="0" y="0"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentTotalSoldLabel" inherits="GameFontHighlight" text="Total Items Sold:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-20"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentTotalSold" parentKey="TotalSold" inherits="GameFontHighlight" text="0">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="140" y="-20"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentGoldEarnedLabel" inherits="GameFontHighlight" text="Gold Earned:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-40"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentGoldEarned" parentKey="GoldEarned" inherits="GameFontHighlight" text="0g 0s 0c">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="140" y="-40"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentAvgSellTimeLabel" inherits="GameFontHighlight" text="Avg Sell Time:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-60"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentAvgSellTime" parentKey="AvgSellTime" inherits="GameFontHighlight" text="N/A">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="140" y="-60"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </Frame>
+              
+              <!-- Buying Stats -->
+              <Frame name="$parentBuyingStats" parentKey="BuyingStats">
+                <Size x="320" y="80"/>
+                <Anchors>
+                  <Anchor point="TOP" relativeKey="$parent.SellingStats" relativePoint="BOTTOM" x="0" y="-10"/>
+                </Anchors>
+                
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentHeader" inherits="GameFontNormal" text="Buying Statistics:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="0" y="0"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentTotalBoughtLabel" inherits="GameFontHighlight" text="Total Items Bought:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-20"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentTotalBought" parentKey="TotalBought" inherits="GameFontHighlight" text="0">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="140" y="-20"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentGoldSpentLabel" inherits="GameFontHighlight" text="Gold Spent:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-40"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentGoldSpent" parentKey="GoldSpent" inherits="GameFontHighlight" text="0g 0s 0c">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="140" y="-40"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentSearchesMadeLabel" inherits="GameFontHighlight" text="Searches Made:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-60"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentSearchesMade" parentKey="SearchesMade" inherits="GameFontHighlight" text="0">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="140" y="-60"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </Frame>
+              
+              <!-- Cancelling Stats -->
+              <Frame name="$parentCancellingStats" parentKey="CancellingStats">
+                <Size x="320" y="60"/>
+                <Anchors>
+                  <Anchor point="TOP" relativeKey="$parent.BuyingStats" relativePoint="BOTTOM" x="0" y="-10"/>
+                </Anchors>
+                
+                <Layers>
+                  <Layer level="ARTWORK">
+                    <FontString name="$parentHeader" inherits="GameFontNormal" text="Cancelling Statistics:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="0" y="0"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentTotalCancelledLabel" inherits="GameFontHighlight" text="Total Cancelled:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-20"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentTotalCancelled" parentKey="TotalCancelled" inherits="GameFontHighlight" text="0">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="140" y="-20"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentUndercutRateLabel" inherits="GameFontHighlight" text="Undercut Rate:">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-40"/>
+                      </Anchors>
+                    </FontString>
+                    
+                    <FontString name="$parentUndercutRate" parentKey="UndercutRate" inherits="GameFontHighlight" text="N/A">
+                      <Anchors>
+                        <Anchor point="TOPLEFT" x="140" y="-40"/>
+                      </Anchors>
+                    </FontString>
+                  </Layer>
+                </Layers>
+              </Frame>
+            </Frames>
+          </Frame>
+        </Frames>
+      </Frame>
+      
+      <!-- Action Buttons -->
+      <Button name="$parentSaveButton" parentKey="SaveButton" inherits="UIPanelButtonTemplate" text="Save">
+        <Size x="80" y="22"/>
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT" x="-20" y="5"/>
+        </Anchors>
+      </Button>
+      
+      <Button name="$parentCancelButton" parentKey="CancelButton" inherits="UIPanelButtonTemplate" text="Cancel">
+        <Size x="80" y="22"/>
+        <Anchors>
+          <Anchor point="RIGHT" relativeKey="$parent.SaveButton" relativePoint="LEFT" x="-10" y="0"/>
+        </Anchors>
+      </Button>
+      
+      <Button name="$parentResetButton" parentKey="ResetButton" inherits="UIPanelButtonTemplate" text="Reset">
+        <Size x="80" y="22"/>
+        <Anchors>
+          <Anchor point="RIGHT" relativeKey="$parent.CancelButton" relativePoint="LEFT" x="-10" y="0"/>
+        </Anchors>
+      </Button>
+    </Frames>
+    
     <Scripts>
       <OnLoad method="OnLoad"/>
       <OnShow method="OnShow"/>
-      <OnEvent method="OnEvent"/>
     </Scripts>
   </Frame>
 </Ui> 

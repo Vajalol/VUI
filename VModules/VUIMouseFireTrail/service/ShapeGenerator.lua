@@ -203,21 +203,42 @@ function M:GenerateShapePoints(shape, numPoints, angle, width, length)
     end
 end
 
--- Apply a shape to trail segments
-function M:ApplyShapeToTrail(shape, frames, x, y, angle, width, length)
-    -- Default values
-    angle = angle or 0
-    width = width or 50
-    length = length or 100
+-- Apply a shape to the trail frames
+function M:ApplyShapeToTrail(shapeType, frames, centerX, centerY, angle, width, length)
+    -- Default to V shape if not specified
+    shapeType = shapeType or "V_SHAPE"
     
-    -- Get shape points
-    local points = self:GenerateShapePoints(shape, #frames, angle, width, length)
+    -- Generate the shape points
+    local points = self:GenerateShapePoints(shapeType, #frames, angle, width, length)
     
-    -- Apply points to frames
-    for i = 1, #frames do
-        if frames[i] and points[i] then
-            frames[i]:ClearAllPoints()
-            frames[i]:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x + points[i].x, y + points[i].y)
+    -- Apply the points to the frames
+    for i = 1, #points do
+        if i <= #frames and frames[i] then
+            -- Get the current frame
+            local frame = frames[i]
+            
+            -- Position it based on the shape point and center position
+            frame:ClearAllPoints()
+            frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", 
+                centerX + points[i].x, 
+                centerY + points[i].y)
+            
+            -- Make sure it's visible
+            frame:Show()
         end
+    end
+    
+    -- Hide any extra frames
+    for i = #points + 1, #frames do
+        if frames[i] then
+            frames[i]:Hide()
+        end
+    end
+end
+
+-- Apply all shape functions to the main module
+for k, v in pairs(M) do
+    if type(v) == "function" then
+        VUI.VUIMouseFireTrail[k] = v
     end
 end

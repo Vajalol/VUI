@@ -1,5 +1,4 @@
 local _, VUI = ...
-<<<<<<< HEAD
 
 -- Use global reference pattern to avoid load order issues
 _G["VUICD"] = _G["VUICD"] or {}
@@ -41,10 +40,6 @@ VUICD.L = VUICD.L or L
 
 -- Local references
 local E = VUICD
-=======
-local E = VUI.VUICD or VUI:GetModule("VUICD")
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Add the general options to the option table
 function E:AddGeneralOptions(option)

@@ -1,10 +1,6 @@
 -- VUIKeystones - Core functionality
-<<<<<<< HEAD
 -- Use global reference instead of AceAddon-3.0 to fix load order issues
 local VUIKeystones = _G["VUIKeystones"]
-=======
-local VUIKeystones = _G.VUIKeystones or {}
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 local L = VUIKeystones.L
 
 -- Initialize any shared variables or utility functions

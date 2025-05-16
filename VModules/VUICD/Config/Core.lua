@@ -1,5 +1,4 @@
 local _, VUI = ...
-<<<<<<< HEAD
 
 -- Use global reference pattern to avoid load order issues
 _G["VUICD"] = _G["VUICD"] or {}
@@ -33,13 +32,6 @@ end)
 AceConfigRegistry = AceConfigRegistry or {}
 AceConfigDialog = AceConfigDialog or {}
 VUIConfig = VUIConfig or {}
-=======
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
-local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local VUIConfig = LibStub("VUIConfig-1.0")
-local VUICD = VUI.VUICD or VUI:GetModule("VUICD")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Configuration variables
 local E = VUICD

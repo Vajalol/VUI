@@ -1,5 +1,4 @@
 ---@class VUIBuffs: AceModule
-<<<<<<< HEAD
 -- Use global reference instead of AceAddon-3.0 to fix load order issues
 local VUIBuffs = _G["VUIBuffs"]
 -- Create safe LibStub wrappers that won't crash the addon if libraries aren't loaded yet
@@ -25,14 +24,6 @@ local LDB = SafeLibStub("LibDataBroker-1.1")
 local LCG = SafeLibStub("LibCustomGlow-1.0")
 local LDBIcon = SafeLibStub("LibDBIcon-1.0")
 local LSM = SafeLibStub("LibSharedMedia-3.0")
-=======
-local VUIBuffs = _G.VUIBuffs or {} -- Reference the global VUIBuffs created in Init.lua
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local AceRegistry = LibStub("AceConfigRegistry-3.0")
-local LDB = LibStub("LibDataBroker-1.1")
-local LCG = LibStub("LibCustomGlow-1.0")
-local LDBIcon = LibStub("LibDBIcon-1.0")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 local version = C_AddOns.GetAddOnMetadata("VUI", "Version")
 local Masque
 

@@ -1,5 +1,4 @@
 local VUI = select(2, ...)
-<<<<<<< HEAD
 
 -- Use the global reference to VUIKeystones to ensure module is accessible regardless of load order
 local Module = _G["VUIKeystones"]
@@ -20,10 +19,6 @@ else
     _G["VUIKeystones"].Modules = _G["VUIKeystones"].Modules or {}
     _G["VUIKeystones"].Modules.Persist = Persist
 end
-=======
-local Module = VUI.VUIKeystones or VUI:GetModule("VUIKeystones")
-local Persist = Module:NewSubmodule("Persist")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 local challengeMapID
 

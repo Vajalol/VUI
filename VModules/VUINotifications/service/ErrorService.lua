@@ -1,50 +1,96 @@
-local _, addon = ...
+local AddonName, VUI = ...
 
-function addon.ErrorsFrame_AddMessage(self, msg, ...)
+-- Define module reference
+local M = VUI:GetModule("VUINotifications")
+
+-- Ensure the Notifications namespace exists
+VUI.Notifications = VUI.Notifications or {}
+
+-- List of error messages to suppress
+local suppressedErrors = {
+    [ERR_ABILITY_COOLDOWN] = true,
+    [ERR_ATTACK_CHARMED] = true,
+    [ERR_ATTACK_CONFUSED] = true,
+    [ERR_ATTACK_DEAD] = true,
+    [ERR_ATTACK_FLEEING] = true,
+    [ERR_ATTACK_PACIFIED] = true,
+    [ERR_ATTACK_STUNNED] = true,
+    [ERR_AUTOFOLLOW_TOO_FAR] = true,
+    [ERR_BADATTACKFACING] = true,
+    [ERR_BADATTACKPOS] = true,
+    [ERR_CLIENT_LOCKED_OUT] = true,
+    [ERR_GENERIC_NO_TARGET] = true,
+    [ERR_INVALID_ATTACK_TARGET] = true,
+    [ERR_ITEM_COOLDOWN] = true,
+    [ERR_NOEMOTEWHILERUNNING] = true,
+    [ERR_NOT_ENOUGH_MONEY] = true,
+    [ERR_NOT_IN_RANGE] = true,
+    [ERR_OUT_OF_ENERGY] = true,
+    [ERR_OUT_OF_FOCUS] = true,
+    [ERR_OUT_OF_HEALTH] = true,
+    [ERR_OUT_OF_MANA] = true,
+    [ERR_OUT_OF_RAGE] = true,
+    [ERR_OUT_OF_RANGE] = true,
+    [ERR_OUT_OF_RUNES] = true,
+    [ERR_OUT_OF_RUNIC_POWER] = true,
+    [ERR_SPELL_COOLDOWN] = true,
+    [ERR_SPELL_OUT_OF_RANGE] = true,
+    [ERR_SPELL_FAILED_ANOTHER_IN_PROGRESS] = true,
+    [SPELL_FAILED_NOT_BEHIND] = true,
+    [SPELL_FAILED_TOO_CLOSE] = true,
+    [SPELL_FAILED_CUSTOM_ERROR_162] = true
+}
+
+-- Hook the UI error frame
+function VUI.Notifications.HookErrorsFrame()
+    local module = VUI:GetModule("VUINotifications")
+    if not module or not module.db then return end
     
-    if (addon.isEmpty(msg)) then
-        msg = "unknown"
-    end
-    
-    local lowermsg = string.lower(msg)
-    local contains = addon.tableContains
-    local standardErrorMessages = addon.standardErrorMessages()
-
-    if (contains(standardErrorMessages, lowermsg)) then
-        return;
-    end
-
-    return self:Original_AddMessage(msg, ...);
-end
-
-function addon.HookErrorsFrame()
-    local ef = getglobal("UIErrorsFrame");
-    ef.Original_AddMessage = ef.AddMessage;
-    ef.AddMessage = addon.ErrorsFrame_AddMessage;
-end
-
-function addon.tableContains(tab, val)
-    for index, value in ipairs(tab) do
-        if value == val then
-            return true
+    -- Create a filter function
+    local function OnUIErrorMessage(_, messageType, message)
+        -- If suppression is disabled or message is not in the list, return false to show it
+        if not module.db.profile.suppressErrors or not suppressedErrors[message] then
+            return false
         end
-    end
-    return false
-end
         
-function addon.isEmpty(msg)
-  return msg == nil or msg == ''
+        -- Return true to suppress the message
+        return true
+    end
+    
+    -- Hook using UIErrorsFrame's SetEventHook if Dragonflight or newer
+    if UIErrorsFrame.SetEventHook then
+        pcall(function() UIErrorsFrame:SetEventHook(OnUIErrorMessage) end)
+    else
+        -- Fallback for older versions
+        pcall(function() 
+            local oldOnEvent = UIErrorsFrame:GetScript("OnEvent")
+            UIErrorsFrame:SetScript("OnEvent", function(frame, event, ...)
+                if event == "UI_ERROR_MESSAGE" then
+                    local messageType, message = ...
+                    if module.db.profile.suppressErrors and suppressedErrors[message] then
+                        return
+                    end
+                end
+                return oldOnEvent(frame, event, ...)
+            end)
+        end)
+    end
 end
 
-function addon.standardErrorMessages()
-    return {
-        "not enough", "not ready", "nothing to attack", "can't attack",
-        "can't do", "unable to move", "must equip", "target is dead",
-        "invalid target", "line of sight", "you are dead", "no target",
-        "another action", "you are stunned", "wrong way", "out of range",
-        "front of you", "you cannot attack", "too far away", "must be in",
-        "too close", "requires combo", "in combat", "not in control",
-        "must have", "nothing to dispel", "in an arena", "while pacified","ready",
-        "interrupted"
-    }
+-- Check if a custom error message should be suppressed
+function VUI.Notifications.ShouldSuppressError(message)
+    local module = VUI:GetModule("VUINotifications")
+    if not module or not module.db then return false end
+    
+    return module.db.profile.suppressErrors and suppressedErrors[message]
+end
+
+-- Add an error to the suppression list
+function VUI.Notifications.AddSuppressedError(errorMessage)
+    suppressedErrors[errorMessage] = true
+end
+
+-- Remove an error from the suppression list
+function VUI.Notifications.RemoveSuppressedError(errorMessage)
+    suppressedErrors[errorMessage] = nil
 end

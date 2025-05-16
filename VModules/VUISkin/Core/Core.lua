@@ -1,14 +1,9 @@
 -- VUISkin Core
 local AddonName, VUI = ...
 
-<<<<<<< HEAD
 -- Get our module with safety check
 local VUISkin = VUI and VUI.VUISkin or {}
 if not VUISkin then return end
-=======
--- Get our module
-local VUISkin = VUI.VUISkin or VUI:GetModule("VUISkin")
->>>>>>> f2841d4c299e00869d4563d9e99c5e582069affc
 
 -- Local variables
 local LSM = LibStub('LibSharedMedia-3.0')
