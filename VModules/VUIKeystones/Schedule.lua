@@ -19,20 +19,26 @@ local requestPartyKeystones
 -- 1:Overflowing, 2:Skittish, 3:Volcanic, 4:Necrotic, 5:Teeming, 6:Raging, 7:Bolstering, 8:Sanguine, 9:Tyrannical, 10:Fortified, 11:Bursting, 12:Grievous, 13:Explosive, 14:Quaking, 16:Infested, 117: Reaping, 119:Beguiling 120:Awakened, 121:Prideful, 122:Inspiring, 123:Spiteful, 124:Storming
 -- 134:Entangling, 135：Afflicted, 136:Incorporeal
 -- TWW 
--- 147:Xal’atath’s Guile, 148:Xal’atath’s Bargain: Ascendant,158:Xal'atath's Bargain: Voidbound, 159:Xal'atath's Bargain: Oblivion, 160:Xal’atath’s Bargain: Devour, 162:Xal’atath’s Bargain: Pulsar
+-- 147:Xal'atath's Guile, 148:Xal'atath's Bargain: Ascendant,158:Xal'atath's Bargain: Voidbound, 159:Xal'atath's Bargain: Oblivion, 160:Xal'atath's Bargain: Devour, 162:Xal'atath's Bargain: Pulsar
 -- Season 2  
 -- 9, 10, 147, 148, 158, 160, 162,
 local affixSchedule = {
-	-- TWW Season 2 (Sort:[1](Level 4+);[2](Level 7+);[3](Level 10+);[4](Level 12+))
-	-- Information from(资料来自)：https://www.wowhead.com/guide/mythic-plus-dungeons/the-war-within-season-2/overview
-	{ [1]=148, [2] =9 , [3]=10, [4]=147, }, -- (1) Xal’atath’s Bargain: Ascendant | Tyrannical | Fortified  | Xal’atath’s Guile
-	{ [1]=162, [2] =10, [3]=9 , [4]=147, }, -- (2) Xal’atath’s Bargain: Pulsar    | Fortified  | Tyrannical | Xal’atath’s Guile
-	{ [1]=158, [2] =9 , [3]=10, [4]=147, }, -- (3) Xal’atath’s Bargain: Voidbound | Tyrannical | Fortified  | Xal’atath’s Guile
-	{ [1]=160, [2] =10, [3]=9 , [4]=147, }, -- (4) Xal’atath’s Bargain: Devour    | Fortified  | Tyrannical | Xal’atath’s Guile
-	{ [1]=162, [2] =9 , [3]=10, [4]=147, }, -- (5) Xal’atath’s Bargain: Pulsar    | Tyrannical | Fortified  | Xal’atath’s Guile
-	{ [1]=148, [2] =10, [3]=9 , [4]=147, }, -- (6) Xal’atath’s Bargain: Ascendant | Fortified  | Tyrannical | Xal’atath’s Guile
-	{ [1]=160, [2] =9 , [3]=10, [4]=147, }, -- (7) Xal’atath’s Bargain: Devour    | Tyrannical | Fortified  | Xal’atath’s Guile
-	{ [1]=158, [2] =10, [3]=9 , [4]=147, }, -- (8) Xal’atath’s Bargain: Voidbound | Fortified  | Tyrannical | Xal’atath’s Guile
+	-- The War Within Season 2 affix rotation
+	-- Format: [week] = {Affix1, Affix2, Affix3, Seasonal}
+	-- Note: 10 = Fortified, 9 = Tyrannical
+	-- Season 2 Seasonal affix: 140 = Reclamation
+	[1] = {10, 11, 124, 140}, -- Fortified, Bursting, Storming, Reclamation
+	[2] = {9, 124, 6, 140},   -- Tyrannical, Storming, Raging, Reclamation
+	[3] = {10, 8, 12, 140},   -- Fortified, Sanguine, Grievous, Reclamation
+	[4] = {9, 7, 123, 140},   -- Tyrannical, Bolstering, Spiteful, Reclamation
+	[5] = {10, 123, 4, 140},  -- Fortified, Spiteful, Necrotic, Reclamation
+	[6] = {9, 3, 8, 140},     -- Tyrannical, Volcanic, Sanguine, Reclamation
+	[7] = {10, 122, 7, 140},  -- Fortified, Inspiring, Bolstering, Reclamation
+	[8] = {9, 11, 2, 140},    -- Tyrannical, Bursting, Skittish, Reclamation
+	[9] = {10, 6, 3, 140},    -- Fortified, Raging, Volcanic, Reclamation
+	[10] = {9, 122, 12, 140}, -- Tyrannical, Inspiring, Grievous, Reclamation
+	[11] = {10, 4, 13, 140},  -- Fortified, Necrotic, Explosive, Reclamation  
+	[12] = {9, 13, 14, 140},  -- Tyrannical, Explosive, Quaking, Reclamation
 }
 
 local scheduleEnabled = true
@@ -176,21 +182,53 @@ end
 local function makeAffix(parent)
 	local frame = CreateFrame("Frame", nil, parent)
 	frame:SetSize(16, 16)
-
+	
+	-- Create border using the appropriate atlas texture
 	local border = frame:CreateTexture(nil, "OVERLAY")
 	border:SetAllPoints()
 	border:SetAtlas("ChallengeMode-AffixRing-Sm")
-	frame.Border = border
-
+	
+	-- Create icon texture
 	local portrait = frame:CreateTexture(nil, "ARTWORK")
 	portrait:SetSize(14, 14)
 	portrait:SetPoint("CENTER", border)
+	
+	frame.Border = border
 	frame.Portrait = portrait
-
-	frame.SetUp = ScenarioChallengeModeAffixMixin.SetUp
-	frame:SetScript("OnEnter", ScenarioChallengeModeAffixMixin.OnEnter)
-	frame:SetScript("OnLeave", GameTooltip_Hide)
-
+	
+	-- Use standard affix mixin for tooltip handling if available
+	if ScenarioChallengeModeAffixMixin then
+		frame.SetUp = ScenarioChallengeModeAffixMixin.SetUp
+		frame:SetScript("OnEnter", ScenarioChallengeModeAffixMixin.OnEnter)
+		frame:SetScript("OnLeave", GameTooltip_Hide)
+	else
+		-- Fallback implementation for tooltip handling
+		frame.SetUp = function(self, affixID)
+			local name, description = C_ChallengeMode.GetAffixInfo(affixID)
+			self.affixID = affixID
+			self.name = name
+			self.description = description
+			
+			if affixID then
+				local texture = select(3, C_ChallengeMode.GetAffixInfo(affixID))
+				if texture then
+					self.Portrait:SetTexture(texture)
+				end
+			end
+		end
+		
+		frame:SetScript("OnEnter", function(self)
+			if self.name and self.description then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:SetText(self.name, 1, 1, 1, 1, true)
+				GameTooltip:AddLine(self.description, nil, nil, nil, true)
+				GameTooltip:Show()
+			end
+		end)
+		
+		frame:SetScript("OnLeave", GameTooltip_Hide)
+	end
+	
 	return frame
 end
 
@@ -337,17 +375,35 @@ function Mod:GetInventoryKeystone()
 end
 
 function Mod:CheckAffixes()
-	currentWeek = nil
+	-- Get the currently active affixes from the Mythic+ API
 	local currentAffixes = C_MythicPlus.GetCurrentAffixes()
-
+	
 	if currentAffixes then
+		-- Iterate through our affix schedule to find a match
 		for index, affixes in ipairs(affixSchedule) do
-			if affixes[1] == currentAffixes[1].id and affixes[2] == currentAffixes[2].id and affixes[3] == currentAffixes[3].id and affixes[4] == currentAffixes[4].id then
-				currentWeek = index
-				affixScheduleUnknown = false
-				break
+			-- Check first three standard affixes
+			if affixes[1] == currentAffixes[1].id and 
+			   affixes[2] == currentAffixes[2].id and 
+			   affixes[3] == currentAffixes[3].id then
+				
+				-- For the 4th seasonal affix, check if it exists before comparing
+				local seasonalMatches = true
+				if #currentAffixes >= 4 and affixes[4] and currentAffixes[4] and affixes[4] ~= currentAffixes[4].id then
+					seasonalMatches = false
+				end
+				
+				if seasonalMatches then
+					self.CurrentWeek = index
+					affixScheduleUnknown = false
+					break
+				end
 			end
 		end
+	end
+	
+	-- If we still don't know the schedule, try again later
+	if affixScheduleUnknown then
+		C_Timer.After(5, function() self:CheckAffixes() end)
 	end
 end
 

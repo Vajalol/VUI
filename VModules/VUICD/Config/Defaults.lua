@@ -1,6 +1,13 @@
 local _, VUI = ...
-local E = VUI:GetModule("VUICD")
-local P = E.Party
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module is initialized
+VUICD.Party = VUICD.Party or {}
+local E = VUICD
+local P = VUICD.Party
 
 -- Default configuration values
 E.defaults = {

@@ -3,7 +3,51 @@
 
 local AddonName, VUI = ...
 
-local Documentation = VUI:NewModule("Documentation")
+-- Check if VUI exists before proceeding
+if not VUI then return end
+
+-- Try to create the module with error handling
+local Documentation
+
+if VUI.NewModule then
+    Documentation = VUI:NewModule("Documentation")
+else
+    -- Create minimal module object to prevent errors
+    Documentation = {
+        NAME = "Documentation",
+        TITLE = "VUI Documentation",
+        DESCRIPTION = "Provides documentation for all VUI modules",
+        OnEnable = function() end,
+        OnDisable = function() end
+    }
+    
+    -- Register in VUI namespace
+    VUI["Documentation"] = Documentation
+    
+    -- Try initialization again after delay
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local RealModule = VUI:NewModule("Documentation")
+            
+            -- Transfer any properties from temporary module
+            for k, v in pairs(Documentation) do
+                if k ~= "NAME" and k ~= "TITLE" and type(v) ~= "function" then
+                    RealModule[k] = v
+                end
+            end
+            
+            -- Replace with real module
+            VUI["Documentation"] = RealModule
+            
+            -- Initialize the module
+            if RealModule.OnInitialize then RealModule:OnInitialize() end
+            if RealModule.OnEnable then RealModule:OnEnable() end
+        end
+    end)
+end
+
+-- Set global namespace for other files to access
+VUI.Documentation = Documentation
 
 -- List of documentation sections
 local docSections = {

@@ -6,6 +6,24 @@ local ProfileSettings = {}
 ProfileSettings.__index = ProfileSettings
 ns.ProfileSettings = ProfileSettings
 
+-- Define constants if they don't exist yet to prevent nil errors
+if not ns.constants then
+    ns.constants = ns.constants or {}
+    ns.constants.unitTypes = ns.constants.unitTypes or {"player", "target", "focus", "party1", "party2", "party3", "party4"}
+    ns.constants.layoutTypes = ns.constants.layoutTypes or {"player", "party", "arena", "target", "focus"}
+end
+
+-- Ensure utils exist
+ns.utils = ns.utils or {}
+if not ns.utils.uuid then
+    ns.utils.uuid = function() return tostring(math.random(10000000)) end
+end
+if not ns.utils.defaultProfileName then
+    ns.utils.defaultProfileName = function() 
+        return UnitName("player") and (UnitName("player") .. " - " .. (GetRealmName() or "")) or "Default"
+    end
+end
+
 ---@param savedVariables ProfileVariablesV1 | ProfileVariablesV2
 function ProfileSettings:New(savedVariables)
     ---@class ProfileSettings
@@ -39,20 +57,36 @@ function ProfileSettings:New(savedVariables)
 
     ---@type {[UnitType]: UnitSettings}
     obj.unitSettings = {}
-    for _, unitType in ipairs(ns.constants.unitTypes) do
-        obj.unitSettings[unitType] = ns.UnitSettings:New(unitType)
+    if type(ns.constants.unitTypes) == "table" then
+        for _, unitType in ipairs(ns.constants.unitTypes) do
+            obj.unitSettings[unitType] = ns.UnitSettings and ns.UnitSettings.New and ns.UnitSettings:New(unitType) or {
+                size = 30,
+                alpha = 1.0
+            }
+        end
     end
 
     ---@type {[LayoutType]: LayoutSettings}
     obj.layoutSettings = {}
-    for _, layoutType in ipairs(ns.constants.layoutTypes) do
-        obj.layoutSettings[layoutType] = ns.LayoutSettings:New()
+    if type(ns.constants.layoutTypes) == "table" then
+        for _, layoutType in ipairs(ns.constants.layoutTypes) do
+            obj.layoutSettings[layoutType] = ns.LayoutSettings and ns.LayoutSettings.New and ns.LayoutSettings:New() or {
+                enable = false,
+                direction = "Left",
+                iconSize = 30,
+                iconsNumber = 3
+            }
+        end
     end
 
     --By default enable only player frame - not many people use anything else
-    obj.layoutSettings.player.enable = true
+    if obj.layoutSettings and obj.layoutSettings.player then
+        obj.layoutSettings.player.enable = true
+    end
 
-    obj:SetFromSavedVariables(savedVariables)
+    if savedVariables then
+        obj:SetFromSavedVariables(savedVariables)
+    end
 
     return obj
 end

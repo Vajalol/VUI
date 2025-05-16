@@ -1,5 +1,8 @@
 local addonName, VUI = ...
 
+-- Ensure namespace exists
+VUI.Notifications = VUI.Notifications or {}
+
 -- Define miss types for combat log filtering
 function VUI.Notifications.MissTypes()
     return {

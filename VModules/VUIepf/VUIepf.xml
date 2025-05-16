@@ -20,7 +20,7 @@
             </Layer>
         </Layers>
         <Scripts>
-            <OnLoad method="Loaded"/>
+            <OnLoad method="Loaded" inherit="prepend"/>
             <OnEvent method="Event_Received"/>
         </Scripts>
     </Frame>

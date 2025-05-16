@@ -256,30 +256,67 @@ end
 
 local ColorInputMethods = {
         SetColor = function(self, c)
-                if type(c) == 'table' then
-                        self.color.r = c.r;
-                        self.color.g = c.g;
-                        self.color.b = c.b;
-                        self.color.a = c.a or 1;
+                -- If color is nil or not a table, create a default color
+                if not c then
+                        c = {r = 1, g = 1, b = 1, a = 1}
+                elseif type(c) ~= 'table' then
+                        -- Handle non-table input by creating a default color
+                        self:Debug("Warning: Invalid color format, using default color")
+                        c = {r = 1, g = 1, b = 1, a = 1}
+                end
+                
+                -- Initialize color table if needed
+                if not self.color then
+                        self.color = {r = 1, g = 1, b = 1, a = 1}
                 end
 
-                c.r = self.color.r
-        c.g = self.color.g
-        c.b = self.color.b
+                -- Safely copy values from input to self.color, with defaults
+                self.color.r = c.r or self.color.r or 1
+                self.color.g = c.g or self.color.g or 1
+                self.color.b = c.b or self.color.b or 1
+                self.color.a = c.a or self.color.a or 1
 
-                self.target:SetBackdropColor(c.r, c.g, c.b, 1);
+                -- Create local reference variables for safety
+                local r = self.color.r
+                local g = self.color.g
+                local b = self.color.b
+                local a = self.color.a
+
+                -- Safe call to SetBackdropColor with proper error handling
+                if self.target and self.target.SetBackdropColor then
+                        pcall(function() 
+                                self.target:SetBackdropColor(r, g, b, 1)
+                        end)
+                end
+
+                -- Call OnValueChanged if it exists
                 if self.OnValueChanged then
-                        self:OnValueChanged(c);
+                        self:OnValueChanged(self.color)
                 end
         end,
 
         GetColor = function (self, type)
+                -- Initialize color table if needed
+                if not self.color then
+                        self.color = {r = 1, g = 1, b = 1, a = 1}
+                end
+
                 if type == 'hex' then
+                        -- Placeholder for hex implementation
                 elseif type == 'rgba' then
                         return self.color.r, self.color.g, self.color.b, self.color.a
                 else
                         -- object
-                        return self.color;
+                        return self.color
+                end
+        end,
+
+        -- Debug helper for error messages
+        Debug = function(self, msg)
+                if self.VUIConfig and self.VUIConfig.Debug then
+                        self.VUIConfig:Debug(msg)
+                elseif _G.VUI and _G.VUI.Debug then
+                        _G.VUI:Debug("ColorPicker: " .. tostring(msg))
                 end
         end
 };

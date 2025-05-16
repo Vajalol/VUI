@@ -7,7 +7,7 @@ local L = VUIKeystones.L or {}
 -- Local variables
 local isHooked = false
 local affixTooltipHooked = false
-local keystoneItemID = 180653 -- Subject to change with patches
+local keystoneItemID = 208701 -- Updated for The War Within (was 180653 in Dragonflight)
 local tooltipLines = {}
 
 -- Register for events
@@ -36,10 +36,11 @@ function Keystone:HookTooltip()
     
     -- Hook the SetBagItem method to catch direct inspections
     hooksecurefunc(GameTooltip, "SetBagItem", function(self, bag, slot)
-        local itemID = C_Container.GetContainerItemID(bag, slot)
+        -- Use C_Container for retail or GetContainerItemID for classic
+        local itemID = C_Container and C_Container.GetContainerItemID(bag, slot) or GetContainerItemID(bag, slot)
         if itemID == keystoneItemID then
             -- This is a keystone, process it
-            local link = C_Container.GetContainerItemLink(bag, slot)
+            local link = C_Container and C_Container.GetContainerItemLink(bag, slot) or GetContainerItemLink(bag, slot)
             if link then
                 self:ProcessKeystoneLink(link)
             end
@@ -65,9 +66,14 @@ end
 
 -- Parse a keystone link to extract key information
 function Keystone:ParseKeystoneLink(link)
-    -- This would parse the actual keystone link format from the game
-    -- For this example, we'll use a simplified approach
+    -- First try the new format that includes 4 affixes
     local mapID, level, affix1, affix2, affix3, affix4 = link:match("keystone:(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)")
+    
+    if not mapID then
+        -- Fall back to old format with 3 affixes
+        mapID, level, affix1, affix2, affix3 = link:match("keystone:(%d+):(%d+):(%d+):(%d+):(%d+)")
+        affix4 = 0 -- Default value for older keystones
+    end
     
     if mapID and level then
         return tonumber(mapID), tonumber(level), {
@@ -115,7 +121,8 @@ function Keystone:GetLevelModifier(level)
     -- These values are approximations and should be updated based on current game data
     if level <= 0 then return 0 end
     
-    return (level - 1) * 8
+    -- The War Within modifiers - each level adds 10% (updated from 8% in DF)
+    return (level - 1) * 10
 end
 
 -- Get the timer for a specific dungeon (in seconds)
@@ -131,7 +138,17 @@ function Keystone:GetDungeonTimer(mapID)
         [247] = 2340,  -- The MOTHERLODE!! (39:00)
         [382] = 2040,  -- Theater of Pain (34:00)
         [370] = 1920,  -- Operation: Mechagon - Workshop (32:00)
-
+        
+        -- TWW Season 1 Dungeons
+        [2580] = 2100, -- Golganneth's Fall (35:00)
+        [2527] = 2400, -- Dawn of the Infinite: Galakrond's Fall (40:00)
+        [2526] = 2400, -- Dawn of the Infinite: Murozond's Rise (40:00)
+        [2581] = 2280, -- The Dawnbreaker (38:00)
+        [2394] = 2160, -- Brackenhide Hollow (36:00)
+        [2522] = 2400, -- Atal'Dazar Remastered (40:00)
+        [2520] = 2220, -- The Everbloom Remastered (37:00)
+        [2521] = 2280, -- Throne of the Tides Remastered (38:00)
+        
         -- Older dungeons kept for compatibility
         [375] = 1800, -- Mists of Tirna Scithe
         [376] = 1500, -- The Necrotic Wake

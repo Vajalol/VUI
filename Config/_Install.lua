@@ -5,20 +5,21 @@ local function CreateInstallWizard()
     local VUIConfig = LibStub('VUIConfig')
     
     -- Create main window with VUIConfig
-    local Install = VUIConfig:Window(UIParent, 800, 600, "|cffea00ffV|r|cff00a2ffUI|r - Installation")
+    local Install = VUIConfig:Window(UIParent, 920, 700, "|cffea00ffV|r|cff00a2ffUI|r")
     Install:SetPoint("CENTER")
     Install:SetFrameStrata("HIGH")
     Install:SetMovable(true)
     Install:EnableMouse(true)
     
     -- Add VUI logo
-    local logo = VUIConfig:Texture(Install.titlePanel, 120, 35, "Interface\\AddOns\\VUI\\Media\\Textures\\Config\\Logo")
-    VUIConfig:GlueLeft(logo, Install.titlePanel, 10, 0)
+    local logo = VUIConfig:Texture(Install.titlePanel, 35, 35, "Interface\\AddOns\\VUI\\Media\\Textures\\Config\\Logo")
+    VUIConfig:GlueLeft(logo, Install.titlePanel, 0, 0)
     
     -- Subtitle
-    local subtitle = VUIConfig:Label(Install.titlePanel, "Installation Wizard")
+    local subtitle = VUIConfig:Label(Install.titlePanel, "|cff00a2ffInstallation Wizard|r")
     subtitle:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 14)
-    VUIConfig:GlueRight(subtitle, Install.titlePanel, -40, 0)
+    VUIConfig:GlueRight(subtitle, Install.titlePanel, -120, 0)
+    
     
     -- Better navigation buttons using VUIConfig widgets
     Install.prevButton = VUIConfig:Button(Install, 120, 30, "Previous")
@@ -36,7 +37,7 @@ local function CreateInstallWizard()
     Install.pageText:SetPoint("BOTTOM", 0, 55)
     
     -- Create content area with proper styling
-    Install.content = VUIConfig:Panel(Install, 760, 450)
+    Install.content = VUIConfig:Panel(Install, 880, 550)
     VUIConfig:GlueTop(Install.content, Install, 0, -60)
     VUIConfig:ApplyBackdrop(Install.content, "panel")
     
@@ -52,13 +53,36 @@ local function CreateInstallWizard()
             
             -- Animate current page out
             if self.pages[self.currentPage]:IsShown() then
-                VUI.Animations:FadeOut(self.pages[self.currentPage], 0.3, function()
+                if VUI.Animations then
+                    -- Use animations if available
+                    VUI.Animations:FadeOut(self.pages[self.currentPage], 0.3, function()
+                        self.pages[self.currentPage]:Hide()
+                        self.currentPage = pageNum
+                        
+                        -- Animate new page in
+                        self.pages[pageNum]:Show()
+                        if VUI.Animations then
+                            VUI.Animations:FadeIn(self.pages[pageNum], 0.3)
+                        end
+                        
+                        -- Update button states
+                        if pageNum == 1 then
+                            self.prevButton:Disable()
+                        else
+                            self.prevButton:Enable()
+                        end
+                        
+                        if pageNum == #self.pages then
+                            self.nextButton:SetText("Finish")
+                        else
+                            self.nextButton:SetText("Next")
+                        end
+                    end)
+                else
+                    -- Fallback without animations
                     self.pages[self.currentPage]:Hide()
                     self.currentPage = pageNum
-                    
-                    -- Animate new page in
                     self.pages[pageNum]:Show()
-                    VUI.Animations:FadeIn(self.pages[pageNum], 0.3)
                     
                     -- Update button states
                     if pageNum == 1 then
@@ -72,12 +96,14 @@ local function CreateInstallWizard()
                     else
                         self.nextButton:SetText("Next")
                     end
-                end)
+                end
             else
                 -- First page or no current page shown
                 self.currentPage = pageNum
                 self.pages[pageNum]:Show()
-                VUI.Animations:FadeIn(self.pages[pageNum], 0.3)
+                if VUI.Animations then
+                    VUI.Animations:FadeIn(self.pages[pageNum], 0.3)
+                end
                 
                 -- Update button states
                 if pageNum == 1 then
@@ -98,13 +124,19 @@ local function CreateInstallWizard()
     -- Setup enhanced button scripts with animated effects
     Install.prevButton:SetScript("OnClick", function()
         if Install.currentPage > 1 then
-            VUI.Animations:Pulse(Install.prevButton, 0.2)
+            -- Check if Animations module is loaded before trying to use it
+            if VUI.Animations then
+                VUI.Animations:Pulse(Install.prevButton, 0.2)
+            end
             Install:GoToPage(Install.currentPage - 1)
         end
     end)
     
     Install.nextButton:SetScript("OnClick", function()
-        VUI.Animations:Pulse(Install.nextButton, 0.2)
+        -- Check if Animations module is loaded before trying to use it
+        if VUI.Animations then
+            VUI.Animations:Pulse(Install.nextButton, 0.2)
+        end
         
         if Install.currentPage < #Install.pages then
             Install:GoToPage(Install.currentPage + 1)
@@ -116,16 +148,25 @@ local function CreateInstallWizard()
             -- Apply default settings
             VUI:ConfigureFirstTimeSetup()
             
-            -- Use animation system instead of UIFrameFade
-            VUI.Animations:FadeOut(Install, 0.4, function()
+            -- Use animation system safely
+            if VUI.Animations then
+                VUI.Animations:FadeOut(Install, 0.4, function()
+                    Install:Hide()
+                    VUI:Config()
+                end)
+            else
+                -- Fallback if Animations module is not loaded
                 Install:Hide()
                 VUI:Config()
-            end)
+            end
         end
     end)
     
     Install.skipButton:SetScript("OnClick", function()
-        VUI.Animations:Pulse(Install.skipButton, 0.2)
+        -- Check if Animations module is loaded before trying to use it
+        if VUI.Animations then
+            VUI.Animations:Pulse(Install.skipButton, 0.2)
+        end
         
         VUI.db.profile.install = true
         VUI.db.profile.reset = true
@@ -133,11 +174,17 @@ local function CreateInstallWizard()
         -- Apply default settings even when skipping
         VUI:ConfigureFirstTimeSetup()
         
-        -- Use animation system
-        VUI.Animations:FadeOut(Install, 0.4, function()
+        -- Use animation system safely
+        if VUI.Animations then
+            VUI.Animations:FadeOut(Install, 0.4, function()
+                Install:Hide()
+                VUI:Config()
+            end)
+        else
+            -- Fallback if Animations module is not loaded
             Install:Hide()
             VUI:Config()
-        end)
+        end
     end)
     
     return Install
@@ -152,7 +199,7 @@ local function CreateWelcomePage(parent)
     page:Hide() -- Initially hidden for animation
     
     -- VUI Logo with enhanced visual style
-    local logoPanel = VUIConfig:Panel(page, 280, 140)
+    local logoPanel = VUIConfig:Panel(page, 320, 160)
     logoPanel:SetPoint("TOP", 0, -20)
     VUIConfig:ApplyBackdrop(logoPanel, "panel")
     
@@ -168,7 +215,7 @@ local function CreateWelcomePage(parent)
     glowTexture:SetVertexColor(0.3, 0.6, 1, 0.3) -- Soft blue glow
     
     -- Create a border frame for a premium feel
-    local borderFrame = CreateFrame("Frame", nil, logoPanel)
+    local borderFrame = CreateFrame("Frame", nil, logoPanel, "BackdropTemplate")
     borderFrame:SetPoint("TOPLEFT", -2, 2)
     borderFrame:SetPoint("BOTTOMRIGHT", 2, -2)
     borderFrame:SetBackdrop({
@@ -194,7 +241,7 @@ local function CreateWelcomePage(parent)
     versionText:SetTextColor(0.8, 0.8, 0.8)
     
     -- Welcome panel with animated border
-    local welcomePanel = VUIConfig:Panel(page, 650, 120)
+    local welcomePanel = VUIConfig:Panel(page, 750, 120)
     welcomePanel:SetPoint("TOP", logoPanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(welcomePanel, "panel", "border")
     
@@ -211,11 +258,11 @@ local function CreateWelcomePage(parent)
     
     local welcomeDesc = VUIConfig:Label(welcomePanel, "Transform your gameplay with the most advanced UI enhancement suite ever created for World of Warcraft. VUI seamlessly blends performance and aesthetics to elevate your gaming experience to new heights.")
     welcomeDesc:SetPoint("TOP", taglineText, "BOTTOM", 0, -10)
-    welcomeDesc:SetWidth(600)
+    welcomeDesc:SetWidth(700)
     welcomeDesc:SetJustifyH("CENTER")
     
     -- Features panel
-    local featuresPanel = VUIConfig:Panel(page, 650, 180)
+    local featuresPanel = VUIConfig:Panel(page, 750, 220)
     featuresPanel:SetPoint("TOP", welcomePanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(featuresPanel, "panel", "border")
     
@@ -246,8 +293,8 @@ local function CreateWelcomePage(parent)
     local featureLabels = {}
     for i, feature in ipairs(features) do
         local label = VUIConfig:Label(featuresPanel, feature)
-        label:SetPoint("TOPLEFT", 50, -40 - (i-1) * 20)
-        label:SetWidth(550)
+        label:SetPoint("TOPLEFT", 50, -40 - (i-1) * 25)
+        label:SetWidth(650)
         label:SetJustifyH("LEFT")
         label:SetAlpha(0) -- Start invisible for animation
         table.insert(featureLabels, label)
@@ -266,23 +313,43 @@ local function CreateWelcomePage(parent)
         
         -- Animate logo
         C_Timer.After(0.2, function()
-            VUI.Animations:FadeIn(logoPanel, 0.4)
-            VUI.Animations:Pulse(logoPanel, 0.6)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(logoPanel, 0.4)
+                VUI.Animations:Pulse(logoPanel, 0.6)
+            else
+                -- Fallback without animations
+                logoPanel:SetAlpha(1)
+            end
         end)
         
         -- Animate welcome panel
         C_Timer.After(0.7, function()
-            VUI.Animations:FadeIn(welcomePanel, 0.4)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(welcomePanel, 0.4)
+            else
+                -- Fallback without animations
+                welcomePanel:SetAlpha(1)
+            end
         end)
         
         -- Animate features panel
         C_Timer.After(1.1, function()
-            VUI.Animations:FadeIn(featuresPanel, 0.4)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(featuresPanel, 0.4)
+            else
+                -- Fallback without animations
+                featuresPanel:SetAlpha(1)
+            end
             
             -- Animate individual features with a cascade effect
             for i, label in ipairs(featureLabels) do
                 C_Timer.After(1.3 + (i * 0.15), function()
-                    VUI.Animations:FadeIn(label, 0.3)
+                    if VUI.Animations then
+                        VUI.Animations:FadeIn(label, 0.3)
+                    else
+                        -- Fallback without animations
+                        label:SetAlpha(1)
+                    end
                 end)
             end
         end)
@@ -303,7 +370,7 @@ local function CreateModulesPage(parent)
     page:Hide() -- Initially hidden for animation
     
     -- Title with VUIConfig styling
-    local titlePanel = VUIConfig:Panel(page, 700, 60)
+    local titlePanel = VUIConfig:Panel(page, 800, 60)
     titlePanel:SetPoint("TOP", 0, -20)
     VUIConfig:ApplyBackdrop(titlePanel, "panel")
     
@@ -313,17 +380,17 @@ local function CreateModulesPage(parent)
     VUIConfig:SetTextColor(title, "header")
     
     -- Description panel
-    local descPanel = VUIConfig:Panel(page, 700, 60)
+    local descPanel = VUIConfig:Panel(page, 800, 60)
     descPanel:SetPoint("TOP", titlePanel, "BOTTOM", 0, -10)
     VUIConfig:ApplyBackdrop(descPanel, "panel")
     
     local desc = VUIConfig:Label(descPanel, "VUI is composed of several specialized modules. Each module focuses on enhancing specific aspects of the game interface.\n\nYou can enable or disable individual modules based on your preferences.")
     desc:SetPoint("CENTER", 0, 0)
-    desc:SetWidth(650)
+    desc:SetWidth(750)
     desc:SetJustifyH("CENTER")
     
     -- Create enhanced scrollframe using VUIConfig
-    local scrollFrame = VUIConfig:ScrollFrame(page, 700, 300)
+    local scrollFrame = VUIConfig:ScrollFrame(page, 800, 380)
     scrollFrame:SetPoint("TOP", descPanel, "BOTTOM", 0, -10)
     
     -- Module descriptions
@@ -351,8 +418,8 @@ local function CreateModulesPage(parent)
     
     for i, module in ipairs(moduleDescriptions) do
         -- Create module panel with VUIConfig styling
-        local moduleFrame = VUIConfig:Panel(scrollFrame.content)
-        moduleFrame:SetSize(660, 60)
+        local moduleFrame = VUIConfig:Panel(scrollFrame.scrollChild)
+        moduleFrame:SetSize(760, 60)
         moduleFrame:SetPoint("TOPLEFT", 10, -yOffset)
         
         -- Apply VUIConfig styling with alternating colors
@@ -380,7 +447,9 @@ local function CreateModulesPage(parent)
         -- Add tooltip functionality with VUIConfig style
         moduleFrame:EnableMouse(true)
         moduleFrame:SetScript("OnEnter", function(self)
-            VUI.Animations:Pulse(self, 0.3)
+            if VUI.Animations then
+                VUI.Animations:Pulse(self, 0.3)
+            end
             
             GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
             GameTooltip:AddLine(module.name, 0, 0.9, 1)
@@ -400,7 +469,7 @@ local function CreateModulesPage(parent)
     end
     
     -- Adjust scrollChild height based on content
-    scrollFrame.content:SetHeight(yOffset + 20)
+    scrollFrame.scrollChild:SetHeight(yOffset + 20)
     
     -- Set up animation sequence when the page is shown
     page.OnShow = function(self)
@@ -430,13 +499,20 @@ local function CreateModulesPage(parent)
             -- Animate modules with cascade effect
             for i, frame in ipairs(moduleFrames) do
                 C_Timer.After(1.2 + (i * 0.1), function()
-                    VUI.Animations:FadeIn(frame, 0.3)
-                    
-                    -- Add a subtle bounce effect to draw attention
-                    if i % 3 == 0 then  -- Every third module gets a bounce for visual interest
-                        C_Timer.After(0.3, function()
-                            VUI.Animations:Bounce(frame, 0.4, nil, {height = 5, bounces = 1})
-                        end)
+                    if VUI.Animations then
+                        VUI.Animations:FadeIn(frame, 0.3)
+                        
+                        -- Add a subtle bounce effect to draw attention
+                        if i % 3 == 0 then  -- Every third module gets a bounce for visual interest
+                            C_Timer.After(0.3, function()
+                                if VUI.Animations then
+                                    VUI.Animations:Bounce(frame, 0.4, nil, {height = 5, bounces = 1})
+                                end
+                            end)
+                        end
+                    else
+                        -- Fallback without animations
+                        frame:SetAlpha(1)
                     end
                 end)
             end
@@ -458,7 +534,7 @@ local function CreateQuickStartPage(parent)
     page:Hide() -- Initially hidden for animation
     
     -- Title with VUIConfig styling
-    local titlePanel = VUIConfig:Panel(page, 700, 60)
+    local titlePanel = VUIConfig:Panel(page, 800, 60)
     titlePanel:SetPoint("TOP", 0, -20)
     VUIConfig:ApplyBackdrop(titlePanel, "panel")
     
@@ -468,17 +544,17 @@ local function CreateQuickStartPage(parent)
     VUIConfig:SetTextColor(title, "header")
     
     -- Description panel
-    local descPanel = VUIConfig:Panel(page, 700, 60)
+    local descPanel = VUIConfig:Panel(page, 800, 60)
     descPanel:SetPoint("TOP", titlePanel, "BOTTOM", 0, -10)
     VUIConfig:ApplyBackdrop(descPanel, "panel")
     
     local desc = VUIConfig:Label(descPanel, "Here are some recommended settings to get you started with VUI. You can always adjust these later through the VUI configuration panel.")
     desc:SetPoint("CENTER", 0, 0)
-    desc:SetWidth(650)
+    desc:SetWidth(750)
     desc:SetJustifyH("CENTER")
     
     -- Create enhanced scrollframe using VUIConfig
-    local scrollFrame = VUIConfig:ScrollFrame(page, 700, 300)
+    local scrollFrame = VUIConfig:ScrollFrame(page, 800, 380)
     scrollFrame:SetPoint("TOP", descPanel, "BOTTOM", 0, -10)
     
     -- Quick start options
@@ -506,7 +582,7 @@ local function CreateQuickStartPage(parent)
     for i, option in ipairs(options) do
         -- Create category header if this is the first time we've seen this category
         if not categories[option.category] then
-            local categoryPanel = VUIConfig:Panel(scrollFrame.content)
+            local categoryPanel = VUIConfig:Panel(scrollFrame.scrollChild)
             categoryPanel:SetSize(660, 30)
             categoryPanel:SetPoint("TOPLEFT", 10, -yOffset)
             VUIConfig:ApplyBackdrop(categoryPanel, "button", "border")
@@ -526,7 +602,7 @@ local function CreateQuickStartPage(parent)
         end
         
         -- Create option panel with VUIConfig styling
-        local optionPanel = VUIConfig:Panel(scrollFrame.content)
+        local optionPanel = VUIConfig:Panel(scrollFrame.scrollChild)
         optionPanel:SetSize(660, 50)
         optionPanel:SetPoint("TOPLEFT", 10, -yOffset)
         
@@ -578,7 +654,7 @@ local function CreateQuickStartPage(parent)
     end
     
     -- Adjust scrollFrame content height
-    scrollFrame.content:SetHeight(yOffset + 20)
+    scrollFrame.scrollChild:SetHeight(yOffset + 20)
     
     -- Note about further customization
     local notePanel = VUIConfig:Panel(page, 700, 60)
@@ -610,37 +686,61 @@ local function CreateQuickStartPage(parent)
         
         -- Animate title
         C_Timer.After(0.2, function()
-            VUI.Animations:FadeIn(titlePanel, 0.4)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(titlePanel, 0.4)
+            else
+                titlePanel:SetAlpha(1)
+            end
         end)
         
         -- Animate description
         C_Timer.After(0.6, function()
-            VUI.Animations:FadeIn(descPanel, 0.4)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(descPanel, 0.4)
+            else
+                descPanel:SetAlpha(1)
+            end
         end)
         
         -- Animate scroll frame
         C_Timer.After(1.0, function()
-            VUI.Animations:FadeIn(scrollFrame, 0.4)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(scrollFrame, 0.4)
+            else
+                scrollFrame:SetAlpha(1)
+            end
             
             -- Animate categories with staggered timing
             for i, panel in ipairs(categoryPanels) do
                 C_Timer.After(1.2 + (i * 0.2), function()
-                    VUI.Animations:FadeIn(panel, 0.3)
-                    VUI.Animations:Pulse(panel, 0.4)
+                    if VUI.Animations then
+                        VUI.Animations:FadeIn(panel, 0.3)
+                        VUI.Animations:Pulse(panel, 0.4)
+                    else
+                        panel:SetAlpha(1)
+                    end
                 end)
             end
             
             -- Animate options with cascade effect
             for i, panel in ipairs(optionPanels) do
                 C_Timer.After(1.4 + (i * 0.1), function()
-                    VUI.Animations:FadeIn(panel, 0.3)
+                    if VUI.Animations then
+                        VUI.Animations:FadeIn(panel, 0.3)
+                    else
+                        panel:SetAlpha(1)
+                    end
                 end)
             end
         end)
         
         -- Animate note at the end
         C_Timer.After(3.0, function()
-            VUI.Animations:FadeIn(notePanel, 0.6)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(notePanel, 0.6)
+            else
+                notePanel:SetAlpha(1)
+            end
         end)
     end
     
@@ -659,12 +759,12 @@ local function CreateCompletionPage(parent)
     page:Hide() -- Initially hidden for animation
     
     -- Premium styled completion header panel
-    local headerPanel = VUIConfig:Panel(page, 700, 120)
+    local headerPanel = VUIConfig:Panel(page, 800, 120)
     headerPanel:SetPoint("TOP", 0, -20)
     VUIConfig:ApplyBackdrop(headerPanel, "panel")
     
     -- Add a decorative border for premium feel
-    local borderFrame = CreateFrame("Frame", nil, headerPanel)
+    local borderFrame = CreateFrame("Frame", nil, headerPanel, "BackdropTemplate")
     borderFrame:SetPoint("TOPLEFT", -3, 3)
     borderFrame:SetPoint("BOTTOMRIGHT", 3, -3)
     borderFrame:SetBackdrop({
@@ -710,18 +810,25 @@ local function CreateCompletionPage(parent)
     local titleAnimation = title:CreateAnimationGroup()
     titleAnimation:SetLooping("REPEAT")
     
-    local colorShift = titleAnimation:CreateAnimation("Color")
-    colorShift:SetDuration(3)
-    colorShift:SetColorType("Vertex")
-    colorShift:SetFromAlpha(1)
-    colorShift:SetToAlpha(1)
-    colorShift:SetFromR(0.1)
-    colorShift:SetFromG(0.6)
-    colorShift:SetFromB(1)
-    colorShift:SetToR(0.8)
-    colorShift:SetToG(0.3)
-    colorShift:SetToB(1)
+    -- Use alpha animation since color animation has compatibility issues
+    local fadeOut = titleAnimation:CreateAnimation("Alpha")
+    fadeOut:SetFromAlpha(1)
+    fadeOut:SetToAlpha(0.7)
+    fadeOut:SetDuration(1.5)
+    fadeOut:SetOrder(1)
+    fadeOut:SetSmoothing("IN_OUT")
     
+    local fadeIn = titleAnimation:CreateAnimation("Alpha")
+    fadeIn:SetFromAlpha(0.7)
+    fadeIn:SetToAlpha(1)
+    fadeIn:SetDuration(1.5)
+    fadeIn:SetOrder(2)
+    fadeIn:SetSmoothing("IN_OUT")
+    
+    -- Set an initial color for the title
+    title:SetTextColor(0.1, 0.6, 1)
+    
+    -- Play the animation
     titleAnimation:Play()
     
     -- Add a subtitle for extra polish
@@ -764,7 +871,7 @@ local function CreateCompletionPage(parent)
     logo:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 64, "OUTLINE")
     
     -- Enhanced congratulations panel with professional styling
-    local congratsPanel = VUIConfig:Panel(page, 700, 140)
+    local congratsPanel = VUIConfig:Panel(page, 800, 140)
     congratsPanel:SetPoint("TOP", logoPanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(congratsPanel, "panel")
     
@@ -784,11 +891,11 @@ local function CreateCompletionPage(parent)
     -- Main congratulations text with more inspiring message
     local finalText = VUIConfig:Label(congratsPanel, "You've successfully installed the most advanced UI enhancement suite available for World of Warcraft. VUI has been configured with optimal settings to provide both performance and visual excellence.\n\nYour next step is to explore the wealth of customization options that await you in the VUI configuration panel.")
     finalText:SetPoint("TOP", congratsHeader, "BOTTOM", 0, -10)
-    finalText:SetWidth(650)
+    finalText:SetWidth(750)
     finalText:SetJustifyH("CENTER")
     
     -- Command reference panel
-    local commandPanel = VUIConfig:Panel(page, 400, 60)
+    local commandPanel = VUIConfig:Panel(page, 500, 60)
     commandPanel:SetPoint("TOP", congratsPanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(commandPanel, "button")
     
@@ -800,7 +907,7 @@ local function CreateCompletionPage(parent)
     commandExample:SetFont("Interface\\AddOns\\VUI\\Media\\Fonts\\PTSansNarrow.ttf", 16)
     
     -- Enhanced tips panel with professional styling
-    local tipsPanel = VUIConfig:Panel(page, 700, 140)
+    local tipsPanel = VUIConfig:Panel(page, 800, 140)
     tipsPanel:SetPoint("TOP", commandPanel, "BOTTOM", 0, -20)
     VUIConfig:ApplyBackdrop(tipsPanel, "panel")
     
@@ -841,7 +948,7 @@ local function CreateCompletionPage(parent)
     for i, tip in ipairs(tips) do
         local tipLabel = VUIConfig:Label(tipsPanel, tip)
         tipLabel:SetPoint("TOPLEFT", 40, -30 - ((i-1) * 18))
-        tipLabel:SetWidth(620)
+        tipLabel:SetWidth(720)
         tipLabel:SetJustifyH("LEFT")
         tipLabel:SetAlpha(0) -- Start invisible for animation
         table.insert(tipLabels, tipLabel)
@@ -862,41 +969,77 @@ local function CreateCompletionPage(parent)
         
         -- Animate header with pulse
         C_Timer.After(0.2, function()
-            VUI.Animations:FadeIn(headerPanel, 0.5)
-            C_Timer.After(0.5, function()
-                VUI.Animations:Pulse(headerPanel, 0.6)
-            end)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(headerPanel, 0.5)
+                C_Timer.After(0.5, function()
+                    if VUI.Animations then
+                        VUI.Animations:Pulse(headerPanel, 0.6)
+                    end
+                end)
+            else
+                -- Fallback without animations
+                headerPanel:SetAlpha(1)
+            end
         end)
         
         -- Animate logo with bounce
         C_Timer.After(0.7, function()
-            VUI.Animations:FadeIn(logoPanel, 0.5)
-            C_Timer.After(0.5, function()
-                VUI.Animations:Bounce(logoPanel, 0.7, nil, {height = 15, bounces = 2})
-            end)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(logoPanel, 0.5)
+                C_Timer.After(0.5, function()
+                    if VUI.Animations then
+                        VUI.Animations:Bounce(logoPanel, 0.7, nil, {height = 15, bounces = 2})
+                    end
+                end)
+            else
+                -- Fallback without animations
+                logoPanel:SetAlpha(1)
+            end
         end)
         
         -- Animate congratulations text
         C_Timer.After(1.4, function()
-            VUI.Animations:FadeIn(congratsPanel, 0.5)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(congratsPanel, 0.5)
+            else
+                -- Fallback without animations
+                congratsPanel:SetAlpha(1)
+            end
         end)
         
         -- Animate command panel with pulse
         C_Timer.After(1.9, function()
-            VUI.Animations:FadeIn(commandPanel, 0.5)
-            C_Timer.After(0.5, function()
-                VUI.Animations:Pulse(commandPanel, 0.4)
-            end)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(commandPanel, 0.5)
+                C_Timer.After(0.5, function()
+                    if VUI.Animations then
+                        VUI.Animations:Pulse(commandPanel, 0.4)
+                    end
+                end)
+            else
+                -- Fallback without animations
+                commandPanel:SetAlpha(1)
+            end
         end)
         
         -- Animate tips panel
         C_Timer.After(2.4, function()
-            VUI.Animations:FadeIn(tipsPanel, 0.5)
+            if VUI.Animations then
+                VUI.Animations:FadeIn(tipsPanel, 0.5)
+            else
+                -- Fallback without animations
+                tipsPanel:SetAlpha(1)
+            end
             
             -- Animate individual tips with cascade effect
             for i, label in ipairs(tipLabels) do
                 C_Timer.After(2.6 + (i * 0.2), function()
-                    VUI.Animations:SlideIn(label, "RIGHT", 0.4, nil, {distance = 50})
+                    if VUI.Animations then
+                        VUI.Animations:SlideIn(label, "RIGHT", 0.4, nil, {distance = 50})
+                    else
+                        -- Fallback without animations
+                        label:SetAlpha(1)
+                    end
                 end)
             end
         end)
@@ -921,5 +1064,40 @@ function Module:OnEnable()
         
         -- Initialize with the first page
         Install:GoToPage(1)
+        
+        -- Create Animation module if it doesn't exist yet
+        if not VUI.Animations then
+            VUI.Animations = {
+                -- Provide fallback implementations for animation methods
+                FadeIn = function(self, frame, duration, onFinished, options)
+                    if frame then 
+                        frame:SetAlpha(1)
+                        frame:Show()
+                        if onFinished then onFinished(frame) end
+                    end
+                end,
+                FadeOut = function(self, frame, duration, onFinished, options)
+                    if frame then 
+                        frame:SetAlpha(0)
+                        if onFinished then onFinished(frame) end
+                    end
+                end,
+                Pulse = function(self, frame, duration, onFinished, options)
+                    if frame and onFinished then onFinished(frame) end
+                end,
+                Bounce = function(self, frame, duration, onFinished, options)
+                    if frame and onFinished then onFinished(frame) end
+                end,
+                SlideIn = function(self, frame, direction, duration, onFinished, options)
+                    if frame then
+                        frame:SetAlpha(1)
+                        frame:Show()
+                        if onFinished then onFinished(frame) end
+                    end
+                end
+            }
+            
+            VUI:Debug("INSTALL", "Created fallback animation module")
+        end
     end
 end

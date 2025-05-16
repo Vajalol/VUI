@@ -23,7 +23,7 @@ local autoCastGlowPool = {}
 
 -- Initialize highlights
 function HL:Initialize()
-    self.settings = VUICD:GetPartySettings().highlight
+    self.settings = VUICD:GetPartySettings() and VUICD:GetPartySettings().highlight
 end
 
 -- Apply highlight to a frame

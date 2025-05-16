@@ -1,6 +1,7 @@
 ---@diagnostic disable: inject-field
 local VUI = LibStub('AceAddon-3.0'):GetAddon('VUI')
-local M = VUI:GetModule('VUISkin')
+local M = VUI and VUI.VUISkin or {}
+if not M then return end
 
 do
     M.DefaultProfileImport =

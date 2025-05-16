@@ -1,22 +1,87 @@
 local addonName, VUI = ...
 
--- Create the main Auctionator table in the VUI namespace
+-- Initialize critical namespaces
 VUI.Auctionator = {
-  -- Basic information
-  Name = "VUIAuctionator",
-  Version = "1.0.0",
-  
-  -- Flag to track initialization state
-  Initialized = false,
-  
-  -- Module info for VUI integration
-  ModuleInfo = {
-    title = "VUIAuctionator",
-    desc = "Advanced Auction House Tools",
-    icon = [[Interface\AddOns\VUI\Media\Icons\tga\vortex_thunderstorm.tga]],
-    author = "VortexQ8"
-  }
+    Debug = {
+        Toggle = false,
+        Message = function(...) 
+            if VUI.Auctionator.Debug.Toggle then
+                print("VUIAuctionator", ...)
+            end
+        end
+    },
+    Locales = {},
+    Constants = {},
+    Config = {},
+    Utilities = {}, 
+    API = {},
+    Events = {},
+    Selling = {},
+    Shopping = {},
+    Cancelling = {},
+    Tabs = {},
+    Database = {},
+    FullScan = {},
+    
+    -- Basic information
+    Name = "VUIAuctionator",
+    Version = "1.0.0",
+    
+    -- Flag to track initialization state
+    Initialized = false,
+    
+    -- Module info for VUI integration
+    ModuleInfo = {
+        title = "VUIAuctionator",
+        desc = "Advanced Auction House Tools",
+        icon = [[Interface\AddOns\VUI\Media\Icons\tga\vortex_thunderstorm.tga]],
+        author = "VortexQ8"
+    }
 }
+
+-- Add fallback implementation for EventBus early
+-- This ensures that if EventBus.lua fails, we still have a working one
+VUI.Auctionator.Utilities.CreateEventBus = VUI.Auctionator.Utilities.CreateEventBus or function()
+    local eventBus = {
+        handlers = {},
+        RegisterHandler = function(self, eventName, handler)
+            if not self.handlers[eventName] then
+                self.handlers[eventName] = {}
+            end
+            table.insert(self.handlers[eventName], handler)
+        end,
+        Fire = function(self, eventName, ...)
+            if self.handlers[eventName] then
+                for _, handler in ipairs(self.handlers[eventName]) do
+                    pcall(handler, ...)
+                end
+            end
+        end,
+        RegisterHandlerOnce = function(self, eventName, handler)
+            local function oneTimeHandler(...)
+                handler(...)
+                self:UnregisterHandler(eventName, oneTimeHandler)
+            end
+            self:RegisterHandler(eventName, oneTimeHandler)
+        end,
+        UnregisterHandler = function(self, eventName, handler)
+            if not self.handlers[eventName] then return end
+            for i, h in ipairs(self.handlers[eventName]) do
+                if h == handler then
+                    table.remove(self.handlers[eventName], i)
+                    break
+                end
+            end
+        end,
+        UnregisterAllHandlers = function(self, eventName)
+            self.handlers[eventName] = nil
+        end
+    }
+    return eventBus
+end
+
+-- Initialize main event bus immediately
+VUI.Auctionator.Events = VUI.Auctionator.Utilities.CreateEventBus()
 
 -- Module reference for shorter access
 local Auctionator = VUI.Auctionator
@@ -234,4 +299,9 @@ function Auctionator:SetupTooltips()
   -- Hook all game tooltips
   HookTooltip(GameTooltip)
   HookTooltip(ItemRefTooltip)
+end
+
+-- If in development mode, enable debugging
+if VUI.isDev then
+    Auctionator.Debug.Toggle = true
 end

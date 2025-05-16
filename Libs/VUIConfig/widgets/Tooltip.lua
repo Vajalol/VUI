@@ -114,7 +114,10 @@ local OnShowFrameTooltip = function(self)
 	self:RecalculateSize();
 	self:ClearAllPoints();
 
+	if not self.owner then return end
+	
 	local _, _, _, xOfs, _ = self.owner:GetPoint()
+	if not xOfs then xOfs = 0 end
 	
 	if xOfs == 15 then
 		self.VUIConfig:GlueLeft(self, self.owner, 0, 25, self.anchor);

@@ -2,6 +2,12 @@
 -- Contains constants and defaults for the VUITGCD module
 
 local _, ns = ...
+local addonName, VUI = ...
+
+-- Create TGCD namespace if it doesn't exist
+if _G.VUI and not _G.VUI.TGCD then
+    _G.VUI.TGCD = {}
+end
 local VUITGCD = _G.VUI and _G.VUI.TGCD or {}
 
 -- Define namespace if not created yet
@@ -55,10 +61,40 @@ ns.constants.layoutTypes = {
 -- Default scale factor 
 ns.constants.defaultScale = 1.0
 
--- Media paths
+-- Media paths - use VUI media system
 ns.constants.mediaPath = function(file)
+    if not _G.VUI or not _G.VUI.GetMediaPath then
+        return "Interface\\AddOns\\VUI\\Media\\modules\\VUITGCD\\" .. file
+    end
     return _G.VUI:GetMediaPath("modules/VUITGCD/" .. file)
 end
+
+-- Get texture from VUI Media system if available
+local function GetTexturePath(texture)
+    if VUI and VUI.Media and VUI.Media.VUITGCD and VUI.Media.VUITGCD.Textures and VUI.Media.VUITGCD.Textures[texture] then
+        return VUI.Media.VUITGCD.Textures[texture]
+    else
+        -- Fallbacks for common textures
+        if texture == "background" then
+            return "Interface\\AddOns\\VUI\\Media\\modules\\VUITGCD\\textures\\background"
+        elseif texture == "cross" then
+            return "Interface\\TargetingFrame\\UI-RaidTargetingIcon_7"
+        elseif texture == "border" then
+            return "Interface\\AddOns\\VUI\\Media\\Textures\\borders\\border-tooltip"
+        elseif texture == "glow" then
+            return "Interface\\AddOns\\VUI\\Media\\Textures\\glow\\glow_square"
+        end
+        return texture
+    end
+end
+
+-- Default texture paths
+ns.constants.textures = {
+    background = GetTexturePath("Background"),
+    cross = GetTexturePath("Cross"),
+    border = GetTexturePath("Border"),
+    glow = GetTexturePath("Glow")
+}
 
 -- Default glow effect
 ns.constants.defaultGlowEffect = "blizz"
@@ -86,5 +122,27 @@ ns.constants.defaultSettings = {
 
 -- Export to global if needed
 if _G.VUI then
+    -- Make sure TGCD exists
+    _G.VUI.TGCD = _G.VUI.TGCD or {}
     _G.VUI.TGCD.Constants = ns.constants
+    
+    -- Export to VUITGCD global as well for compatibility
+    if not _G.VUITGCD then _G.VUITGCD = {} end
+    _G.VUITGCD.Constants = ns.constants
+    
+    -- Connect to VUI media system
+    if VUI.Media and VUI.Media.VUITGCD and VUI.Media.VUITGCD.Textures then
+        -- Update textures using the media system
+        ns.constants.textures = {
+            background = VUI.Media.VUITGCD.Textures.Background,
+            cross = VUI.Media.VUITGCD.Textures.Cross,
+            border = VUI.Media.VUITGCD.Textures.Border,
+            glow = VUI.Media.VUITGCD.Textures.Glow
+        }
+        
+        -- Make textures available in the global namespace for legacy code
+        if _G.VUITGCD then
+            _G.VUITGCD.Textures = VUI.Media.VUITGCD.Textures
+        end
+    end
 end

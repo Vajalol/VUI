@@ -1,486 +1,322 @@
+--[[
+    VUI Mouse Fire Trail Module Configuration
+    Visual effects for mouse cursor movement
+]]
+
 local Layout = VUI:NewModule('Config.Layout.VUIMouseFireTrail')
 
-function Layout:OnEnable()
-    -- Database
-    local db = VUI.db
-    
-    -- Module reference
-    local VUIMouseFireTrail = VUI:GetModule("VUIMouseFireTrail")
-    
-    -- Layout
-    Layout.layout = {
-        layoutConfig = { padding = { top = 15 } },
-        database = db.profile,
-        rows = {
-            {
-                header = {
-                    type = 'header',
-                    label = 'VUI Mouse Cursor Effects',
-                    description = 'Customize cursor trails and effects'
-                },
-            },
-            {
-                enabled = {
-                    key = 'vmodules.vuimousefiretrail.enabled',
-                    type = 'checkbox',
-                    label = 'Enable Cursor Effects',
-                    tooltip = 'Enable or disable the mouse cursor trail effects',
-                    column = 4,
-                    order = 1,
-                    callback = function(self)
-                        -- Update the saved variable
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.enabled = self:GetValue()
-                            -- Update display based on new value
-                            if self:GetValue() then
-                                if VUIMouseFireTrail.OnEnable then VUIMouseFireTrail:OnEnable() end
-                            else
-                                if VUIMouseFireTrail.OnDisable then VUIMouseFireTrail:OnDisable() end
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                header = {
-                    type = 'header',
-                    label = 'Trail Settings'
-                },
-            },
-            {
-                trailType = {
-                    key = 'vmodules.vuimousefiretrail.trailType',
-                    type = 'dropdown',
-                    label = 'Trail Type',
-                    tooltip = 'Select the type of trail effect',
-                    options = {
-                        { text = 'Particle', value = 'PARTICLE' },
-                        { text = 'Texture', value = 'TEXTURE' },
-                        { text = 'Shape', value = 'SHAPE' },
-                        { text = 'Glow', value = 'GLOW' }
-                    },
-                    column = 4,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.trailType = self:GetSelectedItem().value
-                            if VUIMouseFireTrail.CreateTrailFrames then
-                                VUIMouseFireTrail:CreateTrailFrames()
-                            end
-                        end
-                    end
-                },
-                colorMode = {
-                    key = 'vmodules.vuimousefiretrail.colorMode',
-                    type = 'dropdown',
-                    label = 'Color Mode',
-                    tooltip = 'Select the coloring style for the trail',
-                    options = {
-                        { text = 'Fire', value = 'FIRE' },
-                        { text = 'Arcane', value = 'ARCANE' },
-                        { text = 'Frost', value = 'FROST' },
-                        { text = 'Nature', value = 'NATURE' },
-                        { text = 'Rainbow', value = 'RAINBOW' },
-                        { text = 'Theme Color', value = 'THEME' },
-                        { text = 'Custom Color', value = 'CUSTOM' }
-                    },
-                    column = 4,
-                    order = 2,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.colorMode = self:GetSelectedItem().value
-                            if VUIMouseFireTrail.UpdateTheme then
-                                VUIMouseFireTrail:UpdateTheme()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                trailCount = {
-                    key = 'vmodules.vuimousefiretrail.trailCount',
-                    type = 'slider',
-                    label = 'Trail Count',
-                    tooltip = 'Number of segments in the trail',
-                    min = 5,
-                    max = 50,
-                    step = 1,
-                    column = 6,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.trailCount = self:GetValue()
-                            if VUIMouseFireTrail.CreateTrailFrames then
-                                VUIMouseFireTrail:CreateTrailFrames()
-                            end
-                        end
-                    end
-                },
-                trailSize = {
-                    key = 'vmodules.vuimousefiretrail.trailSize',
-                    type = 'slider',
-                    label = 'Trail Size',
-                    tooltip = 'Size of each trail segment',
-                    min = 5,
-                    max = 50,
-                    step = 1,
-                    column = 6,
-                    order = 2,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.trailSize = self:GetValue()
-                            if VUIMouseFireTrail.CreateTrailFrames then
-                                VUIMouseFireTrail:CreateTrailFrames()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                header = {
-                    type = 'header',
-                    label = 'Display Settings'
-                },
-            },
-            {
-                showInCombat = {
-                    key = 'vmodules.vuimousefiretrail.showInCombat',
-                    type = 'checkbox',
-                    label = 'Show During Combat',
-                    tooltip = 'Show the cursor trail during combat',
-                    column = 4,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.showInCombat = self:GetValue()
-                        end
-                    end
-                },
-                showInInstances = {
-                    key = 'vmodules.vuimousefiretrail.showInInstances',
-                    type = 'checkbox',
-                    label = 'Show In Instances',
-                    tooltip = 'Show the cursor trail in dungeons and raids',
-                    column = 4,
-                    order = 2,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.showInInstances = self:GetValue()
-                        end
-                    end
-                },
-                showInRestArea = {
-                    key = 'vmodules.vuimousefiretrail.showInRestArea',
-                    type = 'checkbox',
-                    label = 'Show In Rest Areas',
-                    tooltip = 'Show the cursor trail in cities and inns',
-                    column = 4,
-                    order = 3,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.showInRestArea = self:GetValue()
-                            if VUIMouseFireTrail.UpdateVisibility then
-                                VUIMouseFireTrail:UpdateVisibility()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                enableInWorld = {
-                    key = 'vmodules.vuimousefiretrail.enableInWorld',
-                    type = 'checkbox',
-                    label = 'Show In Open World',
-                    tooltip = 'Show the fire trail in the open world',
-                    column = 4,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.enableInWorld = self:GetValue()
-                            if VUIMouseFireTrail.UpdateVisibility then
-                                VUIMouseFireTrail:UpdateVisibility()
-                            end
-                        end
-                    end
-                },
-                hideWithUI = {
-                    key = 'vmodules.vuimousefiretrail.hideWithUI',
-                    type = 'checkbox',
-                    label = 'Hide With UI',
-                    tooltip = 'Hide the fire trail when the UI is hidden',
-                    column = 4,
-                    order = 2,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.hideWithUI = self:GetValue()
-                            if VUIMouseFireTrail.UpdateVisibility then
-                                VUIMouseFireTrail:UpdateVisibility()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                header = {
-                    type = 'header',
-                    label = 'Appearance'
-                },
-            },
-            {
-                colorMode = {
-                    key = 'vmodules.vuimousefiretrail.colorMode',
-                    type = 'dropdown',
-                    label = 'Particle Style',
-                    tooltip = 'Choose the visual style of the trail particles',
-                    options = {
-                        { text = 'Fire', value = 'FIRE' },
-                        { text = 'Arcane', value = 'ARCANE' },
-                        { text = 'Frost', value = 'FROST' },
-                        { text = 'Nature', value = 'NATURE' },
-                        { text = 'Rainbow', value = 'RAINBOW' },
-                        { text = 'Custom Color', value = 'CUSTOM' }
-                    },
-                    column = 4,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.colorMode = self:GetSelectedItem().value
-                            if VUIMouseFireTrail.InitParticles then
-                                VUIMouseFireTrail:InitParticles()
-                            end
-                        end
-                    end
-                },
-                customColorPicker = {
-                    key = 'vmodules.vuimousefiretrail.customColor',
-                    type = 'color',
-                    label = 'Custom Color',
-                    tooltip = 'Choose a custom color for particles (only used with Custom Color style)',
-                    column = 4,
-                    order = 2,
-                    callback = function(self, r, g, b)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.customColor = {r = r, g = g, b = b}
-                            if VUIMouseFireTrail.InitParticles then
-                                VUIMouseFireTrail:InitParticles()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                particleSize = {
-                    key = 'vmodules.vuimousefiretrail.particleSize',
-                    type = 'slider',
-                    label = 'Particle Size',
-                    tooltip = 'Set the size of each particle',
-                    min = 10,
-                    max = 50,
-                    step = 1,
-                    column = 3,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.particleSize = self:GetValue()
-                            if VUIMouseFireTrail.UpdateParticleSettings then
-                                VUIMouseFireTrail:UpdateParticleSettings()
-                            end
-                        end
-                    end
-                },
-                particleCount = {
-                    key = 'vmodules.vuimousefiretrail.particleCount',
-                    type = 'slider',
-                    label = 'Particle Count',
-                    tooltip = 'Set the number of particles in the trail',
-                    min = 5,
-                    max = 50,
-                    step = 1,
-                    column = 3,
-                    order = 2,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.particleCount = self:GetValue()
-                            if VUIMouseFireTrail.UpdateParticleSettings then
-                                VUIMouseFireTrail:UpdateParticleSettings()
-                            end
-                        end
-                    end
-                },
-                particleAlpha = {
-                    key = 'vmodules.vuimousefiretrail.particleAlpha',
-                    type = 'slider',
-                    label = 'Particle Transparency',
-                    tooltip = 'Set the transparency of particles',
-                    min = 0.1,
-                    max = 1.0,
-                    step = 0.1,
-                    column = 3,
-                    order = 3,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.particleAlpha = self:GetValue()
-                            if VUIMouseFireTrail.UpdateParticleSettings then
-                                VUIMouseFireTrail:UpdateParticleSettings()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                particleTrailLength = {
-                    key = 'vmodules.vuimousefiretrail.particleTrailLength',
-                    type = 'slider',
-                    label = 'Trail Length',
-                    tooltip = 'Set the length of the trail',
-                    min = 0.1,
-                    max = 1.0,
-                    step = 0.1,
-                    column = 3,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.particleTrailLength = self:GetValue()
-                            if VUIMouseFireTrail.UpdateParticleSettings then
-                                VUIMouseFireTrail:UpdateParticleSettings()
-                            end
-                        end
-                    end
-                },
-                particleSpeed = {
-                    key = 'vmodules.vuimousefiretrail.particleSpeed',
-                    type = 'slider',
-                    label = 'Particle Speed',
-                    tooltip = 'Set how fast the particles move',
-                    min = 0.5,
-                    max = 3.0,
-                    step = 0.1,
-                    column = 3,
-                    order = 2,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.particleSpeed = self:GetValue()
-                            if VUIMouseFireTrail.UpdateParticleSettings then
-                                VUIMouseFireTrail:UpdateParticleSettings()
-                            end
-                        end
-                    end
-                },
-                particleDecay = {
-                    key = 'vmodules.vuimousefiretrail.particleDecay',
-                    type = 'slider',
-                    label = 'Particle Fade Rate',
-                    tooltip = 'Set how quickly particles fade out',
-                    min = 0.8,
-                    max = 0.98,
-                    step = 0.01,
-                    column = 3,
-                    order = 3,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.particleDecay = self:GetValue()
-                            if VUIMouseFireTrail.UpdateParticleSettings then
-                                VUIMouseFireTrail:UpdateParticleSettings()
-                            end
-                        end
-                    end
-                },
-                particleVariation = {
-                    key = 'vmodules.vuimousefiretrail.particleVariation',
-                    type = 'slider',
-                    label = 'Size Variation',
-                    tooltip = 'Random variation in particle size',
-                    min = 0,
-                    max = 1,
-                    step = 0.05,
-                    column = 3,
-                    order = 4,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.particleVariation = self:GetValue()
-                            if VUIMouseFireTrail.UpdateParticleSettings then
-                                VUIMouseFireTrail:UpdateParticleSettings()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                header = {
-                    type = 'header',
-                    label = 'Activation Options'
-                },
-            },
-            {
-                mouseButtonRequired = {
-                    key = 'vmodules.vuimousefiretrail.mouseButtonRequired',
-                    type = 'checkbox',
-                    label = 'Require Mouse Button',
-                    tooltip = 'Require holding a mouse button to show the trail',
-                    column = 4,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.mouseButtonRequired = self:GetValue()
-                            if VUIMouseFireTrail.UpdateTriggerSettings then
-                                VUIMouseFireTrail:UpdateTriggerSettings()
-                            end
-                        end
-                    end
-                },
-                mouseButton = {
-                    key = 'vmodules.vuimousefiretrail.mouseButton',
-                    type = 'dropdown',
-                    label = 'Mouse Button',
-                    tooltip = 'Which mouse button to hold',
-                    options = {
-                        { text = 'Left Button', value = 'LEFT' },
-                        { text = 'Right Button', value = 'RIGHT' },
-                        { text = 'Middle Button', value = 'MIDDLE' }
-                    },
-                    column = 4,
-                    order = 2,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.mouseButton = self:GetSelectedItem().value
-                            if VUIMouseFireTrail.UpdateTriggerSettings then
-                                VUIMouseFireTrail:UpdateTriggerSettings()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                requireModifierKey = {
-                    key = 'vmodules.vuimousefiretrail.requireModifierKey',
-                    type = 'checkbox',
-                    label = 'Require Key Modifier',
-                    tooltip = 'Require holding a key modifier to show the trail',
-                    column = 4,
-                    order = 1,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.requireModifierKey = self:GetValue()
-                        end
-                    end
-                },
-                useThemeColor = {
-                    key = 'vmodules.vuimousefiretrail.useThemeColor',
-                    type = 'checkbox',
-                    label = 'Use VUI Theme Color',
-                    tooltip = 'Use the current VUI theme color for trails',
-                    column = 4,
-                    order = 2,
-                    callback = function(self)
-                        if VUIMouseFireTrail and VUIMouseFireTrail.db then
-                            VUIMouseFireTrail.db.profile.useThemeColor = self:GetValue()
-                            if VUIMouseFireTrail.UpdateTheme then
-                                VUIMouseFireTrail:UpdateTheme()
-                            end
-                        end
-                    end
-                },
-            },
+-- Initialize with the standard layout helper
+VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUIMouseFireTrail", "VUI Mouse Effects", "vmodules.vuimousefiretrail")
+
+-- Define module-specific layout construction
+function Layout:BuildModuleLayout(module, db)
+    -- Extend the base layout with module-specific settings
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Mouse Effect Settings'
         },
-    }
+    })
+    
+    -- Add basic settings
+    table.insert(Layout.layout.rows, {
+        enableTrail = {
+            key = 'vmodules.vuimousefiretrail.enabled',
+            type = 'checkbox',
+            label = 'Enable Fire Trail',
+            tooltip = 'Enable fire trail effect for the mouse cursor',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.enabled = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+        connectSegments = {
+            key = 'vmodules.vuimousefiretrail.connectSegments',
+            type = 'checkbox',
+            label = 'Connect Segments',
+            tooltip = 'Connect trail segments with lines',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.connectSegments = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+        enableGlow = {
+            key = 'vmodules.vuimousefiretrail.enableGlow',
+            type = 'checkbox',
+            label = 'Enable Glow',
+            tooltip = 'Add glow effect to the trail',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.enableGlow = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Display conditions
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Display Conditions'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        showInCombat = {
+            key = 'vmodules.vuimousefiretrail.showInCombat',
+            type = 'checkbox',
+            label = 'Show During Combat',
+            tooltip = 'Show trail effects during combat',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showInCombat = self:GetValue()
+                end
+            end
+        },
+        showInInstances = {
+            key = 'vmodules.vuimousefiretrail.showInInstances',
+            type = 'checkbox',
+            label = 'Show In Instances',
+            tooltip = 'Show trail effects in dungeons and raids',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showInInstances = self:GetValue()
+                end
+            end
+        },
+        showInWorld = {
+            key = 'vmodules.vuimousefiretrail.showInWorld',
+            type = 'checkbox',
+            label = 'Show In World',
+            tooltip = 'Show trail effects in the open world',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showInWorld = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        requireMouseButton = {
+            key = 'vmodules.vuimousefiretrail.requireMouseButton',
+            type = 'checkbox',
+            label = 'Require Mouse Button',
+            tooltip = 'Only show effects when a mouse button is held',
+            column = 6,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.requireMouseButton = self:GetValue()
+                end
+            end
+        },
+        requireModifierKey = {
+            key = 'vmodules.vuimousefiretrail.requireModifierKey',
+            type = 'checkbox',
+            label = 'Require Modifier Key',
+            tooltip = 'Only show effects when a modifier key is held (Shift, Ctrl, Alt)',
+            column = 6,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.requireModifierKey = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    -- Effect configuration
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Effect Configuration'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        effectType = {
+            key = 'vmodules.vuimousefiretrail.colorMode',
+            type = 'dropdown',
+            label = 'Effect Type',
+            tooltip = 'Select the type of visual effect',
+            options = {
+                {value = "FIRE", text = "Fire"},
+                {value = "ARCANE", text = "Arcane"},
+                {value = "FROST", text = "Frost"},
+                {value = "NATURE", text = "Nature"},
+                {value = "RAINBOW", text = "Rainbow"},
+                {value = "THEME", text = "Theme Color"},
+                {value = "CUSTOM", text = "Custom Color"}
+            },
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.colorMode = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+        trailType = {
+            key = 'vmodules.vuimousefiretrail.trailType',
+            type = 'dropdown',
+            label = 'Trail Type',
+            tooltip = 'Select the type of trail',
+            options = {
+                {value = "PARTICLE", text = "Particle"},
+                {value = "TEXTURE", text = "Texture"},
+                {value = "GLOW", text = "Glow"},
+                {value = "SHAPE", text = "Shape"}
+            },
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.trailType = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+        trailShape = {
+            key = 'vmodules.vuimousefiretrail.trailShape',
+            type = 'dropdown',
+            label = 'Trail Shape',
+            tooltip = 'Select the shape of the trail',
+            options = {
+                {value = "V_SHAPE", text = "V Shape"},
+                {value = "ARROW", text = "Arrow"},
+                {value = "U_SHAPE", text = "U Shape"},
+                {value = "ELLIPSE", text = "Ellipse"},
+                {value = "SPIRAL", text = "Spiral"}
+            },
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.trailShape = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Advanced settings
+    table.insert(Layout.layout.rows, {
+        effectSize = {
+            key = 'vmodules.vuimousefiretrail.trailSize',
+            type = 'slider',
+            label = 'Effect Size',
+            tooltip = 'Set the size of each trail segment',
+            min = 5,
+            max = 100,
+            step = 1,
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.trailSize = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+        effectOpacity = {
+            key = 'vmodules.vuimousefiretrail.trailAlpha',
+            type = 'slider',
+            label = 'Effect Opacity',
+            tooltip = 'Set the opacity of the trail effect',
+            min = 0.1,
+            max = 1.0,
+            step = 0.1,
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.trailAlpha = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+        trailCount = {
+            key = 'vmodules.vuimousefiretrail.trailCount',
+            type = 'slider',
+            label = 'Trail Length',
+            tooltip = 'Set the number of segments in the trail',
+            min = 5,
+            max = 50,
+            step = 1, 
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.trailCount = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Theme integration
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Theme Integration'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        useThemeColor = {
+            key = 'vmodules.vuimousefiretrail.useThemeColor',
+            type = 'checkbox',
+            label = 'Use Theme Color',
+            tooltip = 'Use the VUI theme color for trail effects',
+            column = 12,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.useThemeColor = self:GetValue()
+                    if module.UpdateSettings then
+                        module:UpdateSettings()
+                    end
+                end
+            end
+        },
+    })
 end
+
+return Layout 

@@ -1,5 +1,52 @@
 local addonName, VUI = ...
-local Auctionator = VUI.Auctionator
+local Auctionator = VUI.Auctionator or {}
+VUI.Auctionator = Auctionator
+
+-- Ensure required namespaces exist
+Auctionator.Utilities = Auctionator.Utilities or {}
+
+-- Safety check for CreateEventBus function
+if not Auctionator.Utilities.CreateEventBus then
+    -- Fallback implementation if the original is missing
+    Auctionator.Utilities.CreateEventBus = function()
+        local eventBus = {
+            handlers = {},
+            RegisterHandler = function(self, eventName, handler)
+                if not self.handlers[eventName] then
+                    self.handlers[eventName] = {}
+                end
+                table.insert(self.handlers[eventName], handler)
+            end,
+            Fire = function(self, eventName, ...)
+                if self.handlers[eventName] then
+                    for _, handler in ipairs(self.handlers[eventName]) do
+                        pcall(handler, ...)
+                    end
+                end
+            end,
+            RegisterHandlerOnce = function(self, eventName, handler)
+                local function oneTimeHandler(...)
+                    handler(...)
+                    self:UnregisterHandler(eventName, oneTimeHandler)
+                end
+                self:RegisterHandler(eventName, oneTimeHandler)
+            end,
+            UnregisterHandler = function(self, eventName, handler)
+                if not self.handlers[eventName] then return end
+                for i, h in ipairs(self.handlers[eventName]) do
+                    if h == handler then
+                        table.remove(self.handlers[eventName], i)
+                        break
+                    end
+                end
+            end,
+            UnregisterAllHandlers = function(self, eventName)
+                self.handlers[eventName] = nil
+            end
+        }
+        return eventBus
+    end
+end
 
 -- Initialize the event system
 Auctionator.Events = Auctionator.Utilities.CreateEventBus()

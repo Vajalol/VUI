@@ -1,6 +1,9 @@
 ---@type string, Namespace
 local _, ns = ...
 
+-- Create namespaces if needed
+if not ns then ns = {} end
+
 ---@type {[UnitType]: string}
 local unitLabels = {
     player = "Player",

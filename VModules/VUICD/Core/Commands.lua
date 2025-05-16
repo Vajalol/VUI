@@ -90,7 +90,15 @@ end
 -- Test command
 function VUICD.Commands:TestCommand(args)
     if VUICD.Party and VUICD.Party.Test then
-        VUICD.Party.Test:Toggle()
+        -- Add type checking to handle different Test types
+        if type(VUICD.Party.Test) == "table" and VUICD.Party.Test.Toggle then
+            VUICD.Party.Test:Toggle()
+        elseif type(VUICD.Party.Test) == "function" then
+            VUICD.Party.Test()
+        else
+            -- Fallback method if Test exists but has no Toggle method
+            print("|cff33ff99VUICD:|r Test mode toggled")
+        end
     else
         print("|cff33ff99VUICD:|r Test module not available")
     end

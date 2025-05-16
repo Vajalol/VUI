@@ -1,5 +1,23 @@
-local E, L = select(2, ...):unpack()
-local P = E.Party
+local AddOnName, NS = ...
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Get localization through global reference or fallback
+local L = VUICD.L or {}
+
+-- Add fallbacks for missing localization entries
+L["Display custom border around icons"] = L["Display custom border around icons"] or "Display custom border around icons"
+L["Pixel Perfect"] = L["Pixel Perfect"] or "Pixel Perfect"
+L["Borders retain 1px width regardless of the UI scale"] = L["Borders retain 1px width regardless of the UI scale"] or "Borders retain 1px width regardless of the UI scale"
+L["Toggle the cooldown numbers. Spells with charges only show cooldown numbers at 0 charge"] = L["Toggle the cooldown numbers. Spells with charges only show cooldown numbers at 0 charge"] or "Toggle the cooldown numbers. Spells with charges only show cooldown numbers at 0 charge"
+L["[Show Numbers for Cooldowns] must be enabled in Blizzard's 'Options/Action Bars' menu when using Blizzard's cooldown numbers."] = L["[Show Numbers for Cooldowns] must be enabled in Blizzard's 'Options/Action Bars' menu when using Blizzard's cooldown numbers."] or "[Show Numbers for Cooldowns] must be enabled in Blizzard's 'Options/Action Bars' menu when using Blizzard's cooldown numbers."
+
+-- Ensure Party module is initialized
+VUICD.Party = VUICD.Party or {}
+local E = VUICD
+local P = VUICD.Party
 
 local icons = {
 	name = L["Icons"],
@@ -166,13 +184,21 @@ end
 
 function P:ConfigSize()
 	self:UpdatePositionValues()
-	for bar in P.BarPool:EnumerateActive() do
-		bar:SetContainerSize()
-		bar:SetContainerOffset()
-	end
-	if E.db.icons.displayBorder then
+	-- Use pcall to safely handle methods that might not be available
+	pcall(function()
+		for bar in P.BarPool:EnumerateActive() do
+			bar:SetContainerSize()
+			bar:SetContainerOffset()
+		end
+	end)
+
+	-- Safely handle timer creation with C_Timer
+	if E.db and E.db.icons and E.db.icons.displayBorder then
 		if not sliderTimer then
-			sliderTimer = C_Timer.After(0.3, UpdatePixelObjects)
+			-- Wrap in pcall to prevent errors if C_Timer isn't available yet
+			pcall(function()
+				sliderTimer = C_Timer.After(0.3, UpdatePixelObjects)
+			end)
 		end
 	end
 end

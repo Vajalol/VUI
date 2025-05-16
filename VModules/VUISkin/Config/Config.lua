@@ -1,8 +1,43 @@
 -- VUISkin Config
 local AddonName, VUI = ...
 
--- Register module
-local VUISkin = VUI:NewModule("VUISkin")
+-- Check if VUI exists before proceeding
+if not VUI then return end
+
+-- Try to create the module with error handling
+local VUISkin
+if VUI and VUI.NewModule then
+    VUISkin = VUI:NewModule("VUISkin")
+else
+    -- Fallback to prevent errors
+    -- No need to print warning as this is expected during initial load
+    -- Create a minimal module to avoid errors
+    VUISkin = {
+        NAME = "VUISkin",
+        TITLE = "VUI Skin",
+        DESCRIPTION = "Details! Damage Meter skin",
+        VERSION = "1.0",
+        Debug = function(self, ...) 
+            -- Silent debug to avoid console spam
+        end,
+        Print = function(self, ...) print("|cff00ffffVUISkin:|r", ...) end,
+        RegisterEvent = function() end,
+        UnregisterAllEvents = function() end,
+        RegisterChatCommand = function() end,
+        GetOptions = function() return {} end,
+        OnInitialize = function() end,
+        OnEnable = function() end,
+        OnDisable = function() end,
+        SlashCommand = function() print("|cff00ffffVUISkin:|r Commands unavailable in fallback mode") end,
+        db = { profile = { enabled = false, autoApply = true } }
+    }
+    -- Register module in VUI namespace
+    VUI.VUISkin = VUISkin
+    return
+end
+
+-- Set global namespace for other files to access
+VUI.VUISkin = VUISkin
 
 -- Module configuration defaults
 local defaults = {

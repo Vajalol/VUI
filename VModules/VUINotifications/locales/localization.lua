@@ -1,5 +1,8 @@
 local addonName, VUI = ...
 
+-- Ensure namespace exists
+VUI.Notifications = VUI.Notifications or {}
+
 -- Localization support for VUINotifications module
 VUI.Notifications.L = {}
 local L = VUI.Notifications.L

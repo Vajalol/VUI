@@ -1,5 +1,8 @@
 local addonName, VUI = ...
 
+-- Ensure namespace exists
+VUI.Notifications = VUI.Notifications or {}
+
 -- Define spell schools for interrupt notifications
 function VUI.Notifications.SpellSchools()
     return {

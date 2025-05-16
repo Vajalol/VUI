@@ -1,5 +1,42 @@
-local E, L = select(2, ...):unpack()
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module exists
+VUICD.Party = VUICD.Party or {}
+
+-- Setup localization with fallbacks
+local L = {}
+local success = pcall(function() L = LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if not success then
+    -- Add fallbacks for localization
+    L["Visibility"] = "Visibility"
+    L["Enable in automated instance groups"] = "Enable in automated instance groups"
+    L["Group Size"] = "Group Size"
+    L["Max number of group members"] = "Max number of group members"
+end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
 local P = E.Party
+
+-- Ensure initialization of required tables
+if not E.profile then E.profile = {} end
+if not E.profile.Party then E.profile.Party = {} end
+if not E.profile.Party.visibility then E.profile.Party.visibility = {} end
+if not E.profile.Party.groupSize then E.profile.Party.groupSize = {} end
+if not P.options then P.options = {args = {}} end
+
+-- Create necessary reference tables
+E.L_ALL_ZONE = E.L_ALL_ZONE or {
+    arena = "Arena",
+    pvp = "Battleground",
+    party = "Party",
+    raid = "Raid"
+}
 
 local sliderTimer
 

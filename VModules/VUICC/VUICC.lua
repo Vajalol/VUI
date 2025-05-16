@@ -54,8 +54,11 @@ _G["VUI_ADDON"].GetButtonIcon = function(self, button)
 end
 
 -- Now attempt to initialize the module properly
-local AddonName, VUI = ...
+local AddonName, _ = ...
 local MODNAME = "VUICC"
+
+-- Use global reference instead of local addon variable to fix load order issues
+local VUI = _G["VUI"]
 
 -- Ensure our global reference is populated with the actual Addon from this file
 -- This is critical because Core/*.lua files use the Addon variable directly
@@ -113,13 +116,17 @@ end
 
 -- Localization with fallback mechanism
 local L
--- Try to get the locale safely, with a pcall to catch errors
-local success, result = pcall(function() return LibStub("AceLocale-3.0"):GetLocale("VUI") end)
-if success then
-    L = result
+-- Use global reference pattern for localization tables
+if VUI and VUI.L then
+    L = VUI.L
 else
-    -- If the locale isn't registered yet, create a fallback table with common strings
-    L = {
+    -- Try to get the locale safely, with a pcall to catch errors
+    local success, result = pcall(function() return LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+    if success then
+        L = result
+    else
+        -- If the locale isn't registered yet, create a fallback table with common strings
+        L = {
         -- Common UI strings
         Enable = "Enable",
         Enable_Desc = "Enable or disable this module",
@@ -145,7 +152,8 @@ else
         NoneTip = "No finish effect",
         Flare = "Flare",
         FlareTip = "Flares the cooldown's icon when the cooldown completes"
-    }
+        }
+    end
     
     -- Make this available to the entire addon to prevent duplicate fallbacks
     _G["VUICC"].L = L
@@ -187,51 +195,124 @@ M.defaults = {
 
 -- Initialize the module
 function M:OnInitialize()
-    -- Create the database
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming and ensure we have fallbacks
+    -- for when VUI.db or VUI.db.namespaces isn't available
+    if VUI and VUI.db then
+        -- Make sure namespaces exists to avoid nil indexing
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUICC"] or VUI.db.namespaces["vuicc"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUICC"] = namespace
+            VUI.db.namespaces["vuicc"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUICC", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuicc"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
     -- Initialize the configuration panel
     self:InitializeConfig()
     
-    -- Register callback for theme changes
-    VUI:RegisterCallback("OnThemeChanged", function()
-        if self.UpdateTheme then
-            self:UpdateTheme()
-        end
-    end)
+    -- Register callback for theme changes with safety checks
+    if VUI and VUI.RegisterCallback and type(VUI.RegisterCallback) == "function" then
+        pcall(function()
+            VUI:RegisterCallback("OnThemeChanged", function()
+                if self and self.UpdateTheme and type(self.UpdateTheme) == "function" then
+                    self:UpdateTheme()
+                end
+            end)
+        end)
+    end
     
     -- Setup cooldown hooks
     self:SetupHooks()
     
     -- Register slash command
-    self:RegisterChatCommand("vuicc", "SlashCommand")
-    
-    -- Legacy support
-    self:RegisterChatCommand("omnicc", "SlashCommand")
-    self:RegisterChatCommand("occ", "SlashCommand")
+    if self.RegisterChatCommand and type(self.RegisterChatCommand) == "function" then
+        self:RegisterChatCommand("vuicc", "SlashCommand")
+        
+        -- Legacy support
+        self:RegisterChatCommand("omnicc", "SlashCommand")
+        self:RegisterChatCommand("occ", "SlashCommand")
+    else
+        -- Fallback: Register with SlashCmdList
+        _G.SLASH_VUICC1 = "/vuicc"
+        _G.SLASH_VUICC2 = "/omnicc" 
+        _G.SLASH_VUICC3 = "/occ"
+        SlashCmdList["VUICC"] = function(input)
+            self:SlashCommand(input)
+        end
+    end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " initialized")
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " initialized")
+    end
 end
 
 -- Enable the module
 function M:OnEnable()
-    -- Register events
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    -- Register events with safety check
+    if self.RegisterEvent and type(self.RegisterEvent) == "function" then
+        pcall(function()
+            self:RegisterEvent("PLAYER_ENTERING_WORLD")
+        end)
+    else
+        -- Fallback for when RegisterEvent isn't available
+        local frame = CreateFrame("Frame")
+        frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame:SetScript("OnEvent", function(_, event, ...)
+            if event == "PLAYER_ENTERING_WORLD" and self and self.PLAYER_ENTERING_WORLD then
+                self:PLAYER_ENTERING_WORLD(...)
+            end
+        end)
+        -- Store the frame for later cleanup
+        self.eventFrame = frame
+    end
     
-    -- Debug message
-    VUI:Debug(self.NAME .. " enabled")
+    -- Debug message with safety check
+    if VUI and VUI.Debug and type(VUI.Debug) == "function" then
+        pcall(function() VUI:Debug(self.NAME .. " enabled") end)
+    end
 end
 
 -- Disable the module
 function M:OnDisable()
-    -- Unregister events
-    self:UnregisterAllEvents()
+    -- Unregister events with safety check
+    if self.UnregisterAllEvents and type(self.UnregisterAllEvents) == "function" then
+        pcall(function()
+            self:UnregisterAllEvents()
+        end)
+    end
     
-    -- Debug message
-    VUI:Debug(self.NAME .. " disabled")
+    -- Clean up the event frame if we created one
+    if self.eventFrame then
+        self.eventFrame:SetScript("OnEvent", nil)
+        self.eventFrame:UnregisterAllEvents()
+        self.eventFrame = nil
+    end
+    
+    -- Debug message with safety check
+    if VUI and VUI.Debug and type(VUI.Debug) == "function" then
+        pcall(function() VUI:Debug(self.NAME .. " disabled") end)
+    end
 end
 
 -- Configuration initialization
@@ -295,7 +376,9 @@ function M:InitializeConfig()
     }
     
     -- Register with VUI's configuration system
-    VUI.Config:RegisterModuleOptions(self.NAME, options, self.TITLE)
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions(self.NAME, options, self.TITLE)
+    end
 end
 
 -- PLAYER_ENTERING_WORLD event handler

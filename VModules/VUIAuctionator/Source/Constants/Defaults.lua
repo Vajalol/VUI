@@ -1,5 +1,29 @@
 local addonName, VUI = ...
-local Auctionator = VUI.Auctionator
+local Auctionator = VUI and VUI.Auctionator or {}
+
+-- Ensure Auctionator namespace exists in VUI if VUI exists
+if VUI then
+    VUI.Auctionator = VUI.Auctionator or {}
+    Auctionator = VUI.Auctionator
+end
+
+-- Ensure the localization function exists and is safe to call
+Auctionator.L = Auctionator.L or function(key) return key end
+
+-- Create a local reference to the L function to prevent nil error
+local L = Auctionator.L
+
+Auctionator.Constants = Auctionator.Constants or {}
+Auctionator.Constants.TIME = Auctionator.Constants.TIME or {
+  DAY = 86400,
+  WEEK = 604800,
+  MONTH = 2592000
+}
+Auctionator.Constants.TOOLTIP_ANCHOR = Auctionator.Constants.TOOLTIP_ANCHOR or {
+  RIGHT = "right",
+  LEFT = "left",
+  DEFAULT = "default"
+}
 
 Auctionator.Constants.Defaults = {
   -- Profile defaults
@@ -14,7 +38,7 @@ Auctionator.Constants.Defaults = {
     CONFIG = {
       AUCTION_CHAT_LOG = true,
       AUCTION_SALES_PREFERENCE = "static",
-      DEFAULT_LIST = Auctionator.L("AUCTIONATOR"),
+      DEFAULT_LIST = L.AUCTIONATOR,
       DEFAULT_QUANTITIES = { 
         [1] = 1, 
         [5] = 10, 

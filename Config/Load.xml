@@ -1,8 +1,20 @@
-<Ui xmlns='http://www.blizzard.com/wow/ui/'>
-  <Include file='Components\Load.xml'/>
-  <Include file='Layouts\Load.xml'/>
-  <Include file='_Install.lua'/>
-  <Include file='_Gui.lua'/>
-  <Include file='SavedVariables.lua'/>
-  <Include file='Documentation.lua'/>
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <Include file='SavedVariables.lua'/>
+    <Include file='Documentation.lua'/>
+    
+    <!-- Core config files first -->
+    <Script file="_Core.lua"/>
+    <Script file="_Install.lua"/>
+    <Script file="_Gui.lua"/>
+    
+    <!-- Helpers must be loaded BEFORE layouts -->
+    <Script file="_Helpers.lua"/>
+
+    
+    <!-- Layout files -->
+    <Include file="Layouts\Load.xml"/>
+    
+    <!-- Other config components -->
+    <Include file="Components\Load.xml"/>
 </Ui>

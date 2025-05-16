@@ -1,7 +1,19 @@
 -- VUIScrollingText Options
-local _, VUI = ...
+local AddonName, VUI = ...
+local MODNAME = "VUIScrollingText"
+local M = VUI and VUI.VUIScrollingText or {}
+
+-- If VUI or the module doesn't exist, create a temporary placeholder
+if not VUI or not M then
+    return
+end
+
 local MSBTOptions = {}
-local VUIScrollingText = VUI:GetModule("VUIScrollingText")
+-- Get the module safely
+local VUIScrollingText = VUI and VUI.VUIScrollingText or {}
+
+-- If no module was found, exit early
+if not VUIScrollingText then return end
 
 -- Theme elements to update when the theme changes
 local themeElements = {}

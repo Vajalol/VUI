@@ -300,24 +300,67 @@ function Module:OnEnable()
             end
         end
 
+        -- Safe function check
+        local function APIExists(apiName)
+            return _G[apiName] ~= nil
+        end
+
         --hooksecurefunc GameTooltip SetUnitBuff
         hooksecurefunc(GameTooltip, "SetUnitBuff", function(self, unitToken, index, filter)
-            TooltipAddSpellID(self,
-                select(10, AuraUtil.UnpackAuraData(C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter))))
+            if APIExists("C_UnitAuras") and C_UnitAuras.GetBuffDataByIndex then
+                TooltipAddSpellID(self,
+                    select(10, AuraUtil.UnpackAuraData(C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter))))
+            else
+                -- Fallback for classic versions
+                local spellID
+                pcall(function()
+                    spellID = select(10, UnitBuff(unitToken, index, filter))
+                end)
+                if spellID then
+                    TooltipAddSpellID(self, spellID)
+                end
+            end
         end)
 
         --hooksecurefunc GameTooltip SetUnitDebuff
         hooksecurefunc(GameTooltip, "SetUnitDebuff", function(self, unitToken, index, filter)
-            TooltipAddSpellID(self,
-                select(10, AuraUtil.UnpackAuraData(C_UnitAuras.GetDebuffDataByIndex(unitToken, index, filter))))
+            if APIExists("C_UnitAuras") and C_UnitAuras.GetDebuffDataByIndex then
+                TooltipAddSpellID(self,
+                    select(10, AuraUtil.UnpackAuraData(C_UnitAuras.GetDebuffDataByIndex(unitToken, index, filter))))
+            else
+                -- Fallback for classic versions
+                local spellID
+                pcall(function()
+                    spellID = select(10, UnitDebuff(unitToken, index, filter))
+                end)
+                if spellID then
+                    TooltipAddSpellID(self, spellID)
+                end
+            end
         end)
 
         --hooksecurefunc GameTooltip SetUnitAura
         hooksecurefunc(GameTooltip, "SetUnitAura", function(self, unitToken, index, filter)
-            TooltipAddSpellID(self,
-                select(10, AuraUtil.UnpackAuraData(C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter))))
-            TooltipAddBuffSource(self,
-                select(7, AuraUtil.UnpackAuraData(C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter))))
+            if APIExists("C_UnitAuras") and C_UnitAuras.GetBuffDataByIndex then
+                local spellID = select(10, AuraUtil.UnpackAuraData(C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter)))
+                local caster = select(7, AuraUtil.UnpackAuraData(C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter)))
+                
+                TooltipAddSpellID(self, spellID)
+                TooltipAddBuffSource(self, caster)
+            else
+                -- Classic doesn't use SetUnitAura, but add a fallback just in case
+                pcall(function()
+                    local spellID = select(10, UnitAura(unitToken, index, filter))
+                    local caster = select(7, UnitAura(unitToken, index, filter))
+                    
+                    if spellID then
+                        TooltipAddSpellID(self, spellID)
+                    end
+                    if caster then
+                        TooltipAddBuffSource(self, caster)
+                    end
+                end)
+            end
         end)
 
         --hooksecurefunc SetItemRef
@@ -358,27 +401,68 @@ function Module:OnEnable()
             
             local mountID = nil
             
-            -- Use TipTop-style mount detection
-            for i = 1, 100 do
-                local _, _, _, _, _, _, _, _, _, spellID = UnitBuff(unit, i)
-                if not spellID then break end
-                
-                -- Check if the buff is a mount aura (certain spell IDs range)
-                if C_MountJournal then
-                    -- Try to get mount info from mount journal
-                    local mountIDs = C_MountJournal.GetMountIDs()
-                    for _, id in ipairs(mountIDs) do
-                        local _, spellID2, _, _, _, _, _, _, _, _, _, _ = C_MountJournal.GetMountInfoByID(id)
-                        if spellID == spellID2 then
-                            mountID = id
-                            break
+            -- Check if we need to use new API or old API
+            local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+            
+            if isRetail and APIExists("C_UnitAuras") and C_UnitAuras.GetAuraDataByUnit then
+                -- Use new C_UnitAuras API for Dragonflight+
+                local auras = C_UnitAuras.GetAuraDataByUnit(unit, "HELPFUL")
+                if auras then
+                    for _, aura in ipairs(auras) do
+                        local spellID = aura.spellId
+                        
+                        -- Check if the buff is a mount aura
+                        if APIExists("C_MountJournal") and C_MountJournal.GetMountIDs then
+                            -- Try to get mount info from mount journal
+                            local mountIDs = C_MountJournal.GetMountIDs()
+                            for _, id in ipairs(mountIDs) do
+                                local _, spellID2, _, _, _, _, _, _, _, _, _, _ = C_MountJournal.GetMountInfoByID(id)
+                                if spellID == spellID2 then
+                                    mountID = id
+                                    break
+                                end
+                            end
+                            
+                            if mountID then
+                                local name, _, _, _, _, _, _, _, _, _, collected = C_MountJournal.GetMountInfoByID(mountID)
+                                if name then
+                                    return name
+                                end
+                            end
                         end
                     end
-                    
-                    if mountID then
-                        local name, _, _, _, _, _, _, _, _, _, collected = C_MountJournal.GetMountInfoByID(mountID)
-                        if name then
-                            return name
+                end
+            else
+                -- Fallback to old UnitBuff API for Classic/BC/WotLK
+                -- Use pcall to handle API availability differences
+                if APIExists("UnitBuff") then
+                    -- Use TipTop-style mount detection
+                    for i = 1, 100 do
+                        local buffName, _, _, _, _, _, _, _, _, spellID
+                        local success = pcall(function()
+                            buffName, _, _, _, _, _, _, _, _, spellID = UnitBuff(unit, i)
+                        end)
+                        
+                        if not success or not spellID then break end
+                        
+                        -- Check if the buff is a mount aura (certain spell IDs range)
+                        if APIExists("C_MountJournal") and C_MountJournal.GetMountIDs then
+                            -- Try to get mount info from mount journal
+                            local mountIDs = C_MountJournal.GetMountIDs()
+                            for _, id in ipairs(mountIDs) do
+                                local _, spellID2, _, _, _, _, _, _, _, _, _, _ = C_MountJournal.GetMountInfoByID(id)
+                                if spellID == spellID2 then
+                                    mountID = id
+                                    break
+                                end
+                            end
+                            
+                            if mountID then
+                                local name, _, _, _, _, _, _, _, _, _, collected = C_MountJournal.GetMountInfoByID(mountID)
+                                if name then
+                                    return name
+                                end
+                            end
                         end
                     end
                 end

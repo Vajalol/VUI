@@ -1,3 +1,21 @@
+local addonName, VUI = ...
+if not VUI then return end
+
+-- Only create the module if NewModule is available
+if not VUI.NewModule then
+    -- Register a callback to try again when VUI is fully initialized
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local Module = VUI:NewModule("Chat.Copy")
+            -- Re-run the OnEnable function
+            if Module and Module.OnEnable then
+                Module:OnEnable()
+            end
+        end
+    end)
+    return
+end
+
 local Module = VUI:NewModule("Chat.Copy");
 
 function Module:OnEnable()

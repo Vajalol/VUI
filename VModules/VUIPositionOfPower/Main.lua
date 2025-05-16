@@ -2,9 +2,68 @@
 -- Tracks buffs/effects related to positioning or stacking
 -- Based on Position of Power WeakAura (https://wago.io/rdxO3TmdV)
 
-local AddonName, VUI = ...
+local AddonName = ...
+local VUI = _G["VUI"]
 local MODNAME = "VUIPositionOfPower"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+
+-- Set up global reference early to prevent nil errors
+_G["VUIPositionOfPower"] = _G["VUIPositionOfPower"] or {}
+
+-- Create minimal fallback if VUI doesn't exist
+if not VUI then
+    VUI = {}
+    VUI.NewModule = function() return {} end
+    _G["VUI"] = VUI
+end
+
+-- Try to create the module with error handling
+local M
+
+if VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIPositionOfPower"] = M
+else
+    -- Create minimal module object to prevent errors
+    M = {
+        NAME = MODNAME,
+        TITLE = "VUI Position of Power",
+        DESCRIPTION = "Tracks position-specific buffs and abilities",
+        VERSION = "1.0",
+        OnEnable = function() end,
+        OnDisable = function() end
+    }
+    
+    -- Register in VUI namespace
+    VUI[MODNAME] = M
+    
+    -- Update the global reference with our placeholder
+    _G["VUIPositionOfPower"] = M
+    
+    -- Try initialization again after delay
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local RealModule = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0")
+            
+            -- Transfer any properties from temporary module
+            for k, v in pairs(M) do
+                if k ~= "NAME" and k ~= "TITLE" and type(v) ~= "function" then
+                    RealModule[k] = v
+                end
+            end
+            
+            -- Replace with real module
+            VUI[MODNAME] = RealModule
+            
+            -- Update the global reference with the actual module
+            _G["VUIPositionOfPower"] = RealModule
+            
+            -- Initialize the module
+            if RealModule.OnInitialize then RealModule:OnInitialize() end
+            if RealModule.OnEnable then RealModule:OnEnable() end
+        end
+    end)
+end
 
 -- Localization
 local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
@@ -267,13 +326,13 @@ M.positionBuffs = {
 
 -- Initialize module
 function M:OnInitialize()
-    -- Register module with VUI
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Get database
+    self.db = VUI.db
     
-    -- Register settings with VUI Config
-    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    -- Register module configuration
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    end
     
     -- Store active auras
     self.activeBuffs = {}
@@ -285,24 +344,135 @@ function M:OnInitialize()
 end
 
 function M:OnEnable()
-    -- Register events
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("PLAYER_TALENT_UPDATE", "TalentUpdate")
-    self:RegisterEvent("UNIT_AURA", "UpdateAuras")
-    self:RegisterEvent("PLAYER_TARGET_CHANGED", "UpdateTargetAuras")
-    self:RegisterEvent("PLAYER_REGEN_DISABLED", "UpdateVisibility") -- Entered combat
-    self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateVisibility") -- Left combat
+    -- Create a safe event registration handler
+    local function SafeRegisterEvent(eventName, methodName)
+        -- Check if we have the AceEvent-3.0 RegisterEvent method
+        if not self.RegisterEvent or type(self.RegisterEvent) ~= "function" then
+            -- Create fallback event frame if needed
+            if not self.eventFrame then
+                -- Safe CreateFrame wrapper with extensive error handling
+                local function SafeCreateFrame(frameType, name, parent, template)
+                    -- Check if CreateFrame exists
+                    if not CreateFrame then
+                        self:Debug("Error: CreateFrame global function is not available")
+                        
+                        -- Create a minimal frame substitute that won't error
+                        local frame = {}
+                        frame.events = {}
+                        frame.handlers = {}
+                        
+                        -- Implement minimal frame methods to prevent errors
+                        frame.RegisterEvent = function(self, event) 
+                            if not self.events then self.events = {} end
+                            table.insert(self.events, event) 
+                        end
+                        
+                        frame.UnregisterEvent = function(self, event)
+                            if not self.events then return end
+                            for i, registeredEvent in ipairs(self.events) do
+                                if registeredEvent == event then
+                                    table.remove(self.events, i)
+                                    break
+                                end
+                            end
+                        end
+                        
+                        frame.UnregisterAllEvents = function(self)
+                            self.events = {}
+                        end
+                        
+                        frame.SetScript = function(self, scriptType, handler)
+                            if not self.handlers then self.handlers = {} end
+                            self.handlers[scriptType] = handler
+                        end
+                        
+                        frame.GetScript = function(self, scriptType)
+                            if not self.handlers then return nil end
+                            return self.handlers[scriptType]
+                        end
+                        
+                        -- Return our minimal frame substitute
+                        return frame
+                    end
+                    
+                    -- If CreateFrame exists, try to call it with pcall for safety
+                    local success, frame = pcall(function()
+                        return CreateFrame(frameType, name, parent, template)
+                    end)
+                    
+                    if success and frame then
+                        return frame
+                    else
+                        self:Debug("Error creating frame: " .. (frame or "unknown error"))
+                        
+                        -- Return minimal frame substitute on error
+                        local fallbackFrame = {}
+                        fallbackFrame.RegisterEvent = function() end
+                        fallbackFrame.UnregisterEvent = function() end
+                        fallbackFrame.UnregisterAllEvents = function() end
+                        fallbackFrame.SetScript = function() end
+                        fallbackFrame.GetScript = function() return nil end
+                        
+                        return fallbackFrame
+                    end
+                end
+                
+                self.eventFrame = SafeCreateFrame("Frame")
+                self.eventFrame.module = self
+            end
+            
+            -- Register the event on the fallback frame
+            self.eventFrame:RegisterEvent(eventName)
+            
+            -- Set up script handler if not already done
+            if not self.eventFrame:GetScript("OnEvent") then
+                self.eventFrame:SetScript("OnEvent", function(_, event, ...)
+                    local handler = self[methodName]
+                    if handler and type(handler) == "function" then
+                        handler(self, ...)
+                    end
+                end)
+            end
+            
+            return true
+        end
+        
+        -- Make sure the handler method exists
+        if not self[methodName] or type(self[methodName]) ~= "function" then
+            -- Create empty handler method to prevent errors
+            self[methodName] = function() end
+        end
+        
+        -- Use pcall to safely register the event
+        local success = pcall(function()
+            self:RegisterEvent(eventName, methodName)
+        end)
+        
+        return success
+    end
     
-    -- Initialize player class and spec
-    self:GetPlayerInfo()
+    -- Register required events
+    SafeRegisterEvent("PLAYER_ENTERING_WORLD", "OnPlayerEnteringWorld")
+    SafeRegisterEvent("PLAYER_TALENT_UPDATE", "TalentUpdate")
+    SafeRegisterEvent("UNIT_AURA", "UpdateAuras")
+    SafeRegisterEvent("PLAYER_TARGET_CHANGED", "UpdateTargetAuras")
+    SafeRegisterEvent("PLAYER_REGEN_DISABLED", "UpdateVisibility") -- Entered combat
+    SafeRegisterEvent("PLAYER_REGEN_ENABLED", "UpdateVisibility") -- Left combat
     
-    -- Start update timer
-    self.updateTimer = self:ScheduleRepeatingTimer("UpdateDisplay", 0.1)
+    -- Create the tracking frame
+    self:CreateFrame()
     
-    -- Initial update
-    self:UpdateDisplay()
+    -- Initialize for the player's current class/spec
+    self:TalentUpdate()
     
-    self:Debug(self.NAME .. " module enabled")
+    -- Update position of frame after creation
+    self:UpdateFramePosition()
+    
+    -- Initial visibility update
+    self:UpdateVisibility()
+    
+    -- Debug message
+    self:Debug("VUIPositionOfPower module enabled")
 end
 
 function M:OnDisable()
@@ -311,14 +481,25 @@ function M:OnDisable()
         self.containerFrame:Hide()
     end
     
-    -- Cancel timers
+    -- Cancel timers with safety check
     if self.updateTimer then
-        self:CancelTimer(self.updateTimer)
+        if self.CancelTimer and type(self.CancelTimer) == "function" then
+            pcall(function() self:CancelTimer(self.updateTimer) end)
+        end
         self.updateTimer = nil
     end
     
-    -- Unregister events
-    self:UnregisterAllEvents()
+    -- Unregister events with safety check
+    if self.UnregisterAllEvents and type(self.UnregisterAllEvents) == "function" then
+        pcall(function() self:UnregisterAllEvents() end)
+    end
+    
+    -- Clean up the event frame if we created one
+    if self.eventFrame then
+        self.eventFrame:SetScript("OnEvent", nil)
+        self.eventFrame:UnregisterAllEvents()
+        self.eventFrame = nil
+    end
     
     self:Debug(self.NAME .. " module disabled")
 end
@@ -347,123 +528,179 @@ function M:TalentUpdate()
 end
 
 -- Create container frame
-function M:CreateFrames()
-    -- Main frame
-    self.containerFrame = CreateFrame("Frame", "VUIPositionOfPowerFrame", UIParent)
-    self.containerFrame:SetSize(300, 50)
-    self.containerFrame:SetPoint(
-        self.db.profile.point,
-        UIParent,
-        self.db.profile.relativePoint,
-        self.db.profile.xOffset,
-        self.db.profile.yOffset
-    )
-    self.containerFrame:SetScale(self.db.profile.scale)
-    self.containerFrame:SetAlpha(self.db.profile.alpha)
+function M:CreateFrame()
+    -- Safe CreateFrame wrapper
+    local function SafeCreateFrame(frameType, name, parent, template)
+        -- Check if CreateFrame exists
+        if not CreateFrame then
+            self:Debug("Error: CreateFrame global function is not available")
+            return nil
+        end
+        
+        -- Use pcall to safely call CreateFrame
+        local success, frame = pcall(function()
+            return CreateFrame(frameType, name, parent, template)
+        end)
+        
+        if not success or not frame then
+            self:Debug("Error creating frame: " .. (frame or "unknown error"))
+            return nil
+        end
+        
+        return frame
+    end
     
-    -- Make the frame draggable when unlocked
+    -- Create the container frame
+    self.containerFrame = SafeCreateFrame("Frame", "VUIPositionOfPowerContainer", UIParent)
+    
+    if not self.containerFrame then
+        self:Debug("Failed to create container frame")
+        return
+    end
+    
+    -- Set initial position
+    self.containerFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    self.containerFrame:SetSize(64, 64)
     self.containerFrame:SetMovable(true)
-    self.containerFrame:EnableMouse(false)
+    self.containerFrame:EnableMouse(true)
     self.containerFrame:RegisterForDrag("LeftButton")
     self.containerFrame:SetScript("OnDragStart", function(self) self:StartMoving() end)
     self.containerFrame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        local point, _, relativePoint, xOffset, yOffset = self:GetPoint()
-        M.db.profile.point = point
-        M.db.profile.relativePoint = relativePoint
-        M.db.profile.xOffset = xOffset
-        M.db.profile.yOffset = yOffset
+        -- Save position
+        local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
+        M.db.profile.positionOfPower.position = {
+            point = point,
+            relativePoint = relativePoint,
+            x = xOfs,
+            y = yOfs
+        }
     end)
     
-    -- Icon frames container
+    -- Create icon containers
     self.iconFrames = {}
-    
-    -- Set visibility based on enabled state
-    if self.db.profile.enabled then
-        self.containerFrame:Show()
-    else
-        self.containerFrame:Hide()
-    end
 end
 
--- Create or recycle an icon frame
-function M:GetIconFrame(id, index)
-    if not self.iconFrames[id] then
-        local frame = CreateFrame("Frame", "VUIPositionOfPowerIcon_"..id, self.containerFrame, "BackdropTemplate")
-        local iconSize = self.db.profile.iconSize
-        frame:SetSize(iconSize, iconSize)
+-- Create all necessary frames
+function M:CreateFrames()
+    -- Create the main container frame
+    self:CreateFrame()
+    
+    -- Safety check - if container frame creation failed, don't proceed
+    if not self.containerFrame then
+        self:Debug("Cannot create child frames - container frame is nil")
+        return
+    end
+    
+    -- Create initial icon frames (we'll reuse these)
+    for i = 1, 5 do
+        self:GetIconFrame(0, i)
+    end
+    
+    -- Update frame position from saved settings
+    self:UpdateFramePosition()
+end
+
+-- Get or create an icon frame
+function M:GetIconFrame(buffId, index)
+    -- Create if it doesn't exist
+    if not self.iconFrames[index] then
+        local frame = CreateFrame("Frame", "VUIPositionOfPowerIcon"..index, self.containerFrame)
+        frame:SetSize(36, 36)
         
-        -- Icon
-        frame.icon = frame:CreateTexture(nil, "ARTWORK")
-        frame.icon:SetAllPoints()
-        frame.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9) -- Remove default icon border
+        -- Set position based on index
+        if index == 1 then
+            frame:SetPoint("CENTER", self.containerFrame, "CENTER", 0, 0)
+        elseif index == 2 then
+            frame:SetPoint("BOTTOM", self.iconFrames[1], "TOP", 0, 2)
+        elseif index == 3 then
+            frame:SetPoint("RIGHT", self.iconFrames[1], "LEFT", -2, 0)
+        elseif index == 4 then
+            frame:SetPoint("LEFT", self.iconFrames[1], "RIGHT", 2, 0)
+        elseif index == 5 then
+            frame:SetPoint("TOP", self.iconFrames[1], "BOTTOM", 0, -2)
+        else
+            -- Additional icons get placed in a row below
+            frame:SetPoint("TOPLEFT", self.iconFrames[1], "BOTTOMLEFT", (index-6) * 38, -40)
+        end
         
-        -- Border
-        frame:SetBackdrop({
-            edgeFile = "Interface\\Buttons\\WHITE8x8",
-            edgeSize = 1,
-            insets = {left = 1, right = 1, top = 1, bottom = 1}
-        })
+        -- Create background
+        local bg = frame:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints()
+        bg:SetColorTexture(0, 0, 0, 0.5)
         
-        local borderColor = self.db.profile.borderColor
-        frame:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
+        -- Create icon texture
+        local icon = frame:CreateTexture(nil, "ARTWORK")
+        icon:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -2)
+        icon:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -2, 2)
+        icon:SetTexCoord(0.1, 0.9, 0.1, 0.9) -- Trim icon borders
         
-        -- Background
-        frame.bg = frame:CreateTexture(nil, "BACKGROUND")
-        frame.bg:SetAllPoints()
+        -- Create border
+        local border = frame:CreateTexture(nil, "OVERLAY")
+        border:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+        border:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
+        border:SetColorTexture(1, 1, 1, 0.3)
         
-        local bgColor = self.db.profile.backgroundColor
-        frame.bg:SetColorTexture(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
+        -- Create count text
+        local count = frame:CreateFontString(nil, "OVERLAY")
+        count:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
+        count:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -2, 2)
+        count:SetText("")
         
-        -- Duration text
-        frame.duration = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        frame.duration:SetPoint("BOTTOM", 0, 2)
-        frame.duration:SetFont("Fonts\\FRIZQT__.TTF", self.db.profile.durationFontSize, "OUTLINE")
+        -- Create duration text
+        local duration = frame:CreateFontString(nil, "OVERLAY")
+        duration:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
+        duration:SetPoint("TOP", frame, "BOTTOM", 0, -2)
+        duration:SetText("")
         
-        local durationColor = self.db.profile.durationFontColor
-        frame.duration:SetTextColor(durationColor.r, durationColor.g, durationColor.b, durationColor.a)
-        
-        -- Stack count text
-        frame.stackCount = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-        frame.stackCount:SetPoint("CENTER", 0, 0)
-        frame.stackCount:SetFont("Fonts\\FRIZQT__.TTF", self.db.profile.stackFontSize, "OUTLINE")
-        
-        local stackColor = self.db.profile.stackFontColor
-        frame.stackCount:SetTextColor(stackColor.r, stackColor.g, stackColor.b, stackColor.a)
-        
-        -- Glow effect (created but initially hidden)
-        frame.glow = frame:CreateTexture(nil, "OVERLAY")
-        frame.glow:SetPoint("CENTER")
-        frame.glow:SetSize(iconSize * 1.5, iconSize * 1.5)
-        frame.glow:SetTexture("Interface\\SpellActivationOverlay\\IconAlert")
-        frame.glow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
-        frame.glow:SetBlendMode("ADD")
-        frame.glow:SetAlpha(0)
+        -- Store references
+        frame.icon = icon
+        frame.border = border
+        frame.count = count
+        frame.duration = duration
+        frame.buffId = buffId
         
         -- Store the frame
-        self.iconFrames[id] = frame
+        self.iconFrames[index] = frame
     end
     
-    -- Position the frame based on index and growth direction
-    local frame = self.iconFrames[id]
-    local iconSize = self.db.profile.iconSize
-    local spacing = self.db.profile.iconSpacing
+    -- Update buff ID
+    self.iconFrames[index].buffId = buffId
     
-    -- Position based on growth direction
-    if self.db.profile.growthDirection == "RIGHT" then
-        frame:SetPoint("LEFT", self.containerFrame, "LEFT", (index - 1) * (iconSize + spacing), 0)
-    elseif self.db.profile.growthDirection == "LEFT" then
-        frame:SetPoint("RIGHT", self.containerFrame, "RIGHT", -((index - 1) * (iconSize + spacing)), 0)
-    elseif self.db.profile.growthDirection == "UP" then
-        frame:SetPoint("BOTTOM", self.containerFrame, "BOTTOM", 0, (index - 1) * (iconSize + spacing))
-    else -- DOWN
-        frame:SetPoint("TOP", self.containerFrame, "TOP", 0, -((index - 1) * (iconSize + spacing)))
+    return self.iconFrames[index]
+end
+
+-- Update frame position based on saved settings
+function M:UpdateFramePosition()
+    if not self.containerFrame then return end
+    
+    -- Set position based on saved settings
+    self.containerFrame:ClearAllPoints()
+    
+    -- Check if we have saved position settings
+    if self.db.profile.positionOfPower and self.db.profile.positionOfPower.position then
+        local pos = self.db.profile.positionOfPower.position
+        local point = pos.point or "CENTER"
+        local relativePoint = pos.relativePoint or "CENTER"
+        local xOffset = pos.x or 0
+        local yOffset = pos.y or 0
+        
+        -- Set the point with saved values
+        self.containerFrame:SetPoint(
+            point,
+            UIParent,
+            relativePoint,
+            xOffset,
+            yOffset
+        )
+    else
+        -- Use default values if no saved settings
+        self.containerFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
     end
     
-    -- Reset appearance
-    frame:Hide()
-    
-    return frame
+    -- Set scale and alpha
+    self.containerFrame:SetScale(self.db.profile.scale or 1.0)
+    self.containerFrame:SetAlpha(self.db.profile.alpha or 1.0)
 end
 
 -- Update auras when UNIT_AURA event fires
@@ -491,10 +728,29 @@ function M:ScanAuras(unit)
         return
     end
     
+    -- Safe UnitAura wrapper function to handle nil value errors
+    local function SafeUnitAura(unit, index, filter)
+        -- Check if UnitAura exists
+        if not UnitAura then
+            return nil
+        end
+        
+        -- Use pcall to safely call UnitAura
+        local success, name, icon, count, debuffType, duration, expirationTime, 
+               unitCaster, isStealable, nameplateShowPersonal, spellId = pcall(UnitAura, unit, index, filter)
+        
+        if success and name then
+            return name, icon, count, debuffType, duration, expirationTime, 
+                   unitCaster, isStealable, nameplateShowPersonal, spellId
+        else
+            return nil
+        end
+    end
+    
     -- Determine if we should process player or target buffs
     local i = 1
     local buffName, icon, count, debuffType, duration, expirationTime, unitCaster, 
-           isStealable, nameplateShowPersonal, spellId = UnitAura(unit, i, "HELPFUL")
+           isStealable, nameplateShowPersonal, spellId = SafeUnitAura(unit, i, "HELPFUL")
     
     while buffName do
         local buffData = self.positionBuffs[spellId]
@@ -527,14 +783,14 @@ function M:ScanAuras(unit)
         
         i = i + 1
         buffName, icon, count, debuffType, duration, expirationTime, unitCaster, 
-        isStealable, nameplateShowPersonal, spellId = UnitAura(unit, i, "HELPFUL")
+        isStealable, nameplateShowPersonal, spellId = SafeUnitAura(unit, i, "HELPFUL")
     end
     
     -- Also scan for debuffs on target
     if isTarget then
         i = 1
         local debuffName, icon, count, debuffType, duration, expirationTime, unitCaster, 
-               isStealable, nameplateShowPersonal, spellId = UnitAura(unit, i, "HARMFUL|PLAYER")
+               isStealable, nameplateShowPersonal, spellId = SafeUnitAura(unit, i, "HARMFUL|PLAYER")
         
         while debuffName do
             local buffData = self.positionBuffs[spellId]
@@ -562,7 +818,7 @@ function M:ScanAuras(unit)
             
             i = i + 1
             debuffName, icon, count, debuffType, duration, expirationTime, unitCaster, 
-            isStealable, nameplateShowPersonal, spellId = UnitAura(unit, i, "HARMFUL|PLAYER")
+            isStealable, nameplateShowPersonal, spellId = SafeUnitAura(unit, i, "HARMFUL|PLAYER")
         end
     end
     
@@ -643,78 +899,68 @@ function M:UpdateDisplay()
                 frame.duration:SetText(string.format("%.1fs", timeLeft))
             end
             
-            -- Color based on time left
-            if timeLeft < 3 then
-                frame.duration:SetTextColor(1, 0, 0, 1) -- Red for < 3 seconds
-            elseif timeLeft < 10 then
-                frame.duration:SetTextColor(1, 0.5, 0, 1) -- Orange for < 10 seconds
+            -- Colorize based on time remaining
+            local durationPercent = timeLeft / buffInfo.duration
+            local r, g, b = 1, 1, 1
+            
+            if durationPercent < 0.3 then
+                -- Red when about to expire
+                r, g, b = 1, 0.3, 0.3
+            elseif durationPercent < 0.5 then
+                -- Yellow when halfway through
+                r, g, b = 1, 1, 0.3
             else
-                local durationColor = self.db.profile.durationFontColor
-                frame.duration:SetTextColor(durationColor.r, durationColor.g, durationColor.b, durationColor.a)
+                -- Default color
+                local durationColor = self.db.profile.durationFontColor or {r=1, g=1, b=1, a=1}
+                r, g, b = durationColor.r, durationColor.g, durationColor.b
             end
+            
+            frame.duration:SetTextColor(r, g, b)
         else
             frame.duration:SetText("")
         end
         
         -- Stack count
         if buffInfo.stacking and buffInfo.count > 1 and self.db.profile.showStackText then
-            frame.stackCount:SetText(buffInfo.count)
+            frame.count:SetText(buffInfo.count)
             
             -- Color based on stack count
             if buffInfo.maxStacks and buffInfo.count == buffInfo.maxStacks then
-                frame.stackCount:SetTextColor(0, 1, 0, 1) -- Green for max stacks
+                frame.count:SetTextColor(0, 1, 0, 1) -- Green for max stacks
             else
-                local stackColor = self.db.profile.stackFontColor
-                frame.stackCount:SetTextColor(stackColor.r, stackColor.g, stackColor.b, stackColor.a)
+                local stackColor = self.db.profile.stackFontColor or {r=1, g=1, b=1, a=1}
+                frame.count:SetTextColor(stackColor.r, stackColor.g, stackColor.b, stackColor.a)
             end
         else
-            frame.stackCount:SetText("")
+            frame.count:SetText("")
         end
         
-        -- Glow effect for important buffs or high stacks
-        if self.db.profile.showGlow then
-            local shouldGlow = false
-            
-            if buffInfo.priority >= 95 then
-                shouldGlow = true
-            elseif buffInfo.stacking and buffInfo.maxStacks and buffInfo.count == buffInfo.maxStacks then
-                shouldGlow = true
-            end
-            
-            if shouldGlow then
-                frame.glow:SetAlpha(0.7)
-            else
-                frame.glow:SetAlpha(0)
-            end
-        else
-            frame.glow:SetAlpha(0)
-        end
+        -- Set border highlight based on importance
+        local shouldGlow = (buffInfo.priority >= 90)  -- High priority buffs have visual highlight
         
-        -- Border color based on class if enabled
-        if self.db.profile.useClassColor then
-            local classColor = RAID_CLASS_COLORS[self.playerClass]
-            frame:SetBackdropBorderColor(classColor.r, classColor.g, classColor.b, 1)
+        if shouldGlow then
+            frame.border:SetAlpha(0.7)
         else
-            local borderColor = self.db.profile.borderColor
-            frame:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
+            frame.border:SetAlpha(0)
         end
         
         -- Show the frame
         frame:Show()
         
-        -- Increment index for next buff
+        -- Increment index
         currentIndex = currentIndex + 1
     end
     
-    -- Update container size based on growth direction
-    local iconSize = self.db.profile.iconSize
-    local spacing = self.db.profile.iconSpacing
-    local count = #relevantBuffs
-    
-    if self.db.profile.growthDirection == "RIGHT" or self.db.profile.growthDirection == "LEFT" then
-        self.containerFrame:SetSize(count * iconSize + (count - 1) * spacing, iconSize)
-    else -- UP or DOWN
-        self.containerFrame:SetSize(iconSize, count * iconSize + (count - 1) * spacing)
+    -- Update container frame size if needed
+    local totalBuffs = #relevantBuffs
+    if totalBuffs > 0 then
+        -- Show frame
+        self.containerFrame:Show()
+    else
+        -- Hide frame when no buffs to show
+        if not self.db.profile.alwaysShow then
+            self.containerFrame:Hide()
+        end
     end
 end
 
@@ -935,4 +1181,59 @@ function M:GetOptions()
 end
 
 -- Register the module
-VUI:RegisterModule(MODNAME, M)
+if VUI.RegisterModule then
+    VUI:RegisterModule(MODNAME, M)
+end
+
+-- Handle PLAYER_ENTERING_WORLD event
+function M:OnPlayerEnteringWorld()
+    -- Update player info
+    self:GetPlayerInfo()
+    
+    -- Scan player auras
+    self:ScanAuras("player")
+    
+    -- Update visibility
+    self:UpdateVisibility()
+    
+    -- Initial display update
+    self:UpdateDisplay()
+end
+
+-- Create initial frames and containers
+function M:CreateFrames()
+    -- This is a placeholder method called during OnInitialize
+    -- The actual frame creation is done in CreateFrame when the module is enabled
+    self:Debug("Initializing frames")
+    
+    -- Initialize active buffs container
+    self.activeBuffs = {}
+    
+    -- Initialize icon frames container
+    self.iconFrames = {}
+end
+
+function M:SetPoint(i, region, relPoint, offsetX, offsetY)
+    if not self.containerFrame or not self.containerFrame:IsShown() then
+        return
+    end
+    
+    -- Make sure region is valid
+    if not region then
+        self:Debug("Error: Attempted to set point with nil region")
+        return
+    end
+    
+    -- Safety checks for parameters
+    local point = i
+    if type(point) ~= "string" then
+        point = "CENTER"
+    end
+    relPoint = relPoint or "CENTER"
+    offsetX = offsetX or 0
+    offsetY = offsetY or 0
+    
+    -- Set the point with validated parameters
+    self.containerFrame:ClearAllPoints()
+    self.containerFrame:SetPoint(point, region, relPoint, offsetX, offsetY)
+end

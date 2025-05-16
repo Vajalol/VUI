@@ -3,7 +3,8 @@
 -- Based on Frogski's mouse fire trail WeakAura (https://wago.io/RzZVq4F1a)
 
 local AddonName, VUI = ...
-local M = VUI:GetModule("VUIMouseFireTrail")
+local M = VUI and VUI.VUIMouseFireTrail or {}
+if not M then return end
 local ParticleService = {}
 M.ParticleService = ParticleService
 

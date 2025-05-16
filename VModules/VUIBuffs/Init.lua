@@ -24,19 +24,39 @@ else
     
     -- Add minimal AceEvent-like functionality to the placeholder
     if not M.RegisterEvent then
-        M.RegisterEvent = function(self, ...) end
+        M.RegisterEvent = function(self, eventName, callback)
+            -- Log that we tried to register but couldn't
+            print("|cffff9900VUIBuffs Warning:|r Attempted to register event " .. eventName .. " but module not fully initialized")
+        end
     end
     if not M.RegisterChatCommand then
-        M.RegisterChatCommand = function(self, ...) end
+        M.RegisterChatCommand = function(self, command)
+            -- Log that we tried to register but couldn't
+            print("|cffff9900VUIBuffs Warning:|r Attempted to register slash command /" .. command .. " but module not fully initialized")
+        end
     end
     if not M.UnregisterEvent then
-        M.UnregisterEvent = function(self, ...) end
+        M.UnregisterEvent = function(self, eventName)
+            -- Log that we tried to unregister but couldn't
+            print("|cffff9900VUIBuffs Warning:|r Attempted to unregister event " .. (eventName or "unknown") .. " but module not fully initialized")
+        end
     end
     if not M.RegisterMessage then
-        M.RegisterMessage = function(self, ...) end
+        M.RegisterMessage = function(self, messageName)
+            -- Log that we tried to register but couldn't
+            print("|cffff9900VUIBuffs Warning:|r Attempted to register message " .. messageName .. " but module not fully initialized")
+        end
     end
     if not M.ScheduleTimer then
-        M.ScheduleTimer = function(self, ...) end
+        M.ScheduleTimer = function(self, callback, delay)
+            -- Log that we tried to schedule but couldn't
+            print("|cffff9900VUIBuffs Warning:|r Attempted to schedule timer but module not fully initialized")
+            
+            -- Try to use C_Timer as a fallback
+            if type(callback) == "function" and delay and delay > 0 then
+                C_Timer.After(delay, callback)
+            end
+        end
     end
 end
 
@@ -149,10 +169,36 @@ M.defaults = {
 
 -- Initialize the module
 function M:OnInitialize()
-    -- Create the database
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Make sure namespaces exists to avoid nil indexing
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUIBuffs"] or VUI.db.namespaces["vuibuffs"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUIBuffs"] = namespace
+            VUI.db.namespaces["vuibuffs"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUIBuffs", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuibuffs"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
     -- Create a reference in VUIBuffs (existing code expects this)
     _G.VUIBuffs = _G.VUIBuffs or {}
@@ -231,12 +277,14 @@ end
 -- Configuration initialization
 function M:InitializeConfig()
     -- Register with VUI's configuration system
-    VUI.Config:RegisterModuleOptions(self.NAME, function()
-        -- Open the configuration panel
-        if self.OpenOptions then
-            self:OpenOptions()
-        end
-    end)
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions(self.NAME, function()
+            -- Open the configuration panel
+            if self.OpenOptions then
+                self:OpenOptions()
+            end
+        end)
+    end
 end
 
 -- Export the module to VUI namespace

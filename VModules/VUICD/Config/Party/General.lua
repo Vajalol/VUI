@@ -1,7 +1,55 @@
 local _, VUI = ...
-local E = VUI:GetModule("VUICD")
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module exists
+VUICD.Party = VUICD.Party or {}
+
+-- Setup localization with fallbacks
+local L = {}
+local success = pcall(function() L = LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if not success then
+    -- Add fallbacks for localization
+    L["Enable"] = "Enable"
+    L["Enable/disable the party module"] = "Enable/disable the party module"
+    L["Show Player"] = "Show Player"
+    L["Show your own cooldowns in the party/raid frames"] = "Show your own cooldowns in the party/raid frames"
+    L["Show Tooltip"] = "Show Tooltip"
+    L["Show tooltips when hovering over cooldown icons"] = "Show tooltips when hovering over cooldown icons"
+    L["Show Spell ID in Tooltip"] = "Show Spell ID in Tooltip"
+    L["Show spell IDs in tooltips"] = "Show spell IDs in tooltips"
+    L["Show Notes in Tooltip"] = "Show Notes in Tooltip"
+    L["Show additional notes in tooltips"] = "Show additional notes in tooltips"
+    L["Enable Alpha"] = "Enable Alpha"
+    L["Enable opacity changes for activated and inactive icons"] = "Enable opacity changes for activated and inactive icons"
+    L["Active Alpha"] = "Active Alpha"
+    L["Opacity for active cooldowns"] = "Opacity for active cooldowns"
+    L["Inactive Alpha"] = "Inactive Alpha"
+    L["Opacity for inactive cooldowns"] = "Opacity for inactive cooldowns"
+    L["Dim Alpha"] = "Dim Alpha"
+    L["Opacity for dimmed cooldown swipes"] = "Opacity for dimmed cooldown swipes"
+    L["Fill Alpha"] = "Fill Alpha"
+    L["Opacity for cooldown fill color"] = "Opacity for cooldown fill color"
+    L["Icon Textures"] = "Icon Textures"
+    L["Icon Texture"] = "Icon Texture"
+    L["Texture used for the cooldown icons"] = "Texture used for the cooldown icons"
+    L["Extra Bar Texture"] = "Extra Bar Texture"
+    L["Texture used for the extra bars"] = "Texture used for the extra bars"
+    L["Highlight Width"] = "Highlight Width"
+    L["Width of the highlight border"] = "Width of the highlight border"
+    L["Theme Integration"] = "Theme Integration"
+    L["Use VUI Theme Colors"] = "Use VUI Theme Colors"
+    L["Apply VUI theme colors to status bars and highlights"] = "Apply VUI theme colors to status bars and highlights"
+end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
 local P = E.Party
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
 
 function P:AddGeneralOptions(option)
     option.enable = {

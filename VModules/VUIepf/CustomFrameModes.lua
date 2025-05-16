@@ -2,8 +2,14 @@
 -- Contains definitions for all the custom player frame appearances
 
 local AddonName, VUI = ...
-local M = VUI:GetModule("VUIepf")
+local M = VUI and VUI.VUIepf or {}
 local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+
+-- Skip if module isn't available
+if not M then return end
+
+-- Ensure the custom frame modes table exists
+M.CUSTOM_FRAME_MODES = M.CUSTOM_FRAME_MODES or {}
 
 -- Custom frame modes
 local modes = M.CUSTOM_FRAME_MODES

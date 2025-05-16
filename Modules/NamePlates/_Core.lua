@@ -1,3 +1,21 @@
+local addonName, VUI = ...
+if not VUI then return end
+
+-- Only create the module if NewModule is available
+if not VUI.NewModule then
+    -- Register a callback to try again when VUI is fully initialized
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local Module = VUI:NewModule("NamePlates.Core")
+            -- Re-run the OnEnable function
+            if Module and Module.OnEnable then
+                Module:OnEnable()
+            end
+        end
+    end)
+    return
+end
+
 local Module = VUI:NewModule("NamePlates.Core");
 
 function Module:OnEnable()
@@ -6,8 +24,8 @@ function Module:OnEnable()
        C_AddOns.IsAddOnLoaded('TidyPlates_ThreatPlates') or 
        C_AddOns.IsAddOnLoaded('TidyPlates') or 
        C_AddOns.IsAddOnLoaded('Kui_Nameplates') or
-       (VUI:GetModule("VUIPlater") and VUI:GetModule("VUIPlater").db and 
-       VUI:GetModule("VUIPlater").db.profile.enabled) then 
+       (VUI.VUIPlater and VUI.VUIPlater.db and VUI.VUIPlater.db.profile and 
+       VUI.VUIPlater.db.profile.enabled) then 
         return 
     end
     local db = VUI.db.profile.nameplates

@@ -7,6 +7,9 @@ local VUICD = _G["VUICD"]
 -- Ensure Party module is initialized
 VUICD.Party = VUICD.Party or {}
 
+-- Initialize Cooldowns module
+VUICD.Cooldowns = VUICD.Cooldowns or {}
+
 -- Get localization through global reference or fallback
 local L = VUICD.L or {}
 
@@ -14,6 +17,9 @@ local L = VUICD.L or {}
 local db = VUICD.db or {}
 local P = VUICD.Party
 local CD = VUICD.Cooldowns
+
+-- Add the CD module to Party
+P.CD = CD
 
 -- Local variables
 local spellCache = {}

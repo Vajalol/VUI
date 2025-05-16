@@ -1,5 +1,9 @@
 local addonName, VUI = ...
-local Auctionator = VUI.Auctionator
+local Auctionator = VUI.Auctionator or {}
+VUI.Auctionator = Auctionator
+
+-- Initialize required namespaces
+Auctionator.Utilities = Auctionator.Utilities or {}
 
 -- Simple event bus implementation
 Auctionator.Utilities.CreateEventBus = function()

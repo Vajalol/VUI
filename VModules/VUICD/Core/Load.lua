@@ -60,6 +60,24 @@ VUICD.OnInitialize = function(self)
     
     -- Initialize party module
     if self.Party then
+        -- Make sure db is initialized with defaults first
+        if not self.db or not self.db.profile or not self.db.profile.party then
+            self.db = self.db or {}
+            self.db.profile = self.db.profile or {}
+            self.db.profile.party = self.db.profile.party or {
+                enabled = true,
+                visibility = {
+                    arena = true,
+                    raid = true,
+                    party = true,
+                    scenario = true,
+                    none = false,
+                    outside = false,
+                    inTest = true
+                }
+            }
+        end
+        
         -- Initialize components first
         if self.Party.GroupInfo then
             self.Party.GroupInfo:Initialize()
@@ -82,7 +100,13 @@ VUICD.OnInitialize = function(self)
         end
         
         if self.Party.Test then
-            self.Party.Test:Initialize()
+            -- Make sure Test is a table before accessing it
+            if type(self.Party.Test) == "table" and self.Party.Test.Initialize then
+                self.Party.Test:Initialize()
+            elseif type(self.Party.Test) == "function" then
+                -- If it's a function, call it directly
+                self.Party.Test()
+            end
         end
         
         -- Initialize the main party UI last
@@ -100,7 +124,14 @@ VUICD.OnInitialize = function(self)
         
         -- Initialize sync system
         if self.Party.Sync then
-            self.Party.Sync:SetEnabled(true)
+            -- Use pcall to safely initialize sync
+            local success, err = pcall(function()
+                self.Party.Sync:SetEnabled(true)
+            end)
+            
+            if not success and err then
+                self:Debug("Error initializing sync module: " .. tostring(err))
+            end
         end
     end
     
@@ -109,10 +140,13 @@ VUICD.OnInitialize = function(self)
     
     -- Start disabled by default, let the settings control visibility
     if self.Party then
-        self.Party:Disable()
-        
-        -- Check visibility based on current instance
-        self:CheckInstanceType()
+        -- Only call CheckInstanceType when Party is fully initialized with db
+        if self.Party.db then
+            -- Check visibility based on current instance
+            self:CheckInstanceType()
+        else
+            self.Party:Disable()
+        end
     end
 end
 

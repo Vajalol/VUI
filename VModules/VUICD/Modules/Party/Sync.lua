@@ -28,7 +28,14 @@ function Sync:Initialize()
     if not syncEnabled then return end
     
     -- Register addon channel
-    RegisterAddonMessagePrefix(syncPrefix)
+    if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then
+        C_ChatInfo.RegisterAddonMessagePrefix(syncPrefix)
+    else
+        -- Fallback for older versions
+        if RegisterAddonMessagePrefix then
+            RegisterAddonMessagePrefix(syncPrefix)
+        end
+    end
     
     -- Register events
     self.frame = CreateFrame("Frame")
@@ -78,13 +85,22 @@ function Sync:SendCooldownSync()
         local message = self:SerializeData(syncData)
         if message then
             local channel = IsInRaid() and "RAID" or "PARTY"
-            SendAddonMessage(syncPrefix, message, channel)
+            -- Use the appropriate API based on what's available
+            if C_ChatInfo and C_ChatInfo.SendAddonMessage then
+                C_ChatInfo.SendAddonMessage(syncPrefix, message, channel)
+            else
+                -- Fallback for older versions
+                if SendAddonMessage then
+                    SendAddonMessage(syncPrefix, message, channel)
+                end
+            end
         end
     end
 end
 
 -- Receive cooldown sync data
 function Sync:ReceiveCooldownSync(sender, message)
+    local playerName = UnitName("player")
     if not syncEnabled or not P.CD or sender == playerName then return end
     
     -- Get player info
@@ -178,7 +194,19 @@ function Sync:SetEnabled(enabled)
     syncEnabled = enabled
     
     if enabled and not self.initialized then
-        self:Initialize()
-        self.initialized = true
+        -- Use pcall to catch any initialization errors
+        local success, errorMsg = pcall(function()
+            self:Initialize()
+        end)
+        
+        if success then
+            self.initialized = true
+        else
+            -- Log error but don't crash
+            if VUICD and VUICD.Debug then
+                VUICD:Debug("Sync initialization error: " .. (errorMsg or "unknown error"))
+            end
+            syncEnabled = false
+        end
     end
 end

@@ -1,8 +1,9 @@
 -- VUISkin Core
 local AddonName, VUI = ...
 
--- Get our module
-local VUISkin = VUI:GetModule("VUISkin")
+-- Get our module with safety check
+local VUISkin = VUI and VUI.VUISkin or {}
+if not VUISkin then return end
 
 -- Local variables
 local LSM = LibStub('LibSharedMedia-3.0')
@@ -201,14 +202,14 @@ local skinTable = {
                 1, -- [1]
                 1, -- [2]
                 1 -- [3]
-            }
+            },
         },
+        ["switch_damager"] = false,
+        ["bars_sort_direction"] = 1,
         ["show_sidebars"] = false,
-        ["instance_button_anchor"] = {
-            -27, -- [1]
-            1 -- [2]
-        },
-        ["plugins_grow_direction"] = 1,
+        ["window_scale"] = 1,
+        ["bars_grow_direction"] = 1,
+        ["grab_on_top"] = false,
         ["menu_alpha"] = {
             ["enabled"] = false,
             ["onleave"] = 1,
@@ -216,259 +217,235 @@ local skinTable = {
             ["iconstoo"] = true,
             ["onenter"] = 1
         },
-        ["micro_displays_side"] = 2,
-        ["grab_on_top"] = false,
-        ["strata"] = "LOW",
-        ["bars_grow_direction"] = 1,
-        ["bg_alpha"] = 0, --
-        ["ignore_mass_showhide"] = false,
-        ["hide_in_combat_alpha"] = 0,
-        ["menu_icons"] = {
-            true, -- [1]
-            true, -- [2]
-            true, -- [3]
-            true, -- [4]
-            true, -- [5]
-            false, -- [6]
-            ["space"] = 0,
-            ["shadow"] = false
-        },
-        ["auto_hide_menu"] = {["left"] = false, ["right"] = false},
         ["statusbar_info"] = {
-            ["alpha"] = 0,
+            ["alpha"] = 0.3777777777777,
             ["overlay"] = {
                 0.333333333333333, -- [1]
                 0.333333333333333, -- [2]
-                0.333333333333333 -- [3]
-            }
-        },
-        ["window_scale"] = 1,
-        ["libwindow"] = {["y"] = 90.9987335205078, ["x"] = -80.0020751953125, ["point"] = "BOTTOMRIGHT"},
-        ["backdrop_texture"] = "Details Ground",
-        ["hide_icon"] = true,
-        ["bg_b"] = 0.0941176470588235,
-        ["bg_g"] = 0.0941176470588235,
-        ["desaturated_menu"] = false,
-        ["wallpaper"] = {
-            ["enabled"] = false,
-            ["texcoord"] = {
-                0, -- [1]
-                1, -- [2]
-                0, -- [3]
-                0.7 -- [4]
+                0.333333333333333, -- [3]
             },
-            ["overlay"] = {
-                1, -- [1]
-                1, -- [2]
-                1, -- [3]
-                1 -- [4]
-            },
-            ["anchor"] = "all",
-            ["height"] = 114.042518615723,
-            ["alpha"] = 0.5,
-            ["width"] = 283.000183105469
         },
-        ["stretch_button_side"] = 1,
-        ["bars_sort_direction"] = 1
-    }
+        ["libwindow"] = {
+        },
+    },
 }
 
--- Function to register textures with LibSharedMedia
+-- Register textures with LibSharedMedia
 function VUISkin:RegisterTextures()
-    -- Register the textures with LibSharedMedia
+    self:Debug("Registering textures with LibSharedMedia")
+    
     LSM:Register('statusbar', 'VUISkinHeader', [[Interface\AddOns\VUI\VModules\VUISkin\Textures\header.blp]])
     LSM:Register('statusbar', 'VUISkinBar', [[Interface\AddOns\VUI\VModules\VUISkin\Textures\bar.blp]])
     LSM:Register('statusbar', 'VUISkinBackground', [[Interface\AddOns\VUI\VModules\VUISkin\Textures\background.blp]])
+    
+    -- Force update LibSharedMedia cache
+    if LSM.UpdateMediaTable then
+        LSM:UpdateMediaTable('statusbar', 'VUISkinHeader')
+        LSM:UpdateMediaTable('statusbar', 'VUISkinBar')
+        LSM:UpdateMediaTable('statusbar', 'VUISkinBackground')
+    end
+    
+    self:Debug("Textures registered successfully")
 end
 
--- Function to register the skin with Details
+-- Register the VUI skin in Details
 function VUISkin:RegisterSkin()
-    -- Check if Details is loaded
+    self:Debug("Registering VUI skin with Details!")
+    
+    -- Ensure Details is loaded
     if not _G.Details then
-        VUI:Debug("Details not loaded, cannot register skin.")
-        return
-    end
-    
-    -- Update skin colors to match current VUI theme
-    self:UpdateSkinColors()
-    
-    -- Register the skin with Details
-    if _G.Details.InstallSkin then
-        _G.Details:InstallSkin(skinName, skinTable)
-        VUI:Debug("VUISkin registered with Details.")
-    else
-        VUI:Debug("Details.InstallSkin not found.")
-    end
-end
-
--- Function to update skin colors based on current VUI theme
-function VUISkin:UpdateSkinColors()
-    -- Get current theme color
-    local themeColor = VUI:GetThemeColor()
-    
-    -- Apply theme color to titlebar
-    if themeColor then
-        skinTable.instance_cprops.titlebar_texture_color = {
-            themeColor.r or 1.0,
-            themeColor.g or 1.0,
-            themeColor.b or 1.0,
-            1.0
-        }
-    end
-end
-
--- Function to import the default profile
-function VUISkin:ImportDefaultProfile()
-    -- Check if Details is loaded
-    if not _G.Details then
-        VUI:Print("Details! is not loaded. Cannot import profile.")
+        self:Debug("Details not loaded yet")
         return false
     end
     
-    -- Check if we have a default profile
-    if not self.DefaultProfileImport then
-        VUI:Print("Default profile not available.")
-        return false
-    end
+    -- Register skin
+    _G._detalhes:InstallSkin(skinName, skinTable)
     
-    -- Import the profile
-    local profileString = self.DefaultProfileImport
-    if profileString and _G.Details.ImportProfile then
-        local profileLoaded = _G.Details:ImportProfile(profileString, "VUI Default")
-        if profileLoaded then
-            VUI:Print("VUI Default profile for Details! has been imported.")
-            return true
-        else
-            VUI:Print("Failed to import VUI Default profile for Details!.")
-            return false
-        end
-    end
-    
-    return false
+    self:Debug("VUI skin registered successfully")
+    return true
 end
 
--- Function to apply the skin to all Details windows
+-- Apply the VUI skin to Details
 function VUISkin:ApplySkin()
-    -- Check if Details is loaded
+    self:Debug("Applying VUI skin to Details")
+    
+    -- Ensure Details is loaded
     if not _G.Details then
-        VUI:Print("Details! is not loaded. Cannot apply skin.")
-        return
+        self:Debug("Details not loaded, scheduling retry")
+        C_Timer.After(1, function() self:ApplySkin() end)
+        return false
     end
     
     -- Register textures
     self:RegisterTextures()
     
-    -- Register the skin
-    self:RegisterSkin()
-    
-    -- Apply the skin to all windows
-    for instanceId = 1, _G.Details:GetNumInstances() do
-        local instance = _G.Details:GetInstance(instanceId)
-        if (instance and instance.baseframe and instance.ativa) then
+    -- Register and apply skin
+    if self:RegisterSkin() then
+        -- Apply to all windows
+        for index, instance in ipairs(_G.Details:GetAllInstances()) do
             instance:ChangeSkin(skinName)
         end
+        
+        -- Fix title bar and augmentation bar
+        self:FixTitleBar()
+        if retail then self:ChangeAugmentationBar() end
+        
+        self:Debug("VUI skin applied successfully")
+        return true
     end
     
-    -- Import default profile if enabled
-    if self.db.profile.useDefaultProfile then
-        self:ImportDefaultProfile()
-    end
-    
-    -- Hook into Details theme system
-    if retail then
-        self:ChangeAugmentationBar()
-    end
-    
-    VUI:Debug("VUISkin applied to all Details windows.")
+    return false
 end
 
--- Function to remove the skin from all Details windows
+-- Remove the VUI skin from Details
 function VUISkin:RemoveSkin()
-    -- Check if Details is loaded
+    self:Debug("Removing VUI skin from Details")
+    
+    -- Ensure Details is loaded
     if not _G.Details then
-        VUI:Print("Details! is not loaded.")
-        return
+        self:Debug("Details not loaded")
+        return false
     end
     
-    -- Set all instances to use the default skin
-    for instanceId = 1, _G.Details:GetNumInstances() do
-        local instance = _G.Details:GetInstance(instanceId)
-        if (instance and instance.baseframe and instance.ativa) then
-            instance:ChangeSkin("Minimalistic")
-        end
+    -- Change all windows to default skin
+    for index, instance in ipairs(_G.Details:GetAllInstances()) do
+        instance:ChangeSkin("Minimalistic")
     end
     
-    VUI:Debug("VUISkin removed from all Details windows.")
+    self:Debug("VUI skin removed successfully")
+    return true
 end
 
--- Function to change augmentation bar colors (for retail only)
-function VUISkin:ChangeAugmentationBar()
-    if not retail or not _G.Details then return end
+-- Import the default profile
+function VUISkin:ImportDefaultProfile()
+    self:Debug("Importing default profile")
     
-    -- Get evoker class color from Details
-    local evokerColor = _G.Details.class_colors["EVOKER"]
-    if not evokerColor then return end
+    -- Ensure Details is loaded
+    if not _G.Details then
+        self:Debug("Details not loaded")
+        return false
+    end
     
-    -- Apply to existing lines
-    for instanceId = 1, _G.Details:GetNumInstances() do
-        local instance = _G.Details:GetInstance(instanceId)
-        if (instance and instance.baseframe and instance.ativa) then
-            for _, line in ipairs(instance:GetAllLines()) do
-                local extraStatusbar = line.extraStatusbar
-                if extraStatusbar then
-                    extraStatusbar:SetStatusBarTexture([[Interface\AddOns\VUI\VModules\VUISkin\Textures\augment]])
-                    extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
-                    if extraStatusbar.texture then
-                        extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
+    -- Load and import the profile string
+    if self.DefaultProfileImport then
+        _G.Details:ImportProfile(self.DefaultProfileImport, self.db.profile.importProfileName or "VUI Theme")
+        self:Debug("Default profile imported successfully")
+        return true
+    else
+        self:Debug("Default profile not found")
+        return false
+    end
+end
+
+-- Fix title bar appearance
+function VUISkin:FixTitleBar()
+    self:Debug("Fixing title bar appearance")
+    
+    -- Ensure Details is loaded
+    if not _G.Details then
+        self:Debug("Details not loaded")
+        return false
+    end
+    
+    -- Fix title bar for each instance
+    for index, instance in ipairs(_G.Details:GetAllInstances()) do
+        if instance.baseframe then
+            local titleBar = instance.baseframe.cabecalho
+            if titleBar then
+                titleBar:SetHeight(32)
+                
+                -- Apply settings
+                if instance.skin_custom_textures then
+                    if instance.skin_custom_textures.title_bar then
+                        instance.skin_custom_textures.title_bar:SetHeight(32)
                     end
                 end
             end
         end
     end
     
-    -- Hook into creation of new lines
-    local gump = _G.Details.gump
-    if gump then
-        hooksecurefunc(gump, 'CreateNewLine', function(self, instance, index)
-            local newLine = _G['DetailsBarra_' .. instance.meu_id .. '_' .. index]
-            if newLine and newLine.extraStatusbar then
-                local extraStatusbar = newLine.extraStatusbar
-                extraStatusbar:SetStatusBarTexture([[Interface\AddOns\VUI\VModules\VUISkin\Textures\augment]])
-                extraStatusbar:GetStatusBarTexture():SetVertexColor(unpack(evokerColor))
-                if extraStatusbar.texture then
-                    extraStatusbar.texture:SetVertexColor(unpack(evokerColor))
-                end
-            end
-        end)
-    end
+    self:Debug("Title bar fixed successfully")
+    return true
 end
 
--- Function to handle theme changes
-function VUISkin:OnThemeChanged()
-    -- Update skin colors to match new theme
-    self:UpdateSkinColors()
+-- Change augmentation bar appearance (retail only)
+function VUISkin:ChangeAugmentationBar()
+    self:Debug("Changing augmentation bar appearance")
     
-    -- Reapply skin if enabled
-    if self.db.profile.enabled then
+    -- Return if not retail
+    if not retail then
+        self:Debug("Not retail, skipping augmentation bar changes")
+        return false
+    end
+    
+    -- Ensure Details is loaded
+    if not _G.Details then
+        self:Debug("Details not loaded")
+        return false
+    end
+    
+    -- Hook into AugmentationStatusBar creation
+    hooksecurefunc(Details.player_class, "GetAugmentationBars", function()
+        if not Details or not Details.player_class.GetAugmentationBars then return end
+        
+        local extraStatusbar = _G["DetailsAugmentationStatusBar"]
+        if extraStatusbar then
+            -- Set textures
+            extraStatusbar:SetStatusBarTexture([[Interface\AddOns\VUI\VModules\VUISkin\Textures\augment]])
+            
+            -- Apply theme color
+            local themeColor = VUI and VUI.GetThemeColor and VUI:GetThemeColor() or {r=0.6, g=0.6, b=1.0}
+            extraStatusbar:SetStatusBarColor(themeColor.r, themeColor.g, themeColor.b, 0.8)
+            
+            local extraStatusbar2 = _G["DetailsAugmentationStatusBar2"]
+            if extraStatusbar2 then
+                extraStatusbar2:SetStatusBarTexture([[Interface\AddOns\VUI\VModules\VUISkin\Textures\augment]])
+                extraStatusbar2:SetStatusBarColor(themeColor.r, themeColor.g, themeColor.b, 0.8)
+            end
+        end
+    end)
+    
+    self:Debug("Augmentation bar changed successfully")
+    return true
+end
+
+-- Initialize after Details is loaded
+function VUISkin:SetupAfterLogin()
+    self:Debug("Setting up VUISkin after login")
+    
+    -- Check if Details is loaded yet
+    if not _G.Details or (Details.IsLoaded and not Details.IsLoaded()) then
+        self:Debug("Details not loaded yet, retrying in 1 second")
+        C_Timer.After(1, function()
+            self:SetupAfterLogin()
+        end)
+        return
+    end
+    
+    -- Register and apply skin if autoApply is enabled
+    if self.db.profile.autoApply then
         self:ApplySkin()
     end
+    
+    -- Import profile if useDefaultProfile is enabled
+    if self.db.profile.useDefaultProfile then
+        self:ImportDefaultProfile()
+    end
+    
+    self:Debug("VUISkin setup completed")
 end
 
--- Additional initialization for the Core component
-function VUISkin:OnCoreInitialize()
-    -- Register with VUI theme system
-    VUI:RegisterCallback("OnThemeChanged", function() self:OnThemeChanged() end)
-    
-    -- Register textures right away
-    self:RegisterTextures()
-end
+-- Initialize the VUISkin module
+VUISkin:RegisterTextures()
 
--- Hook into the main OnInitialize method to add our core initialization
-local originalOnInitialize = VUISkin.OnInitialize
-function VUISkin:OnInitialize()
-    -- Call the original OnInitialize first
-    originalOnInitialize(self)
-    
-    -- Then call our core-specific initialization
-    self:OnCoreInitialize()
-end
+-- Hook player login event
+local frame = CreateFrame('FRAME')
+frame:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" then
+        C_Timer.After(1, function()
+            VUISkin:SetupAfterLogin()
+        end)
+    end
+end)
+frame:RegisterEvent("PLAYER_LOGIN")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")

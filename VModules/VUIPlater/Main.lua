@@ -2,9 +2,71 @@
 -- A standalone nameplate module for VUI
 -- Based on Whiiskeyz Plater profile (https://wago.io/whiiskeyzplater)
 
-local AddonName, VUI = ...
+local AddonName = ...
+local VUI = _G["VUI"]
 local MODNAME = "VUIPlater"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0")
+
+-- Set up global reference early to prevent nil errors
+_G["VUIPlater"] = _G["VUIPlater"] or {}
+
+-- Create minimal fallback if VUI doesn't exist
+if not VUI then
+    VUI = {}
+    VUI.NewModule = function() return {} end
+    _G["VUI"] = VUI
+end
+
+-- Try to create the module with error handling
+local M
+
+if VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIPlater"] = M
+else
+    -- Create minimal module object to prevent errors
+    M = {
+        NAME = MODNAME,
+        TITLE = "VUI Plater",
+        DESCRIPTION = "Custom nameplate styling based on Whiiskeyz Plater profile",
+        VERSION = "1.0",
+        OnEnable = function() end,
+        OnDisable = function() end
+    }
+    
+    -- Register in VUI namespace
+    VUI[MODNAME] = M
+    
+    -- Update the global reference with our placeholder
+    _G["VUIPlater"] = M
+    
+    -- Try initialization again after delay
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local RealModule = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0")
+            
+            -- Transfer any properties from temporary module
+            for k, v in pairs(M) do
+                if k ~= "NAME" and k ~= "TITLE" and type(v) ~= "function" then
+                    RealModule[k] = v
+                end
+            end
+            
+            -- Replace with real module
+            VUI[MODNAME] = RealModule
+            
+            -- Update the global reference with the actual module
+            _G["VUIPlater"] = RealModule
+            
+            -- Initialize the module
+            if RealModule.OnInitialize then RealModule:OnInitialize() end
+            if RealModule.OnEnable then RealModule:OnEnable() end
+        end
+    end)
+end
+
+-- Set global namespace for other files to access
+VUI.VUIPlater = M
 
 -- Localization
 local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
@@ -29,8 +91,8 @@ M.defaults = {
             height = 10,
             castBarHeight = 10,
             scale = 1.0,
-            healthBarTexture = "VUI Gradient",
-            castBarTexture = "VUI Gradient",
+            healthBarTexture = "VUI Smooth",
+            castBarTexture = "VUI Flat",
             borderStyle = "VUI_BORDER_1PX",
             borderSize = 1,
             fontName = "Arial Narrow",
@@ -95,8 +157,8 @@ M.defaults = {
             height = 10,
             castBarHeight = 10,
             scale = 1.0,
-            healthBarTexture = "VUI Gradient",
-            castBarTexture = "VUI Gradient",
+            healthBarTexture = "VUI Smooth",
+            castBarTexture = "VUI Flat",
             borderStyle = "VUI_BORDER_1PX",
             borderSize = 1,
             fontName = "Arial Narrow",
@@ -146,8 +208,8 @@ M.defaults = {
             width = 140,
             height = 10,
             scale = 1.0,
-            healthBarTexture = "VUI Gradient",
-            castBarTexture = "VUI Gradient",
+            healthBarTexture = "VUI Whiiskeyz",
+            castBarTexture = "VUI Flat",
             castBarHeight = 10,
             borderStyle = "VUI_BORDER_1PX",
             borderSize = 1,
@@ -252,9 +314,9 @@ M.importantDebuffs = {
 
 -- Border textures
 M.borderTextures = {
-    ["VUI_BORDER_1PX"] = "Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\border_1px.tga",
-    ["VUI_BORDER_2PX"] = "Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\border_2px.tga",
-    ["VUI_BORDER_GLOW"] = "Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\border_glow.tga",
+    ["VUI_BORDER_1PX"] = "Interface\\AddOns\\VUI\\VModules\\VUIPlater\\media\\textures\\border_1px.tga",
+    ["VUI_BORDER_2PX"] = "Interface\\AddOns\\VUI\\VModules\\VUIPlater\\media\\textures\\border_2px.tga",
+    ["VUI_BORDER_GLOW"] = "Interface\\AddOns\\VUI\\VModules\\VUIPlater\\media\\textures\\border_glow.tga",
 }
 
 -- Aura whitelist/blacklist
@@ -267,13 +329,39 @@ M.createdNameplates = {}
 
 -- Initialize module
 function M:OnInitialize()
-    -- Register module with VUI
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUIPlater"] or VUI.db.namespaces["vuiplater"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUIPlater"] = namespace
+            VUI.db.namespaces["vuiplater"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUIPlater", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuiplater"] = self.db
+            
+            -- Apply the Whiiskeyz preset by default for new installations
+            self:ApplyWhiiskeyzPreset()
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
     -- Register settings with VUI Config
-    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    end
     
     -- Create custom border textures
     self:CreateBorderTextures()
@@ -288,83 +376,101 @@ function M:OnInitialize()
     self.plateCount = 0
     
     self:Debug("VUIPlater module initialized")
+    
+    -- If this is a new installation or no preset is set, apply the Whiiskeyz preset
+    if not self.db.profile.currentPreset then
+        self:ApplyWhiiskeyzPreset()
+    end
 end
 
 function M:OnEnable()
-    -- Check if any standalone nameplate addon is loaded
-    if C_AddOns.IsAddOnLoaded('Plater') or 
-       C_AddOns.IsAddOnLoaded('TidyPlates_ThreatPlates') or 
-       C_AddOns.IsAddOnLoaded('TidyPlates') or 
-       C_AddOns.IsAddOnLoaded('Kui_Nameplates') then
-       
-        -- Disable self if we find another nameplate addon
-        self.db.profile.enabled = false
-        VUI:Print("|cffff0000VUIPlater disabled:|r Another nameplate addon was detected")
-        return
-    end
+    -- Register WhiiskeyzPlater textures
+    self:RegisterWhiiskeyzTextures()
     
-    -- Check if we need to disable core nameplates modules
-    local nameplateModules = {
-        "NamePlates.Core",
-        "NamePlates.TotemIcons",
-        "NamePlates.HealthText",
-        "NamePlates.CastTime"
-    }
-    
-    -- Disable core nameplates modules
-    for _, moduleName in ipairs(nameplateModules) do
-        local module = VUI:GetModule(moduleName)
-        if module and module:IsEnabled() then
-            module:Disable()
-            self:Debug("Disabled core module: " .. moduleName)
+    -- Ensure AddAddOnsLoaded exists globally to prevent errors
+    if not _G.AddAddOnsLoaded then
+        _G.AddAddOnsLoaded = function(addon, callback)
+            if not addon or not callback then return end
+            
+            -- Check if the addon is already loaded
+            if IsAddOnLoaded(addon) then
+                callback()
+                return
+            end
+            
+            -- Create event frame to wait for addon to load
+            local frame = CreateFrame("Frame")
+            frame:RegisterEvent("ADDON_LOADED")
+            frame:SetScript("OnEvent", function(self, event, loadedAddon)
+                if event == "ADDON_LOADED" and loadedAddon == addon then
+                    callback()
+                    self:UnregisterAllEvents()
+                end
+            end)
         end
     end
     
-    -- Initialize nameplate cache
-    self.nameplates = self.nameplates or {}
-    
-    -- Register events
-    self:RegisterEvent("NAME_PLATE_CREATED", "OnNamePlateCreated")
-    self:RegisterEvent("NAME_PLATE_UNIT_ADDED", "OnNamePlateAdded")
-    self:RegisterEvent("NAME_PLATE_UNIT_REMOVED", "OnNamePlateRemoved")
-    self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnTargetChanged")
-    self:RegisterEvent("UNIT_HEALTH", "OnUnitHealthChanged")
-    self:RegisterEvent("UNIT_MAXHEALTH", "OnUnitHealthChanged")
-    self:RegisterEvent("UNIT_POWER_UPDATE", "OnUnitPowerChanged")
-    self:RegisterEvent("UNIT_DISPLAYPOWER", "OnUnitPowerChanged")
-    self:RegisterEvent("UNIT_FACTION", "OnUnitFactionChanged")
-    self:RegisterEvent("UNIT_NAME_UPDATE", "OnUnitNameUpdated")
-    self:RegisterEvent("UNIT_LEVEL", "OnUnitLevelUpdated")
-    self:RegisterEvent("UNIT_CLASSIFICATION_CHANGED", "OnUnitClassificationChanged")
-    self:RegisterEvent("UNIT_AURA", "OnUnitAurasChanged")
-    self:RegisterEvent("UNIT_SPELLCAST_START", "OnUnitCastStart")
-    self:RegisterEvent("UNIT_SPELLCAST_STOP", "OnUnitCastStop")
-    self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", "OnUnitCastInterrupted")
-    self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "OnUnitCastSucceeded")
-    self:RegisterEvent("UNIT_SPELLCAST_DELAYED", "OnUnitCastDelayed")
-    self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", "OnUnitCastInterruptible")
-    self:RegisterEvent("UNIT_SPELLCAST_NOT_INTERRUPTIBLE", "OnUnitCastNotInterruptible")
-    self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", "OnUnitThreatSituationChanged")
-    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "OnCombatLogEvent")
-    
-    -- Hook functions
-    if CompactUnitFrame_UpdateName then
-        self:SecureHook("CompactUnitFrame_UpdateName")
-        self:SecureHook("CompactUnitFrame_UpdateHealthColor")
-        self:SecureHook("CompactUnitFrame_UpdateSelectionHighlight")
-        self:SecureHook("CompactUnitFrame_UpdateAggroHighlight")
+    -- Safe function to check if an addon is loaded
+    local function SafeIsAddOnLoaded(addon)
+        if IsAddOnLoaded and type(IsAddOnLoaded) == "function" then
+            return IsAddOnLoaded(addon)
+        else
+            -- Fallback method using GetAddOnInfo if available
+            if GetAddOnInfo and type(GetAddOnInfo) == "function" then
+                local _, _, _, enabled, loadable, reason, _ = GetAddOnInfo(addon)
+                return enabled and loadable and reason == "LOADED"
+            end
+            return false -- Default to not loaded if we can't check
+        end
     end
     
-    -- Configure nameplates
-    self:ConfigureNamePlateSettings()
+    -- Initialize PlaterService if it exists
+    if self.PlaterService and type(self.PlaterService.Initialize) == "function" then
+        self.PlaterService:Initialize()
+    end
     
-    -- Process existing nameplates
-    self:ProcessExistingNameplates()
+    -- Load the PlaterProfileImport module if it exists (for profile importing)
+    if self.PlaterProfileImport and type(self.PlaterProfileImport.ImportPlaterProfile) == "function" then
+        self:Debug("PlaterProfileImport module loaded")
+    end
     
-    -- Start update timer
-    self.updateTimer = self:ScheduleRepeatingTimer("UpdateAllNameplates", 0.1)
+    if not SafeIsAddOnLoaded("Plater") then
+        self:RegisterEvent("ADDON_LOADED", "OnAddonLoaded")
+        self:Debug("Plater not loaded, waiting for ADDON_LOADED event")
+    else
+        -- Call our safe hook method
+        self:HookPlater()
+    end
     
-    self:Debug("VUIPlater module enabled")
+    -- Start retry timer if hooks failed
+    if not self.isHooked then
+        self.retryTimer = self:ScheduleTimer(function()
+            -- Try to hook Plater again
+            if self:HookPlater() and self.retryTimer then
+                self:CancelTimer(self.retryTimer)
+                self.retryTimer = nil
+            end
+        end, 3)
+    end
+    
+    -- Register key events for nameplate updates
+    self:RegisterEvent("NAME_PLATE_UNIT_ADDED", "OnNamePlateAdded")
+    self:RegisterEvent("NAME_PLATE_UNIT_REMOVED", "OnNamePlateRemoved")
+    self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", "OnThreatUpdated")
+    self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnTargetChanged")
+    self:RegisterEvent("PLAYER_FOCUS_CHANGED", "OnFocusChanged")
+    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "OnCombatLogEvent")
+    
+    -- If we have a current preset, apply its settings
+    if self.db.profile.currentPreset == "WHIISKEYZ" then
+        self:ApplyWhiiskeyzPreset()
+    end
+    
+    -- Schedule a timer to update all nameplates after everything is loaded
+    self:ScheduleTimer(function()
+        self:UpdateAllNameplates()
+        self:Debug("Initial nameplate update completed")
+    end, 1)
 end
 
 function M:OnDisable()
@@ -395,13 +501,22 @@ function M:OnDisable()
     }
     
     -- Check VUI profile to see if nameplates are enabled
-    local db = VUI.db.profile.nameplates
+    local db = VUI and VUI.db and VUI.db.profile and VUI.db.profile.nameplates
     if db then
         for _, moduleName in ipairs(nameplateModules) do
-            local module = VUI:GetModule(moduleName)
-            if module and not module:IsEnabled() then
-                module:Enable()
-                self:Debug("Re-enabled core module: " .. moduleName)
+            -- Add safety check for GetModule method
+            if VUI and VUI.GetModule and type(VUI.GetModule) == "function" then
+                -- Use pcall to catch errors if module doesn't exist
+                local success, module = pcall(function() return VUI:GetModule(moduleName, true) end)
+                
+                -- Only try to enable if the module was found and has an IsEnabled method
+                if success and module and module.IsEnabled and type(module.IsEnabled) == "function" then
+                    -- Check if not enabled and has an Enable method
+                    if not module:IsEnabled() and module.Enable and type(module.Enable) == "function" then
+                        pcall(function() module:Enable() end)
+                        self:Debug("Re-enabled core module: " .. moduleName)
+                    end
+                end
             end
         end
     end
@@ -446,17 +561,32 @@ function M:RegisterFontMedia()
         end
     end
     
-    -- Register our statusbar textures
+    -- Register our statusbar textures for nameplates with high-quality textures
+    -- Each of these is selected to closely match the Whiiskeyz Plater profile
+    
+    -- VUI Gradient - for smooth health bars with slight gradient
     if not LSM:IsValid("statusbar", "VUI Gradient") then
-        LSM:Register("statusbar", "VUI Gradient", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\gradient.tga")
+        LSM:Register("statusbar", "VUI Gradient", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Smooth.blp")
     end
     
+    -- VUI Flat - for cast bars with minimal design
     if not LSM:IsValid("statusbar", "VUI Flat") then
-        LSM:Register("statusbar", "VUI Flat", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\flat.tga")
+        LSM:Register("statusbar", "VUI Flat", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Flat.blp")
     end
     
+    -- VUI Smooth - for high-quality smooth bars
     if not LSM:IsValid("statusbar", "VUI Smooth") then
-        LSM:Register("statusbar", "VUI Smooth", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\smooth.tga")
+        LSM:Register("statusbar", "VUI Smooth", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Smoothv2.tga")
+    end
+    
+    -- VUI Whiiskeyz - specifically named for the Whiiskeyz Plater profile style
+    if not LSM:IsValid("statusbar", "VUI Whiiskeyz") then
+        LSM:Register("statusbar", "VUI Whiiskeyz", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Glaze.tga")
+    end
+    
+    -- VUI Glossy - for more polished looking bars
+    if not LSM:IsValid("statusbar", "VUI Glossy") then
+        LSM:Register("statusbar", "VUI Glossy", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Otravi.tga")
     end
 end
 
@@ -808,7 +938,7 @@ function M:CreateNameplateElements(plate)
     plate.VUI.castShield = plate.VUI.castBar:CreateTexture(nil, "OVERLAY")
     plate.VUI.castShield:SetSize(16, 16)
     plate.VUI.castShield:SetPoint("CENTER", plate.VUI.castIcon, "CENTER")
-    plate.VUI.castShield:SetTexture("Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\shield.tga")
+    plate.VUI.castShield:SetTexture("Interface\\AddOns\\VUI\\VModules\\VUIPlater\\media\\textures\\shield.tga")
     plate.VUI.castShield:Hide()
     
     -- Cast bar text
@@ -848,7 +978,7 @@ function M:CreateNameplateElements(plate)
     plate.VUI.threatIndicator = blizzFrame:CreateTexture(nil, "OVERLAY")
     plate.VUI.threatIndicator:SetSize(16, 16)
     plate.VUI.threatIndicator:SetPoint("RIGHT", plate.VUI.healthBar, "LEFT", -2, 0)
-    plate.VUI.threatIndicator:SetTexture("Interface\\AddOns\\VUI\\Media\\modules\\VUIPlater\\textures\\threat.tga")
+    plate.VUI.threatIndicator:SetTexture("Interface\\AddOns\\VUI\\VModules\\VUIPlater\\media\\textures\\threat.tga")
     plate.VUI.threatIndicator:Hide()
     
     -- Create execution indicator
@@ -901,6 +1031,9 @@ function M:UpdateNameplate(plate, unitID)
     local reaction = UnitReaction("player", unitID) or 0
     local isPlayer = UnitIsPlayer(unitID)
     local isSelf = UnitIsUnit(unitID, "player")
+    local isBoss = UnitClassification(unitID) == "worldboss" or UnitClassification(unitID) == "rareelite"
+    local isRare = UnitClassification(unitID) == "rare"
+    local isElite = UnitClassification(unitID) == "elite"
     
     -- Get the appropriate settings
     local settings
@@ -920,718 +1053,6 @@ function M:UpdateNameplate(plate, unitID)
     
     -- Get the Blizzard frame
     local blizzFrame = plate.UnitFrame
-    if not blizzFrame then return end
-    
-    -- Get target status
-    local isTarget = UnitIsUnit(unitID, "target")
-    
-    -- Set health bar size and position
-    plate.VUI.healthBar:SetSize(settings.width, settings.height)
-    
-    -- Set bar textures
-    local healthTexture = LSM:Fetch("statusbar", settings.healthBarTexture) or "Interface\\Buttons\\WHITE8x8"
-    local castTexture = LSM:Fetch("statusbar", settings.castBarTexture) or "Interface\\Buttons\\WHITE8x8"
-    
-    plate.VUI.healthBar:SetStatusBarTexture(healthTexture)
-    plate.VUI.castBar:SetStatusBarTexture(castTexture)
-    
-    -- Set cast bar size
-    plate.VUI.castBar:SetSize(settings.width, settings.castBarHeight)
-    
-    -- Set custom scale
-    if isTarget and settings.scaleTarget then
-        blizzFrame:SetScale(settings.targetScale)
-    else
-        blizzFrame:SetScale(settings.scale)
-    end
-    
-    -- Set borders
-    self:UpdateBorder(plate, unitID)
-    
-    -- Set alpha
-    if isTarget then
-        plate:SetAlpha(1)
-    elseif settings.fadeNonTargets then
-        plate:SetAlpha(settings.fadeAmount)
-    else
-        plate:SetAlpha(1)
-    end
-    
-    -- Update target highlight
-    plate.VUI.highlight:SetShown(isTarget and settings.showTargetBorder)
-    
-    -- Update fonts
-    local font = LSM:Fetch("font", settings.fontName) or "Fonts\\FRIZQT__.TTF"
-    plate.VUI.name:SetFont(font, settings.fontSize, settings.fontOutline)
-    plate.VUI.level:SetFont(font, settings.fontSize, settings.fontOutline)
-    plate.VUI.health:SetFont(font, settings.fontSize, settings.fontOutline)
-    plate.VUI.castText:SetFont(font, settings.fontSize, settings.fontOutline)
-    plate.VUI.castTimer:SetFont(font, settings.fontSize, settings.fontOutline)
-    plate.VUI.castTarget:SetFont(font, settings.fontSize - 1, settings.fontOutline)
-    
-    -- Update health
-    self:UpdateHealth(plate, unitID)
-    
-    -- Update name
-    self:UpdateName(plate, unitID)
-    
-    -- Update level
-    self:UpdateLevel(plate, unitID)
-    
-    -- Update class icon
-    self:UpdateClassIcon(plate, unitID)
-    
-    -- Update cast bar
-    self:UpdateCastBar(plate, unitID, "update")
-    
-    -- Update auras
-    self:UpdateAuras(plate, unitID)
-    
-    -- Update threat
-    self:UpdateThreat(plate, unitID)
-    
-    -- Show the plate elements
-    plate.VUI.healthBar:Show()
-end
-
--- Update health bar for a nameplate
-function M:UpdateHealth(plate, unitID)
-    if not plate or not plate.VUI or not unitID or not UnitExists(unitID) then return end
-    
-    -- Get health values
-    local health = UnitHealth(unitID)
-    local maxHealth = UnitHealthMax(unitID)
-    local healthPercent = maxHealth > 0 and health / maxHealth * 100 or 0
-    
-    -- Determine if enemy or friendly
-    local reaction = UnitReaction("player", unitID) or 0
-    local isPlayer = UnitIsPlayer(unitID)
-    local isSelf = UnitIsUnit(unitID, "player")
-    
-    -- Get the appropriate settings
-    local settings
-    if isSelf then
-        settings = self.db.profile.player
-    elseif reaction <= 4 then -- enemy
-        settings = self.db.profile.enemy
-    else -- friendly
-        settings = self.db.profile.friendly
-    end
-    
-    -- Set health bar value
-    plate.VUI.healthBar:SetMinMaxValues(0, maxHealth)
-    plate.VUI.healthBar:SetValue(health)
-    
-    -- Set colors
-    if settings.useClassColors and isPlayer then
-        local _, class = UnitClass(unitID)
-        if class and RAID_CLASS_COLORS[class] then
-            local color = RAID_CLASS_COLORS[class]
-            plate.VUI.healthBar:SetStatusBarColor(color.r, color.g, color.b)
-        else
-            -- Use default color
-            local color = settings.healthBarColor
-            plate.VUI.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
-        end
-    elseif reaction <= 4 then -- enemy
-        local color = settings.healthBarColor
-        plate.VUI.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
-    else -- friendly
-        local color = settings.healthBarColor
-        plate.VUI.healthBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
-    end
-    
-    -- Set background color
-    local bgColor = settings.healthBgColor
-    plate.VUI.healthBg:SetVertexColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
-    
-    -- Show execution indicator if health is below threshold for enemies
-    if reaction <= 4 and settings.executionIndicator then
-        plate.VUI.executeIndicator:SetShown(healthPercent <= settings.executionThreshold)
-    else
-        plate.VUI.executeIndicator:Hide()
-    end
-    
-    -- Update health text
-    if settings.showHealthPercent or settings.showHealthValue then
-        local text = ""
-        
-        if settings.showHealthPercent then
-            text = format("%.0f%%", healthPercent)
-        end
-        
-        if settings.showHealthValue then
-            if text ~= "" then text = text .. " " end
-            if maxHealth > 999999 then
-                text = text .. format("%.1fM", health / 1000000)
-            elseif maxHealth > 9999 then
-                text = text .. format("%.0fk", health / 1000)
-            else
-                text = text .. format("%d", health)
-            end
-        end
-        
-        plate.VUI.health:SetText(text)
-        plate.VUI.health:Show()
-    else
-        plate.VUI.health:Hide()
-    end
-end
-
--- Update name text for a nameplate
-function M:UpdateName(plate, unitID)
-    if not plate or not plate.VUI or not unitID or not UnitExists(unitID) then return end
-    
-    -- Determine if enemy or friendly
-    local reaction = UnitReaction("player", unitID) or 0
-    local isPlayer = UnitIsPlayer(unitID)
-    local isSelf = UnitIsUnit(unitID, "player")
-    
-    -- Get the appropriate settings
-    local settings
-    if isSelf then
-        settings = self.db.profile.player
-    elseif reaction <= 4 then -- enemy
-        settings = self.db.profile.enemy
-    else -- friendly
-        settings = self.db.profile.friendly
-    end
-    
-    -- Update name
-    if settings.showName then
-        local name = UnitName(unitID) or ""
-        
-        -- Limit name length
-        if settings.nameLength > 0 and #name > settings.nameLength then
-            name = name:sub(1, settings.nameLength) .. "..."
-        end
-        
-        plate.VUI.name:SetText(name)
-        plate.VUI.name:Show()
-    else
-        plate.VUI.name:Hide()
-    end
-end
-
--- Update level text for a nameplate
-function M:UpdateLevel(plate, unitID)
-    if not plate or not plate.VUI or not unitID or not UnitExists(unitID) then return end
-    
-    -- Determine if enemy or friendly
-    local reaction = UnitReaction("player", unitID) or 0
-    local isPlayer = UnitIsPlayer(unitID)
-    local isSelf = UnitIsUnit(unitID, "player")
-    
-    -- Get the appropriate settings
-    local settings
-    if isSelf then
-        settings = self.db.profile.player
-    elseif reaction <= 4 then -- enemy
-        settings = self.db.profile.enemy
-    else -- friendly
-        settings = self.db.profile.friendly
-    end
-    
-    -- Update level
-    if settings.showLevel then
-        local level = UnitLevel(unitID) or 0
-        local classification = UnitClassification(unitID)
-        
-        local levelStr
-        if level <= 0 then
-            levelStr = "??"
-        else
-            levelStr = tostring(level)
-        end
-        
-        -- Add classification
-        if classification == "elite" then
-            levelStr = levelStr .. "+"
-        elseif classification == "rare" then
-            levelStr = levelStr .. "r"
-        elseif classification == "rareelite" then
-            levelStr = levelStr .. "r+"
-        elseif classification == "worldboss" then
-            levelStr = levelStr .. "b"
-        end
-        
-        -- Color by difficulty
-        local color = GetQuestDifficultyColor(level <= 0 and 999 or level)
-        plate.VUI.level:SetTextColor(color.r, color.g, color.b)
-        
-        plate.VUI.level:SetText(levelStr)
-        plate.VUI.level:Show()
-    else
-        plate.VUI.level:Hide()
-    end
-end
-
--- Update border appearance for a nameplate
-function M:UpdateBorder(plate, unitID)
-    if not plate or not plate.VUI or not unitID or not UnitExists(unitID) then return end
-    
-    -- Determine if enemy or friendly
-    local reaction = UnitReaction("player", unitID) or 0
-    local isPlayer = UnitIsPlayer(unitID)
-    local isSelf = UnitIsUnit(unitID, "player")
-    
-    -- Get the appropriate settings
-    local settings
-    if isSelf then
-        settings = self.db.profile.player
-    elseif reaction <= 4 then -- enemy
-        settings = self.db.profile.enemy
-    else -- friendly
-        settings = self.db.profile.friendly
-    end
-    
-    -- Get classification for elite border
-    local classification = UnitClassification(unitID)
-    local isElite = (classification == "elite" or classification == "rareelite" or classification == "worldboss")
-    
-    -- Setup border backdrop
-    plate.VUI.border:SetBackdrop({
-        edgeFile = self.borderTextures[settings.borderStyle] or "Interface\\Buttons\\WHITE8x8",
-        edgeSize = settings.borderSize,
-    })
-    
-    -- Set border color
-    local color = settings.borderColor
-    plate.VUI.border:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
-    
-    -- Setup elite border if needed
-    if isElite and settings.showEliteBorder and reaction <= 4 then -- enemy only
-        plate.VUI.eliteBorder:SetBackdrop({
-            edgeFile = self.borderTextures[settings.borderStyle] or "Interface\\Buttons\\WHITE8x8",
-            edgeSize = settings.borderSize * 2,
-        })
-        
-        -- Set elite border color
-        local eliteColor = settings.eliteBorderColor
-        plate.VUI.eliteBorder:SetBackdropBorderColor(eliteColor.r, eliteColor.g, eliteColor.b, eliteColor.a)
-        plate.VUI.eliteBorder:Show()
-    else
-        plate.VUI.eliteBorder:Hide()
-    end
-end
-
--- Update class icon for a nameplate
-function M:UpdateClassIcon(plate, unitID)
-    if not plate or not plate.VUI or not unitID or not UnitExists(unitID) then return end
-    
-    -- Determine if enemy or friendly
-    local reaction = UnitReaction("player", unitID) or 0
-    local isPlayer = UnitIsPlayer(unitID)
-    local isSelf = UnitIsUnit(unitID, "player")
-    
-    -- Get the appropriate settings
-    local settings
-    if isSelf then
-        settings = self.db.profile.player
-    elseif reaction <= 4 then -- enemy
-        settings = self.db.profile.enemy
-    else -- friendly
-        settings = self.db.profile.friendly
-    end
-    
-    -- Show class icon for players if enabled
-    if isPlayer then
-        if (reaction <= 4 and settings.showEnemyClassIcon) or 
-           (reaction > 4 and settings.showFriendlyClassIcon) or
-           (isSelf and settings.showClassIcon) then
-            local _, class = UnitClass(unitID)
-            if class and CLASS_ICON_TCOORDS[class] then
-                plate.VUI.classIcon:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
-                plate.VUI.classIcon:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
-                plate.VUI.classIcon:Show()
-            else
-                plate.VUI.classIcon:Hide()
-            end
-        else
-            plate.VUI.classIcon:Hide()
-        end
-    else
-        plate.VUI.classIcon:Hide()
-    end
-end
-
--- Update cast bar for a nameplate
-function M:UpdateCastBar(plate, unitID, state)
-    if not plate or not plate.VUI or not unitID or not UnitExists(unitID) then return end
-    
-    -- Determine if enemy or friendly
-    local reaction = UnitReaction("player", unitID) or 0
-    local isPlayer = UnitIsPlayer(unitID)
-    local isSelf = UnitIsUnit(unitID, "player")
-    
-    -- Get the appropriate settings
-    local settings
-    if isSelf then
-        settings = self.db.profile.player
-    elseif reaction <= 4 then -- enemy
-        settings = self.db.profile.enemy
-    else -- friendly
-        settings = self.db.profile.friendly
-    end
-    
-    -- Check if unit is casting
-    local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unitID)
-    if not name then
-        name, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo(unitID)
-    end
-    
-    -- Show cast bar if casting
-    if name and texture then
-        plate.VUI.castBar:Show()
-        
-        -- Set cast bar texture
-        plate.VUI.castIcon:SetTexture(texture)
-        plate.VUI.castIcon:Show()
-        
-        -- Set cast bar colors
-        if state == "interrupted" then
-            local color = settings.interruptedCastColor
-            plate.VUI.castBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
-        elseif notInterruptible then
-            local color = settings.nonInterruptibleCastColor
-            plate.VUI.castBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
-        else
-            local color = settings.castBarColor
-            plate.VUI.castBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
-        end
-        
-        -- Set cast bar background color
-        local bgColor = settings.castBarBgColor
-        plate.VUI.castBg:SetVertexColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
-        
-        -- Set cast border color
-        local borderColor = settings.borderColor
-        plate.VUI.castBorder:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
-        
-        -- Setup interruptible shield
-        plate.VUI.castShield:SetShown(notInterruptible and settings.showInterruptShield)
-        
-        -- Set cast bar text
-        plate.VUI.castText:SetText(text or name)
-        
-        -- Set cast times
-        if startTime and endTime then
-            local currentTime = GetTime() * 1000
-            local castTimeTotal = (endTime - startTime) / 1000
-            local castTimeRemaining = (endTime - currentTime) / 1000
-            
-            -- Update timer text
-            plate.VUI.castTimer:SetText(format("%.1f", castTimeRemaining > 0 and castTimeRemaining or 0))
-            
-            -- Set cast bar progress
-            plate.VUI.castBar:SetMinMaxValues(0, castTimeTotal)
-            plate.VUI.castBar:SetValue(math.min(castTimeRemaining > 0 and (castTimeTotal - castTimeRemaining) or castTimeTotal, castTimeTotal))
-        end
-        
-        -- Set cast target if available and enabled
-        if settings.showCastTarget then
-            local target = UnitExists(unitID .. "target") and UnitName(unitID .. "target")
-            if target then
-                plate.VUI.castTarget:SetText(L["Target: "] .. target)
-                plate.VUI.castTarget:Show()
-            else
-                plate.VUI.castTarget:Hide()
-            end
-        else
-            plate.VUI.castTarget:Hide()
-        end
-    else
-        plate.VUI.castBar:Hide()
-        plate.VUI.castTarget:Hide()
-    end
-end
-
--- Update the auras shown on a nameplate
-function M:UpdateAuras(plate, unitID)
-    if not plate or not plate.VUI or not unitID or not UnitExists(unitID) then return end
-    
-    -- Determine if enemy or friendly
-    local reaction = UnitReaction("player", unitID) or 0
-    local isPlayer = UnitIsPlayer(unitID)
-    local isSelf = UnitIsUnit(unitID, "player")
-    
-    -- Get the appropriate settings
-    local settings
-    if isSelf then
-        settings = self.db.profile.player
-    elseif reaction <= 4 then -- enemy
-        settings = self.db.profile.enemy
-    else -- friendly
-        settings = self.db.profile.friendly
-    end
-    
-    -- Process buffs if enabled
-    if settings.showBuffs then
-        -- Initialize buff container
-        if not plate.VUI.buffFrames or #plate.VUI.buffFrames == 0 then
-            self:CreateBuffFrames(plate, settings.buffSize, settings.buffRows, settings.buffColumns)
-        end
-        
-        -- Update container size based on settings
-        plate.VUI.buffContainer:SetSize(settings.width, settings.buffSize * settings.buffRows)
-        
-        -- Process buffs
-        local buffCount = 0
-        local maxBuffs = settings.buffRows * settings.buffColumns
-        local i = 1
-        
-        while buffCount < maxBuffs do
-            local name, icon, count, debuffType, duration, expirationTime, source, isStealable, 
-                  nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer = UnitBuff(unitID, i)
-            
-            if not name then break end
-            
-            -- Filter buffs based on settings
-            local showBuff = true
-            
-            if settings.filterBuffs then
-                if settings.showOnlyImportantBuffs then
-                    showBuff = self.importantBuffs[spellId] or false
-                end
-            end
-            
-            -- Show or update buff
-            if showBuff then
-                local frame = plate.VUI.buffFrames[buffCount + 1]
-                if frame then
-                    frame.icon:SetTexture(icon)
-                    frame.count:SetText(count > 1 and count or "")
-                    
-                    -- Handle duration
-                    if settings.showBuffDuration and duration and duration > 0 then
-                        local timeLeft = expirationTime - GetTime()
-                        if timeLeft < 60 then
-                            frame.time:SetText(format("%.0f", timeLeft))
-                        else
-                            frame.time:SetText(format("%.0fm", timeLeft / 60))
-                        end
-                        frame.time:Show()
-                    else
-                        frame.time:Hide()
-                    end
-                    
-                    -- Set border color by type
-                    frame.border:SetBackdropBorderColor(1, 1, 1)
-                    
-                    frame:Show()
-                    buffCount = buffCount + 1
-                end
-            end
-            
-            i = i + 1
-        end
-        
-        -- Hide unused buff frames
-        for i = buffCount + 1, #plate.VUI.buffFrames do
-            plate.VUI.buffFrames[i]:Hide()
-        end
-        
-        -- Show container if buffs found
-        plate.VUI.buffContainer:SetShown(buffCount > 0)
-    else
-        plate.VUI.buffContainer:Hide()
-    end
-    
-    -- Process debuffs if enabled
-    if settings.showDebuffs then
-        -- Initialize debuff container
-        if not plate.VUI.debuffFrames or #plate.VUI.debuffFrames == 0 then
-            self:CreateDebuffFrames(plate, settings.debuffSize, settings.debuffRows, settings.debuffColumns)
-        end
-        
-        -- Update container size based on settings
-        plate.VUI.debuffContainer:SetSize(settings.width, settings.debuffSize * settings.debuffRows)
-        
-        -- Process debuffs
-        local debuffCount = 0
-        local maxDebuffs = settings.debuffRows * settings.debuffColumns
-        local i = 1
-        
-        while debuffCount < maxDebuffs do
-            local name, icon, count, debuffType, duration, expirationTime, source, isStealable, 
-                  nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer = UnitDebuff(unitID, i)
-            
-            if not name then break end
-            
-            -- Filter debuffs based on settings
-            local showDebuff = true
-            
-            if settings.filterDebuffs then
-                if settings.showOnlyMyDebuffs and source ~= "player" then
-                    showDebuff = false
-                end
-            end
-            
-            -- Show or update debuff
-            if showDebuff then
-                local frame = plate.VUI.debuffFrames[debuffCount + 1]
-                if frame then
-                    frame.icon:SetTexture(icon)
-                    frame.count:SetText(count > 1 and count or "")
-                    
-                    -- Handle duration
-                    if settings.showDebuffDuration and duration and duration > 0 then
-                        local timeLeft = expirationTime - GetTime()
-                        if timeLeft < 60 then
-                            frame.time:SetText(format("%.0f", timeLeft))
-                        else
-                            frame.time:SetText(format("%.0fm", timeLeft / 60))
-                        end
-                        frame.time:Show()
-                    else
-                        frame.time:Hide()
-                    end
-                    
-                    -- Set border color by debuff type
-                    if debuffType then
-                        local color = DebuffTypeColor[debuffType]
-                        frame.border:SetBackdropBorderColor(color.r, color.g, color.b)
-                    else
-                        frame.border:SetBackdropBorderColor(0.8, 0, 0)
-                    end
-                    
-                    frame:Show()
-                    debuffCount = debuffCount + 1
-                end
-            end
-            
-            i = i + 1
-        end
-        
-        -- Hide unused debuff frames
-        for i = debuffCount + 1, #plate.VUI.debuffFrames do
-            plate.VUI.debuffFrames[i]:Hide()
-        end
-        
-        -- Show container if debuffs found
-        plate.VUI.debuffContainer:SetShown(debuffCount > 0)
-    else
-        plate.VUI.debuffContainer:Hide()
-    end
-end
-
--- Create buff frames for a nameplate
-function M:CreateBuffFrames(plate, size, rows, columns)
-    if not plate or not plate.VUI then return end
-    
-    plate.VUI.buffFrames = plate.VUI.buffFrames or {}
-    
-    local maxBuffs = rows * columns
-    local spacing = 2
-    
-    for i = 1, maxBuffs do
-        if not plate.VUI.buffFrames[i] then
-            local frame = CreateFrame("Frame", nil, plate.VUI.buffContainer, "BackdropTemplate")
-            frame:SetSize(size, size)
-            
-            -- Position based on row and column
-            local row = math.ceil(i / columns) - 1
-            local col = (i - 1) % columns
-            
-            frame:SetPoint("TOPLEFT", plate.VUI.buffContainer, "TOPLEFT", col * (size + spacing), -row * (size + spacing))
-            
-            -- Create icon
-            frame.icon = frame:CreateTexture(nil, "ARTWORK")
-            frame.icon:SetAllPoints()
-            frame.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9) -- Crop icon edges
-            
-            -- Create border
-            frame.border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-            frame.border:SetPoint("TOPLEFT", frame, "TOPLEFT", -1, 1)
-            frame.border:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 1, -1)
-            frame.border:SetFrameLevel(frame:GetFrameLevel() - 1)
-            frame.border:SetBackdrop({
-                edgeFile = "Interface\\Buttons\\WHITE8x8",
-                edgeSize = 1,
-            })
-            frame.border:SetBackdropBorderColor(1, 1, 1)
-            
-            -- Create count text
-            frame.count = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            frame.count:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 2)
-            frame.count:SetTextColor(1, 1, 1)
-            
-            -- Create time text
-            frame.time = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            frame.time:SetPoint("CENTER", frame, "CENTER")
-            frame.time:SetTextColor(1, 1, 1)
-            
-            -- Add to collection
-            plate.VUI.buffFrames[i] = frame
-        end
-    end
-end
-
--- Create debuff frames for a nameplate
-function M:CreateDebuffFrames(plate, size, rows, columns)
-    if not plate or not plate.VUI then return end
-    
-    plate.VUI.debuffFrames = plate.VUI.debuffFrames or {}
-    
-    local maxDebuffs = rows * columns
-    local spacing = 2
-    
-    for i = 1, maxDebuffs do
-        if not plate.VUI.debuffFrames[i] then
-            local frame = CreateFrame("Frame", nil, plate.VUI.debuffContainer, "BackdropTemplate")
-            frame:SetSize(size, size)
-            
-            -- Position based on row and column
-            local row = math.ceil(i / columns) - 1
-            local col = (i - 1) % columns
-            
-            frame:SetPoint("TOPLEFT", plate.VUI.debuffContainer, "TOPLEFT", col * (size + spacing), -row * (size + spacing))
-            
-            -- Create icon
-            frame.icon = frame:CreateTexture(nil, "ARTWORK")
-            frame.icon:SetAllPoints()
-            frame.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9) -- Crop icon edges
-            
-            -- Create border
-            frame.border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-            frame.border:SetPoint("TOPLEFT", frame, "TOPLEFT", -1, 1)
-            frame.border:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 1, -1)
-            frame.border:SetFrameLevel(frame:GetFrameLevel() - 1)
-            frame.border:SetBackdrop({
-                edgeFile = "Interface\\Buttons\\WHITE8x8",
-                edgeSize = 1,
-            })
-            frame.border:SetBackdropBorderColor(1, 0, 0)
-            
-            -- Create count text
-            frame.count = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            frame.count:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 2)
-            frame.count:SetTextColor(1, 1, 1)
-            
-            -- Create time text
-            frame.time = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            frame.time:SetPoint("CENTER", frame, "CENTER")
-            frame.time:SetTextColor(1, 1, 1)
-            
-            -- Add to collection
-            plate.VUI.debuffFrames[i] = frame
-        end
-    end
-end
-
--- Update threat indicator for a nameplate
-function M:UpdateThreat(plate, unitID)
-    if not plate or not plate.VUI or not unitID or not UnitExists(unitID) then return end
-    
-    -- Determine if enemy or friendly
-    local reaction = UnitReaction("player", unitID) or 0
-    
-    -- Skip if not an enemy
-    if reaction > 4 then
-        plate.VUI.threatIndicator:Hide()
-        return
-    end
-    
     -- Get enemy settings
     local settings = self.db.profile.enemy
     
@@ -1720,12 +1141,31 @@ function M:GetOptions()
                         get = function() return self.db.profile.currentPreset == "WHIISKEYZ" end,
                         set = function(info, value)
                             if value then
-                                self.db.profile.currentPreset = "WHIISKEYZ"
-                                -- Reset to default settings
-                                self.db:ResetProfile()
-                                -- Update all nameplates
-                                self:OnDisable()
-                                self:OnEnable()
+                                self:ApplyPresetSettings("WHIISKEYZ")
+                            end
+                        end,
+                    },
+                    platerImport = {
+                        name = L["Import to Plater"],
+                        desc = L["Import VUIPlater profile to Plater addon if installed"],
+                        type = "execute",
+                        order = 2.5,
+                        width = "full",
+                        func = function()
+                            if not IsAddOnLoaded("Plater") then
+                                print("|cFFFF0000[VUIPlater]|r Plater addon is not installed or enabled.")
+                                return
+                            end
+                            
+                            if self.PlaterProfileImport and self.PlaterProfileImport.ImportPlaterProfile then
+                                local success, message = self.PlaterProfileImport.ImportPlaterProfile(self)
+                                if success then
+                                    print("|cFF00FF00[VUIPlater]|r Profile imported to Plater successfully!")
+                                else
+                                    print("|cFFFF0000[VUIPlater]|r Error importing profile: " .. (message or "Unknown error"))
+                                end
+                            else
+                                print("|cFFFF0000[VUIPlater]|r PlaterProfileImport module not available.")
                             end
                         end,
                     },
@@ -2397,4 +1837,686 @@ function M:GetOptions()
 end
 
 -- Register the module
-VUI:RegisterModule(MODNAME, M)
+if VUI.RegisterModule then
+    VUI:RegisterModule(MODNAME, M)
+end
+
+-- Register hooks for Plater
+function M:HookPlater()
+    -- Check if Plater is loaded
+    if not Plater then
+        self:Debug("Plater not found, trying again later")
+        return false
+    end
+    
+    -- Don't hook twice
+    if self.isHooked then
+        return true
+    end
+    
+    -- Create a safe waiting function instead of using AddAddOnsLoaded
+    local function SafeWaitForAddon(addonName, callback)
+        if not addonName or not callback then return end
+        
+        -- Check if the addon is already loaded
+        if IsAddOnLoaded(addonName) then
+            callback()
+            return
+        end
+        
+        -- Set up a frame to listen for the addon loaded event
+        local frame = CreateFrame("Frame")
+        frame:RegisterEvent("ADDON_LOADED")
+        frame:SetScript("OnEvent", function(self, event, loadedAddon)
+            if event == "ADDON_LOADED" and loadedAddon == addonName then
+                callback()
+                self:UnregisterAllEvents()
+            end
+        end)
+    end
+    
+    -- Apply hooks to Plater
+    local success = pcall(function()
+        -- Hook Plater's nameplate creation functions
+        self:SecureHook(Plater, "OnRetailNamePlateCreated", "OnNamePlateCreated")
+        self:SecureHook(Plater, "UpdatePlateFrame", "OnNamePlateUpdated")
+        
+        -- Hook Plater's aura functions
+        self:SecureHook(Plater, "AddAura", "OnPlaterAddAura")
+        self:SecureHook(Plater, "RemoveAura", "OnPlaterRemoveAura")
+        
+        -- Hook Plater's cast functions
+        self:SecureHook(Plater, "StartCastBarOnNameplate", "OnCastStart")
+        self:SecureHook(Plater, "StopCastBarOnNameplate", "OnCastStop")
+        
+        -- Hook various Plater update events
+        self:SecureHook(Plater, "UpdateHealthAmount", "OnHealthUpdate")
+        self:SecureHook(Plater, "UpdateNameplateThread", "OnThreatUpdate")
+        
+        -- Wait for Details to load if needed
+        if self.db.profile.useSomeAddon then
+            SafeWaitForAddon("Details", function()
+                -- Hook into Details here
+                self:Debug("Details loaded, hooking...")
+                -- Additional hooks would go here
+            end)
+        end
+        
+        self:Debug("Successfully hooked Plater functions")
+    end)
+    
+    if not success then
+        self:Debug("Failed to hook Plater functions")
+        return false
+    end
+    
+    -- Process existing nameplates
+    self:ProcessExistingNameplates()
+    
+    -- Start update timer
+    self.updateTimer = self:ScheduleRepeatingTimer("UpdateNameplates", 0.1)
+    
+    -- Set hooked flag
+    self.isHooked = true
+    
+    return true
+end
+
+-- Handle addon loaded event
+function M:OnAddonLoaded(event, addon)
+    if addon == "Plater" then
+        self:UnregisterEvent("ADDON_LOADED")
+        self:HookPlater()
+    end
+end
+
+-- Around line 1440, add a wrapper function for buff/debuff API compatibility
+
+-- Wrapper function for UnitBuff/UnitDebuff API compatibility with The War Within
+function M:GetAuraInfo(unitID, index, filter, isDebuff)
+    -- Use C_UnitAuras if available (for The War Within and newer)
+    if C_UnitAuras then
+        local auraData
+        if isDebuff then
+            auraData = C_UnitAuras.GetDebuffByIndex(unitID, index, filter)
+        else
+            auraData = C_UnitAuras.GetBuffByIndex(unitID, index, filter)
+        end
+        
+        if auraData then
+            return auraData.name, 
+                   auraData.icon,
+                   auraData.applications,
+                   auraData.dispelName,
+                   auraData.duration,
+                   auraData.expirationTime,
+                   auraData.sourceUnit,
+                   auraData.isStealable,
+                   auraData.nameplateShowPersonal,
+                   auraData.spellId,
+                   auraData.canApplyAura,
+                   auraData.isBossDebuff,
+                   auraData.isCastByPlayer
+        end
+        return nil
+    else
+        -- Fallback to traditional API for older WoW versions
+        if isDebuff then
+            return UnitDebuff(unitID, index, filter)
+        else
+            return UnitBuff(unitID, index, filter)
+        end
+    end
+end
+
+-- Update the UpdateBuffs function around line 1430
+function M:UpdateBuffs(plate, unitID)
+    if not plate or not unitID or not plate.VUIElements then return end
+    
+    local buffFrame = plate.VUIElements.BuffFrame
+    if not buffFrame then return end
+    
+    -- Clear all existing buffs
+    for i = 1, #buffFrame.buffIcons do
+        buffFrame.buffIcons[i]:Hide()
+    end
+    
+    -- Check if we should display buffs
+    local settings = self:GetUnitSettings(unitID)
+    if not settings.showBuffs then return end
+    
+    -- Get filter strings
+    local filterString = ""
+    if settings.showOnlyImportantBuffs then
+        filterString = "HELPFUL PLAYER"
+    else
+        filterString = "HELPFUL"
+    end
+    
+    -- Get number of buffs
+    local numBuffs = 0
+    
+    -- If using C_UnitAuras (The War Within and newer)
+    if C_UnitAuras then
+        local auraData = C_UnitAuras.GetAuraDataByUnit(unitID, filterString)
+        numBuffs = auraData and #auraData or 0
+    else
+        -- For older versions, count manually
+        local i = 1
+        while UnitBuff(unitID, i, filterString) do
+            numBuffs = numBuffs + 1
+            i = i + 1
+        end
+    end
+    
+    -- Display buffs
+    local buffCount = 0
+    local maxBuffs = settings.buffRows * settings.buffColumns
+    
+    for i = 1, numBuffs do
+        if buffCount >= maxBuffs then break end
+        
+        local name, icon, count, debuffType, duration, expirationTime, caster, 
+              isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer = self:GetAuraInfo(unitID, i, filterString, false)
+        
+        -- Skip buffs from other players if filtering enabled
+        if name and (not settings.filterBuffs or (settings.filterBuffs and castByPlayer)) then
+            buffCount = buffCount + 1
+            
+            local buffIcon = buffFrame.buffIcons[buffCount]
+            if not buffIcon then
+                -- Create buff icon if it doesn't exist
+                buffIcon = self:CreateAuraIcon(buffFrame)
+                table.insert(buffFrame.buffIcons, buffIcon)
+            end
+            
+            -- Set icon texture
+            buffIcon.Icon:SetTexture(icon)
+            
+            -- Set size
+            buffIcon:SetSize(settings.buffSize, settings.buffSize)
+            buffIcon.Icon:SetSize(settings.buffSize - 2, settings.buffSize - 2)
+            
+            -- Set count
+            if settings.showBuffStacks and count and count > 1 then
+                buffIcon.Count:SetText(count)
+                buffIcon.Count:Show()
+            else
+                buffIcon.Count:Hide()
+            end
+            
+            -- Set duration
+            if settings.showBuffDuration and duration and duration > 0 then
+                buffIcon.Cooldown:SetCooldown(expirationTime - duration, duration)
+                buffIcon.Cooldown:Show()
+            else
+                buffIcon.Cooldown:Hide()
+            end
+            
+            -- Position based on index
+            local row = math.floor((buffCount - 1) / settings.buffColumns)
+            local col = (buffCount - 1) % settings.buffColumns
+            
+            buffIcon:ClearAllPoints()
+            buffIcon:SetPoint("TOPLEFT", buffFrame, "TOPLEFT", col * (settings.buffSize + 2), -row * (settings.buffSize + 2))
+            buffIcon:Show()
+        end
+    end
+end
+
+-- Update the UpdateDebuffs function around line 1510
+function M:UpdateDebuffs(plate, unitID)
+    if not plate or not unitID or not plate.VUIElements then return end
+    
+    local debuffFrame = plate.VUIElements.DebuffFrame
+    if not debuffFrame then return end
+    
+    -- Clear all existing debuffs
+    for i = 1, #debuffFrame.debuffIcons do
+        debuffFrame.debuffIcons[i]:Hide()
+    end
+    
+    -- Check if we should display debuffs
+    local settings = self:GetUnitSettings(unitID)
+    if not settings.showDebuffs then return end
+    
+    -- Get filter strings
+    local filterString = ""
+    if settings.showOnlyMyDebuffs then
+        filterString = "HARMFUL PLAYER"
+    else
+        filterString = "HARMFUL"
+    end
+    
+    -- Get number of debuffs
+    local numDebuffs = 0
+    
+    -- If using C_UnitAuras (The War Within and newer)
+    if C_UnitAuras then
+        local auraData = C_UnitAuras.GetAuraDataByUnit(unitID, filterString)
+        numDebuffs = auraData and #auraData or 0
+    else
+        -- For older versions, count manually
+        local i = 1
+        while UnitDebuff(unitID, i, filterString) do
+            numDebuffs = numDebuffs + 1
+            i = i + 1
+        end
+    end
+    
+    -- Display debuffs
+    local debuffCount = 0
+    local maxDebuffs = settings.debuffRows * settings.debuffColumns
+    
+    for i = 1, numDebuffs do
+        if debuffCount >= maxDebuffs then break end
+        
+        local name, icon, count, debuffType, duration, expirationTime, source, isStealable, 
+              nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, castByPlayer = self:GetAuraInfo(unitID, i, filterString, true)
+        
+        -- Skip debuffs from other players if filtering enabled
+        if name and (not settings.filterDebuffs or (settings.filterDebuffs and castByPlayer)) then
+            debuffCount = debuffCount + 1
+            
+            local debuffIcon = debuffFrame.debuffIcons[debuffCount]
+            if not debuffIcon then
+                -- Create debuff icon if it doesn't exist
+                debuffIcon = self:CreateAuraIcon(debuffFrame)
+                table.insert(debuffFrame.debuffIcons, debuffIcon)
+            end
+            
+            -- Set icon texture
+            debuffIcon.Icon:SetTexture(icon)
+            
+            -- Set size
+            debuffIcon:SetSize(settings.debuffSize, settings.debuffSize)
+            debuffIcon.Icon:SetSize(settings.debuffSize - 2, settings.debuffSize - 2)
+            
+            -- Set count
+            if settings.showDebuffStacks and count and count > 1 then
+                debuffIcon.Count:SetText(count)
+                debuffIcon.Count:Show()
+            else
+                debuffIcon.Count:Hide()
+            end
+            
+            -- Set duration
+            if settings.showDebuffDuration and duration and duration > 0 then
+                debuffIcon.Cooldown:SetCooldown(expirationTime - duration, duration)
+                debuffIcon.Cooldown:Show()
+            else
+                debuffIcon.Cooldown:Hide()
+            end
+            
+            -- Set border color based on debuff type
+            if debuffType then
+                local color = DebuffTypeColor[debuffType]
+                if color then
+                    debuffIcon.Border:SetVertexColor(color.r, color.g, color.b)
+                else
+                    debuffIcon.Border:SetVertexColor(1, 0, 0) -- Default to red
+                end
+                debuffIcon.Border:Show()
+            else
+                debuffIcon.Border:Hide()
+            end
+            
+            -- Position based on index
+            local row = math.floor((debuffCount - 1) / settings.debuffColumns)
+            local col = (debuffCount - 1) % settings.debuffColumns
+            
+            debuffIcon:ClearAllPoints()
+            debuffIcon:SetPoint("TOPLEFT", debuffFrame, "TOPLEFT", col * (settings.debuffSize + 2), -row * (settings.debuffSize + 2))
+            debuffIcon:Show()
+        end
+    end
+end
+
+-- Create Whiiskeyz Plater preset
+function M:ApplyWhiiskeyzPreset()
+    if self.WhiiskeyzImport and type(self.WhiiskeyzImport.ApplyWhiiskeyzPreset) == "function" then
+        -- Use the WhiiskeyzImport module to apply the preset
+        local success = self.WhiiskeyzImport.ApplyWhiiskeyzPreset(self)
+        if success then
+            self:Print("Successfully applied Whiiskeyz Plater preset")
+        else
+            self:Print("Failed to apply Whiiskeyz Plater preset")
+        end
+    else
+        -- Set the preset flag
+        self.db.profile.currentPreset = "WHIISKEYZ"
+        
+        -- Set up CVars for WhiiskeyzPlater compatibility
+        self:SetupWhiiskeyzCVars()
+        
+        -- Enemy nameplate settings based on Whiiskeyz profile
+        self.db.profile.enemy = {
+            enabled = true,
+            width = 140,
+            height = 10,
+            castBarHeight = 10,
+            scale = 1.0,
+            healthBarTexture = "VUI Smooth",
+            castBarTexture = "VUI Flat",
+            borderStyle = "VUI_BORDER_1PX",
+            borderSize = 1,
+            fontName = "Arial Narrow",
+            fontSize = 10,
+            fontOutline = "OUTLINE",
+            useClassColors = true,
+            healthBarColor = {r = 0.85, g = 0.2, b = 0.2, a = 1},
+            healthBgColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+            borderColor = {r = 0, g = 0, b = 0, a = 1},
+            castBarColor = {r = 0.4, g = 0.6, b = 0.8, a = 1},
+            castBarBgColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+            interruptedCastColor = {r = 0.3, g = 0.3, b = 0.3, a = 1},
+            nonInterruptibleCastColor = {r = 0.7, g = 0.4, b = 0, a = 1},
+            targetHighlightColor = {r = 1, g = 1, b = 1, a = 0.3},
+            eliteBorderColor = {r = 1, g = 0.85, b = 0, a = 1},
+            executionIndicator = true,
+            executionThreshold = 35,
+            showEliteBorder = true,
+            showTargetBorder = true,
+            showLevel = true,
+            showName = true,
+            showHealthPercent = true,
+            showHealthValue = false,
+            showEnemyClassIcon = true,
+            showCastTarget = true,
+            showInterruptShield = true,
+            flashOnAggro = true,
+            fadeNonTargets = true,
+            fadeAmount = 0.6,
+            scaleTarget = true,
+            targetScale = 1.2,
+            threatWarning = true,
+            showWarningGlow = true,
+            showThreatPercent = true,
+            highThreatColor = {r = 1, g = 0.3, b = 0.3, a = 1},
+            tankMode = false,
+            nameLength = 20,
+            -- Buffs and Debuffs
+            showBuffs = true,
+            showDebuffs = true,
+            buffSize = 20,
+            debuffSize = 24,
+            filterBuffs = true,
+            filterDebuffs = false,
+            showOnlyMyDebuffs = true,
+            showOnlyImportantBuffs = true,
+            buffRows = 1,
+            debuffRows = 2,
+            buffColumns = 3,
+            debuffColumns = 3,
+            showBuffDuration = true,
+            showDebuffDuration = true,
+            showBuffStacks = true,
+            showDebuffStacks = true,
+            buffPosition = "TOP",
+            debuffPosition = "BOTTOM",
+        }
+        
+        -- Friendly nameplate settings
+        self.db.profile.friendly = {
+            enabled = true,
+            width = 140,
+            height = 10,
+            castBarHeight = 10,
+            scale = 1.0,
+            healthBarTexture = "VUI Smooth",
+            castBarTexture = "VUI Flat",
+            borderStyle = "VUI_BORDER_1PX",
+            borderSize = 1,
+            fontName = "Arial Narrow",
+            fontSize = 10,
+            fontOutline = "OUTLINE",
+            useClassColors = true,
+            healthBarColor = {r = 0.2, g = 0.8, b = 0.2, a = 1},
+            healthBgColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+            borderColor = {r = 0, g = 0, b = 0, a = 1},
+            castBarColor = {r = 0.4, g = 0.6, b = 0.8, a = 1},
+            castBarBgColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+            targetHighlightColor = {r = 1, g = 1, b = 1, a = 0.3},
+            showTargetBorder = true,
+            showLevel = true,
+            showName = true,
+            showHealthPercent = true,
+            showHealthValue = false,
+            showFriendlyClassIcon = true,
+            fadeNonTargets = true,
+            fadeAmount = 0.6,
+            scaleTarget = true,
+            targetScale = 1.2,
+            nameLength = 20,
+            nameOnlyMode = true,
+            -- Buffs and Debuffs
+            showBuffs = false,
+            showDebuffs = true,
+            buffSize = 20,
+            debuffSize = 24,
+            filterBuffs = true,
+            filterDebuffs = false,
+            showOnlyMyDebuffs = true,
+            showOnlyImportantBuffs = true,
+            buffRows = 1,
+            debuffRows = 1,
+            buffColumns = 3,
+            debuffColumns = 3,
+            showBuffDuration = true,
+            showDebuffDuration = true,
+            showBuffStacks = true,
+            showDebuffStacks = true,
+            buffPosition = "TOP",
+            debuffPosition = "BOTTOM",
+        }
+        
+        -- Player nameplate settings
+        self.db.profile.player = {
+            enabled = true,
+            width = 140,
+            height = 10,
+            castBarHeight = 10,
+            scale = 1.0,
+            healthBarTexture = "VUI Smooth",
+            castBarTexture = "VUI Flat",
+            borderStyle = "VUI_BORDER_1PX",
+            borderSize = 1,
+            fontName = "Arial Narrow",
+            fontSize = 10,
+            fontOutline = "OUTLINE",
+            useClassColors = true,
+            healthBarColor = {r = 0.2, g = 0.6, b = 1.0, a = 1},
+            healthBgColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+            borderColor = {r = 0, g = 0, b = 0, a = 1},
+            castBarColor = {r = 0.4, g = 0.6, b = 0.8, a = 1},
+            castBarBgColor = {r = 0.1, g = 0.1, b = 0.1, a = 0.8},
+            showLevel = false,
+            showName = true,
+            showHealthPercent = true,
+            showHealthValue = false,
+            showCastTarget = true,
+            showInterruptShield = true,
+        }
+        
+        -- Performance settings
+        self.db.profile.performance = {
+            nameplateRange = 60,
+            maxDisplayed = 40,
+            clampToScreen = true,
+            stackingNameplates = true,
+            overlapProtection = true,
+        }
+        
+        -- Misc settings
+        self.db.profile.misc = {
+            showEnemyNameplates = true,
+            showFriendlyNameplates = true,
+            showPlayerNameplate = true,
+            showNPCTitles = false,
+        }
+        
+        -- WhiiskeyzPlater specific features
+        self.db.profile.features = {
+            -- Combat feedback
+            animateCombatFeedback = true,
+            showDamageText = true,
+            classColoredDamage = true,
+            
+            -- Status effects
+            highlightInterruptibleCasts = true,
+            flashAggroGain = true,
+            pulseExecuteRange = true,
+            
+            -- Advanced targeting
+            targetGlow = true,
+            targetGlowColor = {r = 1, g = 0.9, b = 0.4, a = 0.8},
+            mouseoverGlow = true,
+            mouseoverGlowColor = {r = 0.8, g = 0.8, b = 1, a = 0.5},
+            
+            -- Unit classification
+            bossModifications = true,
+            rareModifications = true,
+            
+            -- Visual elements
+            cleanerNameplates = true,
+            improvedTextVisibility = true,
+            smoothBarUpdates = true,
+            
+            -- The War Within features
+            useModernHealthBar = true,
+            useNewStackingSystem = true,
+            useResourceDisplay = true,
+        }
+        
+        -- Font settings
+        self.db.profile.fonts = {
+            primaryFont = "Arial Narrow",
+            damageFont = "Arial Narrow",
+            combatFont = "Arial Narrow",
+        }
+        
+        -- Handle WhiiskeyzPlater script mods
+        self.db.profile.scripts = {
+            enableTargetHighlight = true,
+            enableCastTargetDisplay = true,
+            enableThreatWarning = true,
+            enableAffix = true,
+            enableCastbarLatency = true,
+            enableExecuteIndicator = true,
+            enableCombatIndicator = true,
+            enableInterruptAlert = true,
+            enableBossModsDebuffs = true,
+        }
+    end
+    
+    -- Update all nameplates with new settings
+    self:UpdateAllNameplates()
+end
+
+-- Function to apply the correct preset settings
+function M:ApplyPresetSettings(presetName)
+    if presetName == "WHIISKEYZ" then
+        self:ApplyWhiiskeyzPreset()
+        self:Print("Applied Whiiskeyz Plater profile preset")
+    else
+        -- Default VUI preset or other presets could be added here
+    end
+    
+    -- Update all nameplates with new settings
+    self:UpdateAllNameplates()
+end
+
+-- Register WhiiskeyzPlater textures to ensure they're available
+function M:RegisterWhiiskeyzTextures()
+    -- Register core textures
+    local LSM = LibStub("LibSharedMedia-3.0")
+    
+    -- Register status bar textures if not already registered
+    if not LSM:IsValid("statusbar", "VUI Smooth") then
+        LSM:Register("statusbar", "VUI Smooth", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Smooth.blp")
+    end
+    
+    if not LSM:IsValid("statusbar", "VUI Flat") then
+        LSM:Register("statusbar", "VUI Flat", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Flat.blp")
+    end
+    
+    if not LSM:IsValid("statusbar", "VUI Gradient") then
+        LSM:Register("statusbar", "VUI Gradient", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Gradient.tga")
+    end
+    
+    if not LSM:IsValid("statusbar", "VUI Minimalist") then
+        LSM:Register("statusbar", "VUI Minimalist", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Minimalist.tga")
+    end
+    
+    if not LSM:IsValid("statusbar", "VUI Glaze") then
+        LSM:Register("statusbar", "VUI Glaze", "Interface\\AddOns\\VUI\\Media\\Textures\\Status\\Glaze.tga")
+    end
+    
+    -- Register WhiiskeyzPlater specific textures
+    if not LSM:IsValid("border", "VUI_BORDER_1PX") then
+        LSM:Register("border", "VUI_BORDER_1PX", "Interface\\AddOns\\VUI\\VModules\\VUIPlater\\media\\textures\\border_1px.tga")
+    end
+    
+    if not LSM:IsValid("border", "VUI_BORDER_2PX") then
+        LSM:Register("border", "VUI_BORDER_2PX", "Interface\\AddOns\\VUI\\VModules\\VUIPlater\\media\\textures\\border_2px.tga")
+    end
+    
+    if not LSM:IsValid("border", "VUI_BORDER_GLOW") then
+        LSM:Register("border", "VUI_BORDER_GLOW", "Interface\\AddOns\\VUI\\VModules\\VUIPlater\\media\\textures\\border_glow.tga")
+    end
+    
+    -- Register fonts required by WhiiskeyzPlater
+    if not LSM:IsValid("font", "Arial Narrow") then
+        LSM:Register("font", "Arial Narrow", "Fonts\\ARIALN.TTF")
+    end
+    
+    self:Debug("Registered WhiiskeyzPlater textures")
+end
+
+-- Set up CVars for WhiiskeyzPlater compatibility
+function M:SetupWhiiskeyzCVars()
+    -- Enemy nameplates
+    SetCVar("nameplateShowEnemies", 1)
+    
+    -- Friendly nameplates
+    SetCVar("nameplateShowFriends", 1)
+    
+    -- Personal nameplate
+    SetCVar("nameplateShowSelf", 0)
+    
+    -- Nameplate distance
+    SetCVar("nameplateMaxDistance", 60)
+    
+    -- Nameplate overlap
+    SetCVar("nameplateOverlapV", 1.1)
+    SetCVar("nameplateOverlapH", 0.8)
+    
+    -- Nameplate motion type (1 = stacking, 0 = overlapping)
+    SetCVar("nameplateMotion", 1)
+    
+    -- Keep nameplates on screen
+    SetCVar("nameplateOtherTopInset", -1)
+    SetCVar("nameplateOtherBottomInset", -1)
+    
+    -- Nameplate scale
+    SetCVar("NamePlateHorizontalScale", 1.0)
+    SetCVar("NamePlateVerticalScale", 1.0)
+    
+    -- Nameplate selection scale
+    SetCVar("nameplateSelectedScale", 1.2)
+    
+    -- The War Within specific CVars
+    local _, _, _, tocversion = GetBuildInfo()
+    if tocversion >= 100200 then  -- The War Within
+        -- Modern nameplates
+        SetCVar("nameplateShowDebuffsOnFriendly", 1)
+        SetCVar("nameplateResourceOnTarget", 1)
+        SetCVar("nameplateTargetRadialPosition", 1)
+        SetCVar("nameplateTargetBehindMaxDistance", 30)
+        
+        -- Resource display on target
+        SetCVar("nameplateResourceOnTarget", 1)
+    end
+    
+    self:Debug("Set up WhiiskeyzPlater compatible CVars")
+end

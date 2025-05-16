@@ -1,5 +1,9 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
+  <!-- Template and documentation (not loaded by game but present in files) -->
+  <!-- <Script file="StandardLayout.lua"/> -->
+  <!-- README.md not loaded -->
+  
   <!-- Configuration Layouts -->
   <Script file="_General.lua"/>
   <Script file="_Actionbar.lua"/>
@@ -35,6 +39,7 @@
   <Script file="_VUINotifications.lua"/>
   
   <!-- VUIAuctionator handles its own configuration UI -->
+  <Script file="_VUIAuctionator.lua"/>
   
   <!-- Phase 3: New Modules -->
   <Script file="_VUISkin.lua"/>

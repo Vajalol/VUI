@@ -87,7 +87,19 @@ end
 
 -- Add spells for a class
 function CD:AddClassSpells(unit, class, isTest)
-    if not unit or not class or not VUICD.SpellData[class] then return end
+    if not unit or not class then return end
+    
+    -- Make sure VUICD and SpellData exist
+    if not VUICD then
+        if self.Debug then self:Debug("VUICD module not available") end
+        return
+    end
+    
+    -- Check if spell data for this class exists
+    if not VUICD.SpellData or not VUICD.SpellData[class] then 
+        if self.Debug then self:Debug("No spell data found for class: " .. (class or "unknown")) end
+        return
+    end
     
     local guid = UnitGUID(unit)
     if not guid then return end
@@ -97,8 +109,15 @@ function CD:AddClassSpells(unit, class, isTest)
         activeSpells[guid] = {}
     end
     
-    -- Get spell types to track
-    local settings = VUICD:GetPartySettings().spells
+    -- Get spell types to track - with safety checks
+    local settings = {}
+    if VUICD and VUICD.GetPartySettings then
+        local partySettings = VUICD:GetPartySettings()
+        if partySettings and partySettings.spells then
+            settings = partySettings.spells
+        end
+    end
+    
     local spellTypes = {
         defensive = settings.defensive,
         offensive = settings.offensive,
@@ -110,36 +129,39 @@ function CD:AddClassSpells(unit, class, isTest)
     
     -- Add spells of enabled types
     for _, spell in pairs(VUICD.SpellData[class]) do
-        local include = false
-        
-        -- Check if any of the spell's types are enabled
-        for spellType, enabled in pairs(spellTypes) do
-            if enabled and spell[spellType] then
-                include = true
-                break
+        -- Skip if spell data is nil
+        if spell then
+            local include = false
+            
+            -- Check if any of the spell's types are enabled
+            for spellType, enabled in pairs(spellTypes) do
+                if enabled and spell[spellType] then
+                    include = true
+                    break
+                end
             end
-        end
-        
-        if include then
-            local spellID = spell.id
-            if spellID and not activeSpells[guid][spellID] then
-                activeSpells[guid][spellID] = {
-                    id = spellID,
-                    name = spell.name,
-                    icon = spell.icon,
-                    class = class,
-                    unit = unit,
-                    duration = spell.duration or 0,
-                    lastUpdate = 0,
-                    onCooldown = false,
-                    start = 0,
-                    remaining = 0,
-                    isTest = isTest
-                }
-                
-                -- Initial cooldown check
-                if not isTest then
-                    self:UpdateSpellCooldown(guid, spellID)
+            
+            if include then
+                local spellID = spell.id
+                if spellID and not activeSpells[guid][spellID] then
+                    activeSpells[guid][spellID] = {
+                        id = spellID,
+                        name = spell.name,
+                        icon = spell.icon,
+                        class = class,
+                        unit = unit,
+                        duration = spell.duration or 0,
+                        lastUpdate = 0,
+                        onCooldown = false,
+                        start = 0,
+                        remaining = 0,
+                        isTest = isTest
+                    }
+                    
+                    -- Initial cooldown check
+                    if not isTest then
+                        self:UpdateSpellCooldown(guid, spellID)
+                    end
                 end
             end
         end

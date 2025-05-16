@@ -1,7 +1,47 @@
 local _, VUI = ...
-local E = VUI:GetModule("VUICD")
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module exists
+VUICD.Party = VUICD.Party or {}
+
+-- Setup localization with fallbacks
+local L = {}
+local success = pcall(function() L = LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if not success then
+    -- Add fallbacks for localization
+    L["Enable Highlighting"] = "Enable Highlighting"
+    L["Show highlights when cooldowns are activated"] = "Show highlights when cooldowns are activated"
+    L["Shine Effect"] = "Shine Effect"
+    L["Show shine effect when a cooldown is activated"] = "Show shine effect when a cooldown is activated"
+    L["Glow Effect"] = "Glow Effect"
+    L["Show glow effect when a cooldown is activated"] = "Show glow effect when a cooldown is activated"
+    L["Highlight Colors"] = "Highlight Colors"
+    L["Glow Color"] = "Glow Color"
+    L["Set the color for the glow effect"] = "Set the color for the glow effect"
+    L["Use Theme Color"] = "Use Theme Color"
+    L["Use VUI theme color for highlight effects"] = "Use VUI theme color for highlight effects"
+    L["Preview"] = "Preview"
+    L["Highlights will appear as"] = "Highlights will appear as"
+    L["when cooldowns are activated."] = "when cooldowns are activated."
+    L["Currently using VUI theme color."] = "Currently using VUI theme color."
+    L["Using custom color."] = "Using custom color."
+    L["Test Highlight"] = "Test Highlight"
+end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
 local P = E.Party
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+
+-- Ensure Party module DB exists
+if not P.db then P.db = {profile = {}} end
+if not P.db.profile then P.db.profile = {} end
+if not P.db.profile.highlight then P.db.profile.highlight = {enabled = false, shine = true, glow = true, glowColor = {r=1, g=1, b=1}} end
 
 function P:AddHighlightOptions(option)
     option.enabled = {

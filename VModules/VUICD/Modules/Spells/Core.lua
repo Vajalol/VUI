@@ -53,58 +53,85 @@ function Spells:ProcessClassSpells(className, spells)
     for i, spell in ipairs(spells) do
         local spellID = spell.id
         if spellID then
-            -- Get spell info
-            local name, _, icon, _, _, _, _ = GetSpellInfo(spellID)
-            if name then
+            -- Get spell info with safety check
+            local success, name, _, icon = pcall(function() 
+                local name, _, icon = GetSpellInfo(spellID)
+                return name, _, icon 
+            end)
+            
+            if success and name then
                 -- Store spell info
                 spellCache[spellID] = {
                     id = spellID,
                     name = name,
-                    icon = icon or spell.icon,
+                    icon = icon or spell.icon or "Interface\\Icons\\INV_Misc_QuestionMark",
                     duration = spell.duration or 0,
-                    class = className
+                    cooldown = spell.cooldown or 0,
+                    offensive = spell.offensive or false,
+                    defensive = spell.defensive or false,
+                    utility = spell.utility or false,
+                    interrupt = spell.interrupt or false,
+                    covenant = spell.covenant or false,
+                    custom = spell.custom or false
                 }
                 
-                -- Add spell type flags
-                for _, flag in ipairs({"defensive", "offensive", "interrupt", "utility", "covenant"}) do
-                    if spell[flag] then
-                        spellCache[spellID][flag] = true
-                    end
+                classSpells[className][spellID] = spellCache[spellID]
+            else
+                -- Fallback to provided data if GetSpellInfo fails
+                spellCache[spellID] = {
+                    id = spellID,
+                    name = spell.name or "Unknown Spell",
+                    icon = spell.icon or "Interface\\Icons\\INV_Misc_QuestionMark",
+                    duration = spell.duration or 0,
+                    cooldown = spell.cooldown or 0,
+                    offensive = spell.offensive or false,
+                    defensive = spell.defensive or false,
+                    utility = spell.utility or false,
+                    interrupt = spell.interrupt or false,
+                    covenant = spell.covenant or false,
+                    custom = spell.custom or false
+                }
+                
+                classSpells[className][spellID] = spellCache[spellID]
+                
+                -- Log error for debugging
+                if VUICD.debug then
+                    VUICD:Debug("Failed to get spell info for ID: " .. spellID)
                 end
-                
-                -- Cache by name
-                spellByName[name] = spellID
-                
-                -- Store class spells
-                table.insert(classSpells[className], spellID)
             end
         end
     end
 end
 
--- Get spell info
+-- Get spell info from cache or directly from API
 function Spells:GetSpellInfo(spellID)
-    if not spellID then return end
+    if not spellID then return nil end
     
-    -- Check cache
+    -- Try to get from cache first
     if spellCache[spellID] then
         return spellCache[spellID]
     end
     
-    -- Get spell info
-    local name, _, icon = GetSpellInfo(spellID)
-    if name then
-        -- Store in cache
+    -- Not in cache, try to get directly
+    local success, name, _, icon = pcall(function() 
+        local name, _, icon = GetSpellInfo(spellID)
+        return name, _, icon 
+    end)
+    
+    if success and name then
+        -- Create new entry
         spellCache[spellID] = {
             id = spellID,
             name = name,
-            icon = icon,
-            duration = GetSpellBaseCooldown(spellID) / 1000 or 0,
+            icon = icon or "Interface\\Icons\\INV_Misc_QuestionMark",
+            duration = 0,
+            cooldown = 0
         }
         
         return spellCache[spellID]
     end
     
+    -- Return nil if spell not found
     return nil
 end
 

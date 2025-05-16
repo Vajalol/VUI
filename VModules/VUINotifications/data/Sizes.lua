@@ -1,5 +1,11 @@
 local addonName, VUI = ...
 
+-- Ensure VUI global exists to prevent nil errors
+if not VUI then VUI = {} end
+
+-- Ensure namespace exists
+VUI.Notifications = VUI.Notifications or {}
+
 -- Define sizes for notifications
 function VUI.Notifications.Sizes()
     return {
@@ -8,3 +14,6 @@ function VUI.Notifications.Sizes()
         ["BIG"] = "big"
     }
 end
+
+-- Create a global accessor for compatibility with older code
+_G.VUINotificationSizes = VUI.Notifications.Sizes

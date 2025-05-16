@@ -2,9 +2,69 @@
 -- Displays healer mana in group/raid
 -- Based on Healer Mana WeakAura (https://wago.io/ebWkTh8By)
 
-local AddonName, VUI = ...
+local AddonName, _ = ...
 local MODNAME = "VUIHealerMana"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
+local VUI = _G["VUI"]
+
+-- Check if VUI exists before proceeding
+if not VUI then return end
+
+-- Set up global reference early to prevent nil errors
+_G["VUIHealerMana"] = _G["VUIHealerMana"] or {}
+
+-- Try to create the module with error handling
+local M
+
+if VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIHealerMana"] = M
+else
+    -- Create minimal module object to prevent errors
+    M = {
+        NAME = MODNAME,
+        TITLE = "VUI Healer Mana",
+        DESCRIPTION = "Displays healer mana in group/raid",
+        VERSION = "1.0",
+        OnEnable = function() end,
+        OnDisable = function() end
+    }
+    
+    -- Register in VUI namespace
+    VUI[MODNAME] = M
+    
+    -- Update the global reference with our placeholder
+    _G["VUIHealerMana"] = M
+    
+    -- Try initialization again after delay
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local RealModule = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+            
+            -- Transfer any properties from temporary module
+            for k, v in pairs(M) do
+                if k ~= "NAME" and k ~= "TITLE" and type(v) ~= "function" then
+                    RealModule[k] = v
+                end
+            end
+            
+            -- Replace with real module
+            VUI[MODNAME] = RealModule
+            
+            -- Update the global reference with the actual module
+            _G["VUIHealerMana"] = RealModule
+            
+            -- Initialize the module
+            if RealModule.OnInitialize then RealModule:OnInitialize() end
+            if RealModule.OnEnable then RealModule:OnEnable() end
+        end
+    end)
+end
+
+-- Set global namespace for other files to access
+VUI.VUIHealerMana = M
 
 -- Libraries
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -104,13 +164,38 @@ M.healerSpecs = {
 
 -- Initialize module
 function M:OnInitialize()
-    -- Register module with VUI
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUIHealerMana"] or VUI.db.namespaces["vuihealermana"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUIHealerMana"] = namespace
+            VUI.db.namespaces["vuihealermana"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUIHealerMana", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuihealermana"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
-    -- Register settings with VUI Config
-    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    -- Register settings with VUI Config (with safety check)
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        pcall(function() 
+            VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+        end)
+    end
     
     -- Initialize storage for healer data
     self.healers = {}
@@ -162,8 +247,13 @@ function M:OnDisable()
     -- Unregister events
     self:UnregisterAllEvents()
     
-    -- Clear data
-    wipe(self.healers)
+    -- Clear data with safety check
+    if self.healers and type(self.healers) == "table" then
+        wipe(self.healers)
+    else
+        self.healers = {}
+    end
+    
     self:ClearAllBars()
     
     self:Debug("VUIHealerMana module disabled")
@@ -1186,4 +1276,6 @@ function M:GetOptions()
 end
 
 -- Register the module
-VUI:RegisterModule(MODNAME, M)
+if VUI.RegisterModule then
+    VUI:RegisterModule(MODNAME, M)
+end

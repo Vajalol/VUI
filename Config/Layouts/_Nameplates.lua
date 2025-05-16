@@ -1,3 +1,21 @@
+local addonName, VUI = ...
+if not VUI then return end
+
+-- Only create the module if NewModule is available
+if not VUI.NewModule then
+    -- Register a callback to try again when VUI is fully initialized
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local Layout = VUI:NewModule('Config.Layout.Nameplates')
+            -- Re-run the OnEnable function
+            if Layout and Layout.OnEnable then
+                Layout:OnEnable()
+            end
+        end
+    end)
+    return
+end
+
 local Layout = VUI:NewModule('Config.Layout.Nameplates')
 
 function Layout:OnEnable()
@@ -67,7 +85,7 @@ function Layout:OnEnable()
                     precision = 1,
                     min = 1,
                     max = 5,
-                    column = 3,
+                    column = 4,
                     order = 2
                 },
                 width = {
@@ -77,7 +95,7 @@ function Layout:OnEnable()
                     precision = 1,
                     min = 1,
                     max = 5,
-                    column = 3,
+                    column = 4,
                     order = 3
                 },
             },
@@ -208,9 +226,17 @@ function Layout:OnEnable()
                     callback = function(self)
                         -- Update VUIPlater enabled state
                         if VUIPlater and VUIPlater.db then
-                            VUIPlater.db.profile.enabled = self:GetValue()
-                            if self:GetValue() then 
-                                if VUIPlater.OnEnable then VUIPlater:OnEnable() end 
+                            local isEnabled = self:GetValue()
+                            VUIPlater.db.profile.enabled = isEnabled
+                            if isEnabled then 
+                                if VUIPlater.OnEnable then VUIPlater:OnEnable() end
+                                -- Import profile when enabling the checkbox
+                                local success, message = VUI.VUIPlater.PlaterProfileImport.ImportPlaterProfile(VUIPlater)
+                                if success then
+                                    print("|cFF00FF00[VUIPlater]|r Profile imported to Plater successfully upon enabling module!")
+                                else
+                                    print("|cFFFF0000[VUIPlater]|r Error importing profile upon enabling module: " .. (message or "Unknown error"))
+                                end
                             else 
                                 if VUIPlater.OnDisable then VUIPlater:OnDisable() end 
                             end
@@ -236,6 +262,23 @@ function Layout:OnEnable()
                             end
                         end
                     end
+                },
+            },
+            {
+                importProfile = {
+                    type = 'button',
+                    text = 'Import VUIPlater Profile to Plater',
+                    tooltip = 'Imports the default VUIPlater profile settings into the Plater addon.',
+                    column = 4,
+                    order = 3,
+                    onClick = function()
+                        local success, message = VUI.VUIPlater.PlaterProfileImport.ImportPlaterProfile(VUIPlater)
+                        if success then
+                            print("|cFF00FF00[VUIPlater]|r Profile imported to Plater successfully!")
+                        else
+                            print("|cFFFF0000[VUIPlater]|r Error importing profile: " .. (message or "Unknown error"))
+                        end
+                    end
                 }
             },
             {
@@ -244,7 +287,7 @@ function Layout:OnEnable()
                     label = 'Open Advanced Settings',
                     tooltip = 'Open the full VUI Plater configuration panel with all options',
                     column = 4,
-                    order = 3,
+                    order = 4,
                     callback = function()
                         if VUIPlater then
                             VUI.Config:OpenConfig("VUIPlater")

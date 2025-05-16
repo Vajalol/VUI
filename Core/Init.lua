@@ -1,5 +1,411 @@
-VUI = LibStub("AceAddon-3.0"):NewAddon("VUI", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0")
-local addonName, addon = ...
+VUI = LibStub("AceAddon-3.0"):NewAddon("VUI", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0", "AceConsole-3.0")
+local addonName, addonTable = ...
+
+-- Store addon table in VUI for easy access
+VUI.addonTable = addonTable
+
+-- Ensure the global VUI exists IMMEDIATELY and initialize module tracking
+-- This must be at the very top to prevent nil errors
+_G.VUI = VUI 
+VUI._loadedModules = VUI._loadedModules or {}
+
+-- Early debug function that works even before db is loaded
+function VUI:Debug(module, ...)
+    -- Skip if debug is disabled or db isn't loaded yet
+    local debugEnabled = false
+    if self.db and self.db.profile and self.db.profile.general then
+        debugEnabled = self.db.profile.general.debug == true
+    end
+    
+    -- Always show critical errors
+    local isCritical = module == "CRITICAL"
+    
+    if not debugEnabled and not isCritical then
+        return
+    end
+    
+    local prefix = "|cffea00ffV|r|cff00a2ffUI|r"
+    if module then
+        prefix = prefix .. " [" .. module .. "]"
+    end
+    
+    local msg = ""
+    local args = {...}
+    for i, v in ipairs(args) do
+        if type(v) == "table" then
+            msg = msg .. " " .. tostring(v)
+        else
+            msg = msg .. " " .. tostring(v)
+        end
+    end
+    
+    print(prefix .. ":" .. msg)
+end
+
+-- Print function that can be used anywhere, even during setup
+function VUI:Print(...)
+    local prefix = "|cffea00ffV|r|cff00a2ffUI|r"
+    local msg = ""
+    local args = {...}
+    
+    for i, v in ipairs(args) do
+        if type(v) == "table" then
+            msg = msg .. " " .. tostring(v)
+        else
+            msg = msg .. " " .. tostring(v)
+        end
+    end
+    
+    print(prefix .. ":" .. msg)
+end
+
+-- LSB Helper function needed by modules early
+function VUI:LSB_Helper(LSBList, LSBHash)
+    local list = {}
+    for index, name in pairs(LSBList) do
+        list[index] = {}
+        for k, v in pairs(LSBHash) do
+            if (name == k) then
+                list[index] = {
+                    text = name,
+                    value = v
+                }
+            end
+        end
+    end
+    return list
+end
+
+-- Module Management System
+-- This centralized system will handle module initialization, tracking, and resolution
+VUI._pendingModules = VUI._pendingModules or {}
+VUI._moduleCallbacks = VUI._moduleCallbacks or {}
+
+-- SafeGetModule: Get a module safely with fallback options
+-- If module doesn't exist yet, registers it as pending
+function VUI:SafeGetModule(moduleName, callback)
+    if not self or not self.GetModule then
+        -- Track the pending module request
+        self._pendingModules[moduleName] = true
+        
+        -- Register callback if provided
+        if callback and type(callback) == "function" then
+            self._moduleCallbacks[moduleName] = self._moduleCallbacks[moduleName] or {}
+            table.insert(self._moduleCallbacks[moduleName], callback)
+        end
+        
+        return nil
+    end
+    
+    local module = self:GetModule(moduleName, true) -- silent = true
+    
+    if module then
+        -- Module exists, remove from pending
+        self._pendingModules[moduleName] = nil
+        self._loadedModules[moduleName] = module
+        
+        -- Execute any pending callbacks
+        if self._moduleCallbacks[moduleName] then
+            for _, cb in ipairs(self._moduleCallbacks[moduleName]) do
+                xpcall(function() cb(module) end, geterrorhandler())
+            end
+            self._moduleCallbacks[moduleName] = nil
+        end
+        
+        return module
+    else
+        -- Track the pending module request
+        self._pendingModules[moduleName] = true
+        
+        -- Register callback if provided
+        if callback and type(callback) == "function" then
+            self._moduleCallbacks[moduleName] = self._moduleCallbacks[moduleName] or {}
+            table.insert(self._moduleCallbacks[moduleName], callback)
+        end
+        
+        -- Start retry timer if not already running
+        if not self._pendingModuleTimer then
+            self:StartPendingModuleTimer()
+        end
+        
+        return nil
+    end
+end
+
+-- TryCreateModule: Attempt to create a module with standardized fallback pattern
+function VUI:TryCreateModule(moduleName, lib1, lib2, lib3, lib4, lib5)
+    if not self or not self.NewModule then
+        -- Create temporary module
+        local tempModule = {
+            NAME = moduleName,
+            OnEnable = function() end,
+            OnDisable = function() end,
+            _isPendingModule = true,
+            Debug = function(self, ...) 
+                if VUI and VUI.Debug then 
+                    VUI:Debug(moduleName, ...) 
+                else 
+                    -- Silent debug in fallback mode - prevents console spam
+                end 
+            end
+        }
+        
+        -- Store in VUI namespace
+        self[moduleName] = tempModule
+        
+        -- Don't print fallback message for known VModules that commonly use fallback
+        local isSilentFallback = moduleName == "VUIKeystones" or 
+                                moduleName == "VUIConsumables" or
+                                moduleName == "VUISkin" or
+                                moduleName == "VUIScrollingText"
+                                
+        if not isSilentFallback then
+            print(moduleName .. ": Module registered via fallback method")
+        end
+        
+        -- Setup retry
+        C_Timer.After(0.5, function()
+            if self and self.NewModule then
+                -- Create real module and transfer properties
+                local realModule
+                
+                -- We have to handle each possible number of arguments explicitly to avoid varargs issues
+                if lib5 then
+                    realModule = self:NewModule(moduleName, lib1, lib2, lib3, lib4, lib5)
+                elseif lib4 then
+                    realModule = self:NewModule(moduleName, lib1, lib2, lib3, lib4)
+                elseif lib3 then
+                    realModule = self:NewModule(moduleName, lib1, lib2, lib3)
+                elseif lib2 then
+                    realModule = self:NewModule(moduleName, lib1, lib2)
+                elseif lib1 then
+                    realModule = self:NewModule(moduleName, lib1)
+                else
+                    realModule = self:NewModule(moduleName)
+                end
+                
+                -- Transfer properties
+                for k, v in pairs(tempModule) do
+                    if k ~= "NAME" and k ~= "_isPendingModule" and type(v) ~= "function" then
+                        realModule[k] = v
+                    end
+                end
+                
+                -- Replace reference and initialize
+                self[moduleName] = realModule
+                self._loadedModules[moduleName] = realModule
+                
+                -- Run callbacks
+                if self._moduleCallbacks[moduleName] then
+                    for _, cb in ipairs(self._moduleCallbacks[moduleName]) do
+                        xpcall(function() cb(realModule) end, geterrorhandler())
+                    end
+                    self._moduleCallbacks[moduleName] = nil
+                end
+                
+                -- Initialize if needed
+                if realModule.OnInitialize then 
+                    realModule:OnInitialize() 
+                end
+                
+                if realModule.OnEnable then 
+                    realModule:OnEnable() 
+                end
+            end
+        end)
+        
+        return tempModule
+    else
+        -- Create module normally
+        local realModule
+        
+        -- Create with appropriate number of arguments
+        if lib5 then
+            realModule = self:NewModule(moduleName, lib1, lib2, lib3, lib4, lib5)
+        elseif lib4 then
+            realModule = self:NewModule(moduleName, lib1, lib2, lib3, lib4)
+        elseif lib3 then
+            realModule = self:NewModule(moduleName, lib1, lib2, lib3)
+        elseif lib2 then
+            realModule = self:NewModule(moduleName, lib1, lib2)
+        elseif lib1 then
+            realModule = self:NewModule(moduleName, lib1)
+        else
+            realModule = self:NewModule(moduleName)
+        end
+        
+        self._loadedModules[moduleName] = realModule
+        return realModule
+    end
+end
+
+-- StartPendingModuleTimer: Start a timer to periodically retry loading pending modules
+function VUI:StartPendingModuleTimer()
+    if self._pendingModuleTimer then return end
+    
+    self._pendingModuleTimer = C_Timer.NewTicker(0.5, function()
+        local anyLoaded = false
+        local pendingCount = 0
+        
+        -- Try to load pending modules
+        for moduleName in pairs(self._pendingModules) do
+            pendingCount = pendingCount + 1
+            
+            if self and self.GetModule then
+                local module = self:GetModule(moduleName, true) -- silent = true
+                
+                if module then
+                    -- Module loaded successfully
+                    self._pendingModules[moduleName] = nil
+                    self._loadedModules[moduleName] = module
+                    anyLoaded = true
+                    
+                    -- Call any registered callbacks
+                    if self._moduleCallbacks[moduleName] then
+                        for _, callback in ipairs(self._moduleCallbacks[moduleName]) do
+                            xpcall(function() callback(module) end, geterrorhandler())
+                        end
+                        self._moduleCallbacks[moduleName] = nil
+                    end
+                    
+                    -- Debug output
+                    self:Debug("MODULE", "Loaded pending module: " .. moduleName)
+                end
+            end
+        end
+        
+        -- If no more pending modules, cancel timer
+        if pendingCount == 0 then
+            self._pendingModuleTimer:Cancel()
+            self._pendingModuleTimer = nil
+        end
+        
+        -- If any modules were loaded, trigger UI refresh
+        if anyLoaded then
+            -- Notify any system that needs to be updated
+            if self.RefreshModuleUI then
+                self:RefreshModuleUI()
+            end
+        end
+    end)
+end
+
+-- RegisterModuleCallback: Register a callback to run when a module is available
+function VUI:RegisterModuleCallback(moduleName, callback)
+    if not callback or type(callback) ~= "function" then return end
+    
+    -- Check if module already exists
+    local module = self:GetModule(moduleName, true)
+    if module then
+        -- Module already exists, call callback immediately
+        xpcall(function() callback(module) end, geterrorhandler())
+        return
+    end
+    
+    -- Register callback for later
+    self._moduleCallbacks[moduleName] = self._moduleCallbacks[moduleName] or {}
+    table.insert(self._moduleCallbacks[moduleName], callback)
+    
+    -- Mark as pending
+    self._pendingModules[moduleName] = true
+    
+    -- Start retry timer if not already running
+    if not self._pendingModuleTimer then
+        self:StartPendingModuleTimer()
+    end
+end
+
+-- RefreshModuleUI: Notify UI components to refresh (used by Config system)
+function VUI:RefreshModuleUI()
+    -- Call Config.Gui:RefreshConfig if it exists
+    local configGui = self:GetModule("Config.Gui", true)
+    if configGui and configGui.RefreshConfig then
+        configGui:RefreshConfig()
+    end
+end
+
+-- SafeFindModule: Find any module by name regardless of its type
+-- This is a more flexible version of GetModule that can find:
+-- 1. Standard AceAddon modules through GetModule
+-- 2. VUI.ModuleName direct references
+-- 3. VModules with or without VUI prefix
+function VUI:SafeFindModule(moduleName, silent)
+    if not moduleName then return nil end
+    
+    -- Try standard GetModule first
+    if self.GetModule then
+        local module = self:GetModule(moduleName, true)
+        if module then return module end
+    end
+    
+    -- Try direct references in VUI namespace
+    if self[moduleName] then
+        return self[moduleName]
+    end
+    
+    -- For VModules, check with "VUI" prefix if not already there
+    if not moduleName:match("^VUI") then
+        local vmoduleName = "VUI" .. moduleName
+        if self[vmoduleName] then
+            return self[vmoduleName]
+        end
+    end
+    
+    -- For Data modules that might be stored without the prefix
+    if moduleName:match("^Data%.") then
+        local shortName = moduleName:match("Data%.(.+)")
+        if shortName and self[shortName] then
+            return self[shortName]
+        end
+    end
+    
+    -- Not found
+    if not silent then
+        self:Debug("MODULE", "Module not found: " .. moduleName)
+    end
+    return nil
+end
+
+-- SafeFindModuleWithRetry: Get a module with multiple retry attempts
+-- If module doesn't exist yet, retries after delays
+function VUI:SafeFindModuleWithRetry(moduleName, callbackFn, maxAttempts)
+    maxAttempts = maxAttempts or 3
+    local attempts = 0
+    
+    local function tryGetModule()
+        attempts = attempts + 1
+        local module = self:SafeFindModule(moduleName, true)
+        
+        if module then
+            -- Module found, call the callback
+            if callbackFn and type(callbackFn) == "function" then
+                xpcall(function() callbackFn(module) end, geterrorhandler())
+            end
+            return true
+        elseif attempts < maxAttempts then
+            -- Retry after a delay with increasing interval
+            C_Timer.After(attempts * 0.5, tryGetModule)
+            return false
+        else
+            -- Max attempts reached, one final debug message
+            self:Debug("MODULE", "Failed to find module after " .. attempts .. " attempts: " .. moduleName)
+            return false
+        end
+    end
+    
+    -- Try immediately first
+    local module = self:SafeFindModule(moduleName, true)
+    if module then
+        if callbackFn and type(callbackFn) == "function" then
+            xpcall(function() callbackFn(module) end, geterrorhandler())
+        end
+        return module
+    else
+        -- Start retry process
+        tryGetModule()
+        return nil
+    end
+end
 
 C_AddOns.DisableAddOn('LortiUI')
 C_AddOns.DisableAddOn('UberUI')
@@ -166,6 +572,9 @@ local defaults = {
                 vuiplater = {
                     enabled = false,
                     useWhiiskeyz = true,
+                },
+                vuitgcd = {
+                    enabled = false
                 }
             }
         },
@@ -987,20 +1396,119 @@ function VUI:OnInitialize()
             end
         end
     end
-end
 
-function VUI:LSB_Helper(LSBList, LSBHash)
-    local list = {}
-    for index, name in pairs(LSBList) do
-        list[index] = {}
-        for k, v in pairs(LSBHash) do
-            if (name == k) then
-                list[index] = {
-                    text = name,
-                    value = v
-                }
+    -- Create a minimal VUlegMixin implementation to prevent errors with frames trying to use it
+    if not _G.VUlegMixin then
+        _G.VUlegMixin = {
+            OnLoad = function() end,
+            InitMixin = function(self, frame)
+                if not frame then return end
+                frame.Loaded = function() end
+                return frame
             end
+        }
+        
+        -- Log that we've created the mixin
+        if VUI and VUI.Debug then
+            VUI:Debug("Core", "Created minimal VUlegMixin implementation")
         end
     end
-    return list
+
+    -- Create a VUIepfMixin implementation to prevent errors with VUIepf frames
+    if not _G.VUIepfMixin then
+        _G.VUIepfMixin = {
+            Loaded = function(self)
+                -- Minimal implementation to prevent 'Unknown method Loaded in element OnLoad' errors
+                if VUI and VUI.Debug then
+                    VUI:Debug("VUIepf", "VUIepfMixin.Loaded called")
+                end
+            end,
+            
+            Event_Received = function(self, event, ...)
+                -- Empty implementation to prevent errors
+            end
+        }
+        
+        -- Log that we've created the mixin
+        if VUI and VUI.Debug then
+            VUI:Debug("Core", "Created minimal VUIepfMixin implementation")
+        end
+    end
+
+    -- Add missing AddAddOnsLoaded function referenced by VUIMainBar
+    if not _G.AddAddOnsLoaded then
+        _G.AddAddOnsLoaded = function(addon, callback)
+            if not addon or not callback then return end
+            
+            -- Check if the addon is already loaded
+            if C_AddOns and C_AddOns.IsAddOnLoaded and C_AddOns.IsAddOnLoaded(addon) then
+                callback()
+                return
+            end
+            
+            -- Create event frame to wait for addon to load
+            local frame = CreateFrame("Frame")
+            frame:RegisterEvent("ADDON_LOADED")
+            frame:SetScript("OnEvent", function(self, event, loadedAddon)
+                if event == "ADDON_LOADED" and loadedAddon == addon then
+                    callback()
+                    self:UnregisterAllEvents()
+                end
+            end)
+        end
+    end
+end
+
+function VUI:OnEnable()
+    -- Start the pending module timer to process any modules that were created before OnInitialize
+    self:Debug("CORE", "VUI core addon enabled")
+    
+    -- Start the pending module timer if there are any pending modules
+    if next(self._pendingModules) then
+        self:Debug("MODULE", "Starting module loader for pending modules")
+        self:StartPendingModuleTimer()
+    end
+    
+    -- Force-load module placeholders that might have been created
+    self:DelayedFixModules()
+    
+    -- Notify the user that VUI is loaded
+    print("|cffea00ffV|r|cff00a2ffUI|r: Loaded successfully")
+end
+
+-- DelayedFixModules: Try to find and replace placeholder modules
+function VUI:DelayedFixModules()
+    C_Timer.After(1, function()
+        -- Check for module placeholders
+        for k, v in pairs(_G.VUI) do
+            if type(v) == "table" and v._isPendingModule then
+                self:Debug("MODULE", "Found pending module: " .. k)
+                -- Replace with real module
+                if type(self.NewModule) == "function" then
+                    local realModule = self:NewModule(v.NAME or k)
+                    
+                    -- Transfer properties
+                    for propK, propV in pairs(v) do
+                        if propK ~= "NAME" and propK ~= "_isPendingModule" and type(propV) ~= "function" then
+                            realModule[propK] = propV
+                        end
+                    end
+                    
+                    -- Replace reference
+                    _G.VUI[k] = realModule
+                    
+                    -- Initialize if needed
+                    if realModule.OnInitialize then
+                        realModule:OnInitialize()
+                    end
+                    
+                    if realModule.OnEnable then
+                        realModule:OnEnable()
+                    end
+                    
+                    self:Debug("MODULE", "Successfully replaced placeholder for: " .. k)
+                end
+            end
+        end
+    end)
 end

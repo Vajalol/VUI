@@ -1,6 +1,53 @@
-local Module = VUI:NewModule("Misc.Safequeue");
+-- Ensure global VUI exists
+if not _G.VUI then
+    _G.VUI = {}
+end
+
+-- Create an empty module initially
+local Module = {}
+
+-- Try to create the module using the available methods
+if type(VUI.TryCreateModule) == "function" then
+    Module = VUI:TryCreateModule("Misc.Safequeue")
+elseif type(VUI.NewModule) == "function" then 
+    Module = VUI:NewModule("Misc.Safequeue")
+else
+    -- Fallback if module creation is not available yet
+    VUI.SafequeueModule = VUI.SafequeueModule or Module
+    
+    -- Retry after a delay
+    C_Timer.After(1, function()
+        if type(VUI.NewModule) == "function" then
+            local realModule = VUI:NewModule("Misc.Safequeue")
+            -- Copy any properties that might have been set
+            for k, v in pairs(Module) do
+                if k ~= "OnEnable" and k ~= "OnDisable" and k ~= "OnInitialize" then
+                    realModule[k] = v
+                end
+            end
+            -- Replace the reference
+            VUI.SafequeueModule = realModule
+            
+            -- Call OnEnable if it was defined
+            if realModule.OnEnable then
+                realModule:OnEnable()
+            end
+        end
+    end)
+end
 
 function Module:OnEnable()
+    -- Make sure VUI and its database are available
+    if not VUI or not VUI.db or not VUI.db.profile or not VUI.db.profile.misc or not VUI.db.profile.misc.safequeue then
+        -- Try again after a short delay if VUI isn't fully initialized
+        C_Timer.After(0.5, function()
+            if VUI and VUI.db and VUI.db.profile and VUI.db.profile.misc and VUI.db.profile.misc.safequeue then
+                self:OnEnable()
+            end
+        end)
+        return
+    end
+
     local db = VUI.db.profile.misc.safequeue
     if (db) then
         local SafeQueue = SafeQueue

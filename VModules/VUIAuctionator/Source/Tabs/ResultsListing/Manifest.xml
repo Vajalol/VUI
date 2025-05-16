@@ -1,0 +1,9 @@
+<!-- Tabs\ResultsListing directory manifest -->
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Script file="ResultsListing.lua" />
+  <Script file="ScrollListShim.lua" />
+  <Script file="ScrollListLine.lua" />
+  <Script file="ScrollListLineButton.lua" />
+  <Script file="ScrollFrame.lua" />
+  <Script file="ScrollBar.lua" />
+</Ui> 

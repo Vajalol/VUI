@@ -7,7 +7,20 @@ function Module:OnEnable()
     SLASH_RELOAD1 = "/rl"
     SLASH_FSTACK1 = "/fs"
     SlashCmdList["VUI"] = function()
-        VUI:Config()
+        -- Check if Config method is available
+        if VUI.Config then
+            VUI:Config()
+        else
+            -- If Config isn't loaded yet, inform the user and queue a delayed call
+            print("VUI configuration is initializing. Please try again in a moment.")
+            C_Timer.After(1, function()
+                if VUI.Config then
+                    VUI:Config()
+                else
+                    print("VUI configuration is still loading. Please use '/vui' again later.")
+                end
+            end)
+        end
     end
     SlashCmdList["FSTACK"] = function()
         UIParentLoadAddOn("Blizzard_DebugTools");

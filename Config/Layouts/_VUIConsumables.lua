@@ -1,227 +1,397 @@
+--[[
+    VUI Consumables Module Configuration
+    Tracking for potions, flasks, food, and other consumables
+]]
+
 local Layout = VUI:NewModule('Config.Layout.VUIConsumables')
 
-function Layout:OnEnable()
-    -- Database
-    local db = VUI.db
-    
-    -- Layout
-    Layout.layout = {
-        layoutConfig = { padding = { top = 15 } },
-        database = db.profile,
-        rows = {
-            {
-                header = {
-                    type = 'header',
-                    label = 'VUI Consumables'
-                },
-            },
-            {
-                enabled = {
-                    key = 'vmodules.vuiconsumables.enabled',
-                    type = 'checkbox',
-                    label = 'Enable VUI Consumables',
-                    tooltip = 'Enable or disable the VUI Consumables module',
-                    column = 4,
-                    order = 1,
-                    callback = function(self)
-                        -- Update the saved variable in VUIConsumables
-                        if VUIConsumables and VUIConsumables.db then
-                            VUIConsumables.db.profile.enabled = self:GetValue()
-                            -- Update display based on new value
-                            if self:GetValue() then
-                                if VUIConsumables.OnEnable then VUIConsumables:OnEnable() end
-                            else
-                                if VUIConsumables.OnDisable then VUIConsumables:OnDisable() end
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                movable = {
-                    key = 'vmodules.vuiconsumables.movable',
-                    type = 'checkbox',
-                    label = 'Unlock Frame',
-                    tooltip = 'Unlock the frame to allow repositioning',
-                    column = 4,
-                    order = 2,
-                    callback = function(self)
-                        -- Toggle movable frame
-                        if VUIConsumables and VUIConsumables.ToggleMovable then
-                            VUIConsumables:ToggleMovable(self:GetValue())
-                        end
-                    end
-                },
-            },
-            {
-                header2 = {
-                    type = 'header',
-                    label = 'Display Settings'
-                },
-            },
-            {
-                scale = {
-                    key = 'vmodules.vuiconsumables.scale',
-                    type = 'slider',
-                    label = 'Scale',
-                    tooltip = 'Adjust the size of the consumables display',
-                    min = 0.5,
-                    max = 2.0,
-                    step = 0.05,
-                    column = 4,
-                    order = 3,
-                    callback = function(self)
-                        -- Update the saved variable
-                        if VUIConsumables and VUIConsumables.db then
-                            VUIConsumables.db.profile.scale = self:GetValue()
-                            -- Update display
-                            if VUIConsumables.containerFrame then
-                                VUIConsumables.containerFrame:SetScale(self:GetValue())
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                alpha = {
-                    key = 'vmodules.vuiconsumables.alpha',
-                    type = 'slider',
-                    label = 'Alpha',
-                    tooltip = 'Adjust the transparency of the consumables display',
-                    min = 0.1,
-                    max = 1.0,
-                    step = 0.05,
-                    column = 4,
-                    order = 4,
-                    callback = function(self)
-                        -- Update the saved variable
-                        if VUIConsumables and VUIConsumables.db then
-                            VUIConsumables.db.profile.alpha = self:GetValue()
-                            -- Update display
-                            if VUIConsumables.containerFrame then
-                                VUIConsumables.containerFrame:SetAlpha(self:GetValue())
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                activeOnly = {
-                    key = 'vmodules.vuiconsumables.activeOnly',
-                    type = 'checkbox',
-                    label = 'Show Active Only',
-                    tooltip = 'Only show icons for active consumables',
-                    column = 4,
-                    order = 5,
-                    callback = function(self)
-                        -- Update the saved variable
-                        if VUIConsumables and VUIConsumables.db then
-                            VUIConsumables.db.profile.activeOnly = self:GetValue()
-                            -- Update display
-                            if VUIConsumables.UpdateIconFrames then
-                                VUIConsumables:UpdateIconFrames()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                header3 = {
-                    type = 'header',
-                    label = 'Tracking Options'
-                },
-            },
-            {
-                showFlasks = {
-                    key = 'vmodules.vuiconsumables.showFlasks',
-                    type = 'checkbox',
-                    label = 'Show Flasks',
-                    tooltip = 'Show flask tracking icon',
-                    column = 2,
-                    order = 6,
-                    callback = function(self)
-                        -- Update the saved variable
-                        if VUIConsumables and VUIConsumables.db then
-                            VUIConsumables.db.profile.showFlasks = self:GetValue()
-                            -- Recreate frames
-                            if VUIConsumables.CreateIconFrames then
-                                VUIConsumables:CreateIconFrames()
-                            end
-                        end
-                    end
-                },
-                showFood = {
-                    key = 'vmodules.vuiconsumables.showFood',
-                    type = 'checkbox',
-                    label = 'Show Food',
-                    tooltip = 'Show food buff tracking icon',
-                    column = 2,
-                    order = 7,
-                    callback = function(self)
-                        -- Update the saved variable
-                        if VUIConsumables and VUIConsumables.db then
-                            VUIConsumables.db.profile.showFood = self:GetValue()
-                            -- Recreate frames
-                            if VUIConsumables.CreateIconFrames then
-                                VUIConsumables:CreateIconFrames()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                showPotions = {
-                    key = 'vmodules.vuiconsumables.showPotions',
-                    type = 'checkbox',
-                    label = 'Show Potions',
-                    tooltip = 'Show potion tracking icon',
-                    column = 2,
-                    order = 8,
-                    callback = function(self)
-                        -- Update the saved variable
-                        if VUIConsumables and VUIConsumables.db then
-                            VUIConsumables.db.profile.showPotions = self:GetValue()
-                            -- Recreate frames
-                            if VUIConsumables.CreateIconFrames then
-                                VUIConsumables:CreateIconFrames()
-                            end
-                        end
-                    end
-                },
-                showRunes = {
-                    key = 'vmodules.vuiconsumables.showRunes',
-                    type = 'checkbox',
-                    label = 'Show Runes',
-                    tooltip = 'Show augment rune tracking icon',
-                    column = 2,
-                    order = 9,
-                    callback = function(self)
-                        -- Update the saved variable
-                        if VUIConsumables and VUIConsumables.db then
-                            VUIConsumables.db.profile.showRunes = self:GetValue()
-                            -- Recreate frames
-                            if VUIConsumables.CreateIconFrames then
-                                VUIConsumables:CreateIconFrames()
-                            end
-                        end
-                    end
-                },
-            },
-            {
-                openConfig = {
-                    type = 'button',
-                    label = 'Open Full Configuration',
-                    tooltip = 'Open detailed configuration panel for VUI Consumables',
-                    column = 4,
-                    order = 10,
-                    callback = function()
-                        -- Open the AceConfig panel
-                        if VUIConsumables then
-                            VUI.Config:OpenConfig(VUIConsumables.NAME)
-                        end
-                    end
-                },
-            },
+-- Initialize with the standard layout helper
+VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUIConsumables", "VUI Consumables", "vmodules.vuiconsumables")
+
+-- Define module-specific layout construction
+function Layout:BuildModuleLayout(module, db)
+    -- Extend the base layout with module-specific settings
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Consumable Display Settings'
         },
-    }
+    })
+    
+    -- Add basic settings
+    table.insert(Layout.layout.rows, {
+        enableTracking = {
+            key = 'vmodules.vuiconsumables.enableTracking',
+            type = 'checkbox',
+            label = 'Enable Consumable Tracking',
+            tooltip = 'Enable tracking of active consumables',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.general.enableTracking = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+        showReminder = {
+            key = 'vmodules.vuiconsumables.showReminder',
+            type = 'checkbox',
+            label = 'Show Reminders',
+            tooltip = 'Show reminders when consumables are missing or about to expire',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.reminder.enabled = self:GetValue()
+                end
+            end
+        },
+        lockFrames = {
+            key = 'vmodules.vuiconsumables.lockFrames',
+            type = 'checkbox',
+            label = 'Lock Frames',
+            tooltip = 'Lock or unlock VUI Consumables frames',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.general.lockFrames = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Categories to track
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Categories to Track'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        trackFood = {
+            key = 'vmodules.vuiconsumables.trackFood',
+            type = 'checkbox',
+            label = 'Track Food',
+            tooltip = 'Track food buffs',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.categories.food = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+        trackFlasks = {
+            key = 'vmodules.vuiconsumables.trackFlasks',
+            type = 'checkbox',
+            label = 'Track Flasks',
+            tooltip = 'Track flask buffs',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.categories.flasks = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+        trackPotions = {
+            key = 'vmodules.vuiconsumables.trackPotions',
+            type = 'checkbox',
+            label = 'Track Potions',
+            tooltip = 'Track potion cooldowns',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.categories.potions = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        trackAugments = {
+            key = 'vmodules.vuiconsumables.trackAugments',
+            type = 'checkbox',
+            label = 'Track Augments',
+            tooltip = 'Track augment runes and other temporary enhancements',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.categories.augments = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Display configuration
+    table.insert(Layout.layout.rows, {
+        iconSize = {
+            key = 'vmodules.vuiconsumables.iconSize',
+            type = 'slider',
+            label = 'Icon Size',
+            tooltip = 'Set the size of consumable icons',
+            min = 16,
+            max = 64,
+            step = 1,
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.iconSize = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+        iconPadding = {
+            key = 'vmodules.vuiconsumables.iconPadding',
+            type = 'slider',
+            label = 'Icon Padding',
+            tooltip = 'Set the spacing between consumable icons',
+            min = 0,
+            max = 20,
+            step = 1,
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.iconPadding = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+        growDirection = {
+            key = 'vmodules.vuiconsumables.growDirection',
+            type = 'dropdown',
+            label = 'Grow Direction',
+            tooltip = 'Direction in which consumable icons are displayed',
+            options = {
+                {value = "HORIZONTAL", text = "Horizontal"},
+                {value = "VERTICAL", text = "Vertical"}
+            },
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.growDirection = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Reminder Settings
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Reminder Settings'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        reminderType = {
+            key = 'vmodules.vuiconsumables.reminderType',
+            type = 'dropdown',
+            label = 'Reminder Type',
+            tooltip = 'How to display reminders for missing consumables',
+            options = {
+                {value = "ICON", text = "Icon Only"},
+                {value = "TEXT", text = "Text Only"},
+                {value = "BOTH", text = "Icon & Text"}
+            },
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.reminder.reminderType = self:GetValue()
+                    if module.UpdateReminderDisplay then
+                        module:UpdateReminderDisplay()
+                    end
+                end
+            end
+        },
+        reminderThreshold = {
+            key = 'vmodules.vuiconsumables.reminderThreshold',
+            type = 'slider',
+            label = 'Reminder Threshold',
+            tooltip = 'How many minutes before expiry to show reminders',
+            min = 1,
+            max = 15,
+            step = 1,
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.reminder.threshold = self:GetValue()
+                end
+            end
+        },
+        flashReminder = {
+            key = 'vmodules.vuiconsumables.flashReminder',
+            type = 'checkbox',
+            label = 'Flash Reminders',
+            tooltip = 'Make reminder icons/text flash when consumables are missing',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.reminder.flash = self:GetValue()
+                    if module.UpdateReminderDisplay then
+                        module:UpdateReminderDisplay()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Inventory Tracking
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Inventory Tracking'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        trackInventory = {
+            key = 'vmodules.vuiconsumables.trackInventory',
+            type = 'checkbox',
+            label = 'Track Inventory',
+            tooltip = 'Track consumables in your inventory',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.inventory.trackInventory = self:GetValue()
+                    if module.UpdateInventoryTracking then
+                        module:UpdateInventoryTracking()
+                    end
+                end
+            end
+        },
+        lowCountThreshold = {
+            key = 'vmodules.vuiconsumables.lowCountThreshold',
+            type = 'slider',
+            label = 'Low Count Threshold',
+            tooltip = 'Number of items considered "low" for warnings',
+            min = 1,
+            max = 20,
+            step = 1,
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.inventory.lowCountThreshold = self:GetValue()
+                end
+            end
+        },
+        warnLowCount = {
+            key = 'vmodules.vuiconsumables.warnLowCount',
+            type = 'checkbox',
+            label = 'Warn on Low Count',
+            tooltip = 'Show warning when consumable count is low',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.inventory.warnLowCount = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    -- Instance-specific Settings
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Instance Settings'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        enableInDungeons = {
+            key = 'vmodules.vuiconsumables.enableInDungeons',
+            type = 'checkbox',
+            label = 'Enable in Dungeons',
+            tooltip = 'Enable consumable tracking in dungeons',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.instances.enableInDungeons = self:GetValue()
+                end
+            end
+        },
+        enableInRaids = {
+            key = 'vmodules.vuiconsumables.enableInRaids',
+            type = 'checkbox',
+            label = 'Enable in Raids',
+            tooltip = 'Enable consumable tracking in raids',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.instances.enableInRaids = self:GetValue()
+                end
+            end
+        },
+        enableInBattlegrounds = {
+            key = 'vmodules.vuiconsumables.enableInBattlegrounds',
+            type = 'checkbox',
+            label = 'Enable in Battlegrounds',
+            tooltip = 'Enable consumable tracking in PvP battlegrounds',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.instances.enableInBattlegrounds = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    -- Test Controls
+    table.insert(Layout.layout.rows, {
+        testButton = {
+            type = 'button',
+            label = 'Test Reminder',
+            tooltip = 'Test the reminder display',
+            column = 12,
+            order = 1,
+            callback = function()
+                if module and module.TestReminder then
+                    module:TestReminder()
+                end
+            end
+        },
+    })
 end
+
+return Layout 

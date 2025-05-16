@@ -6,6 +6,9 @@
   <!-- Load service files -->
   <Script file="service\PlaterService.lua"/>
   
+  <!-- Load WhiiskeyzPlater import -->
+  <Script file="WhiiskeyzImport.lua"/>
+  
   <!-- Load main module file -->
   <Script file="Main.lua"/>
 </Ui>

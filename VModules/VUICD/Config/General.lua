@@ -1,6 +1,45 @@
 local _, VUI = ...
-local E = VUI:GetModule("VUICD")
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Setup localization with fallbacks
+local L = {}
+try = pcall(function() L = LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if not try then
+    -- Store default localization values needed for this file
+    L["General Settings"] = "General Settings"
+    L["Enable"] = "Enable"
+    L["Enable/disable the module"] = "Enable/disable the module"
+    L["Show Anchor"] = "Show Anchor"
+    L["Show/hide the anchor"] = "Show/hide the anchor"
+    L["Merge Healing Abilities"] = "Merge Healing Abilities"
+    L["Merge similar healing abilities to reduce clutter"] = "Merge similar healing abilities to reduce clutter"
+    L["Border Settings"] = "Border Settings"
+    L["Enable Border"] = "Enable Border"
+    L["Show a border around cooldown icons"] = "Show a border around cooldown icons"
+    L["Border Thickness"] = "Border Thickness"
+    L["Sets the thickness of the border"] = "Sets the thickness of the border"
+    L["Border Coloring"] = "Border Coloring"
+    L["Sets how the border should be colored"] = "Sets how the border should be colored"
+    L["Class Color"] = "Class Color"
+    L["Custom Color"] = "Custom Color"
+    L["Theme Color"] = "Theme Color"
+    L["Border Color"] = "Border Color"
+    L["Sets the color for the border"] = "Sets the color for the border"
+    L["Use Theme Color"] = "Use Theme Color"
+    L["Use the VUI theme color for borders"] = "Use the VUI theme color for borders"
+    L["Module Settings"] = "Module Settings"
+    L["Party Module"] = "Party Module"
+    L["Enable/disable party cooldown tracking"] = "Enable/disable party cooldown tracking"
+end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
 
 -- Add the general options to the option table
 function E:AddGeneralOptions(option)

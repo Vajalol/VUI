@@ -1,6 +1,47 @@
 ---@type string, Namespace
 local _, ns = ...
 
+-- Ensure the settings structure exists with all required properties
+if not ns.settings then
+    ns.settings = {
+        activeProfile = {
+            layoutSettings = {}
+        }
+    }
+end
+
+if not ns.settings.activeProfile then
+    ns.settings.activeProfile = {
+        layoutSettings = {}
+    }
+end
+
+if not ns.settings.activeProfile.layoutSettings then
+    ns.settings.activeProfile.layoutSettings = {}
+end
+
+-- Make sure LayoutSettings exists
+ns.LayoutSettings = ns.LayoutSettings or {}
+if not ns.LayoutSettings.New then
+    ns.LayoutSettings.New = function()
+        return {
+            enable = false,
+            direction = "Left",
+            iconSize = 30,
+            iconsNumber = 3
+        }
+    end
+end
+
+-- Initialize layoutSettings for each layout type if constants exist
+if ns.constants and ns.constants.layoutTypes then
+    for _, layoutType in ipairs(ns.constants.layoutTypes) do
+        if not ns.settings.activeProfile.layoutSettings[layoutType] then
+            ns.settings.activeProfile.layoutSettings[layoutType] = ns.LayoutSettings:New()
+        end
+    end
+end
+
 ---@class SettingsFrame
 local settingsFrame = {}
 ns.settingsFrame = settingsFrame
@@ -304,10 +345,57 @@ LayoutSettingsFrame.__index = LayoutSettingsFrame
 ---@param layoutType LayoutType
 ---@param offset number
 function LayoutSettingsFrame:New(layoutType, offset)
+    -- Validate input parameters
+    if not layoutType then
+        layoutType = "horizontal" -- Default to horizontal if layoutType is nil
+    end
+    
+    if not offset or type(offset) ~= "number" then
+        offset = 1 -- Default offset value
+    end
+    
     ---@class LayoutSettingsFrame
     local obj = setmetatable({}, LayoutSettingsFrame)
     obj.layoutType = layoutType
-    obj.buttonEnable = ns.frameUtils.createCheckButton({
+    
+    -- Ensure settings exist
+    if not ns.settings then
+        ns.settings = {
+            activeProfile = {
+                layoutSettings = {}
+            }
+        }
+    end
+    
+    if not ns.settings.activeProfile then
+        ns.settings.activeProfile = {
+            layoutSettings = {}
+        }
+    end
+    
+    if not ns.settings.activeProfile.layoutSettings then
+        ns.settings.activeProfile.layoutSettings = {}
+    end
+    
+    -- Ensure layoutSettings[layoutType] exists
+    if not ns.settings.activeProfile.layoutSettings[layoutType] then
+        ns.settings.activeProfile.layoutSettings[layoutType] = ns.LayoutSettings and ns.LayoutSettings.New and ns.LayoutSettings:New() or {
+            enable = false,
+            direction = "Left",
+            iconSize = 30,
+            iconsNumber = 3
+        }
+    end
+    
+    -- Make sure all required properties exist in layoutSettings
+    local layoutSettings = ns.settings.activeProfile.layoutSettings[layoutType]
+    if not layoutSettings.enable then layoutSettings.enable = false end
+    if not layoutSettings.direction then layoutSettings.direction = "Left" end
+    if not layoutSettings.iconSize then layoutSettings.iconSize = 30 end
+    if not layoutSettings.iconsNumber then layoutSettings.iconsNumber = 3 end
+    
+    -- Create UI elements with safety checks
+    obj.buttonEnable = ns.frameUtils and ns.frameUtils.createCheckButton and ns.frameUtils.createCheckButton({
         frame = frame,
         text = layoutType:gsub("^%l", string.upper),
         position = "TOPLEFT",
@@ -316,142 +404,309 @@ function LayoutSettingsFrame:New(layoutType, offset)
         name = "trgcdcheckenable" .. layoutType,
         checked = ns.settings.activeProfile.layoutSettings[layoutType].enable,
         onClick = function()
+            if not ns.settings or not ns.settings.activeProfile or not ns.settings.activeProfile.layoutSettings or not ns.settings.activeProfile.layoutSettings[layoutType] then
+                return
+            end
+            
             ns.settings.activeProfile.layoutSettings[layoutType].enable = not ns.settings.activeProfile.layoutSettings[layoutType].enable
 
-            for _, unit in pairs(ns.units) do
-                if unit.layoutType == layoutType then
-                    if ns.settings.activeProfile.layoutSettings[layoutType].enable then
-                        unit.iconQueue:ShowAnchor()
-                    else
-                        unit.iconQueue:HideAnchor()
+            if ns.units then
+                for _, unit in pairs(ns.units) do
+                    if unit.layoutType == layoutType then
+                        if ns.settings.activeProfile.layoutSettings[layoutType].enable then
+                            if unit.iconQueue and unit.iconQueue.ShowAnchor then
+                                unit.iconQueue:ShowAnchor()
+                            end
+                        else
+                            if unit.iconQueue and unit.iconQueue.HideAnchor then
+                                unit.iconQueue:HideAnchor()
+                            end
+                        end
+                        if unit.Clear then
+                            unit:Clear()
+                        end
                     end
-                    unit:Clear()
                 end
             end
 
-            ns.settings:Save()
+            if ns.settings.Save then
+                ns.settings:Save()
+            end
         end
     })
 
-    ---dropdown menu
-    obj.directionDropdown = CreateFrame("Frame", "trgcdframemenu" .. layoutType, frame, "UIDropDownMenuTemplate")
-    obj.directionDropdown:SetPoint("TOPLEFT", 70, -50 - offset * 40)
-    UIDropDownMenu_SetWidth(obj.directionDropdown, 55)
-    UIDropDownMenu_SetText(obj.directionDropdown, ns.settings.activeProfile.layoutSettings[layoutType].direction)
+    -- Continue only if frameUtils exists
+    if ns.frameUtils then
+        ---dropdown menu
+        obj.directionDropdown = CreateFrame("Button", "trgcdframemenu_btn_" .. layoutType, frame, "UIPanelButtonTemplate")
+        obj.directionDropdown:SetSize(80, 22)
+        obj.directionDropdown:SetText(ns.settings.activeProfile.layoutSettings[layoutType].direction or "Left")
+        obj.directionDropdown.value = ns.settings.activeProfile.layoutSettings[layoutType].direction or "Left"
 
-    ---@param direction Direction
-    local function onMenuItemClick(direction)
-        UIDropDownMenu_SetText(obj.directionDropdown, direction)
-        ns.settings.activeProfile.layoutSettings[layoutType].direction = direction
-        ns.settings:Save()
-
-        for _, unit in pairs(ns.units) do
-            if unit.layoutType == layoutType then
-                unit.iconQueue:Resize()
-                unit:Clear()
+        -- Add click handler to cycle through directions
+        obj.directionDropdown:SetScript("OnClick", function(self)
+            local directions = {"Left", "Right", "Up", "Down"}
+            local currentIndex = 1
+            
+            -- Find current direction in the list
+            for i, dir in ipairs(directions) do
+                if dir == self.value then
+                    currentIndex = i
+                    break
+                end
             end
+            
+            -- Move to next direction (or back to first)
+            currentIndex = currentIndex % #directions + 1
+            local newDirection = directions[currentIndex]
+            
+            -- Update the button display and value
+            self:SetText(newDirection)
+            self.value = newDirection
+            
+            -- Update settings
+            ns.settings.activeProfile.layoutSettings[layoutType].direction = newDirection
+            ns.settings:Save()
+            
+            -- Update display if needed
+            if ns.units then
+                for _, unit in pairs(ns.units) do
+                    if unit.layoutType == layoutType then
+                        unit.iconQueue:UpdateDirection(newDirection)
+                    end
+                end
+            end
+        end)
+
+        ---Size Slider
+        obj.sizeSlider = CreateFrame("Slider", "trgcdframesizeslider" .. layoutType, frame, "VUITGCD_OptionsSliderTemplate")
+        if obj.sizeSlider then
+            obj.sizeSlider:SetWidth(170)
+            obj.sizeSlider:SetPoint("TOPLEFT", 190, -55 - offset * 40)
+            
+            -- Safely access and set slider text
+            local lowText = _G[obj.sizeSlider:GetName() .. 'Low']
+            local highText = _G[obj.sizeSlider:GetName() .. 'High']
+            local valueText = _G[obj.sizeSlider:GetName() .. 'Text']
+            
+            if lowText then lowText:SetText('10') end
+            if highText then highText:SetText('100') end
+            
+            if valueText and ns.settings and ns.settings.activeProfile and 
+               ns.settings.activeProfile.layoutSettings and 
+               ns.settings.activeProfile.layoutSettings[layoutType] then
+                valueText:SetText(ns.settings.activeProfile.layoutSettings[layoutType].iconSize)
+            elseif valueText then
+                valueText:SetText('30') -- Default
+            end
+            
+            obj.sizeSlider:SetMinMaxValues(10,100)
+            obj.sizeSlider:SetValueStep(1)
+            
+            -- Safely set value
+            if ns.settings and ns.settings.activeProfile and 
+               ns.settings.activeProfile.layoutSettings and 
+               ns.settings.activeProfile.layoutSettings[layoutType] then
+                obj.sizeSlider:SetValue(ns.settings.activeProfile.layoutSettings[layoutType].iconSize)
+            else
+                obj.sizeSlider:SetValue(30) -- Default
+            end
+            
+            obj.sizeSlider:SetScript("OnValueChanged", function(_, value)
+                if not ns.settings or not ns.settings.activeProfile or 
+                   not ns.settings.activeProfile.layoutSettings or 
+                   not ns.settings.activeProfile.layoutSettings[layoutType] then
+                    return
+                end
+                
+                value = math.ceil(value)
+                local textFrame = _G[obj.sizeSlider:GetName() .. 'Text']
+                if textFrame then
+                    textFrame:SetText(value)
+                end
+                
+                ns.settings.activeProfile.layoutSettings[layoutType].iconSize = value
+                
+                if ns.settings.Save then
+                    ns.settings:Save()
+                end
+
+                if ns.units then
+                    for _, unit in pairs(ns.units) do
+                        if unit.layoutType == layoutType and unit.iconQueue then
+                            if unit.iconQueue.Resize then
+                                unit.iconQueue:Resize()
+                            end
+                            if unit.Clear then
+                                unit:Clear()
+                            end
+                        end
+                    end
+                end
+            end)
+            obj.sizeSlider:Show()
+        end
+
+        ---Icons number slider
+        obj.iconsNumber = CreateFrame("Slider", "trgcdframewidthslider" .. layoutType, frame, "VUITGCD_OptionsSliderTemplate")
+        if obj.iconsNumber then
+            obj.iconsNumber:SetWidth(100)
+            obj.iconsNumber:SetPoint("TOPLEFT", 390, -55 - offset * 40)
+            
+            -- Safely access and set slider text
+            local lowText = _G[obj.iconsNumber:GetName() .. 'Low']
+            local highText = _G[obj.iconsNumber:GetName() .. 'High']
+            local valueText = _G[obj.iconsNumber:GetName() .. 'Text']
+            
+            if lowText then lowText:SetText('1') end
+            if highText then highText:SetText('8') end
+            
+            if valueText and ns.settings and ns.settings.activeProfile and 
+               ns.settings.activeProfile.layoutSettings and 
+               ns.settings.activeProfile.layoutSettings[layoutType] then
+                valueText:SetText(ns.settings.activeProfile.layoutSettings[layoutType].iconsNumber)
+            elseif valueText then
+                valueText:SetText('3') -- Default
+            end
+            
+            obj.iconsNumber:SetMinMaxValues(1,8)
+            obj.iconsNumber:SetValueStep(1)
+            
+            -- Safely set value
+            if ns.settings and ns.settings.activeProfile and 
+               ns.settings.activeProfile.layoutSettings and 
+               ns.settings.activeProfile.layoutSettings[layoutType] then
+                obj.iconsNumber:SetValue(ns.settings.activeProfile.layoutSettings[layoutType].iconsNumber)
+            else
+                obj.iconsNumber:SetValue(3) -- Default
+            end
+            
+            obj.iconsNumber:SetScript("OnValueChanged", function (_, value)
+                if not ns.settings or not ns.settings.activeProfile or 
+                   not ns.settings.activeProfile.layoutSettings or 
+                   not ns.settings.activeProfile.layoutSettings[layoutType] then
+                    return
+                end
+                
+                value = math.ceil(value)
+                local textFrame = _G[obj.iconsNumber:GetName() .. 'Text']
+                if textFrame then
+                    textFrame:SetText(value)
+                end
+                
+                ns.settings.activeProfile.layoutSettings[layoutType].iconsNumber = value
+                
+                if ns.settings.Save then
+                    ns.settings:Save()
+                end
+
+                if ns.units then
+                    for _, unit in pairs(ns.units) do
+                        if unit.layoutType == layoutType and unit.iconQueue then
+                            if unit.iconQueue.Resize then
+                                unit.iconQueue:Resize()
+                            end
+                            if unit.Clear then
+                                unit:Clear()
+                            end
+                        end
+                    end
+                end
+            end)
+            obj.iconsNumber:Show()
         end
     end
-
-    UIDropDownMenu_Initialize(obj.directionDropdown, function()
-        local left = UIDropDownMenu_CreateInfo()
-        left.text = "Left"
-        left.menuList = 1
-        left.notCheckable = true
-        left.func = function() onMenuItemClick("Left") end
-        UIDropDownMenu_AddButton(left)
-
-        local right = UIDropDownMenu_CreateInfo()
-        right.text = "Right"
-        right.menuList = 2
-        right.notCheckable = true
-        right.func = function() onMenuItemClick("Right") end
-        UIDropDownMenu_AddButton(right)
-
-        local up = UIDropDownMenu_CreateInfo()
-        up.text = "Up"
-        up.menuList = 3
-        up.notCheckable = true
-        up.func = function() onMenuItemClick("Up") end
-        UIDropDownMenu_AddButton(up)
-
-        local down = UIDropDownMenu_CreateInfo()
-        down.text = "Down"
-        down.menuList = 4
-        down.notCheckable = true
-        down.func = function() onMenuItemClick("Down") end
-        UIDropDownMenu_AddButton(down)
-    end)
-
-    ---Size Slider
-    obj.sizeSlider = CreateFrame("Slider", "trgcdframesizeslider" .. layoutType, frame, "TrufiGCD_OptionsSliderTemplate")
-    obj.sizeSlider:SetWidth(170)
-    obj.sizeSlider:SetPoint("TOPLEFT", 190, -55 - offset * 40)
-    _G[obj.sizeSlider:GetName() .. 'Low']:SetText('10')
-    _G[obj.sizeSlider:GetName() .. 'High']:SetText('100')
-    _G[obj.sizeSlider:GetName() .. 'Text']:SetText(ns.settings.activeProfile.layoutSettings[layoutType].iconSize)
-    obj.sizeSlider:SetMinMaxValues(10,100)
-    obj.sizeSlider:SetValueStep(1)
-    obj.sizeSlider:SetValue(ns.settings.activeProfile.layoutSettings[layoutType].iconSize)
-    obj.sizeSlider:SetScript("OnValueChanged", function(_, value)
-        value = math.ceil(value)
-        _G[obj.sizeSlider:GetName() .. 'Text']:SetText(value)
-        ns.settings.activeProfile.layoutSettings[layoutType].iconSize = value
-        ns.settings:Save()
-
-        for _, unit in pairs(ns.units) do
-            if unit.layoutType == layoutType then
-                unit.iconQueue:Resize()
-                unit:Clear()
-            end
-        end
-    end)
-    obj.sizeSlider:Show()
-
-    ---Icons number slider
-    obj.iconsNumber = CreateFrame("Slider", "trgcdframewidthslider" .. layoutType, frame, "TrufiGCD_OptionsSliderTemplate")
-    obj.iconsNumber:SetWidth(100)
-    obj.iconsNumber:SetPoint("TOPLEFT", 390, -55 - offset * 40)
-    _G[obj.iconsNumber:GetName() .. 'Low']:SetText('1')
-    _G[obj.iconsNumber:GetName() .. 'High']:SetText('8')
-    _G[obj.iconsNumber:GetName() .. 'Text']:SetText(ns.settings.activeProfile.layoutSettings[layoutType].iconsNumber)
-    obj.iconsNumber:SetMinMaxValues(1,8)
-    obj.iconsNumber:SetValueStep(1)
-    obj.iconsNumber:SetValue(ns.settings.activeProfile.layoutSettings[layoutType].iconsNumber)
-    obj.iconsNumber:SetScript("OnValueChanged", function (_, value)
-        value = math.ceil(value)
-        _G[obj.iconsNumber:GetName() .. 'Text']:SetText(value)
-        ns.settings.activeProfile.layoutSettings[layoutType].iconsNumber = value
-        ns.settings:Save()
-
-        for _, unit in pairs(ns.units) do
-            if unit.layoutType == layoutType then
-                unit.iconQueue:Resize()
-                unit:Clear()
-            end
-        end
-    end)
-    obj.iconsNumber:Show()
 
     return obj
 end
 
 function LayoutSettingsFrame:SyncWithSettings()
+    -- Ensure settings exist
+    if not ns.settings then
+        ns.settings = {
+            activeProfile = {
+                layoutSettings = {}
+            }
+        }
+    end
+    
+    if not ns.settings.activeProfile then
+        ns.settings.activeProfile = {
+            layoutSettings = {}
+        }
+    end
+    
+    if not ns.settings.activeProfile.layoutSettings then
+        ns.settings.activeProfile.layoutSettings = {}
+    end
+    
+    -- Ensure layoutSettings[layoutType] exists
+    if not ns.settings.activeProfile.layoutSettings[self.layoutType] then
+        ns.settings.activeProfile.layoutSettings[self.layoutType] = ns.LayoutSettings and ns.LayoutSettings.New and ns.LayoutSettings:New() or {
+            enable = false,
+            direction = "Left",
+            iconSize = 30,
+            iconsNumber = 3
+        }
+    end
+    
     local layoutSettings = ns.settings.activeProfile.layoutSettings[self.layoutType]
+    
+    -- Ensure all required properties exist in layoutSettings
+    if type(layoutSettings) ~= "table" then
+        layoutSettings = {
+            enable = false,
+            direction = "Left",
+            iconSize = 30,
+            iconsNumber = 3
+        }
+        ns.settings.activeProfile.layoutSettings[self.layoutType] = layoutSettings
+    end
+    
+    if layoutSettings.enable == nil then layoutSettings.enable = false end
+    if layoutSettings.direction == nil then layoutSettings.direction = "Left" end
+    if layoutSettings.iconSize == nil then layoutSettings.iconSize = 30 end
+    if layoutSettings.iconsNumber == nil then layoutSettings.iconsNumber = 3 end
 
-    self.buttonEnable:SetChecked(layoutSettings.enable)
-    UIDropDownMenu_SetText(self.directionDropdown, layoutSettings.direction)
+    -- Now safely use the properties
+    if self.buttonEnable and self.buttonEnable.SetChecked then
+        self.buttonEnable:SetChecked(layoutSettings.enable)
+    end
+    
+    if self.directionDropdown then
+        self.directionDropdown:SetText(layoutSettings.direction)
+        self.directionDropdown.value = layoutSettings.direction
+    end
 
-    _G[self.sizeSlider:GetName() .. 'Text']:SetText(layoutSettings.iconSize)
-    self.sizeSlider:SetValue(layoutSettings.iconSize)
+    if self.sizeSlider and self.sizeSlider:GetName() then
+        local textFrame = _G[self.sizeSlider:GetName() .. 'Text']
+        if textFrame then
+            textFrame:SetText(layoutSettings.iconSize)
+        end
+        self.sizeSlider:SetValue(layoutSettings.iconSize)
+    end
 
-    _G[self.iconsNumber:GetName() .. 'Text']:SetText(layoutSettings.iconsNumber)
-    self.iconsNumber:SetValue(layoutSettings.iconsNumber)
+    if self.iconsNumber and self.iconsNumber:GetName() then
+        local textFrame = _G[self.iconsNumber:GetName() .. 'Text']
+        if textFrame then
+            textFrame:SetText(layoutSettings.iconsNumber)
+        end
+        self.iconsNumber:SetValue(layoutSettings.iconsNumber)
+    end
 
-    for _, unit in pairs(ns.units) do
-        if unit.layoutType == self.layoutType then
-            unit.iconQueue:Resize()
-            unit.iconQueue:UpdateOffset()
+    -- Update units only if they exist
+    if ns.units then
+        for _, unit in pairs(ns.units) do
+            if unit.layoutType == self.layoutType then
+                if unit.iconQueue then
+                    if unit.iconQueue.Resize then
+                        unit.iconQueue:Resize()
+                    end
+                    if unit.iconQueue.UpdateOffset then
+                        unit.iconQueue:UpdateOffset()
+                    end
+                end
+            end
         end
     end
 end
@@ -463,22 +718,145 @@ for index, layoutType in ipairs(ns.constants.layoutTypes) do
 end
 
 settingsFrame.syncWithSettings = function()
+    -- Ensure settings exist
+    if not ns.settings then
+        ns.settings = {
+            activeProfile = {
+                enabledIn = {
+                    combatOnly = false,
+                    enabled = true,
+                    world = true,
+                    party = true,
+                    raid = true,
+                    arena = true,
+                    battleground = true
+                },
+                tooltipEnabled = true,
+                tooltipStopScroll = true,
+                tooltipPrintSpellId = false,
+                iconsScroll = true,
+                layoutSettings = {}
+            }
+        }
+    end
+    
+    if not ns.settings.activeProfile then
+        ns.settings.activeProfile = {
+            enabledIn = {
+                combatOnly = false,
+                enabled = true,
+                world = true,
+                party = true,
+                raid = true,
+                arena = true,
+                battleground = true
+            },
+            tooltipEnabled = true,
+            tooltipStopScroll = true,
+            tooltipPrintSpellId = false,
+            iconsScroll = true,
+            layoutSettings = {}
+        }
+    end
+    
     local settings = ns.settings.activeProfile
+    
+    -- Make sure all required settings exist
+    if not settings.enabledIn then
+        settings.enabledIn = {
+            combatOnly = false,
+            enabled = true,
+            world = true,
+            party = true,
+            raid = true,
+            arena = true,
+            battleground = true
+        }
+    end
+    
+    -- Ensure specific settings fields exist
+    settings.tooltipEnabled = settings.tooltipEnabled ~= nil and settings.tooltipEnabled or true
+    settings.tooltipStopScroll = settings.tooltipStopScroll ~= nil and settings.tooltipStopScroll or true
+    settings.tooltipPrintSpellId = settings.tooltipPrintSpellId ~= nil and settings.tooltipPrintSpellId or false
+    settings.iconsScroll = settings.iconsScroll ~= nil and settings.iconsScroll or true
+    
+    -- Ensure all enabledIn fields exist
+    if not settings.enabledIn then settings.enabledIn = {} end
+    settings.enabledIn.combatOnly = settings.enabledIn.combatOnly ~= nil and settings.enabledIn.combatOnly or false
+    settings.enabledIn.enabled = settings.enabledIn.enabled ~= nil and settings.enabledIn.enabled or true
+    settings.enabledIn.world = settings.enabledIn.world ~= nil and settings.enabledIn.world or true
+    settings.enabledIn.party = settings.enabledIn.party ~= nil and settings.enabledIn.party or true
+    settings.enabledIn.raid = settings.enabledIn.raid ~= nil and settings.enabledIn.raid or true
+    settings.enabledIn.arena = settings.enabledIn.arena ~= nil and settings.enabledIn.arena or true
+    settings.enabledIn.battleground = settings.enabledIn.battleground ~= nil and settings.enabledIn.battleground or true
 
-    tooltipEnableCheckbox:SetChecked(settings.tooltipEnabled)
-    stopMovingCheckbox:SetChecked(settings.tooltipStopScroll)
-    spellIdCheckbox:SetChecked(settings.tooltipPrintSpellId)
-    scrollingCheckbox:SetChecked(settings.iconsScroll)
+    -- Safely update checkbox states only if they exist
+    if tooltipEnableCheckbox and tooltipEnableCheckbox.SetChecked then
+        tooltipEnableCheckbox:SetChecked(settings.tooltipEnabled)
+    end
+    
+    if stopMovingCheckbox and stopMovingCheckbox.SetChecked then
+        stopMovingCheckbox:SetChecked(settings.tooltipStopScroll)
+    end
+    
+    if spellIdCheckbox and spellIdCheckbox.SetChecked then
+        spellIdCheckbox:SetChecked(settings.tooltipPrintSpellId)
+    end
+    
+    if scrollingCheckbox and scrollingCheckbox.SetChecked then
+        scrollingCheckbox:SetChecked(settings.iconsScroll)
+    end
 
-    combatOnlyCheckbox:SetChecked(settings.enabledIn.combatOnly)
-    enableCheckbox:SetChecked(settings.enabledIn.enabled)
-    worldCheckbox:SetChecked(settings.enabledIn.world)
-    partyCheckbox:SetChecked(settings.enabledIn.party)
-    raidCheckbox:SetChecked(settings.enabledIn.raid)
-    arenaCheckbox:SetChecked(settings.enabledIn.arena)
-    battlegroundCheckbox:SetChecked(settings.enabledIn.battleground)
+    if combatOnlyCheckbox and combatOnlyCheckbox.SetChecked then
+        combatOnlyCheckbox:SetChecked(settings.enabledIn.combatOnly)
+    end
+    
+    if enableCheckbox and enableCheckbox.SetChecked then
+        enableCheckbox:SetChecked(settings.enabledIn.enabled)
+    end
+    
+    if worldCheckbox and worldCheckbox.SetChecked then
+        worldCheckbox:SetChecked(settings.enabledIn.world)
+    end
+    
+    if partyCheckbox and partyCheckbox.SetChecked then
+        partyCheckbox:SetChecked(settings.enabledIn.party)
+    end
+    
+    if raidCheckbox and raidCheckbox.SetChecked then
+        raidCheckbox:SetChecked(settings.enabledIn.raid)
+    end
+    
+    if arenaCheckbox and arenaCheckbox.SetChecked then
+        arenaCheckbox:SetChecked(settings.enabledIn.arena)
+    end
+    
+    if battlegroundCheckbox and battlegroundCheckbox.SetChecked then
+        battlegroundCheckbox:SetChecked(settings.enabledIn.battleground)
+    end
 
-    for _, layoutSettings in pairs(layoutSettingsFrames) do
-        layoutSettings:SyncWithSettings()
+    -- Ensure layoutSettings exists
+    if not settings.layoutSettings then
+        settings.layoutSettings = {}
+    end
+    
+    -- Update layout settings safely
+    if layoutSettingsFrames then
+        for layoutType, layoutSettings in pairs(layoutSettingsFrames) do
+            -- Make sure the layout settings for this type exist
+            if not settings.layoutSettings[layoutType] then
+                settings.layoutSettings[layoutType] = ns.LayoutSettings and ns.LayoutSettings.New and ns.LayoutSettings:New() or {
+                    enable = false,
+                    direction = "Left",
+                    iconSize = 30,
+                    iconsNumber = 3
+                }
+            end
+            
+            -- Safely call SyncWithSettings if available
+            if layoutSettings and layoutSettings.SyncWithSettings then
+                layoutSettings:SyncWithSettings()
+            end
+        end
     end
 end

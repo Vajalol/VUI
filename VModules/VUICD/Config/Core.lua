@@ -1,9 +1,37 @@
 local _, VUI = ...
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
-local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local VUIConfig = LibStub("VUIConfig-1.0")
-local VUICD = VUI:GetModule("VUICD")
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Setup localization with fallback
+local L = {}
+try = pcall(function() L = LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if not try then
+    -- Fallback localization table
+    L["VUI Cooldown Tracker"] = "VUI Cooldown Tracker"
+    L["General"] = "General"
+    L["Party"] = "Party"
+    L["Spell Editor"] = "Spell Editor"
+    L["Profiles"] = "Profiles"
+end
+
+-- Store localization globally for other files to use
+VUICD.L = VUICD.L or L
+
+-- Ace libraries
+-- Set up Ace libraries with fallbacks
+local AceConfigRegistry, AceConfigDialog, VUIConfig
+try = pcall(function() 
+    AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
+    AceConfigDialog = LibStub("AceConfigDialog-3.0")
+    VUIConfig = LibStub("VUIConfig-1.0") 
+end)
+
+-- Initialize empty objects if libraries aren't available
+AceConfigRegistry = AceConfigRegistry or {}
+AceConfigDialog = AceConfigDialog or {}
+VUIConfig = VUIConfig or {}
 
 -- Configuration variables
 local E = VUICD

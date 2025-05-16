@@ -5,9 +5,41 @@
 -------------------------------------------------------------------------------
 
 local addonName, VUI = ...
-local VUIScrollingText = VUI:GetModule("VUIScrollingText")
+-- Ensure VUI exists and VUI.ScrollingText is established
+if not VUI then
+    print("VUIScrollingText: VUI namespace not available")
+    return 
+end
+
+-- Ensure VUI.ScrollingText namespace exists
+VUI.ScrollingText = VUI.ScrollingText or {}
 local ST = VUI.ScrollingText
-if not ST then return end
+
+-- Create VUIScrollingText module if it doesn't exist
+if not VUI.VUIScrollingText then
+    -- Try to create the module if NewModule is available
+    if VUI.NewModule then
+        VUI.VUIScrollingText = VUI:NewModule("VUIScrollingText", "AceEvent-3.0", "AceTimer-3.0")
+    else
+        -- Fallback minimal module
+        VUI.VUIScrollingText = {
+            NAME = "VUIScrollingText",
+            TITLE = "VUI Scrolling Text",
+            Debug = function() end,
+            RegisterEvent = function() end
+        }
+        
+        -- Schedule module initialization when VUI is more fully loaded
+        C_Timer.After(1, function()
+            if VUI and VUI.NewModule then
+                local M = VUI:NewModule("VUIScrollingText", "AceEvent-3.0", "AceTimer-3.0")
+                if M and M.OnInitialize then M:OnInitialize() end
+                if M and M.OnEnable then M:OnEnable() end
+                VUI.VUIScrollingText = M
+            end
+        end)
+    end
+end
 
 -- Local variables
 local frames = {}
@@ -486,7 +518,7 @@ end
 -------------------------------------------------------------------------------
 
 -- Initialize the addon
-function VUIScrollingText:OnInitialize()
+function ST.OnInitialize(moduleInstance)
     -- Create the event frame
     eventFrame = CreateFrame("Frame")
     eventFrame:SetScript("OnEvent", OnEvent)
@@ -540,7 +572,9 @@ function VUIScrollingText:OnInitialize()
     if ST.Cooldowns then ST.Cooldowns.EnableCooldowns() end
     
     -- Register options
-    self:RegisterOptions()
+    if moduleInstance then
+        moduleInstance:RegisterOptions()
+    end
     
     -- Set initialized flag
     ST.isInitialized = true
@@ -548,17 +582,18 @@ end
 
 -- Interface for the main addon
 -- Display a message (for external modules to use)
-function VUIScrollingText:DisplayMessage(...)
+ST.DisplayModuleMessage = function(...)
     return ST.DisplayMessage(...)
 end
 
 -- Apply theme changes
-function VUIScrollingText:ApplyTheme()
+ST.ApplyTheme = function()
     if not ST.isInitialized then return end
     
     -- Apply theme to options panel
-    if self.options and self.options.ApplyTheme then
-        self.options:ApplyTheme()
+    local moduleInstance = ST.module
+    if moduleInstance and moduleInstance.options and moduleInstance.options.ApplyTheme then
+        moduleInstance.options:ApplyTheme()
     end
     
     -- Apply theme to submodules
@@ -590,7 +625,7 @@ function VUIScrollingText:ApplyTheme()
 end
 
 -- Helper method to display themed messages
-function VUIScrollingText:DisplayThemedMessage(message, scrollArea, fontSize, fontName, outline, duration, soundFile)
+ST.DisplayThemedMessage = function(message, scrollArea, fontSize, fontName, outline, duration, soundFile)
     if not ST.isInitialized or not VUI then return false end
     
     -- Get VUI theme color
@@ -605,19 +640,20 @@ function VUIScrollingText:DisplayThemedMessage(message, scrollArea, fontSize, fo
 end
 
 -- Show options panel
-function VUIScrollingText:ShowOptions()
+ST.ShowOptions = function()
+    local moduleInstance = ST.module
     -- Create options frame if not already created
-    if not self.optionsFrame then
-        self:RegisterOptions()
+    if moduleInstance and not moduleInstance.optionsFrame then
+        moduleInstance:RegisterOptions()
     end
     
     -- Show the options frame
-    if self.optionsFrame then
-        self.optionsFrame:Show()
+    if moduleInstance and moduleInstance.optionsFrame then
+        moduleInstance.optionsFrame:Show()
     end
 end
 
 -- Method for the Advanced Configuration button in VUI config
-function VUIScrollingText:OpenConfigPanel()
-    self:ShowOptions()
+ST.OpenConfigPanel = function()
+    ST.ShowOptions()
 end

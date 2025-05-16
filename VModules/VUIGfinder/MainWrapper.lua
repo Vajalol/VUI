@@ -39,17 +39,25 @@ end
 
 -- Apply VUI theme to UI elements
 function ApplyVUITheme()
+    -- Safety check for frame
     if not mainFrame then return end
     
-    -- Get current theme color
-    local r, g, b = VUIGfinder.GetThemeColor()
+    -- Get current theme color with safety check
+    local r, g, b = 0.0, 0.44, 0.87 -- Default VUI blue color
+    if VUIGfinder and VUIGfinder.GetThemeColor and type(VUIGfinder.GetThemeColor) == "function" then
+        -- Use pcall to prevent errors if the function fails
+        local success, result = pcall(VUIGfinder.GetThemeColor)
+        if success and result then
+            r, g, b = result, select(2, result), select(3, result)
+        end
+    end
     
     -- Apply to header textures, borders, etc.
     -- This will be expanded as we integrate with specific UI elements
     
-    -- Notify the rest of the addon that theme has changed
-    if VUIGfinder.OnThemeChanged then
-        VUIGfinder.OnThemeChanged(r, g, b)
+    -- Notify the rest of the addon that theme has changed with safety check
+    if VUIGfinder and VUIGfinder.OnThemeChanged and type(VUIGfinder.OnThemeChanged) == "function" then
+        pcall(function() VUIGfinder.OnThemeChanged(r, g, b) end)
     end
 end
 
@@ -83,18 +91,33 @@ function InitializeVUIGfinder(vui, module)
     VUI = vui
     VUIGfinderModule = module
     
-    -- Register with VUI theme system
-    VUI:RegisterCallback("OnThemeChanged", function()
-        if VUIGfinderModule.db.profile.theme.useVUITheme then
-            ApplyVUITheme()
-        end
-    end)
+    -- Register with VUI theme system with safety checks
+    if VUI and VUI.RegisterCallback and type(VUI.RegisterCallback) == "function" then
+        pcall(function()
+            VUI:RegisterCallback("OnThemeChanged", function()
+                -- Add safety check for module
+                if VUIGfinderModule and VUIGfinderModule.db and 
+                   VUIGfinderModule.db.profile and 
+                   VUIGfinderModule.db.profile.theme and 
+                   VUIGfinderModule.db.profile.theme.useVUITheme then
+                    -- Call theme function safely
+                    if ApplyVUITheme then
+                        pcall(ApplyVUITheme)
+                    end
+                end
+            end)
+        end)
+    end
     
     -- Initialize UI
-    InitializeUI()
+    if InitializeUI then
+        pcall(InitializeUI)
+    end
     
-    -- Debug message
-    VUI:Debug("VUIGfinder integrated with VUI")
+    -- Debug message with safety check
+    if VUI and VUI.Debug and type(VUI.Debug) == "function" then
+        pcall(function() VUI:Debug("VUIGfinder integrated with VUI") end)
+    end
 end
 
 -- Make functions available to the addon

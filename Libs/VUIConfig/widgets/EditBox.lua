@@ -224,6 +224,21 @@ local NumericBoxMethods = {
 		self.minValue = min;
 		self.maxValue = max;
 		self:Validate();
+	end,
+	
+	SetValue = function(self, value)
+		-- Handle nil values by using the minimum value or 0
+		if value == nil then
+			value = self.minValue or 0
+		end
+		
+		-- Convert to string and set the text
+		self:SetText(tostring(value));
+		-- Validate to ensure proper formatting and constraints
+		self:Validate();
+		
+		-- Store the actual value
+		self.value = value;
 	end
 }
 

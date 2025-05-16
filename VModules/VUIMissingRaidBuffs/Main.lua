@@ -2,12 +2,73 @@
 -- Scans group/raid for missing standard buffs
 -- Based on Missing Raid Buffs WeakAura (https://wago.io/BQce7Fj5J)
 
-local AddonName, VUI = ...
+local AddonName, _ = ...
 local MODNAME = "VUIMissingRaidBuffs"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+
+-- Use global reference instead of local addon variable to fix load order issues
+local VUI = _G["VUI"]
+
+-- Check if VUI exists before proceeding
+if not VUI then return end
+
+-- Set up global reference early to prevent nil errors
+_G["VUIMissingRaidBuffs"] = _G["VUIMissingRaidBuffs"] or {}
+
+-- Try to create the module with error handling
+local M
+
+if VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIMissingRaidBuffs"] = M
+else
+    -- Create minimal module object to prevent errors
+    M = {
+        NAME = MODNAME,
+        TITLE = "VUI Missing Raid Buffs",
+        DESCRIPTION = "Shows missing raid buffs in group/raid",
+        VERSION = "1.0",
+        OnEnable = function() end,
+        OnDisable = function() end
+    }
+    
+    -- Register in VUI namespace
+    VUI[MODNAME] = M
+    
+    -- Update the global reference with our placeholder
+    _G["VUIMissingRaidBuffs"] = M
+    
+    -- Try initialization again after delay
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local RealModule = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+            
+            -- Transfer any properties from temporary module
+            for k, v in pairs(M) do
+                if k ~= "NAME" and k ~= "TITLE" and type(v) ~= "function" then
+                    RealModule[k] = v
+                end
+            end
+            
+            -- Replace with real module
+            VUI[MODNAME] = RealModule
+            
+            -- Update the global reference with the actual module
+            _G["VUIMissingRaidBuffs"] = RealModule
+            
+            -- Initialize the module
+            if RealModule.OnInitialize then RealModule:OnInitialize() end
+            if RealModule.OnEnable then RealModule:OnEnable() end
+        end
+    end)
+end
+
+-- Set global namespace for other files to access
+VUI.VUIMissingRaidBuffs = M
 
 -- Localization
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+-- Use global reference pattern for localization tables
+local L = VUI.L or LibStub("AceLocale-3.0"):GetLocale("VUI")
 
 -- Module Constants
 M.NAME = MODNAME
@@ -219,13 +280,41 @@ end
 
 -- Initialize module
 function M:OnInitialize()
-    -- Register module with VUI
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Make sure namespaces exists to avoid nil indexing
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUIMissingRaidBuffs"] or VUI.db.namespaces["vuimissingraidbuffs"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUIMissingRaidBuffs"] = namespace
+            VUI.db.namespaces["vuimissingraidbuffs"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUIMissingRaidBuffs", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuimissingraidbuffs"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
     -- Register settings with VUI Config
-    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    end
     
     -- Missing buffs tracking
     self.missingBuffs = {}
@@ -237,26 +326,100 @@ function M:OnInitialize()
 end
 
 function M:OnEnable()
-    -- Register events
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("GROUP_ROSTER_UPDATE", "UpdateGroupStatus")
-    self:RegisterEvent("UNIT_AURA", "CheckBuffs")
-    self:RegisterEvent("PLAYER_REGEN_DISABLED", "UpdateVisibility") -- Entered combat
-    self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateVisibility") -- Left combat
+    -- Register events with safety checks
+    if self.RegisterEvent and type(self.RegisterEvent) == "function" then
+        pcall(function() self:RegisterEvent("PLAYER_ENTERING_WORLD") end)
+        pcall(function() self:RegisterEvent("GROUP_ROSTER_UPDATE", "UpdateGroupStatus") end)
+        pcall(function() self:RegisterEvent("UNIT_AURA", "CheckBuffs") end)
+        pcall(function() self:RegisterEvent("PLAYER_REGEN_DISABLED", "UpdateVisibility") end) -- Entered combat
+        pcall(function() self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateVisibility") end) -- Left combat
+    else
+        -- Fallback for when RegisterEvent isn't available
+        local frame = CreateFrame("Frame")
+        frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame:RegisterEvent("GROUP_ROSTER_UPDATE")
+        frame:RegisterEvent("UNIT_AURA")
+        frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+        frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        
+        frame:SetScript("OnEvent", function(_, event, ...)
+            -- Store arguments locally
+            local args = {...}
+            
+            if event == "PLAYER_ENTERING_WORLD" and self.PLAYER_ENTERING_WORLD then
+                pcall(function() 
+                    if #args > 0 then
+                        self:PLAYER_ENTERING_WORLD(unpack(args))
+                    else
+                        self:PLAYER_ENTERING_WORLD()
+                    end
+                end)
+            elseif event == "GROUP_ROSTER_UPDATE" and self.UpdateGroupStatus then
+                pcall(function() 
+                    if #args > 0 then
+                        self:UpdateGroupStatus(unpack(args))
+                    else
+                        self:UpdateGroupStatus()
+                    end
+                end)
+            elseif event == "UNIT_AURA" and self.CheckBuffs then
+                pcall(function() 
+                    if #args > 0 then
+                        self:CheckBuffs(unpack(args))
+                    else
+                        self:CheckBuffs()
+                    end
+                end)
+            elseif (event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED") and self.UpdateVisibility then
+                pcall(function() 
+                    if #args > 0 then
+                        self:UpdateVisibility(unpack(args))
+                    else
+                        self:UpdateVisibility()
+                    end
+                end)
+            end
+        end)
+        
+        -- Store the frame for later cleanup
+        self.eventFrame = frame
+    end
     
-    -- Start update timer
-    self.updateTimer = self:ScheduleRepeatingTimer("UpdateDisplay", 1.0)
+    -- Start update timer with safety check
+    if self.ScheduleRepeatingTimer and type(self.ScheduleRepeatingTimer) == "function" then
+        pcall(function() self.updateTimer = self:ScheduleRepeatingTimer("UpdateDisplay", 1.0) end)
+    else
+        -- Fallback for when timer isn't available
+        self.updateTimerFrame = CreateFrame("Frame")
+        self.updateTimerFrame:SetScript("OnUpdate", function(_, elapsed)
+            if not self.updateTimerElapsed then self.updateTimerElapsed = 0 end
+            self.updateTimerElapsed = self.updateTimerElapsed + elapsed
+            if self.updateTimerElapsed >= 1.0 then
+                self.updateTimerElapsed = 0
+                if self.UpdateDisplay then pcall(function() self:UpdateDisplay() end) end
+            end
+        end)
+    end
     
     -- Check if we're in a group
-    self:UpdateGroupStatus()
+    if self.UpdateGroupStatus and type(self.UpdateGroupStatus) == "function" then
+        pcall(function() self:UpdateGroupStatus() end)
+    end
     
     -- Initial buff check
-    self:CheckBuffs()
+    if self.CheckBuffs and type(self.CheckBuffs) == "function" then
+        pcall(function() self:CheckBuffs() end)
+    end
     
     -- Initial display update
-    self:UpdateDisplay()
+    if self.UpdateDisplay and type(self.UpdateDisplay) == "function" then
+        pcall(function() self:UpdateDisplay() end)
+    end
     
-    self:Debug("VUIMissingRaidBuffs module enabled")
+    -- Debug message with safety check
+    if self.Debug and type(self.Debug) == "function" then
+        pcall(function() self:Debug("VUIMissingRaidBuffs module enabled") end)
+    end
 end
 
 function M:OnDisable()
@@ -265,16 +428,36 @@ function M:OnDisable()
         self.containerFrame:Hide()
     end
     
-    -- Cancel timers
+    -- Cancel timers with safety check
     if self.updateTimer then
-        self:CancelTimer(self.updateTimer)
+        if self.CancelTimer and type(self.CancelTimer) == "function" then
+            pcall(function() self:CancelTimer(self.updateTimer) end)
+        end
         self.updateTimer = nil
     end
     
-    -- Unregister events
-    self:UnregisterAllEvents()
+    -- Stop our fallback timer if it exists
+    if self.updateTimerFrame then
+        self.updateTimerFrame:SetScript("OnUpdate", nil)
+        self.updateTimerFrame = nil
+    end
     
-    self:Debug("VUIMissingRaidBuffs module disabled")
+    -- Unregister events with safety check
+    if self.UnregisterAllEvents and type(self.UnregisterAllEvents) == "function" then
+        pcall(function() self:UnregisterAllEvents() end)
+    end
+    
+    -- Clean up the event frame if we created one
+    if self.eventFrame then
+        self.eventFrame:SetScript("OnEvent", nil)
+        self.eventFrame:UnregisterAllEvents()
+        self.eventFrame = nil
+    end
+    
+    -- Debug message with safety check
+    if self.Debug and type(self.Debug) == "function" then
+        pcall(function() self:Debug("VUIMissingRaidBuffs module disabled") end)
+    end
 end
 
 -- Debug and logging functions
@@ -896,4 +1079,6 @@ function M:GetOptions()
 end
 
 -- Register the module
-VUI:RegisterModule(MODNAME, M)
+if VUI.RegisterModule then
+    VUI:RegisterModule(MODNAME, M)
+end

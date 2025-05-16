@@ -37,31 +37,73 @@ frame.name = "Profile"
 frame.parent = "TrufiGCD"
 ns.utils.interfaceOptions_AddCategory(frame)
 
-local selectActiveProfile = CreateFrame("Frame", "TrGCDActiveProfileSelect", frame, "UIDropDownMenuTemplate")
-selectActiveProfile:SetPoint("TOPLEFT", -5, -50)
+-- Profile selector section
+local profileSelectorText = frame:CreateFontString(nil, "OVERLAY")
+profileSelectorText:SetFont(STANDARD_TEXT_FONT, 12)
+profileSelectorText:SetText("Active profile:")
+profileSelectorText:SetPoint("TOPLEFT", 10, -50)
 
-UIDropDownMenu_SetWidth(selectActiveProfile, 150)
-UIDropDownMenu_Initialize(selectActiveProfile, function()
-    local info = UIDropDownMenu_CreateInfo()
+-- Create profile buttons container
+local profileButtonsContainer = CreateFrame("Frame", nil, frame)
+profileButtonsContainer:SetPoint("TOPLEFT", 30, -70)
+profileButtonsContainer:SetSize(200, 80)
 
-    for i, profile in pairs(ns.settings.profiles) do
-        info.text = profile.name
-        info.menuList = i
-        info.func = function()
-            activateProfile(profile)
-        end
-        info.notCheckable = true
+-- Create scrollframe for profile buttons
+local scrollFrame = CreateFrame("ScrollFrame", nil, profileButtonsContainer, "UIPanelScrollFrameTemplate")
+scrollFrame:SetPoint("TOPLEFT", 0, 0)
+scrollFrame:SetPoint("BOTTOMRIGHT", -25, 0)
 
-        UIDropDownMenu_AddButton(info)
+local scrollChild = CreateFrame("Frame")
+scrollFrame:SetScrollChild(scrollChild)
+scrollChild:SetSize(175, 10) -- Height will be adjusted dynamically
+
+-- Active profile display
+local activeProfileText = frame:CreateFontString(nil, "OVERLAY")
+activeProfileText:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
+activeProfileText:SetTextColor(0, 1, 0)
+activeProfileText:SetPoint("TOPLEFT", profileSelectorText, "TOPRIGHT", 10, 0)
+
+local function updateProfileButtons()
+    -- Clear existing buttons
+    for _, child in pairs({scrollChild:GetChildren()}) do
+        child:Hide()
+        child:SetParent(nil)
     end
-end)
-
-ns.frameUtils.addTooltip(selectActiveProfile, "Active profile", "Change the currently active profile")
-
-local selectActiveProfileText = selectActiveProfile:CreateFontString(nil, "BACKGROUND")
-selectActiveProfileText:SetFont(STANDARD_TEXT_FONT, 12)
-selectActiveProfileText:SetText("Active profile")
-selectActiveProfileText:SetPoint("TOPLEFT", 30, 12)
+    
+    -- Create new buttons
+    local buttonHeight = 25
+    local yOffset = 0
+    local buttonWidth = 175
+    
+    -- Safety check
+    if not ns.settings or not ns.settings.profiles then
+        return
+    end
+    
+    for i, profile in pairs(ns.settings.profiles) do
+        if profile and type(profile) == "table" then
+            local btn = CreateFrame("Button", nil, scrollChild, "UIPanelButtonTemplate")
+            btn:SetSize(buttonWidth, buttonHeight)
+            btn:SetPoint("TOPLEFT", 0, -yOffset)
+            btn:SetText(profile.name or "Unnamed Profile")
+            
+            -- Highlight active profile
+            if ns.settings.activeProfile == profile then
+                btn:SetNormalFontObject("GameFontHighlight")
+                btn:SetHighlightFontObject("GameFontHighlight")
+            end
+            
+            btn:SetScript("OnClick", function()
+                activateProfile(profile)
+            end)
+            
+            yOffset = yOffset + buttonHeight + 2
+        end
+    end
+    
+    -- Update scrollchild height
+    scrollChild:SetHeight(math.max(yOffset, 10))
+end
 
 -- delete confirm frame
 local frameConfirmDelete = CreateFrame("Frame", "TrGCDframeConfirmDelete", frame, "TooltipBorderBackdropTemplate")
@@ -130,7 +172,7 @@ end
 local editboxNewProfile = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
 editboxNewProfile:SetWidth(160)
 editboxNewProfile:SetHeight(20)
-editboxNewProfile:SetPoint("TOPLEFT", 18, -120)
+editboxNewProfile:SetPoint("TOPLEFT", 18, -160)
 editboxNewProfile:SetAutoFocus(false)
 editboxNewProfile:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
 ns.frameUtils.addTooltip(editboxNewProfile, "New profile", "Copy the active profile settings to a new one")
@@ -143,7 +185,7 @@ editboxNewProfileText:SetPoint("TOPLEFT", 7, 15)
 local buttonCreateNew = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
 buttonCreateNew:SetWidth(60)
 buttonCreateNew:SetHeight(22)
-buttonCreateNew:SetPoint("TOPLEFT", 175, -118)
+buttonCreateNew:SetPoint("TOPLEFT", 175, -158)
 buttonCreateNew:SetText("New")
 buttonCreateNew:Disable()
 
@@ -169,17 +211,44 @@ editboxNewProfile:SetScript("OnTextChanged", function()
 end)
 
 profileFrame.syncWithSettings = function()
-    UIDropDownMenu_SetText(selectActiveProfile, ns.settings.activeProfile.name)
-
-    if ns.utils.size(ns.settings.profiles) <= 1 then
-        buttonDelete:Disable()
+    -- Update active profile text display
+    if ns.settings and ns.settings.activeProfile and ns.settings.activeProfile.name then
+        activeProfileText:SetText(ns.settings.activeProfile.name)
     else
-        buttonDelete:Enable()
+        activeProfileText:SetText("Default")
+    end
+    
+    -- Update profile buttons
+    updateProfileButtons()
+
+    if ns.utils and ns.utils.size and ns.settings and ns.settings.profiles then
+        if ns.utils.size(ns.settings.profiles) <= 1 then
+            buttonDelete:Disable()
+        else
+            buttonDelete:Enable()
+        end
+    else
+        -- Safely disable if we can't determine the size
+        buttonDelete:Disable()
     end
 
     --TODO: move to the units module
-    for _, unit in pairs(ns.units) do
-        unit.iconQueue:Resize()
-        unit:Clear()
+    if ns.units then
+        for _, unit in pairs(ns.units) do
+            if unit and unit.iconQueue then
+                -- Add safety check to ensure Resize method exists
+                if unit.iconQueue.Resize then
+                    unit.iconQueue:Resize()
+                end
+            end
+            if unit and unit.Clear then
+                unit:Clear()
+            end
+        end
     end
 end
+
+-- Initial setup
+frame:SetScript("OnShow", function()
+    updateProfileButtons()
+end)

@@ -1,5 +1,10 @@
 local Layout = VUI:NewModule('Config.Layout.FAQ')
 
+-- Use the centralized helper function from ConfigHelpers
+local function SafeGetModule(moduleName)
+    return VUI.ConfigHelpers.SafeGetModule(moduleName)
+end
+
 function Layout:OnEnable()
     -- Database
     local db = VUI.db
@@ -7,8 +12,17 @@ function Layout:OnEnable()
     -- Components
     local VUIConfig = LibStub('VUIConfig')
 
-    -- Imports
-    local User = VUI:GetModule("Data.User")
+    -- Safely get the User module
+    local User = SafeGetModule("Data.User")
+    
+    -- If User module isn't available yet, retry after delay
+    if not User then
+        VUI.ConfigHelpers.FindVModule("Data.User", function(module)
+            User = module
+            self:OnEnable()
+        end)
+        return
+    end
 
     -- Layout
     Layout.layout = {

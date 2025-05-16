@@ -159,6 +159,10 @@ function Layout:OnEnable()
                         local UIScaleModule = VUI:GetModule("Misc.UIScale")
                         if UIScaleModule then
                             UIScaleModule:ApplyScale(value)
+                        else
+                            VUI:Print("UIScale module not found. Setting UI scale directly.")
+                            SetCVar("uiScale", value)
+                            UIParent:SetScale(value)
                         end
                     end
                 },
@@ -176,6 +180,18 @@ function Layout:OnEnable()
                             UIScaleModule:ApplyScale(autoScale)
                             -- Refresh the slider value
                             VUI:GetModule("Config.Gui"):Refresh()
+                        else
+                            local screenWidth, screenHeight = GetPhysicalScreenSize()
+                            local recommendedScale = math.min(1.0, 768 / screenHeight)
+                            recommendedScale = math.floor(recommendedScale * 100 + 0.5) / 100
+                            
+                            VUI:Print("Auto-calculated scale for your " .. screenWidth .. "x" .. screenHeight .. " resolution: " .. recommendedScale)
+                            SetCVar("uiScale", recommendedScale)
+                            UIParent:SetScale(recommendedScale)
+                            db.profile.misc.uiscale.scale = recommendedScale
+                            
+                            -- Refresh the slider value
+                            VUI:GetModule("Config.Gui"):Refresh()
                         end
                     end
                 },
@@ -190,9 +206,14 @@ function Layout:OnEnable()
                         local UIScaleModule = VUI:GetModule("Misc.UIScale")
                         if UIScaleModule then
                             UIScaleModule:ResetScale()
-                            -- Refresh the slider value
-                            VUI:GetModule("Config.Gui"):Refresh()
+                        else
+                            SetCVar("uiScale", 1.0)
+                            UIParent:SetScale(1.0)
+                            db.profile.misc.uiscale.scale = 1.0
+                            VUI:Print("UI Scale has been reset to default (1.0)")
                         end
+                        -- Refresh the slider value
+                        VUI:GetModule("Config.Gui"):Refresh()
                     end
                 },
             }

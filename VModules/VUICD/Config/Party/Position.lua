@@ -1,5 +1,101 @@
-local E, L = select(2, ...):unpack()
-local P = E.Party
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module exists
+VUICD.Party = VUICD.Party or {}
+
+-- Setup localization with fallbacks
+local L = {}
+local success = pcall(function() L = LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if not success then
+    -- Add fallbacks for localization
+    L["LEFT"] = "LEFT"
+    L["RIGHT"] = "RIGHT"
+    L["TOPLEFT"] = "TOPLEFT"
+    L["TOPRIGHT"] = "TOPRIGHT"
+    L["BOTTOMLEFT"] = "BOTTOMLEFT"
+    L["BOTTOMRIGHT"] = "BOTTOMRIGHT"
+    L["Position"] = "Position"
+    L["Offset X"] = "Offset X"
+    L["Offset Y"] = "Offset Y"
+    L["Breakpoint"] = "Breakpoint"
+    L["Select a value lower than Breakpoint1"] = "Select a value lower than Breakpoint1"
+    L["Row"] = "Row"
+    L["Column"] = "Column"
+    L["Set the number of icons per column"] = "Set the number of icons per column"
+    L["Set the number of icons per row"] = "Set the number of icons per row"
+    L["Padding X"] = "Padding X"
+    L["Set the padding space between icon columns"] = "Set the padding space between icon columns"
+    L["Padding Y"] = "Padding Y"
+    L["Set the padding space between icon rows"] = "Set the padding space between icon rows"
+    L["Max Number of Visible Icons"] = "Max Number of Visible Icons"
+    L["Set the max number of icons that can be displayed per unit"] = "Set the max number of icons that can be displayed per unit"
+    L["For double/triple layout, it will limit the number of icons per line"] = "For double/triple layout, it will limit the number of icons per line"
+    L["0: Disable option"] = "0: Disable option"
+    L["Display Inactive Icons"] = "Display Inactive Icons"
+    L["Display icons not on cooldown"] = "Display icons not on cooldown"
+    L["Grow Rows Upward"] = "Grow Rows Upward"
+    L["Toggle the grow direction of icon rows"] = "Toggle the grow direction of icon rows"
+    L["Manual Mode"] = "Manual Mode"
+    L["Detach from raid frames and set position manually"] = "Detach from raid frames and set position manually"
+    L["Lock frame position"] = "Lock frame position"
+    L["Reset frame position"] = "Reset frame position"
+    L["Anchor Point"] = "Anchor Point"
+    L["Set the anchor point on the spell bar"] = "Set the anchor point on the spell bar"
+    L["Having \"RIGHT\" in the anchor point, icons grow left, otherwise right"] = "Having \"RIGHT\" in the anchor point, icons grow left, otherwise right"
+    L["Attachment Point"] = "Attachment Point"
+    L["Set the anchor attachment point on the party/raid frame"] = "Set the anchor attachment point on the party/raid frame"
+    L["Set the spell bar position"] = "Set the spell bar position"
+    L["More..."] = "More..."
+    L["Select addon to override auto anchoring"] = "Select addon to override auto anchoring"
+    L["Layout"] = "Layout"
+    L["Select the icon layout"] = "Select the icon layout"
+    L["Horizontal"] = "Horizontal"
+    L["Vertical"] = "Vertical"
+    L["Select the highest spell priority to use as the start of the 2nd row"] = "Select the highest spell priority to use as the start of the 2nd row"
+    L["Select the highest spell priority to use as the start of the 3rd row"] = "Select the highest spell priority to use as the start of the 3rd row"
+    L["Use Double Row"] = "Use Double Row"
+    L["Use Double Column"] = "Use Double Column"
+    L["Use Triple Row"] = "Use Triple Row"
+    L["Use Triple Column"] = "Use Triple Column"
+    L["Spell Priority"] = "Spell Priority"
+    L["Spell-Type Priority"] = "Spell-Type Priority"
+end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
+local P = VUICD.Party
+local C = VUICD.Config or {}
+
+-- Add string constants that might be referenced before initialization
+E.STR = E.STR or {}
+E.STR.MAX_RANGE = E.STR.MAX_RANGE or "Set value between -999 and 999"
+
+-- Create necessary reference tables
+E.L_ALL_ZONE = E.L_ALL_ZONE or {
+    arena = "Arena",
+    pvp = "Battleground",
+    party = "Party",
+    raid = "Raid"
+}
+
+-- Create necessary reference tables if not already set
+E.L_PRIORITY = E.L_PRIORITY or {}
+
+-- Helper function for safe string formatting
+local function safeFormat(formatStr, ...)
+    if not formatStr then return "" end
+    local success, result = pcall(format, formatStr, ...)
+    if success then
+        return result
+    else
+        return formatStr
+    end
+end
 
 local L_POINTS = {
 	["LEFT"] = L["LEFT"],
@@ -122,8 +218,8 @@ local position = {
 				anchor = {
 					disabled = isPreset,
 					name = L["Anchor Point"],
-					desc = format("%s\n\n%s", L["Set the anchor point on the spell bar"],
-						L["Having \"RIGHT\" in the anchor point, icons grow left, otherwise right"]),
+					desc = safeFormat("%s\n\n%s", L["Set the anchor point on the spell bar"] or "",
+						L["Having \"RIGHT\" in the anchor point, icons grow left, otherwise right"] or ""),
 					order = 3,
 					type = "select",
 					values = L_POINTS,
@@ -178,12 +274,12 @@ local position = {
 				},
 				sortBy = {
 					name = COMPACT_UNIT_FRAME_PROFILE_SORTBY,
-					desc = format("%s.\n%s > %s.", L["Spell Priority"], L["Spell-Type Priority"], L["Spell Priority"]),
+					desc = safeFormat("%s.\n%s > %s.", L["Spell Priority"] or "", L["Spell-Type Priority"] or "", L["Spell Priority"] or ""),
 					order = 12,
 					type = "select",
 					values = {
 						L["Spell Priority"],
-						format("%s > %s", L["Spell-Type Priority"], L["Spell Priority"]),
+						safeFormat("%s > %s", L["Spell-Type Priority"] or "", L["Spell Priority"] or ""),
 					},
 				},
 				breakPoint = {
@@ -230,7 +326,7 @@ local position = {
 					type = "range", min = 0, max = 100, step = 1,
 					confirm = function(info, value)
 						return value >= E.profile.Party[ info[2] ].position.breakPoint3
-							and L["Select a value lower than Breakpoint1"]
+							and (L["Select a value lower than Breakpoint1"] or "")
 					end,
 				},
 				lb1 = {
@@ -268,10 +364,10 @@ local position = {
 				},
 				maxNumIcons = {
 					name = L["Max Number of Visible Icons"],
-					desc = format("%s\n\n%s\n\n|cffff2020%s",
-						L["Set the max number of icons that can be displayed per unit"],
-						L["For double/triple layout, it will limit the number of icons per line"],
-						L["0: Disable option"]),
+					desc = safeFormat("%s\n\n%s\n\n|cffff2020%s",
+						L["Set the max number of icons that can be displayed per unit"] or "",
+						L["For double/triple layout, it will limit the number of icons per line"] or "",
+						L["0: Disable option"] or ""),
 					order = 19,
 					type = "range",
 					min = 0, max = 100, softMax = 20, step = 1,

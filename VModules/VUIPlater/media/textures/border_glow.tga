@@ -1,0 +1,3 @@
+-- This is a placeholder for the glowing border texture
+-- In a real addon implementation, this would be a TGA image file
+-- For production, you would need to create or acquire an actual texture file

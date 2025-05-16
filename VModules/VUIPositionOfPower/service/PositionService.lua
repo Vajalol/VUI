@@ -3,8 +3,12 @@
 -- Based on source: https://wago.io/MTSDyaGz9
 
 local AddonName, VUI = ...
-local M = VUI:GetModule("VUIPositionOfPower")
+local M = VUI and VUI.VUIPositionOfPower or {}
 local PositionService = {}
+
+-- Skip if module isn't available
+if not M then return end
+
 M.PositionService = PositionService
 
 -- List of position of power spell IDs by class
@@ -120,15 +124,42 @@ local activePositions = {}
 
 -- Initialize the position service
 function PositionService:Initialize()
-    -- Register for combat log events to track auras
-    M:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    M:RegisterEvent("PLAYER_ENTERING_WORLD")
-    M:RegisterEvent("UNIT_AURA", "CheckAuras")
+    -- Register for combat log events to track auras with safety checks
+    if M and M.RegisterEvent and type(M.RegisterEvent) == "function" then
+        -- Use pcall to avoid errors if event registration fails
+        pcall(function()
+            M:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+            M:RegisterEvent("PLAYER_ENTERING_WORLD")
+            M:RegisterEvent("UNIT_AURA", "CheckAuras")
+        end)
+    else
+        -- Fallback for when RegisterEvent isn't available
+        local frame = CreateFrame("Frame")
+        frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame:RegisterEvent("UNIT_AURA")
+        
+        frame:SetScript("OnEvent", function(_, event, ...)
+            if event == "COMBAT_LOG_EVENT_UNFILTERED" and M and M.COMBAT_LOG_EVENT_UNFILTERED then
+                M:COMBAT_LOG_EVENT_UNFILTERED(...)
+            elseif event == "PLAYER_ENTERING_WORLD" and M and M.PLAYER_ENTERING_WORLD then
+                M:PLAYER_ENTERING_WORLD(...)
+            elseif event == "UNIT_AURA" and M and M.CheckAuras then
+                M:CheckAuras(...)
+            end
+        end)
+        
+        -- Store the frame for later cleanup if needed
+        PositionService.eventFrame = frame
+    end
     
     -- Initial aura check
     self:CheckAuras("player")
     
-    M:Debug("PositionService initialized")
+    -- Call debug function with safety check
+    if M and M.Debug and type(M.Debug) == "function" then
+        M:Debug("PositionService initialized")
+    end
 end
 
 -- Check unit for position of power auras

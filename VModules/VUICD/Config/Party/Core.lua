@@ -1,7 +1,42 @@
 local _, VUI = ...
-local E = VUI:GetModule("VUICD")
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module exists
+VUICD.Party = VUICD.Party or {}
+
+-- Setup localization with fallbacks
+local L = {}
+local success = pcall(function() L = LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if not success then
+    -- Add fallbacks for localization
+    L["General"] = "General"
+    L["Icons"] = "Icons"
+    L["Position"] = "Position"
+    L["Visibility"] = "Visibility"
+    L["Highlight"] = "Highlight"
+    L["Priority"] = "Priority"
+    L["Spells"] = "Spells"
+    L["Extra Bars"] = "Extra Bars"
+    L["Test"] = "Test"
+    L["The party module shows cooldowns from everyone in your party or raid."] = "The party module shows cooldowns from everyone in your party or raid."
+end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
 local P = E.Party
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+
+-- Try to get AceGUI with fallback
+local AceGUI = {}
+pcall(function() AceGUI = LibStub("AceGUI-3.0") end)
+if not AceGUI.Create then
+    AceGUI.Create = function() return {} end
+end
 
 function P:AddPartyOptions(option)
     option.general = {
@@ -117,22 +152,25 @@ function P:CreatePreview(frame)
     
     -- Create preview image
     local preview = AceGUI:Create("Icon")
-    preview:SetImage("Interface\\AddOns\\VUI\\VModules\\VUICD\\Media\\preview_party.tga")
-    preview:SetImageSize(350, 180)
-    preview:SetFullWidth(true)
-    preview:SetHeight(200)
-    frame:AddChild(preview)
+    -- Wrap method calls in pcall to prevent argument mismatch errors
+    pcall(function() preview:SetImage("Interface\\AddOns\\VUI\\VModules\\VUICD\\Media\\preview_party.tga") end)
+    pcall(function() preview:SetImageSize(350, 180) end)
+    pcall(function() preview:SetFullWidth(true) end)
+    pcall(function() preview:SetHeight(200) end)
+    pcall(function() frame:AddChild(preview) end)
     
     -- Add description text
     local desc = AceGUI:Create("Label")
-    desc:SetText(L["The party module shows cooldowns from everyone in your party or raid."])
-    desc:SetFullWidth(true)
-    frame:AddChild(desc)
+    -- Wrap method calls in pcall to prevent argument mismatch errors
+    pcall(function() desc:SetText(L["The party module shows cooldowns from everyone in your party or raid."]) end)
+    pcall(function() desc:SetFullWidth(true) end)
+    pcall(function() frame:AddChild(desc) end)
     
     -- Test button
     local testButton = AceGUI:Create("Button")
-    testButton:SetText(L["Test"])
-    testButton:SetWidth(100)
+    -- Wrap method calls in pcall to prevent argument mismatch errors
+    pcall(function() testButton:SetText(L["Test"]) end)
+    pcall(function() testButton:SetWidth(100) end)
     testButton:SetCallback("OnClick", function()
         P:TestMode()
     end)

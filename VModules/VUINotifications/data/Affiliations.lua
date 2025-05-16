@@ -1,5 +1,8 @@
 local addonName, VUI = ...
 
+-- Ensure namespace exists
+VUI.Notifications = VUI.Notifications or {}
+
 -- Define affiliations for combat log filtering
 function VUI.Notifications.Affiliations()
     return {

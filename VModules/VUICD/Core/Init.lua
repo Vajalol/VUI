@@ -5,11 +5,12 @@
 local AddonName, VUI = ...
 local MODNAME = "VUICD"
 
--- Create a global placeholder to ensure references work even during initialization
+-- Use global reference instead of AceAddon-3.0 to fix load order issues
 _G["VUICD"] = _G["VUICD"] or {}
 
 -- Safety check to ensure VUI is available before calling NewModule
 local M
+local VUI = _G["VUI"]
 if VUI and VUI.NewModule then
     M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceHook-3.0")
     -- Update the global references with the actual module
@@ -141,32 +142,71 @@ M.defaults = {
 
 -- Initialize the module
 function M:OnInitialize()
-    -- Create the database
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Make sure namespaces exists to avoid nil indexing
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUICD"] or VUI.db.namespaces["vuicd"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUICD"] = namespace
+            VUI.db.namespaces["vuicd"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUICD", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuicd"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
     -- Initialize the configuration panel
     self:InitializeConfig()
     
     -- Register callback for theme changes
-    VUI:RegisterCallback("OnThemeChanged", function()
-        if self.UpdateTheme then
-            self:UpdateTheme()
-        end
-    end)
+    if VUI and VUI.RegisterCallback then
+        VUI:RegisterCallback("OnThemeChanged", function()
+            if self.UpdateTheme then
+                self:UpdateTheme()
+            end
+        end)
+    end
     
     -- Initialize submodules
     self:InitializeModules()
     
-    -- Register slash command
-    self:RegisterChatCommand("vuicd", "SlashCommand")
-    
-    -- Legacy support
-    self:RegisterChatCommand("omnicd", "SlashCommand")
+    -- Register slash command with safety checks
+    if self.RegisterChatCommand and type(self.RegisterChatCommand) == "function" then
+        self:RegisterChatCommand("vuicd", "SlashCommand")
+        
+        -- Legacy support
+        self:RegisterChatCommand("omnicd", "SlashCommand")
+    else
+        -- Fallback: Register with SlashCmdList
+        _G.SLASH_VUICD1 = "/vuicd"
+        _G.SLASH_VUICD2 = "/omnicd"
+        SlashCmdList["VUICD"] = function(input)
+            self:SlashCommand(input)
+        end
+    end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " initialized")
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " initialized")
+    end
 end
 
 -- Enable the module
@@ -202,24 +242,30 @@ end
 -- Configuration initialization
 function M:InitializeConfig()
     -- Register with VUI's configuration system
-    VUI.Config:RegisterModuleOptions("VUICD", function()
-        -- Open the configuration panel
-        if self.OpenConfig then
-            self:OpenConfig()
-        end
-    end)
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions("VUICD", function()
+            -- Open the configuration panel
+            if self.OpenConfig then
+                self:OpenConfig()
+            end
+        end)
+    end
 end
 
 -- Slash command handler
 function M:SlashCommand(input)
     if input == "toggle" then
         self.db.profile.enabled = not self.db.profile.enabled
-        VUI:Print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+        if VUI and type(VUI.Print) == "function" then
+            VUI:Print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+        else
+            print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+        end
     else
         -- Open configuration
         if self.OpenConfig then
             self:OpenConfig()
-        else
+        elseif VUI and VUI.Config and type(VUI.Config.OpenToCategory) == "function" then
             VUI.Config:OpenToCategory(self.TITLE)
         end
     end
@@ -230,7 +276,7 @@ function M:UpdateTheme()
     -- Update visuals based on current theme
     if not self.db.profile.theme.useThemeColors then return end
     
-    local theme = VUI:GetActiveTheme()
+    local theme = VUI and VUI.GetActiveTheme and VUI:GetActiveTheme()
     if not theme then return end
     
     -- Apply theme colors to cooldown bars
@@ -241,7 +287,11 @@ end
 
 -- Debug helper
 function M:Debug(...)
-    VUI:Debug(self.NAME, ...)
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME, ...)
+    else
+        print(self.NAME, ...)
+    end
 end
 
 -- API for other modules to use

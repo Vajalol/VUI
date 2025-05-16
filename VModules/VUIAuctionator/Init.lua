@@ -1,106 +1,149 @@
 -------------------------------------------------------------------------------
 -- VUIAuctionator Module
--- Enhanced auction house interface with VUI integration
--- Based on Auctionator with VUI theming
+-- Enhanced Auction House Interface for WoW
 -------------------------------------------------------------------------------
 
-local AddonName, VUI = ...
+local AddonName, _ = ...
 local MODNAME = "VUIAuctionator"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceConsole-3.0")
+
+-- Use global reference instead of local addon variable to fix load order issues
+local VUI = _G["VUI"]
+
+-- Set up global reference early to prevent nil errors
+_G["VUIAuctionator"] = _G["VUIAuctionator"] or {}
+
+local M
+
+-- Create module with safety checks
+if VUI and VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceHook-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIAuctionator"] = M
+else
+    -- Fallback if VUI isn't available
+    M = {}
+    M.NAME = MODNAME
+    M.Debug = function(self, msg) print("[VUIAuctionator] " .. tostring(msg)) end
+    M.OnInitialize = function() end
+    M.OnEnable = function() end
+    
+    -- Update the global reference with our placeholder
+    _G["VUIAuctionator"] = M
+end
 
 -- Module Constants
 M.NAME = MODNAME
 M.TITLE = "VUI Auctionator"
-M.DESCRIPTION = "Enhanced auction house interface with VUI theming"
+M.DESCRIPTION = "Enhanced auction house interface"
 M.VERSION = "1.0"
 
--- Create namespace in VUI for legacy compatibility
+-- Initialize namespace early to prevent errors
 VUI.Auctionator = VUI.Auctionator or {}
 local Auctionator = VUI.Auctionator
+
+-- Initialize all required namespaces
+Auctionator.Constants = Auctionator.Constants or {}
+Auctionator.Database = Auctionator.Database or {}
+Auctionator.Locales = Auctionator.Locales or {}
+Auctionator.Utilities = Auctionator.Utilities or {}
+Auctionator.Config = Auctionator.Config or {}
+Auctionator.Selling = Auctionator.Selling or {}
+Auctionator.Buying = Auctionator.Buying or {}
+Auctionator.Cancelling = Auctionator.Cancelling or {}
+Auctionator.Shopping = Auctionator.Shopping or {}
+Auctionator.FullScan = Auctionator.FullScan or {}
+Auctionator.Tabs = Auctionator.Tabs or {}
+Auctionator.API = Auctionator.API or {}
 
 -- Default settings
 M.defaults = {
     profile = {
-        -- General
-        autoscan_on_open = true,
-        open_first_auction_when_searching = true,
-        default_tab = 0,
-        auction_chat_log = true,
-        selling_bag_collapsed = false,
-        selling_bag_select_shortcut = "alt-click",
-        selling_icon_size = 42,
-        selling_ignored_keys = {},
-        selling_favourite_keys = {},
-        selling_auto_select_next = true,
-        selling_missing_favourites = true,
-        selling_post_shortcut = "enter",
-        lifo_auction_sort = false,
+        enabled = true,
+        defaultTab = "Selling",
         
-        -- Cancelling tab
-        cancel_undercut_shortcut = "alt-right-click",
-        no_price_database = false,
-        price_history_days = 21,
-        feature_selling_1 = true,
+        minimap = {
+            hide = false,
+            position = 45
+        },
         
-        -- Tooltip
-        tooltip_market_value = true,
-        tooltip_historical_price = true,
-        tooltip_vendor_price = true,
-        hide_vendor_tips = true,
+        appearance = {
+            showTooltips = true,
+            defaultListSortOrder = "name_asc",
+            colorHighlights = true
+        },
         
-        -- Price settings
-        undercut_percentage = 0,
-        undercut_static_value = 1,
+        selling = {
+            showOwnAuctions = true,
+            defaultDuration = 24,
+            autoSellPrices = {},
+            defaultStackSize = 0  -- 0 means max
+        },
         
-        -- Database settings
-        auto_purge_old_prices = true,
-        clear_cursor_on_click = false,
-        stack_size_memory = {},
+        shopping = {
+            defaultListName = "My Shopping List"
+        }
     }
 }
 
 -- Initialize the module
 function M:OnInitialize()
-    -- Create the database using AceDB
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
-    
-    -- Connect the new DB to the Auctionator config system
-    Auctionator.db = self.db
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUIAuctionator"] or VUI.db.namespaces["vuiauctionator"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUIAuctionator"] = namespace
+            VUI.db.namespaces["vuiauctionator"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUIAuctionator", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuiauctionator"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
     -- Initialize the configuration panel
     self:InitializeConfig()
     
     -- Register callback for theme changes
-    VUI:RegisterCallback("OnThemeChanged", function()
-        if self.UpdateTheme then
-            self:UpdateTheme()
-        end
-    end)
-    
-    -- Initialize Auctionator components
-    self:InitializeComponents()
-    
-    -- Register slash command
-    self:RegisterChatCommand("vuiah", "SlashCommand")
-    
-    -- Legacy support
-    self:RegisterChatCommand("auc", "SlashCommand")
+    if VUI and VUI.RegisterCallback then
+        VUI:RegisterCallback("OnThemeChanged", function()
+            if self.UpdateTheme then
+                self:UpdateTheme()
+            end
+        end)
+    end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " initialized")
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " initialized")
+    else
+        print("[VUIAuctionator] initialized")
+    end
 end
 
 -- Enable the module
 function M:OnEnable()
     -- Register core events
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("AUCTION_HOUSE_SHOW")
-    self:RegisterEvent("AUCTION_HOUSE_CLOSED")
     
     -- Debug message
-    VUI:Debug(self.NAME .. " enabled")
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " enabled")
+    else
+        print("[VUIAuctionator] enabled")
+    end
 end
 
 -- Disable the module
@@ -109,59 +152,24 @@ function M:OnDisable()
     self:UnregisterAllEvents()
     
     -- Debug message
-    VUI:Debug(self.NAME .. " disabled")
-end
-
--- Initialize components
-function M:InitializeComponents()
-    -- Create event bus first
-    if Auctionator.CreateEventBuses then
-        Auctionator.CreateEventBuses()
-    end
-    
-    -- Initialize config system (will use our AceDB now)
-    if Auctionator.Config and Auctionator.Config.InitializeFromAceDB then
-        Auctionator.Config.InitializeFromAceDB(self.db.profile)
-    elseif Auctionator.Config and Auctionator.Config.Initialize then
-        -- Legacy method (will be updated to use AceDB)
-        Auctionator.Config.Initialize()
-    end
-    
-    -- Initialize AH system
-    if Auctionator.AH and Auctionator.AH.Initialize then
-        Auctionator.AH.Initialize()
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " disabled")
+    else
+        print("[VUIAuctionator] disabled")
     end
 end
 
 -- Configuration initialization
 function M:InitializeConfig()
     -- Register with VUI's configuration system
-    VUI.Config:RegisterModuleOptions(self.NAME, function()
-        -- Open the configuration panel
-        if self.OpenConfig then
-            self:OpenConfig()
-        end
-    end)
-end
-
--- Slash command handler
-function M:SlashCommand(input)
-    if input == "toggle" then
-        self.db.profile.enabled = not self.db.profile.enabled
-        VUI:Print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
-    else
-        -- Open configuration
-        if self.OpenConfig then
-            self:OpenConfig()
-        else
-            VUI.Config:OpenToCategory(self.TITLE)
-        end
+    if VUI and VUI.Config and VUI.Config.RegisterModuleOptions then
+        VUI.Config:RegisterModuleOptions(self.NAME, function()
+            -- Open the configuration panel
+            if self.OpenConfig then
+                self:OpenConfig()
+            end
+        end)
     end
-end
-
--- Debug helper
-function M:Debug(...)
-    VUI:Debug(self.NAME, ...)
 end
 
 -- Export the module to the namespace

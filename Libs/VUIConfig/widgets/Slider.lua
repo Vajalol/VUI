@@ -95,6 +95,18 @@ local SliderMethods = {
 	GetValue = function(self)
 		local minimum, maximum = self:GetMinMaxValues();
 		return Clamp(VUIConfig.Util.roundPrecision(self:OriginalGetValue(), self.precision), minimum, maximum);
+	end,
+	
+	-- Add SetValue method to handle nil values safely
+	SetValue = function(self, value)
+		-- If nil value is provided, default to minimum value
+		if value == nil then
+			local minimum = select(1, self:GetMinMaxValues()) or 0
+			value = minimum
+		end
+		
+		-- Call the original SetValue method
+		return self:OriginalSetValue(value)
 	end
 };
 
@@ -143,6 +155,7 @@ function VUIConfig:Slider(parent, width, height, value, vertical, min, max)
 	end
 
 	slider.OriginalGetValue = slider.GetValue;
+	slider.OriginalSetValue = slider.SetValue;
 
 	for k, v in pairs(SliderMethods) do
 		slider[k] = v;
@@ -164,6 +177,10 @@ end
 
 local SliderWithBoxMethods = {
 	SetValue = function(self, v)
+		if v == nil then
+			v = self.min or 0
+		end
+		
 		self.lock = true;
 		self.slider:SetValue(v);
 		v = self.slider:GetValue();

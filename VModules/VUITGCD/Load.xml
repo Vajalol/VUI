@@ -3,6 +3,12 @@
   <!-- VUI integration -->
   <Script file="Init.lua"/>
   
+  <!-- Templates and Polyfills -->
+  <Include file="Polyfills.xml"/>
+  
+  <!-- Media files -->
+  <Include file="..\..\Media\modules\VUITGCD\Load.xml"/>
+  
   <!-- Libraries -->
   <Script file="Libs\LibStub\Libstub.lua"/>
   

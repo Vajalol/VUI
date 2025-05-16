@@ -41,44 +41,44 @@ function Layout:OnEnable()
                     type = 'checkbox',
                     label = 'Icons',
                     tooltip = 'Display spell icons on castbar',
-                    column = 4
+                    column = 3
                 },
                 casttime = {
                     key = 'timer',
                     type = 'checkbox',
                     label = 'Timer',
                     tooltip = 'Display cast time on castbar',
-                    column = 4
+                    column = 3
                 },
                 latency = {
                     key = 'latency',
                     type = 'checkbox',
                     label = 'Latency',
                     tooltip = 'Display latency information on the left side of the castbar',
-                    column = 4
+                    column = 3
                 },
                 targetname = {
                     key = 'targetname',
                     type = 'checkbox',
                     label = 'Target Name',
                     tooltip = 'Display target name on the right side of the castbar',
-                    column = 4
-                },
+                    column = 3
+                }
+            },
+            {
                 targetCastbar = {
                     key = 'targetCastbar',
                     type = 'checkbox',
                     label = 'Target Castbar',
                     tooltip = 'Custom Target Castbar',
-                    column = 4
-                }
-            },
-            {
+                    column = 6
+                },
                 focusCastbar = {
                     key = 'focusCastbar',
                     type = 'checkbox',
                     label = 'Focus Castbar',
                     tooltip = 'Custom Focus Castbar',
-                    column = 4
+                    column = 6
                 }
             },
             {

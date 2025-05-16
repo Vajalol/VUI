@@ -4,11 +4,16 @@ local AddOnName, NS = ...
 _G["VUICD"] = _G["VUICD"] or {}
 local VUICD = _G["VUICD"]
 
+-- Initialize Party module before accessing it
+VUICD.Party = VUICD.Party or {}
+
 -- Get localization through global reference or fallback
 local L = VUICD.L or {}
 
 -- Get database reference
 local db = VUICD.db or {}
+
+-- Local reference to Party module
 local P = VUICD.Party
 
 -- Local variables
@@ -17,6 +22,22 @@ local activeMembers = {}
 local activeSpells = {}
 local isEnabled = false
 local testMode = false
+
+-- Configuration categories
+local configCategories = {}
+
+-- Register a subcategory for configuration
+function P:RegisterSubcategory(key, options)
+    if type(key) ~= "string" or type(options) ~= "table" then
+        return
+    end
+    configCategories[key] = options
+end
+
+-- Get registered config categories
+function P:GetConfigCategories()
+    return configCategories
+end
 
 -- Initialize the Party module
 function P:Initialize()
@@ -44,8 +65,12 @@ function P:Initialize()
     self.container:RegisterEvent("GROUP_ROSTER_UPDATE")
     self.container:RegisterEvent("PLAYER_ENTERING_WORLD")
     
-    -- Initialize visibility
-    self:UpdateVisibility(VUICD.instanceType)
+    -- Only update visibility after db is initialized
+    if self.db then
+        self:UpdateVisibility(VUICD.instanceType)
+    else
+        self:Disable() -- Default to disabled if no settings
+    end
 end
 
 -- Enable the Party module
@@ -68,22 +93,28 @@ end
 
 -- Update module visibility based on instance type
 function P:UpdateVisibility(instanceType)
+    -- Ensure db exists before using it
+    if not self.db then
+        print("|cffff0000VUICD Error:|r Missing settings in UpdateVisibility")
+        return self:Disable()
+    end
+    
     local shouldShow = false
     
-    if testMode and self.db.visibility.inTest then
+    if testMode and self.db.visibility and self.db.visibility.inTest then
         shouldShow = true
     elseif instanceType == "arena" then
-        shouldShow = self.db.visibility.arena
+        shouldShow = self.db.visibility and self.db.visibility.arena
     elseif instanceType == "raid" then
-        shouldShow = self.db.visibility.raid
+        shouldShow = self.db.visibility and self.db.visibility.raid
     elseif instanceType == "party" then
-        shouldShow = self.db.visibility.party
+        shouldShow = self.db.visibility and self.db.visibility.party
     elseif instanceType == "scenario" then
-        shouldShow = self.db.visibility.scenario
+        shouldShow = self.db.visibility and self.db.visibility.scenario
     elseif instanceType == "none" then
-        shouldShow = self.db.visibility.none
+        shouldShow = self.db.visibility and self.db.visibility.none
     else
-        shouldShow = self.db.visibility.outside
+        shouldShow = self.db.visibility and self.db.visibility.outside
     end
     
     if shouldShow and self.db.enabled then
@@ -280,6 +311,11 @@ end
 
 -- Toggle test mode
 function P:Test()
+    if not self then
+        print("|cffff0000VUICD Error:|r Test function called with nil self")
+        return
+    end
+    
     testMode = not testMode
     self:UpdateVisibility(VUICD.instanceType)
     

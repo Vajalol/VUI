@@ -29,7 +29,30 @@ end
 -- Initialize the addon
 function VUIKeystones:OnInitialize()
     -- Get reference to the main VUI addon
-    local VUI = LibStub("AceAddon-3.0"):GetAddon("VUI")
+    local VUI = _G["VUI"]
+    
+    -- Get defaults from the global VUIKeystones object
+    local defaults = VUIKeystones.defaults or { profile = {} }
+    
+    -- Make sure VUI and VUI.db exist
+    if not VUI then
+        print("|cFF3FC7EBVUI Keystones:|r Error - VUI addon not found")
+        return
+    end
+    
+    if not VUI.db then
+        print("|cFF3FC7EBVUI Keystones:|r Error - VUI.db not available")
+        self.db = {
+            profile = defaults.profile or {},
+            RegisterCallback = function() end
+        }
+        return
+    end
+    
+    -- Make sure namespaces table exists
+    if not VUI.db.namespaces then
+        VUI.db.namespaces = {}
+    end
     
     -- Register with VUI's database namespace system
     self.db = VUI.db:RegisterNamespace("VUIKeystones", {

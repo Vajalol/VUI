@@ -3,7 +3,51 @@
 
 local AddonName, VUI = ...
 
-local SavedVariables = VUI:NewModule("SavedVariables")
+-- Check if VUI exists before proceeding
+if not VUI then return end
+
+-- Try to create the module with error handling
+local SavedVariables
+
+if VUI.NewModule then
+    SavedVariables = VUI:NewModule("SavedVariables")
+else
+    -- Create minimal module object to prevent errors
+    SavedVariables = {
+        NAME = "SavedVariables",
+        TITLE = "VUI Saved Variables",
+        DESCRIPTION = "Ensures all modules' settings are properly stored",
+        OnEnable = function() end,
+        OnDisable = function() end
+    }
+    
+    -- Register in VUI namespace
+    VUI["SavedVariables"] = SavedVariables
+    
+    -- Try initialization again after delay
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local RealModule = VUI:NewModule("SavedVariables")
+            
+            -- Transfer any properties from temporary module
+            for k, v in pairs(SavedVariables) do
+                if k ~= "NAME" and k ~= "TITLE" and type(v) ~= "function" then
+                    RealModule[k] = v
+                end
+            end
+            
+            -- Replace with real module
+            VUI["SavedVariables"] = RealModule
+            
+            -- Initialize the module
+            if RealModule.OnInitialize then RealModule:OnInitialize() end
+            if RealModule.OnEnable then RealModule:OnEnable() end
+        end
+    end)
+end
+
+-- Set global namespace for other files to access
+VUI.SavedVariables = SavedVariables
 
 -- List of all VUI modules that might have settings
 local moduleList = {

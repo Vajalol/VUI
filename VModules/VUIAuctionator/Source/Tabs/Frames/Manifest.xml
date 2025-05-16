@@ -1,0 +1,16 @@
+<!-- Tabs\Frames directory manifest -->
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Script file="MinimapButton.lua" />
+  <Script file="TabButton.lua" />
+  <Script file="TabSelected.lua" />
+  <Script file="TabFrame.lua" />
+  <Script file="TabContainer.lua" />
+  <Script file="SummaryView.lua" />
+  <Script file="MoneyInput.lua" />
+  <Script file="SearchEditBox.lua" />
+  <Script file="BagClassListing.lua" />
+  <Script file="StackedContainerRow.lua" />
+  <Script file="SelectionDropdown.lua" />
+  <Script file="SortButton.lua" />
+  <Script file="ToggleableWidgets.lua" />
+</Ui> 

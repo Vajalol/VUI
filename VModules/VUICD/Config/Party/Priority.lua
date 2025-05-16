@@ -1,5 +1,48 @@
-local E, L, C = select(2, ...):unpack()
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module exists
+VUICD.Party = VUICD.Party or {}
+
+-- Setup localization with fallbacks
+local L = {}
+local success = pcall(function() L = LibStub("AceLocale-3.0"):GetLocale("VUI") end)
+if not success then
+    -- Add fallbacks for localization
+    L["Priority"] = "Priority"
+    L["Set the priority of spell types for sorting."] = "Set the priority of spell types for sorting."
+    L["You can override this setting on individual spells from the Spells tab."] = "You can override this setting on individual spells from the Spells tab."
+end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
 local P = E.Party
+local C = E.C or {}
+
+-- Create a stub for C if it doesn't exist
+if not E.C then E.C = {} end
+if not E.C.Party then E.C.Party = {} end
+if not E.C.Party.arena then E.C.Party.arena = {priority = {}} end
+
+-- Create placeholder for priority values
+if not E.L_PRIORITY then
+    E.L_PRIORITY = {
+        ["interrupt"] = "Interrupt",
+        ["defensive"] = "Defensive",
+        ["raidDefensive"] = "Raid Defensive",
+        ["offensive"] = "Offensive",
+        ["covenant"] = "Covenant",
+        ["utility"] = "Utility"
+    }
+end
+
+-- Ensure profile tables exist
+if not E.profile then E.profile = {} end
+if not E.profile.Party then E.profile.Party = {} end
 
 local priority = {
 	name = L["Priority"],
@@ -30,6 +73,9 @@ local priority = {
 }
 
 for k, v in pairs(E.L_PRIORITY) do
+	-- Ensure C.Party.arena.priority[k] exists to avoid nil index errors
+	if not C.Party.arena.priority[k] then C.Party.arena.priority[k] = 0 end
+	
 	priority.args[k] = {
 		name = v,
 		order = 300 - C.Party.arena.priority[k],

@@ -1,34 +1,70 @@
 local Module = VUI:NewModule('General.ThemeEffects')
 
+-- Use the centralized helper for finding VModules
+local function safeCall(func)
+    if type(func) ~= "function" then return end
+    
+    local success, err = pcall(function() func(Module) end)
+    if not success then
+        if VUI and VUI.Debug then
+            VUI:Debug("ThemeEffects", "Error applying theme effect: " .. (err or "unknown error"))
+        end
+    end
+end
+
+-- Helper function to safely access the Animations module
+local function safeAnimations()
+    if not _G.VUI then return nil end
+    if not _G.VUI.Animations then
+        -- If we get here, the Animations module might not be loaded yet
+        -- Let's try to require it directly
+        if type(VUI) == "table" and not VUI.Animations then
+            -- Try to load Animation utilities if not loaded
+            if type(VUI.LoadUtility) == "function" then
+                VUI:LoadUtility("Animation")
+            end
+        end
+    end
+    return _G.VUI and _G.VUI.Animations
+end
+
 function Module:OnEnable()
-    -- Register for settings changes
+    -- Register for settings changes with error handling
     VUI:RegisterEvent("PLAYER_ENTERING_WORLD", function()
         -- Small delay to ensure UI is fully loaded
         C_Timer.After(1, function()
             local theme = VUI.db.profile.general.theme
+            if not theme then return end
+            
             if theme == 'VUI' then
-                self:ApplyVUIThemePulseEffects()
+                safeCall(self.ApplyVUIThemePulseEffects)
             elseif theme == 'PhoenixFlame' then
-                self:ApplyPhoenixFlameThemeEffects()
+                safeCall(self.ApplyPhoenixFlameThemeEffects)
             elseif theme == 'FelEnergy' then
-                self:ApplyFelEnergyThemeEffects()
+                safeCall(self.ApplyFelEnergyThemeEffects)
             elseif theme == 'ArcaneMystic' then
-                self:ApplyArcaneMysticThemeEffects()
+                safeCall(self.ApplyArcaneMysticThemeEffects)
             end
         end)
     end)
     
     -- Re-apply when UI is reloaded or changed
     VUI:RegisterEvent("UI_SCALE_CHANGED", function()
+        if not VUI.db or not VUI.db.profile or not VUI.db.profile.general then
+            return
+        end
+        
         local theme = VUI.db.profile.general.theme
+        if not theme then return end
+        
         if theme == 'VUI' then
-            self:ApplyVUIThemePulseEffects()
+            safeCall(self.ApplyVUIThemePulseEffects)
         elseif theme == 'PhoenixFlame' then
-            self:ApplyPhoenixFlameThemeEffects()
+            safeCall(self.ApplyPhoenixFlameThemeEffects)
         elseif theme == 'FelEnergy' then
-            self:ApplyFelEnergyThemeEffects()
+            safeCall(self.ApplyFelEnergyThemeEffects)
         elseif theme == 'ArcaneMystic' then
-            self:ApplyArcaneMysticThemeEffects()
+            safeCall(self.ApplyArcaneMysticThemeEffects)
         end
     end)
     
@@ -97,7 +133,7 @@ function Module:ApplyVUIThemePulseEffects()
         GameMenuFrame and GameMenuFrame.Header,
         
         -- Player stats frame elements (if it exists)
-        PlayerStatsFrame and PlayerStatsFrame.headerText,
+        _G.PlayerStatsFrame and _G.PlayerStatsFrame.headerText,
         
         -- Game menu button - this is the button at the top of Game Menu
         GameMenuButtonOptions and GameMenuButtonOptions.LeftDisabled,
@@ -144,10 +180,14 @@ function Module:ApplyVUIThemePulseEffects()
     for _, frame in pairs(pulseTargets) do
         if frame then
             -- Stop any existing animations first
-            VUI.Animations:StopAnimations(frame)
+            -- Use global reference pattern to avoid load order issues
+            local animations = safeAnimations()
+            if animations then
+                animations:StopAnimations(frame)
             
-            -- Apply pulse animation with blue glow
-            VUI.Animations:Pulse(frame, 2.0, nil, pulseOptions)
+                -- Apply pulse animation with blue glow
+                animations:Pulse(frame, 2.0, nil, pulseOptions)
+            end
             
             -- Add additional glow effect if it's a text element
             if frame.SetTextColor then
@@ -161,15 +201,22 @@ function Module:ApplyVUIThemePulseEffects()
         if type(name) == "string" and name:find("VUI") and type(frame) == "table" and frame.IsObjectType and frame:IsObjectType("Frame") then
             -- Don't animate hidden frames
             if frame:IsVisible() then
-                VUI.Animations:StopAnimations(frame)
-                VUI.Animations:Pulse(frame, 2.5, nil, pulseOptions)
+                local animations = safeAnimations()
+                if animations then
+                    animations:StopAnimations(frame)
+                    animations:Pulse(frame, 2.5, nil, pulseOptions)
+                end
             end
         end
     end
     
     -- Add blue glow to specific frames
     self:AddBlueGlow(GameMenuFrame)
-    self:AddBlueGlow(PlayerStatsFrame)
+    
+    -- Add to player stats frame if it exists
+    if _G.PlayerStatsFrame then
+        self:AddBlueGlow(PlayerStatsFrame)
+    end
 end
 
 -- Add a blue glow effect matching theme colors
@@ -331,10 +378,14 @@ function Module:ApplyPhoenixFlameThemeEffects()
     for _, frame in pairs(pulseTargets) do
         if frame then
             -- Stop any existing animations first
-            VUI.Animations:StopAnimations(frame)
+            -- Use global reference pattern to avoid load order issues
+            local animations = safeAnimations()
+            if animations then
+                animations:StopAnimations(frame)
             
-            -- Apply pulse animation with Phoenix Flame glow
-            VUI.Animations:Pulse(frame, 2.0, nil, pulseOptions)
+                -- Apply pulse animation with Phoenix Flame glow
+                animations:Pulse(frame, 2.0, nil, pulseOptions)
+            end
             
             -- Add additional glow effect if it's a text element
             if frame.SetTextColor then
@@ -348,15 +399,22 @@ function Module:ApplyPhoenixFlameThemeEffects()
         if type(name) == "string" and name:find("VUI") and type(frame) == "table" and frame.IsObjectType and frame:IsObjectType("Frame") then
             -- Don't animate hidden frames
             if frame:IsVisible() then
-                VUI.Animations:StopAnimations(frame)
-                VUI.Animations:Pulse(frame, 2.5, nil, pulseOptions)
+                local animations = safeAnimations()
+                if animations then
+                    animations:StopAnimations(frame)
+                    animations:Pulse(frame, 2.5, nil, pulseOptions)
+                end
             end
         end
     end
     
     -- Add themed glow to specific frames
-    self:AddThemedGlow(GameMenuFrame, 0.90, 0.30, 0.05) -- Phoenix Flame color
-    self:AddThemedGlow(PlayerStatsFrame, 0.90, 0.30, 0.05)
+    self:AddThemedGlow(GameMenuFrame, 0.90, 0.30, 0.05)
+    
+    -- Add to player stats frame if it exists
+    if _G.PlayerStatsFrame then
+        self:AddThemedGlow(PlayerStatsFrame, 0.90, 0.30, 0.05)
+    end
 end
 
 -- Fel Energy theme effects (green)
@@ -422,10 +480,14 @@ function Module:ApplyFelEnergyThemeEffects()
     for _, frame in pairs(pulseTargets) do
         if frame then
             -- Stop any existing animations first
-            VUI.Animations:StopAnimations(frame)
+            -- Use global reference pattern to avoid load order issues
+            local animations = safeAnimations()
+            if animations then
+                animations:StopAnimations(frame)
             
-            -- Apply pulse animation with Fel Energy glow
-            VUI.Animations:Pulse(frame, 2.0, nil, pulseOptions)
+                -- Apply pulse animation with Fel Energy glow
+                animations:Pulse(frame, 2.0, nil, pulseOptions)
+            end
             
             -- Add additional glow effect if it's a text element
             if frame.SetTextColor then
@@ -439,15 +501,22 @@ function Module:ApplyFelEnergyThemeEffects()
         if type(name) == "string" and name:find("VUI") and type(frame) == "table" and frame.IsObjectType and frame:IsObjectType("Frame") then
             -- Don't animate hidden frames
             if frame:IsVisible() then
-                VUI.Animations:StopAnimations(frame)
-                VUI.Animations:Pulse(frame, 2.5, nil, pulseOptions)
+                local animations = safeAnimations()
+                if animations then
+                    animations:StopAnimations(frame)
+                    animations:Pulse(frame, 2.5, nil, pulseOptions)
+                end
             end
         end
     end
     
     -- Add themed glow to specific frames
-    self:AddThemedGlow(GameMenuFrame, 0.10, 0.80, 0.10) -- Fel Energy color
-    self:AddThemedGlow(PlayerStatsFrame, 0.10, 0.80, 0.10)
+    self:AddThemedGlow(GameMenuFrame, 0.10, 0.80, 0.10)
+    
+    -- Add to player stats frame if it exists
+    if _G.PlayerStatsFrame then
+        self:AddThemedGlow(PlayerStatsFrame, 0.10, 0.80, 0.10)
+    end
 end
 
 -- Arcane Mystic theme effects (purple)
@@ -513,10 +582,14 @@ function Module:ApplyArcaneMysticThemeEffects()
     for _, frame in pairs(pulseTargets) do
         if frame then
             -- Stop any existing animations first
-            VUI.Animations:StopAnimations(frame)
+            -- Use global reference pattern to avoid load order issues
+            local animations = safeAnimations()
+            if animations then
+                animations:StopAnimations(frame)
             
-            -- Apply pulse animation with Arcane Mystic glow
-            VUI.Animations:Pulse(frame, 2.0, nil, pulseOptions)
+                -- Apply pulse animation with Arcane Mystic glow
+                animations:Pulse(frame, 2.0, nil, pulseOptions)
+            end
             
             -- Add additional glow effect if it's a text element
             if frame.SetTextColor then
@@ -530,13 +603,20 @@ function Module:ApplyArcaneMysticThemeEffects()
         if type(name) == "string" and name:find("VUI") and type(frame) == "table" and frame.IsObjectType and frame:IsObjectType("Frame") then
             -- Don't animate hidden frames
             if frame:IsVisible() then
-                VUI.Animations:StopAnimations(frame)
-                VUI.Animations:Pulse(frame, 2.5, nil, pulseOptions)
+                local animations = safeAnimations()
+                if animations then
+                    animations:StopAnimations(frame)
+                    animations:Pulse(frame, 2.5, nil, pulseOptions)
+                end
             end
         end
     end
     
     -- Add themed glow to specific frames
-    self:AddThemedGlow(GameMenuFrame, 0.62, 0.05, 0.90) -- Arcane Mystic color
-    self:AddThemedGlow(PlayerStatsFrame, 0.62, 0.05, 0.90)
+    self:AddThemedGlow(GameMenuFrame, 0.62, 0.05, 0.90)
+    
+    -- Add to player stats frame if it exists
+    if _G.PlayerStatsFrame then
+        self:AddThemedGlow(PlayerStatsFrame, 0.62, 0.05, 0.90)
+    end
 end

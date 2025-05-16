@@ -1,6 +1,16 @@
 local AddOnName, NS = ...
-local VUICD, L, db = NS:unpack()
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+VUICD.L = VUICD.L or {}
+VUICD.db = VUICD.db or {}
+
+-- Ensure Party module is initialized
+VUICD.Party = VUICD.Party or {}
 local P = VUICD.Party
+
+-- Initialize ExtraBars module
 local EB = {}
 P.ExtraBars = EB
 

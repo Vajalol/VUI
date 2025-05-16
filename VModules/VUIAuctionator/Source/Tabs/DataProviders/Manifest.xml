@@ -1,0 +1,11 @@
+<!-- Tabs\DataProviders directory manifest -->
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Script file="SearchProvider.lua" />
+  <Script file="ItemKeyInfoProvider.lua" />
+  <Script file="ShoppingHistoryProvider.lua" />
+  <Script file="HistoricalPriceProvider.lua" />
+  <Script file="AuctionHistoryProvider.lua" />
+  <Script file="BagItemProvider.lua" />
+  <Script file="BagThrottleProvider.lua" />
+  <Script file="ItemStringFilterDataProvider.lua" />
+</Ui> 

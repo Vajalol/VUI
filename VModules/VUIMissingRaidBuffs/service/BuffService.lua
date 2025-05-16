@@ -3,7 +3,15 @@
 -- Based on Missing Raid Buffs WeakAura (https://wago.io/BQce7Fj5J)
 
 local AddonName, VUI = ...
-local M = VUI:GetModule("VUIMissingRaidBuffs")
+local MODNAME = "VUIMissingRaidBuffs"
+
+-- Check if VUI exists before proceeding
+if not VUI then return end
+
+-- Safely try to access the module
+local M = VUI and VUI.VUIMissingRaidBuffs or {}
+if not M then return end
+
 local BuffService = {}
 M.BuffService = BuffService
 

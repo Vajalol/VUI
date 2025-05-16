@@ -20,6 +20,11 @@ M.CheckInstanceType = function(self)
     local _, instanceType = IsInInstance()
     self.instanceType = instanceType
     
+    -- Check if db and modules are properly initialized
+    if not self.db or not self.db.profile or not self.db.profile.modules then
+        return
+    end
+    
     -- Update module visibility based on instance type
     for moduleName, enabled in pairs(self.db.profile.modules) do
         if enabled and self[moduleName] then
@@ -81,8 +86,17 @@ M.SlashCommand = function(self, input)
     local command = args[1] and args[1]:lower() or ""
     
     if command == "test" then
-        if self.Party and self.Party.Test then
-            self.Party:Test()
+        if self.Party then
+            -- Add type checking to handle different types
+            if type(self.Party.Test) == "table" and self.Party.Test.Test then
+                self.Party.Test:Test()
+            elseif type(self.Party.Test) == "function" then
+                -- Always call Test as a method of Party to ensure 'self' is passed
+                self.Party:Test()
+            else
+                -- Fallback to direct method call on Party if Test is neither a table nor function
+                self.Party:Test()
+            end
         end
         return -- handled
     end

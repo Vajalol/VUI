@@ -1,4 +1,35 @@
+local addonName, VUI = ...
+if not VUI then return end
+
+-- Only create the module if NewModule is available
+if not VUI.NewModule then
+    -- Register a callback to try again when VUI is fully initialized
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local Module = VUI:NewModule("ActionBars.Pulse")
+            -- Re-run the OnEnable function
+            if Module and Module.OnEnable then
+                Module:OnEnable()
+            end
+        end
+    end)
+    return
+end
+
 local Module = VUI:NewModule("ActionBars.Pulse")
+
+-- Helper function to safely access the Animations module
+local function safeAnimations()
+    if not VUI then return nil end
+    if not VUI.Animations then
+        -- If we get here, the Animations module might not be loaded yet
+        -- Let's try to require it directly
+        if type(VUI.LoadUtility) == "function" then
+            VUI:LoadUtility("Animation")
+        end
+    end
+    return VUI.Animations
+end
 
 function Module:OnEnable()
     -- Skip if disabled in config
@@ -122,13 +153,16 @@ function Module:OnEnable()
     for _, button in pairs(allActionButtons) do
         if button and button:IsVisible() then
             -- Stop any existing animations
-            VUI.Animations:StopAnimations(button)
-            
-            -- Apply the pulse animation with theme color
-            VUI.Animations:Pulse(button, 2.0, nil, pulseOptions)
-            
-            -- Add a glow effect to the button
-            self:AddActionButtonGlow(button, r, g, b)
+            local animations = safeAnimations()
+            if animations then
+                animations:StopAnimations(button)
+                
+                -- Apply the pulse animation with theme color
+                animations:Pulse(button, 2.0, nil, pulseOptions)
+                
+                -- Add a glow effect to the button
+                self:AddActionButtonGlow(button, r, g, b)
+            end
         end
     end
     
@@ -293,14 +327,16 @@ function Module:OnDisable()
         end
     end
     
-    -- Remove glow from all buttons
+    -- Remove glow effects from all buttons
     for _, button in pairs(allActionButtons) do
-        if button and button.vui_glow then
-            if button.vui_glow.anim_group then
-                button.vui_glow.anim_group:Stop()
+        if button then
+            if button.vui_glow then
+                button.vui_glow:SetAlpha(0)
+                local animations = safeAnimations()
+                if animations then
+                    animations:StopAnimations(button)
+                end
             end
-            button.vui_glow:SetAlpha(0)
-            VUI.Animations:StopAnimations(button)
         end
     end
 end

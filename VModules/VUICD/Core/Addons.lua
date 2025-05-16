@@ -69,8 +69,16 @@ end
 
 -- Detect installed addons
 function VUICD.Addons:DetectAddons()
+    -- Add safety check for IsAddOnLoaded function
+    if not IsAddOnLoaded or type(IsAddOnLoaded) ~= "function" then
+        VUICD:Debug("IsAddOnLoaded function not available")
+        return
+    end
+    
     for name in pairs(self.supported) do
-        self.supported[name] = IsAddOnLoaded(name)
+        -- Use pcall to catch any errors
+        local success, isLoaded = pcall(function() return IsAddOnLoaded(name) end)
+        self.supported[name] = success and isLoaded
     end
 end
 

@@ -1,224 +1,311 @@
-local VUI = select(2, ...)
-if not VUI.Config then return end
+--[[
+    VUI Interrupts and Dispels Module Configuration
+    Tracking for interrupts and dispels in group content
+]]
 
-local Module = VUI:GetModule("VUIIDs")
-if not Module then return end
+local Layout = VUI:NewModule('Config.Layout.VUIIDs')
 
--- Create the options table
-VUI.Config.Layout["VUIIDs"] = {
-    name = "VUI IDs",
-    desc = "Adds IDs to tooltips",
-    type = "group",
-    order = 60,
-    args = {
-        general = {
-            name = "General",
-            type = "group",
-            order = 10,
-            args = {
-                header = {
-                    name = "Tooltip ID Display",
-                    type = "header",
-                    order = 1,
-                },
-                desc = {
-                    name = "Shows various IDs in tooltips - helps with addon development and debugging.",
-                    type = "description",
-                    order = 2,
-                },
-                enabled = {
-                    name = "Enable",
-                    desc = "Enable tooltip ID display",
-                    type = "toggle",
-                    width = "full",
-                    order = 3,
-                    get = function() return Module.db.enabled end,
-                    set = function(info, val)
-                        Module.db.enabled = val
-                        if val then
-                            Module:Enable()
-                        else
-                            Module:Disable()
-                        end
-                    end,
-                },
-                spacer1 = {
-                    name = "",
-                    type = "description",
-                    order = 4,
-                },
-            },
-        },
-        displayOptions = {
-            name = "Display Options",
-            type = "group",
-            order = 20,
-            args = {
-                header = {
-                    name = "ID Types to Display",
-                    type = "header",
-                    order = 1,
-                },
-                desc = {
-                    name = "Choose which types of IDs to show in tooltips.",
-                    type = "description",
-                    order = 2,
-                },
-                showSpellID = {
-                    name = "Spell IDs",
-                    desc = "Show spell IDs in tooltips",
-                    type = "toggle",
-                    order = 3,
-                    get = function() return Module.db.showSpellID end,
-                    set = function(info, val)
-                        Module.db.showSpellID = val
-                    end,
-                },
-                showItemID = {
-                    name = "Item IDs",
-                    desc = "Show item IDs in tooltips",
-                    type = "toggle",
-                    order = 4,
-                    get = function() return Module.db.showItemID end,
-                    set = function(info, val)
-                        Module.db.showItemID = val
-                    end,
-                },
-                showQuestID = {
-                    name = "Quest IDs",
-                    desc = "Show quest IDs in tooltips",
-                    type = "toggle",
-                    order = 5,
-                    get = function() return Module.db.showQuestID end,
-                    set = function(info, val)
-                        Module.db.showQuestID = val
-                    end,
-                },
-                showTalentID = {
-                    name = "Talent IDs",
-                    desc = "Show talent IDs in tooltips",
-                    type = "toggle",
-                    order = 6,
-                    get = function() return Module.db.showTalentID end,
-                    set = function(info, val)
-                        Module.db.showTalentID = val
-                    end,
-                },
-                showAchievementID = {
-                    name = "Achievement IDs",
-                    desc = "Show achievement IDs in tooltips",
-                    type = "toggle",
-                    order = 7,
-                    get = function() return Module.db.showAchievementID end,
-                    set = function(info, val)
-                        Module.db.showAchievementID = val
-                    end,
-                },
-                showCriteriaID = {
-                    name = "Criteria IDs",
-                    desc = "Show criteria IDs in tooltips",
-                    type = "toggle",
-                    order = 8,
-                    get = function() return Module.db.showCriteriaID end,
-                    set = function(info, val)
-                        Module.db.showCriteriaID = val
-                    end,
-                },
-                showAbilityID = {
-                    name = "Ability IDs",
-                    desc = "Show ability IDs in tooltips",
-                    type = "toggle",
-                    order = 9,
-                    get = function() return Module.db.showAbilityID end,
-                    set = function(info, val)
-                        Module.db.showAbilityID = val
-                    end,
-                },
-                showCurrencyID = {
-                    name = "Currency IDs",
-                    desc = "Show currency IDs in tooltips",
-                    type = "toggle",
-                    order = 10,
-                    get = function() return Module.db.showCurrencyID end,
-                    set = function(info, val)
-                        Module.db.showCurrencyID = val
-                    end,
-                },
-                showEnchantID = {
-                    name = "Enchant IDs",
-                    desc = "Show enchant IDs in tooltips",
-                    type = "toggle",
-                    order = 11,
-                    get = function() return Module.db.showEnchantID end,
-                    set = function(info, val)
-                        Module.db.showEnchantID = val
-                    end,
-                },
-                showMountID = {
-                    name = "Mount IDs",
-                    desc = "Show mount IDs in tooltips",
-                    type = "toggle",
-                    order = 12,
-                    get = function() return Module.db.showMountID end,
-                    set = function(info, val)
-                        Module.db.showMountID = val
-                    end,
-                },
-            },
-        },
-        appearance = {
-            name = "Appearance",
-            type = "group",
-            order = 30,
-            args = {
-                header = {
-                    name = "Visual Settings",
-                    type = "header",
-                    order = 1,
-                },
-                desc = {
-                    name = "Customize how IDs appear in tooltips.",
-                    type = "description",
-                    order = 2,
-                },
-                colorHighlight = {
-                    name = "Highlight IDs",
-                    desc = "Use a different color for ID values to make them stand out",
-                    type = "toggle",
-                    order = 3,
-                    get = function() return Module.db.colorHighlight end,
-                    set = function(info, val)
-                        Module.db.colorHighlight = val
-                    end,
-                },
-                highlightColor = {
-                    name = "Highlight Color",
-                    desc = "Select a color for ID values",
-                    type = "color",
-                    order = 4,
-                    disabled = function() return not Module.db.colorHighlight end,
-                    get = function()
-                        local c = Module.db.highlightColor or {r=1, g=1, b=0} -- Default to yellow
-                        return c.r, c.g, c.b, 1
-                    end,
-                    set = function(info, r, g, b)
-                        Module.db.highlightColor = {r=r, g=g, b=b}
-                    end,
-                },
-                idPrefix = {
-                    name = "ID Prefix",
-                    desc = "Text to display before the ID value (e.g., 'ID: ')",
-                    type = "input",
-                    order = 5,
-                    get = function() return Module.db.idPrefix or "ID: " end,
-                    set = function(info, val)
-                        Module.db.idPrefix = val
-                    end,
-                },
-            },
-        },
-    },
-}
+-- Initialize with the standard layout helper
+VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUIIDs", "VUI Interrupts & Dispels", "vmodules.vuiids")
 
--- Register with VUI Config
-VUI.Config:Register("VUIIDs", VUI.Config.Layout["VUIIDs"])
+-- Define module-specific layout construction
+function Layout:BuildModuleLayout(module, db)
+    -- Extend the base layout with module-specific settings
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Interrupt & Dispel Tracking'
+        },
+    })
+    
+    -- Add basic settings
+    table.insert(Layout.layout.rows, {
+        enableModule = {
+            key = 'vmodules.vuiids.enableModule',
+            type = 'checkbox',
+            label = 'Enable Tracking',
+            tooltip = 'Enable interrupt and dispel tracking',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.general.enableModule = self:GetValue()
+                    if module.UpdateModule then
+                        module:UpdateModule()
+                    end
+                end
+            end
+        },
+        onlyInGroups = {
+            key = 'vmodules.vuiids.onlyInGroups',
+            type = 'checkbox',
+            label = 'Only in Groups',
+            tooltip = 'Only track when in a group or raid',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.general.onlyInGroups = self:GetValue()
+                end
+            end
+        },
+        announceChat = {
+            key = 'vmodules.vuiids.announceChat',
+            type = 'checkbox',
+            label = 'Announce to Chat',
+            tooltip = 'Announce interrupts and dispels to group chat',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.announce.chat = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    -- Display settings
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Display Settings'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        showDisplay = {
+            key = 'vmodules.vuiids.showDisplay',
+            type = 'checkbox',
+            label = 'Show Display',
+            tooltip = 'Show interrupt and dispel display frame',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.showDisplay = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+        lockFrame = {
+            key = 'vmodules.vuiids.lockFrame',
+            type = 'checkbox',
+            label = 'Lock Frame',
+            tooltip = 'Lock or unlock the display frame',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.lockFrame = self:GetValue()
+                    if module.LockFrame then
+                        module:LockFrame(self:GetValue())
+                    end
+                end
+            end
+        },
+        showIcons = {
+            key = 'vmodules.vuiids.showIcons',
+            type = 'checkbox',
+            label = 'Show Icons',
+            tooltip = 'Show spell icons in the display',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.showIcons = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Frame appearance
+    table.insert(Layout.layout.rows, {
+        maxEntries = {
+            key = 'vmodules.vuiids.maxEntries',
+            type = 'slider',
+            label = 'Maximum Entries',
+            tooltip = 'Maximum number of entries to show',
+            min = 3,
+            max = 15,
+            step = 1,
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.maxEntries = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+        fontScale = {
+            key = 'vmodules.vuiids.fontScale',
+            type = 'slider',
+            label = 'Font Scale',
+            tooltip = 'Scale of the text in the display',
+            min = 0.5,
+            max = 2.0,
+            step = 0.1,
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.fontScale = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+        frameAlpha = {
+            key = 'vmodules.vuiids.frameAlpha',
+            type = 'slider',
+            label = 'Frame Alpha',
+            tooltip = 'Transparency of the display frame',
+            min = 0.1,
+            max = 1.0,
+            step = 0.1,
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.display.frameAlpha = self:GetValue()
+                    if module.UpdateDisplay then
+                        module:UpdateDisplay()
+                    end
+                end
+            end
+        },
+    })
+    
+    -- Tracking options
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Tracking Options'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        trackInterrupts = {
+            key = 'vmodules.vuiids.trackInterrupts',
+            type = 'checkbox',
+            label = 'Track Interrupts',
+            tooltip = 'Track spell interrupts',
+            column = 3,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.tracking.interrupts = self:GetValue()
+                end
+            end
+        },
+        trackDispels = {
+            key = 'vmodules.vuiids.trackDispels',
+            type = 'checkbox',
+            label = 'Track Dispels',
+            tooltip = 'Track dispels and purges',
+            column = 3,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.tracking.dispels = self:GetValue()
+                end
+            end
+        },
+        trackStuns = {
+            key = 'vmodules.vuiids.trackStuns',
+            type = 'checkbox',
+            label = 'Track Stuns',
+            tooltip = 'Track stun effects',
+            column = 3,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.tracking.stuns = self:GetValue()
+                end
+            end
+        },
+        trackSilences = {
+            key = 'vmodules.vuiids.trackSilences',
+            type = 'checkbox',
+            label = 'Track Silences',
+            tooltip = 'Track silence effects',
+            column = 3,
+            order = 4,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.tracking.silences = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    -- Announcements
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Announcement Options'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        announceChannel = {
+            key = 'vmodules.vuiids.announceChannel',
+            type = 'dropdown',
+            label = 'Announce Channel',
+            tooltip = 'Channel to announce interrupts and dispels',
+            options = {
+                {value = "AUTO", text = "Auto (Group/Raid)"},
+                {value = "PARTY", text = "Party"},
+                {value = "RAID", text = "Raid"},
+                {value = "INSTANCE_CHAT", text = "Instance"},
+                {value = "SAY", text = "Say"}
+            },
+            column = 6,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.announce.channel = self:GetValue()
+                end
+            end
+        },
+        announceSelf = {
+            key = 'vmodules.vuiids.announceSelf',
+            type = 'checkbox',
+            label = 'Announce Self',
+            tooltip = 'Include your own interrupts and dispels',
+            column = 6,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.announce.self = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    -- Test button
+    table.insert(Layout.layout.rows, {
+        testButton = {
+            type = 'button',
+            label = 'Test Display',
+            tooltip = 'Add a test entry to the display',
+            column = 12,
+            order = 1,
+            callback = function()
+                if module and module.TestDisplay then
+                    module:TestDisplay()
+                end
+            end
+        },
+    })
+end
+
+return Layout 

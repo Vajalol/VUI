@@ -1,5 +1,35 @@
-local E, L, C = select(2, ...):unpack()
-local P = E.Party
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module is initialized
+VUICD.Party = VUICD.Party or {}
+
+-- Ensure Config and Config.Party are initialized
+VUICD.Config = VUICD.Config or {}
+VUICD.Config.Party = VUICD.Config.Party or {}
+VUICD.Config.Party.arena = VUICD.Config.Party.arena or {}
+VUICD.Config.Party.arena.priority = VUICD.Config.Party.arena.priority or {}
+
+-- Get localization through global reference or fallback
+local L = VUICD.L or {}
+
+-- Add missing localization strings
+if not L["Glow Border"] then L["Glow Border"] = "Glow Border" end
+if not L["Glow condition can be changed from the Highlighting tab."] then 
+	L["Glow condition can be changed from the Highlighting tab."] = "Glow condition can be changed from the Highlighting tab."
+end
+if not L["Override spell-type frame."] then L["Override spell-type frame."] = "Override spell-type frame." end
+if not L["0: Raid Frame, 1: Interrupt Bar, 2-8: Extra Bar"] then L["0: Raid Frame, 1: Interrupt Bar, 2-8: Extra Bar"] = "0: Raid Frame, 1: Interrupt Bar, 2-8: Extra Bar" end
+if not L["Override spell-type priority"] then L["Override spell-type priority"] = "Override spell-type priority" end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
+local P = VUICD.Party
+local C = VUICD.Config or {}
 
 P.clearAllDefault = function(info)
 	local key = info[2]
@@ -102,7 +132,7 @@ local function SetPriority(info, value) E[ info[1] ].setPriority(info, value) en
 local function GetGlow(info) return E[ info[1] ].getGlow(info) end
 local function SetGlow(info, value) E[ info[1] ].setGlow(info, value) end
 
-local function GetSpellsTbl()
+local GetSpellsTbl = function()
 	return {
 	name = L["Spells"],
 	order = 70,
@@ -157,8 +187,7 @@ local function GetSpellsTbl()
 				lb0 = { name = "|CFF20FF20"..L["Healthstone and Demonic Gateway are added on cast"], order = 1, type = "description" }
 			}
 		},
-	}
-}
+	}}
 end
 
 local itemsOrdered = {
@@ -186,8 +215,8 @@ local header = {
 			order = 0, type = "description", dialogControl = "InlineGroupList2Label-OmniCDC", width = 1, justifyH = "CENTER",
 		},
 		li1 = {
-			name = L["Frame"],
-			desc = format("%s\n%s", L["Override spell-type frame."], L["0: Raid Frame, 1: Interrupt Bar, 2-8: Extra Bar"]),
+			name = L["Frame"] or "Frame",
+			desc = format("%s\n%s", L["Override spell-type frame."] or "Override spell-type frame.", L["0: Raid Frame, 1: Interrupt Bar, 2-8: Extra Bar"] or "0: Raid Frame, 1: Interrupt Bar, 2-8: Extra Bar"),
 			order = 1, type = "description", dialogControl = "InlineGroupList2Label-OmniCDC", width = 0.7, justifyH = "CENTER",
 		},
 		li2 = {
@@ -451,8 +480,6 @@ function P:UpdateSpellsOption(spellID, oldClass, oldType, v, force)
 end
 
 function P:AddSpellPicker()
-
-
 	if not E.spellsOptionTbl or next(E.spellsOptionTbl) == nil then
 		local spells = GetSpellsTbl()
 		self:AddSpellPickerSpells(spells)
@@ -461,4 +488,12 @@ function P:AddSpellPicker()
 	end
 end
 
-E:RegisterModuleOptions("Party", P.options, "Party")
+-- Make sure we only register module options if the method exists
+if E and E.RegisterModuleOptions then
+	E:RegisterModuleOptions("Party", P.options, "Party")
+else
+	-- Store the options for later registration when possible
+	E = E or {}
+	E.pendingModuleOptions = E.pendingModuleOptions or {}
+	E.pendingModuleOptions["Party"] = {options = P.options, name = "Party"}
+end

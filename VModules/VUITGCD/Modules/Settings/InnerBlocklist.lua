@@ -1,6 +1,9 @@
 ---@type string, Namespace
 local _, ns = ...
 
+-- Create namespaces if needed
+if not ns then ns = {} end
+
 local blocklistArray = {
     61391, -- Typhoon x2
     5374, -- Mutilate х3

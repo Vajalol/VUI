@@ -1,5 +1,11 @@
 local addonName, VUI = ...
 
+-- Ensure VUI global exists to prevent nil errors
+if not VUI then VUI = {} end
+
+-- Ensure namespace exists
+VUI.Notifications = VUI.Notifications or {}
+
 -- Define colors used for notifications
 function VUI.Notifications.Colors()
     return {
@@ -45,3 +51,6 @@ function VUI.Notifications.Colors()
         }
     }
 end
+
+-- Create a global accessor for compatibility with older code
+_G.VUINotificationColors = VUI.Notifications.Colors

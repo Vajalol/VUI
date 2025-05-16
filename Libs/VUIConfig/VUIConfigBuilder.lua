@@ -12,6 +12,8 @@ end
 local util = VUIConfig.Util;
 
 local function setDatabaseValue(db, key, value)
+	if not db or not key then return end
+	
 	if key:find('.') then
 		local accessor = VUIConfig.Util.stringSplit('.', key);
 		local startPos = db;
@@ -22,6 +24,16 @@ local function setDatabaseValue(db, key, value)
 				return
 			end
 
+			-- If the next level doesn't exist, create it
+			if startPos[subKey] == nil then
+				startPos[subKey] = {}
+			end
+			
+			-- If it's not a table, we can't go deeper
+			if type(startPos[subKey]) ~= "table" then
+				startPos[subKey] = {}
+			end
+			
 			startPos = startPos[subKey];
 		end
 	else
@@ -30,11 +42,18 @@ local function setDatabaseValue(db, key, value)
 end
 
 local function getDatabaseValue(db, key)
+	if not db or not key then return nil end
+	
 	if key:find('.') then
 		local accessor = VUIConfig.Util.stringSplit('.', key);
 		local startPos = db;
 
 		for i, subKey in pairs(accessor) do
+			if not startPos or type(startPos) ~= "table" then
+				-- If we hit a nil value in the path, return nil
+				return nil
+			end
+			
 			if i == #accessor then
 				return startPos[subKey];
 			end
@@ -44,6 +63,8 @@ local function getDatabaseValue(db, key)
 	else
 		return db[key];
 	end
+	
+	return nil
 end
 
 ---BuildElement
@@ -197,7 +218,10 @@ function VUIConfig:BuildElement(frame, row, info, dataKey, db)
 		elseif element.SetColor then
 			element:SetColor(iVal);
 		elseif element.SetValue then
-			element:SetValue(iVal);
+			-- Only set the value if it's not nil to prevent errors
+			if iVal ~= nil then
+				element:SetValue(iVal);
+			end
 		end
 
 		element.OnValueChanged = genericChangeEvent;
@@ -231,6 +255,11 @@ end
 --@param db table
 function VUIConfig:BuildRow(frame, info, db)
 	local row = frame:AddRow();
+
+	-- Initialize startPos with a default value to prevent nil errors
+	if not row.startPos then
+		row.startPos = 0
+	end
 
 	for key, element in util.orderedPairs(info) do
 		local dataKey = element.key or key or nil;

@@ -1,5 +1,16 @@
-local E = select(2, ...):unpack()
-local P, CM = E.Party, E.Comm
+local AddOnName, NS = ...
+
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module is initialized
+VUICD.Party = VUICD.Party or {}
+VUICD.Comm = VUICD.Comm or {}
+
+-- Local references to modules
+local P = VUICD.Party
+local CM = VUICD.Comm
 
 local UNIT_TO_PET = {
 	["raid1"]="raidpet1", ["raid2"]="raidpet2", ["raid3"]="raidpet3", ["raid4"]="raidpet4", ["raid5"]="raidpet5",
@@ -24,7 +35,7 @@ function BarFrameMixin:OnEvent(event, ...)
 		if unit ~= self.unit and unit ~= UNIT_TO_PET[self.unit] then
 			return
 		end
-		if E.spellcast_all[spellID] then
+		if VUICD.spellcast_all[spellID] then
 			info:ProcessSpell(spellID)
 		end
 	elseif event == "UNIT_HEALTH" then
@@ -40,7 +51,7 @@ function BarFrameMixin:OnEvent(event, ...)
 
 
 		if not UnitIsDeadOrGhost(unit) then
-			if E.preCata then
+			if VUICD.preCata then
 				local icon = info.spellIcons[20608]
 				if icon then
 					local mult = info.talentData[16184] and 0.3 or (info.talentData[16209] and 0.4) or 0.2
@@ -49,7 +60,7 @@ function BarFrameMixin:OnEvent(event, ...)
 					end
 				end
 			else
-				E.Libs.CBH:Fire("OnBattleRezed")
+				VUICD.Libs.CBH:Fire("OnBattleRezed")
 			end
 
 			info.isDead = nil
@@ -131,7 +142,7 @@ function BarFrameMixin:SetUnit(info, unit, index)
 	end
 	self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", unit, UNIT_TO_PET[unit])
 	self:RegisterUnitEvent("UNIT_CONNECTION", unit)
-	if E.postMoP and info.guid ~= E.userGUID then
+	if VUICD.postMoP and info.guid ~= VUICD.userGUID then
 		self:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", unit)
 	end
 	if info.glowIcons[125174] or info.preactiveIcons[5384] then
@@ -206,24 +217,24 @@ function BarFrameMixin:ReleaseExtraBarIcons()
 end
 
 local function SetEffectivePixelMult(relFrame)
-	P.effectivePixelMult = E.uiUnitFactor / relFrame:GetEffectiveScale()
+	P.effectivePixelMult = VUICD.uiUnitFactor / relFrame:GetEffectiveScale()
 	P:UpdatePositionValues()
 end
 
 function BarFrameMixin:UpdatePosition()
 	self:Hide()
 
-	if E.db.position.detached then
+	if VUICD.db.position.detached then
 		if self.parent ~= UIParent then
 			self:SetParent(UIParent)
 			self.parent = UIParent
 		end
-		E.LoadPosition(self)
+		VUICD.LoadPosition(self)
 		self:Show()
 	else
-		local relFrame = P:FindRelativeFrame(self.guid, E.db.position.uf)
+		local relFrame = P:FindRelativeFrame(self.guid, VUICD.db.position.uf)
 		if relFrame then
-			if E.db.general.showRange then
+			if VUICD.db.general.showRange then
 				if not P.effectivePixelMult then
 					SetEffectivePixelMult(relFrame)
 				end
@@ -274,7 +285,7 @@ sorters = {
 		return a.priority > b.priority
 	end,
 	function(a, b)
-		local type1, type2 = E.db.priority[a.type], E.db.priority[b.type]
+		local type1, type2 = VUICD.db.priority[a.type], VUICD.db.priority[b.type]
 		if type1 == type2 then
 			return sorters[1](a, b)
 		end
@@ -292,7 +303,7 @@ function BarFrameMixin:UpdateLayout(sortOrder)
 		sort(icons, sortFunc)
 	end
 
-	local db_prio = E.db.priority
+	local db_prio = VUICD.db.priority
 	local count, rows, numActive, lastActiveIndex = 0, 1, 1
 	for i = 1, self.numIcons do
 		local icon = icons[i]
@@ -341,7 +352,7 @@ function BarFrameMixin:UpdateSettings()
 	self:SetContainerSize()
 
 	local isDeadOrOffline = self.info.isDeadOrOffline
-	local condition = E.db.highlight.glowBorderCondition
+	local condition = VUICD.db.highlight.glowBorderCondition
 
 	local numIcons = self.numIcons
 	for i = 1, numIcons do
@@ -358,8 +369,8 @@ function BarFrameMixin:UpdateSettings()
 end
 
 function BarFrameMixin:SetAnchor()
-	local showMovableAnchor = E.db.position.detached and not E.db.position.locked
-	if showMovableAnchor or E.db.general.showAnchor and (self.guid ~= E.userGUID or not P.isUserHidden) then
+	local showMovableAnchor = VUICD.db.position.detached and not VUICD.db.position.locked
+	if showMovableAnchor or VUICD.db.general.showAnchor and (self.guid ~= VUICD.userGUID or not P.isUserHidden) then
 		self.anchor:Show()
 	else
 		self.anchor:Hide()
@@ -388,11 +399,11 @@ function BarFrameMixin:SetBarBackdrop()
 end
 
 function P:UpdatePositionValues()
-	local db = E.db.position
-	local pixelMult = (E.db.general.showRange and not db.detached) and self.effectivePixelMult or E.PixelMult
+	local db = VUICD.db.position
+	local pixelMult = (VUICD.db.general.showRange and not db.detached) and self.effectivePixelMult or VUICD.PixelMult
 
-	local size = E.BASE_ICON_HEIGHT * E.db.icons.scale
-	self.iconScale = (size - size % pixelMult) / E.BASE_ICON_HEIGHT
+	local size = VUICD.BASE_ICON_HEIGHT * VUICD.db.icons.scale
+	self.iconScale = (size - size % pixelMult) / VUICD.BASE_ICON_HEIGHT
 
 	local pixel = pixelMult / self.iconScale
 	self.pixel = pixel
@@ -411,14 +422,14 @@ function P:UpdatePositionValues()
 	self.multiline = db.layout ~= "vertical" and db.layout ~= "horizontal"
 	self.tripleline = db.layout == "tripleRow" or db.layout == "tripleColumn"
 	self.sortBy = db.sortBy
-	self.breakPoint = self.sortBy == 2 and E.db.priority[db.breakPoint] or db.breakPoint3
-	self.breakPoint2 = self.sortBy == 2 and E.db.priority[db.breakPoint2] or db.breakPoint4
+	self.breakPoint = self.sortBy == 2 and VUICD.db.priority[db.breakPoint] or db.breakPoint3
+	self.breakPoint2 = self.sortBy == 2 and VUICD.db.priority[db.breakPoint2] or db.breakPoint4
 	self.displayInactive = db.displayInactive
 	self.maxNumIcons = db.maxNumIcons == 0 and 100 or db.maxNumIcons
 
 	if db.layout == "horizontal" or db.layout == "doubleRow" or db.layout == "tripleRow" then
 		self.ofsX = 0
-		self.ofsY = growY * (E.BASE_ICON_HEIGHT + db.paddingY * pixel)
+		self.ofsY = growY * (VUICD.BASE_ICON_HEIGHT + db.paddingY * pixel)
 		self.ofsY2 = 0
 		if growLeft then
 			self.point2 = "TOPRIGHT"
@@ -430,7 +441,7 @@ function P:UpdatePositionValues()
 			self.ofsX2 = db.paddingX * pixel
 		end
 	else
-		self.ofsX = growX * (E.BASE_ICON_HEIGHT + db.paddingX * pixel)
+		self.ofsX = growX * (VUICD.BASE_ICON_HEIGHT + db.paddingX * pixel)
 		self.ofsY = 0
 		self.ofsX2 = 0
 		if growRowsUpward then
@@ -456,9 +467,9 @@ function P:CreateBarFramePool()
 		bar.icons = {}
 		bar.numIcons = 0
 		bar.activeUnitBars = {}
-		bar.anchor.text:SetFontObject(E.AnchorFont)
-		bar.anchor:SetScript("OnMouseUp", E.OmniCDAnchor_OnMouseUp)
-		bar.anchor:SetScript("OnMouseDown", E.OmniCDAnchor_OnMouseDown)
+		bar.anchor.text:SetFontObject(VUICD.AnchorFont)
+		bar.anchor:SetScript("OnMouseUp", VUICD.OmniCDAnchor_OnMouseUp)
+		bar.anchor:SetScript("OnMouseDown", VUICD.OmniCDAnchor_OnMouseDown)
 		Mixin(bar, BarFrameMixin)
 		bar:SetScript("OnEvent", bar.OnEvent)
 	end
@@ -472,14 +483,14 @@ function P:CreateBarFramePool()
 
 		bar.info = nil
 
-		if bar.guid == E.userGUID then
+		if bar.guid == VUICD.userGUID then
 			P.userInfo.bar = nil
 			CM.CooldownSyncFrame:ReleaseIcons()
 		end
 	end
 
-	self.BarPool = E:CreateFramePool("Frame", UIParent, "OmniCDTemplate", resetterFunc, initializeFunc)
+	self.BarPool = VUICD:CreateFramePool("Frame", UIParent, "OmniCDTemplate", resetterFunc, initializeFunc)
 end
 
-E.UNIT_TO_PET = UNIT_TO_PET
+VUICD.UNIT_TO_PET = UNIT_TO_PET
 P.sorters = sorters

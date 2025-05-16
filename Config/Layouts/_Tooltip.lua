@@ -25,7 +25,7 @@ function Layout:OnEnable()
                         { value = 'Custom', text = 'Custom' }
                     },
                     initialValue = 1,
-                    column = 5,
+                    column = 6,
                     order = 1
                 }
             },
@@ -73,7 +73,7 @@ function Layout:OnEnable()
                     type = 'checkbox',
                     label = 'Target Info',
                     tooltip = 'Show current target of the unit',
-                    column = 4,
+                    column = 6,
                     order = 1
                 },
                 targetedInfo = {
@@ -81,7 +81,7 @@ function Layout:OnEnable()
                     type = 'checkbox',
                     label = 'Targeted Info',
                     tooltip = 'When in a raid group display if anyone in your raid is targeting the current tooltip unit',
-                    column = 8,
+                    column = 6,
                     order = 2
                 }
             },

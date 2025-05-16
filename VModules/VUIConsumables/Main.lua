@@ -2,12 +2,64 @@
 -- Tracks player consumables (flasks, food, potions, runes)
 -- Based on Luxthos Consumables WeakAura
 
-local AddonName, VUI = ...
+local AddonName, _ = ...
 local MODNAME = "VUIConsumables"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+
+-- Use global reference instead of local addon variable to fix load order issues
+local VUI = _G["VUI"]
+
+-- Check if VUI exists before proceeding
+if not VUI then 
+    -- Don't print a warning message as the module will be properly registered later when VUI is ready
+    return 
+end
+
+-- Set up global reference early to prevent nil errors
+_G["VUIConsumables"] = _G["VUIConsumables"] or {}
+
+-- Try to create the module with error handling
+local M
+if VUI then
+    -- Check for TryCreateModule first (preferred method)
+    if VUI.TryCreateModule then
+        M = VUI:TryCreateModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+        -- Update the global reference with the actual module
+        _G["VUIConsumables"] = M
+    -- Fall back to NewModule if available
+    elseif VUI.NewModule then
+        M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0")
+        -- Update the global reference with the actual module
+        _G["VUIConsumables"] = M
+    else
+        -- Last resort - create a basic object with minimum required functionality
+        -- Don't print warning since we've already added a silent list in Core/Init.lua
+        M = {
+            NAME = MODNAME,
+            RegisterEvent = function() end,
+            UnregisterAllEvents = function() end,
+            ScheduleRepeatingTimer = function() return 0 end,
+            CancelTimer = function() end,
+            RegisterChatCommand = function() end,
+            Debug = function(self, ...) 
+                -- Silent debug to prevent duplicate console messages
+            end,
+            Print = function(self, ...) print("|cFF33BBFFVUI Consumables:|r", ...) end,
+            GetOptions = function() return {} end
+        }
+        VUI[MODNAME] = M
+        -- Update the global reference with our placeholder
+        _G["VUIConsumables"] = M
+    end
+end
+
+if not M then
+    print("VUIConsumables: Fatal error initializing module")
+    return
+end
 
 -- Localization
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+-- Use global reference pattern for localization tables
+local L = VUI.L or (LibStub and LibStub("AceLocale-3.0") and LibStub("AceLocale-3.0"):GetLocale("VUI", true)) or {}
 
 -- Module Constants
 M.NAME = MODNAME
@@ -107,13 +159,41 @@ M.consumableData = {
 
 -- Initialize module
 function M:OnInitialize()
-    -- Register module with VUI
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Make sure namespaces exists to avoid nil indexing
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUIConsumables"] or VUI.db.namespaces["vuiconsumables"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUIConsumables"] = namespace
+            VUI.db.namespaces["vuiconsumables"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUIConsumables", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuiconsumables"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
     -- Register settings with VUI Config
-    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), self.TITLE)
+    end
     
     -- Frame setup - create the main container frame
     self:CreateFrames()
@@ -125,12 +205,40 @@ function M:OnEnable()
     -- Create the icon frames
     self:CreateIconFrames()
     
-    -- Register events
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("UNIT_AURA", "UpdateConsumables")
+    -- Register events with proper error handling
+    local safeRegisterEvent = function(eventName, methodName)
+        if not self or not self.RegisterEvent then return false end
+        
+        -- If methodName is a string, make sure the method exists
+        if type(methodName) == "string" then
+            if not self[methodName] then
+                -- Create an empty handler to prevent errors
+                self[methodName] = function() end
+            end
+        end
+        
+        -- Use pcall to safely register the event
+        local success = pcall(function()
+            if type(methodName) == "string" then
+                self:RegisterEvent(eventName, methodName)
+            else
+                self:RegisterEvent(eventName)
+            end
+        end)
+        
+        return success
+    end
     
-    -- Start update timer
-    self.updateTimer = self:ScheduleRepeatingTimer("UpdateConsumables", 0.5)
+    -- Register required events
+    safeRegisterEvent("PLAYER_ENTERING_WORLD", "UpdateConsumables")
+    safeRegisterEvent("UNIT_AURA", "UpdateConsumables")
+    
+    -- Start update timer with error handling
+    if self.ScheduleRepeatingTimer and type(self.ScheduleRepeatingTimer) == "function" then
+        pcall(function()
+            self.updateTimer = self:ScheduleRepeatingTimer("UpdateConsumables", 0.5)
+        end)
+    end
     
     self:Debug("VUIConsumables module enabled")
 end
@@ -155,11 +263,19 @@ end
 
 -- Debug and logging functions
 function M:Debug(...)
-    VUI:Debug(MODNAME, ...)
+    if VUI and type(VUI.Debug) == "function" then
+        VUI:Debug(self.NAME, ...)
+    else
+        print("[" .. self.NAME .. "]", ...)
+    end
 end
 
 function M:Print(...)
-    VUI:Print("|cFF33BBFFVUI Consumables:|r", ...)
+    if VUI and type(VUI.Print) == "function" then
+        VUI:Print("|cFF33BBFFVUI Consumables:|r", ...)
+    else
+        print("|cFF33BBFFVUI Consumables:|r", ...)
+    end
 end
 
 -- Create container frame
@@ -199,7 +315,7 @@ function M:CreateFrames()
     end
 end
 
--- Create individual icon frames for each consumable type
+-- Create icon frames for each consumable type
 function M:CreateIconFrames()
     if not self.containerFrame then return end
     
@@ -214,6 +330,27 @@ function M:CreateIconFrames()
     local iconSize = self.db.profile.iconSize
     local spacing = self.db.profile.iconSpacing
     local xPos = 0
+    
+    -- Define fallback textures if VUI.Media is not available
+    local defaultTextures = {
+        [M.FLASK] = "Interface\\Icons\\INV_Alchemy_EndlessFlask_06",
+        [M.FOOD] = "Interface\\Icons\\INV_Misc_Food_15",
+        [M.POTION] = "Interface\\Icons\\INV_Alchemy_Potion_06",
+        [M.RUNE] = "Interface\\Icons\\INV_Misc_Rune_04",
+        ["default"] = "Interface\\Icons\\INV_Misc_QuestionMark"
+    }
+    
+    -- Check if VUI.Media exists and has the textures with safe navigation
+    local hasMedia = (VUI and VUI.Media and VUI.Media.textures and VUI.Media.textures.consumables)
+    
+    -- Safe function to get texture path
+    local function GetTexturePath(consumableType)
+        if hasMedia and VUI.Media.textures.consumables[consumableType] then
+            return VUI.Media.textures.consumables[consumableType]
+        else
+            return defaultTextures[consumableType] or defaultTextures["default"]
+        end
+    end
     
     for i, data in ipairs(iconTypes) do
         if self.db.profile[data.enabled] then
@@ -259,23 +396,30 @@ function M:CreateIconFrames()
             local labelColor = self.db.profile.labelFontColor
             frame.label:SetTextColor(labelColor.r, labelColor.g, labelColor.b, labelColor.a)
             
-            -- Set default state using our media texture
+            -- Set default state using our media texture or fallback
             frame.type = data.type
             frame.active = false
             
-            -- Use appropriate icon based on type
-            if data.type == M.FLASK then
-                frame.icon:SetTexture(VUI.Media.textures.consumables.flask)
-            elseif data.type == M.FOOD then
-                frame.icon:SetTexture(VUI.Media.textures.consumables.food)
-            elseif data.type == M.POTION then
-                frame.icon:SetTexture(VUI.Media.textures.consumables.potion)
-            elseif data.type == M.RUNE then
-                frame.icon:SetTexture(VUI.Media.textures.consumables.rune)
+            -- Check if VUI.Media exists and get appropriate texture with fallback
+            local iconTexture
+            
+            if hasMedia then
+                if data.type == M.FLASK then
+                    iconTexture = VUI.Media.textures.consumables.flask or defaultTextures[M.FLASK]
+                elseif data.type == M.FOOD then
+                    iconTexture = VUI.Media.textures.consumables.food or defaultTextures[M.FOOD]
+                elseif data.type == M.POTION then
+                    iconTexture = VUI.Media.textures.consumables.potion or defaultTextures[M.POTION]
+                elseif data.type == M.RUNE then
+                    iconTexture = VUI.Media.textures.consumables.rune or defaultTextures[M.RUNE]
+                else
+                    iconTexture = VUI.Media.textures.consumables.question or defaultTextures["default"]
+                end
             else
-                frame.icon:SetTexture(VUI.Media.textures.consumables.question)
+                iconTexture = defaultTextures[data.type] or defaultTextures["default"]
             end
             
+            frame.icon:SetTexture(iconTexture)
             frame.duration:SetText("")
             frame.label:SetText(data.type)
             
@@ -307,11 +451,31 @@ function M:ScanPlayerConsumables()
         frame.active = false
     end
     
+    -- Safe wrapper for UnitAura to prevent nil errors
+    local function SafeUnitAura(unit, index, filter)
+        if not UnitAura or type(UnitAura) ~= "function" then
+            return nil
+        end
+        
+        -- Use pcall to safely call UnitAura
+        local success, name, icon, count, debuffType, duration, expirationTime, unitCaster, 
+              isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, 
+              isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = pcall(UnitAura, unit, index, filter)
+        
+        if success and name then
+            return name, icon, count, debuffType, duration, expirationTime, unitCaster, 
+                   isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, 
+                   isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3
+        else
+            return nil
+        end
+    end
+    
     -- Scan all player auras
     local i = 1
     local name, icon, count, debuffType, duration, expirationTime, unitCaster, 
           isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, 
-          isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitAura("player", i, "HELPFUL")
+          isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = SafeUnitAura("player", i, "HELPFUL")
     
     while name do
         self:ProcessAura(spellId, name, icon, duration, expirationTime)
@@ -319,7 +483,7 @@ function M:ScanPlayerConsumables()
         i = i + 1
         name, icon, count, debuffType, duration, expirationTime, unitCaster, 
         isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, 
-        isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitAura("player", i, "HELPFUL")
+        isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = SafeUnitAura("player", i, "HELPFUL")
     end
     
     -- Update icon displays
@@ -366,6 +530,18 @@ end
 -- Update all icon frames based on current state
 function M:UpdateIconFrames()
     local currentTime = GetTime()
+    
+    -- Define fallback textures if VUI.Media is not available
+    local defaultTextures = {
+        [M.FLASK] = "Interface\\Icons\\INV_Alchemy_EndlessFlask_06",
+        [M.FOOD] = "Interface\\Icons\\INV_Misc_Food_15",
+        [M.POTION] = "Interface\\Icons\\INV_Alchemy_Potion_06",
+        [M.RUNE] = "Interface\\Icons\\INV_Misc_Rune_04",
+        ["default"] = "Interface\\Icons\\INV_Misc_QuestionMark"
+    }
+    
+    -- Check if VUI.Media exists and has the textures with safe navigation
+    local hasMedia = (VUI and VUI.Media and VUI.Media.textures and VUI.Media.textures.consumables)
     
     for type, frame in pairs(self.iconFrames) do
         if frame.active then
@@ -422,19 +598,28 @@ function M:UpdateIconFrames()
                 frame:Show()
                 frame:SetAlpha(0.3) -- Dim inactive icons
                 
-                -- Use appropriate icon for the type
-                if type == M.FLASK then
-                    frame.icon:SetTexture(VUI.Media.textures.consumables.flask)
-                elseif type == M.FOOD then
-                    frame.icon:SetTexture(VUI.Media.textures.consumables.food)
-                elseif type == M.POTION then
-                    frame.icon:SetTexture(VUI.Media.textures.consumables.potion)
-                elseif type == M.RUNE then
-                    frame.icon:SetTexture(VUI.Media.textures.consumables.rune)
+                -- Get appropriate icon texture with fallback
+                local iconTexture
+                
+                if hasMedia then
+                    -- Use VUI media textures if available
+                    if type == M.FLASK then
+                        iconTexture = VUI.Media.textures.consumables.flask or defaultTextures[M.FLASK]
+                    elseif type == M.FOOD then
+                        iconTexture = VUI.Media.textures.consumables.food or defaultTextures[M.FOOD]
+                    elseif type == M.POTION then
+                        iconTexture = VUI.Media.textures.consumables.potion or defaultTextures[M.POTION]
+                    elseif type == M.RUNE then
+                        iconTexture = VUI.Media.textures.consumables.rune or defaultTextures[M.RUNE]
+                    else
+                        iconTexture = VUI.Media.textures.consumables.question or defaultTextures["default"]
+                    end
                 else
-                    frame.icon:SetTexture(VUI.Media.textures.consumables.question)
+                    -- Use default textures
+                    iconTexture = defaultTextures[type] or defaultTextures["default"]
                 end
                 
+                frame.icon:SetTexture(iconTexture)
                 frame.duration:SetText("")
                 
                 -- Reset label text to just show the type
@@ -649,5 +834,83 @@ function M:GetOptions()
     return options
 end
 
--- Register the module
-VUI:RegisterModule(MODNAME, M)
+-- Register the module with VUI if the method exists
+if VUI and VUI.RegisterModule then
+    VUI:RegisterModule(MODNAME, M)
+else 
+    -- Fallback if RegisterModule is not available
+    -- Store a reference in VUI's namespace so it can be accessed
+    if VUI then
+        VUI[MODNAME] = M
+        -- No need to print a message - this is expected behavior during initialization
+    end
+end
+
+-- Add a new function after this code:
+
+-- Add slash command functionality
+if M and type(M.RegisterChatCommand) == "function" then
+    -- Safely try to register chat command
+    pcall(function()
+        M:RegisterChatCommand("vuiconsumables", function(input)
+            if input and input:trim() == "toggle" then
+                M.db.profile.enabled = not M.db.profile.enabled
+                if M.db.profile.enabled then
+                    if M.OnEnable then M:OnEnable() end
+                else
+                    if M.OnDisable then M:OnDisable() end
+                end
+                M:Print(M.db.profile.enabled and "Enabled" or "Disabled")
+            else
+                -- Open config if available
+                if VUI and VUI.Config and VUI.Config.OpenToCategory then
+                    pcall(function() VUI.Config:OpenToCategory(M.TITLE) end)
+                else
+                    M:Print("Type /vuiconsumables toggle to toggle the module")
+                end
+            end
+        end)
+        
+        -- Add shorter alias command
+        M:RegisterChatCommand("vuicons", function(input)
+            if input and input:trim() == "toggle" then
+                M.db.profile.enabled = not M.db.profile.enabled
+                if M.db.profile.enabled then
+                    if M.OnEnable then M:OnEnable() end
+                else
+                    if M.OnDisable then M:OnDisable() end
+                end
+                M:Print(M.db.profile.enabled and "Enabled" or "Disabled")
+            else
+                -- Open config if available
+                if VUI and VUI.Config and VUI.Config.OpenToCategory then
+                    pcall(function() VUI.Config:OpenToCategory(M.TITLE) end)
+                else
+                    M:Print("Type /vuicons toggle to toggle the module")
+                end
+            end
+        end)
+    end)
+else
+    -- Fallback slash command registration if AceConsole is not available
+    _G.SLASH_VUICONSUMABLES1 = "/vuiconsumables"
+    _G.SLASH_VUICONSUMABLES2 = "/vuicons"
+    SlashCmdList["VUICONSUMABLES"] = function(input)
+        if input and input:trim() == "toggle" then
+            M.db.profile.enabled = not M.db.profile.enabled
+            if M.db.profile.enabled then
+                if M.OnEnable then M:OnEnable() end
+            else
+                if M.OnDisable then M:OnDisable() end
+            end
+            M:Print(M.db.profile.enabled and "Enabled" or "Disabled")
+        else
+            -- Open config if available
+            if VUI and VUI.Config and VUI.Config.OpenToCategory then
+                pcall(function() VUI.Config:OpenToCategory(M.TITLE) end)
+            else
+                M:Print("Type /vuiconsumables toggle to toggle the module")
+            end
+        end
+    end
+end

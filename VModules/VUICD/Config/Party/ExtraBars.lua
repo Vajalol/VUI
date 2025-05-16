@@ -1,27 +1,160 @@
-local E, L, C = select(2, ...):unpack()
-local P = E.Party
+-- Use global reference pattern to avoid load order issues
+_G["VUICD"] = _G["VUICD"] or {}
+local VUICD = _G["VUICD"]
+
+-- Ensure Party module is initialized
+VUICD.Party = VUICD.Party or {}
+
+-- Get localization through global reference or fallback
+local L = VUICD.L or {}
+
+-- Helper function for safe string formatting
+local function safeFormat(formatStr, ...)
+	if not formatStr then return "" end
+	
+	local args = {...}
+	local count = select("#", ...)
+	
+	-- Check for nil values and replace with empty strings
+	for i = 1, count do
+		if args[i] == nil then 
+			args[i] = "" 
+		end
+	end
+	
+	-- Try to format with sanitized values
+	local success, result = pcall(function() 
+		return string.format(formatStr, unpack(args, 1, count)) 
+	end)
+	
+	if success then
+		return result
+	else
+		-- If format still fails, return the format string or concatenate arguments
+		return formatStr
+	end
+end
+
+-- Add missing localization strings
+if not L["Extra Bars"] then L["Extra Bars"] = "Extra Bars" end
+if not L["Cooldown"] then L["Cooldown"] = "Cooldown" end
+if not L["Cooldown Remaining"] then L["Cooldown Remaining"] = "Cooldown Remaining" end
+if not L["Priority"] then L["Priority"] = "Priority" end
+if not L["Move your group's Interrupt spells to the Interrupt Bar."] then L["Move your group's Interrupt spells to the Interrupt Bar."] = "Move your group's Interrupt spells to the Interrupt Bar." end
+if not L["Interrupt spell types are automatically added to this bar."] then L["Interrupt spell types are automatically added to this bar."] = "Interrupt spell types are automatically added to this bar." end
+if not L["Move your group's Raid Cooldowns to the Raid Bar."] then L["Move your group's Raid Cooldowns to the Raid Bar."] = "Move your group's Raid Cooldowns to the Raid Bar." end
+if not L["Select the spells you want to move from the \'Raid CD\' tab. The spell must be enabled from the \'Spells\' tab first."] then L["Select the spells you want to move from the \'Raid CD\' tab. The spell must be enabled from the \'Spells\' tab first."] = "Select the spells you want to move from the 'Raid CD' tab. The spell must be enabled from the 'Spells' tab first." end
+if not L["Bar"] then L["Bar"] = "Bar" end
+if not L["BG"] then L["BG"] = "BG" end
+if not L["Active"] then L["Active"] = "Active" end
+if not L["Inactive"] then L["Inactive"] = "Inactive" end
+if not L["Recharge"] then L["Recharge"] = "Recharge" end
+if not L["Interrupts"] then L["Interrupts"] = "Interrupts" end
+if not L["Show Player"] then L["Show Player"] = "Show Player" end
+if not L["Reset frame position"] then L["Reset frame position"] = "Reset frame position" end
+if not L["Reset current bar settings to default"] then L["Reset current bar settings to default"] = "Reset current bar settings to default" end
+if not L["Rename Bar"] then L["Rename Bar"] = "Rename Bar" end
+
+-- Store localization for global use
+VUICD.L = VUICD.L or L
+
+-- Local references
+local E = VUICD
+local P = VUICD.Party
+local C = VUICD.Config or {}
+
+-- Initialize string constants if needed
+E.STR = E.STR or {}
+E.STR.WHATS_NEW_ESCSEQ = E.STR.WHATS_NEW_ESCSEQ or ""
+
+-- Ensure P.extraBarKeys exists and is populated
+P.extraBarKeys = P.extraBarKeys or {}
+
+-- If extraBarKeys is empty, populate it with default values
+if #P.extraBarKeys == 0 then
+	for i = 1, 8 do
+		P.extraBarKeys[i] = "raidBar" .. i
+	end
+end
+
+-- Initialize P.activeExBars if not already initialized
+P.activeExBars = P.activeExBars or {}
+
+-- Safe IsCurrentZone function check
+if not P.IsCurrentZone then
+    P.IsCurrentZone = function(self, key)
+        return false
+    end
+end
+
+-- Safe ConfirmAction function check
+if not E.ConfirmAction then
+    E.ConfirmAction = function(info)
+        return true
+    end
+end
+
+-- Safe DeepCopy function check
+if not E.DeepCopy then
+    E.DeepCopy = function(self, src)
+        if type(src) ~= "table" then return src end
+        local copy = {}
+        for k, v in pairs(src) do
+            if type(v) == "table" then
+                copy[k] = self:DeepCopy(v)
+            else
+                copy[k] = v
+            end
+        end
+        return copy
+    end
+end
+
+-- Safe LoadPosition function check
+if not E.LoadPosition then
+    E.LoadPosition = function(frame)
+        -- Placeholder function
+    end
+end
+
+-- Safe RefreshProfile function check
+if not E.RefreshProfile then
+    E.RefreshProfile = function(self)
+        -- Placeholder function
+    end
+end
 
 local extraBars = {
-	name = E.STR.WHATS_NEW_ESCSEQ .. L["Extra Bars"],
+	name = E.STR.WHATS_NEW_ESCSEQ .. (L["Extra Bars"] or "Extra Bars"),
 	type = "group",
 	childGroups = "tab",
 	order = 80,
-	get = function(info) return E.profile.Party[ info[2] ].extraBars[ info[4] ][ info[#info] ] end,
+	get = function(info) 
+		local key, bar, option = info[2], info[4], info[#info]
+		if E.profile and E.profile.Party and E.profile.Party[key] and 
+		   E.profile.Party[key].extraBars and E.profile.Party[key].extraBars[bar] then
+			return E.profile.Party[key].extraBars[bar][option]
+		end
+		return nil
+	end,
 	set = function(info, value)
 		local key, bar, option = info[2], info[4], info[#info]
-		E.profile.Party[key].extraBars[bar][option] = value
-		if P:IsCurrentZone(key) then
-			P:Refresh()
+		if E.profile and E.profile.Party and E.profile.Party[key] and 
+		   E.profile.Party[key].extraBars and E.profile.Party[key].extraBars[bar] then
+			E.profile.Party[key].extraBars[bar][option] = value
+			if P and P.IsCurrentZone and P:IsCurrentZone(key) then
+				P:Refresh()
+			end
 		end
 	end,
 	args = {}
 }
 
 local L_POINTS = {
-	["TOPLEFT"] = L["TOPLEFT"],
-	["TOPRIGHT"] = L["TOPRIGHT"],
-	["BOTTOMLEFT"] = L["BOTTOMLEFT"],
-	["BOTTOMRIGHT"] = L["BOTTOMRIGHT"],
+	["TOPLEFT"] = L["TOPLEFT"] or "TOPLEFT",
+	["TOPRIGHT"] = L["TOPRIGHT"] or "TOPRIGHT",
+	["BOTTOMLEFT"] = L["BOTTOMLEFT"] or "BOTTOMLEFT",
+	["BOTTOMRIGHT"] = L["BOTTOMRIGHT"] or "BOTTOMRIGHT",
 }
 
 local getColor = function(info)
@@ -89,24 +222,24 @@ end
 
 local sortByValues = {
 	raidBar1 = {
-		[1] = L["Cooldown"],
-		[5] = ROLE,
-		[6] = CLASS,
-		[15] = L["Priority"],
-		[2] = format("%s>%s", L["Cooldown Remaining"], L["Cooldown"]),
-		[7] = format("%s>%s", L["Cooldown Remaining"], ROLE),
-		[8] = format("%s>%s", L["Cooldown Remaining"], CLASS),
-		[16] = format("%s>%s", L["Cooldown Remaining"], L["Priority"]),
+		[1] = L["Cooldown"] or "Cooldown",
+		[5] = ROLE or "Role",
+		[6] = CLASS or "Class",
+		[15] = L["Priority"] or "Priority",
+		[2] = safeFormat("%s>%s", L["Cooldown Remaining"] or "", L["Cooldown"] or ""),
+		[7] = safeFormat("%s>%s", L["Cooldown Remaining"] or "", ROLE or ""),
+		[8] = safeFormat("%s>%s", L["Cooldown Remaining"] or "", CLASS or ""),
+		[16] = safeFormat("%s>%s", L["Cooldown Remaining"] or "", L["Priority"] or ""),
 		--[11] = GROUP,
 		--[12] = NAME,
-		--[13] = format("%s>%s", L["Cooldown Remaining"], GROUP),
-		--[14] = format("%s>%s", L["Cooldown Remaining"], NAME),
+		--[13] = safeFormat("%s>%s", L["Cooldown Remaining"] or "", GROUP or ""),
+		--[14] = safeFormat("%s>%s", L["Cooldown Remaining"] or "", NAME or ""),
 	},
 	raidBar2 = {
-		[3] = L["Priority"],
-		[4] = CLASS,
-		[9] = format("%s>%s", L["Cooldown Remaining"], L["Priority"]),
-		[10] = format("%s>%s", L["Cooldown Remaining"], CLASS),
+		[3] = L["Priority"] or "Priority",
+		[4] = CLASS or "Class",
+		[9] = safeFormat("%s>%s", L["Cooldown Remaining"] or "", L["Priority"] or ""),
+		[10] = safeFormat("%s>%s", L["Cooldown Remaining"] or "", CLASS or ""),
 	},
 }
 
@@ -188,16 +321,14 @@ local extraBarsInfo = {
 		enabled = {
 			disabled = false,
 			name = ENABLE,
-			--[[
 			desc = function(info)
-				return info[4] == "raidBar1" and format("%s\n\n|cffffd200%s",
-				L["Move your group's Interrupt spells to the Interrupt Bar."],
-				L["Interrupt spell types are automatically added to this bar."])
-				or format("%s\n\n|cffffd200%s",
-				L["Move your group's Raid Cooldowns to the Raid Bar."],
-				L["Select the spells you want to move from the \'Raid CD\' tab. The spell must be enabled from the \'Spells\' tab first."])
+				return info[4] == "raidBar1" and safeFormat("%s\n\n|cffffd200%s",
+				L["Move your group's Interrupt spells to the Interrupt Bar."] or "Move your group's Interrupt spells to the Interrupt Bar.",
+				L["Interrupt spell types are automatically added to this bar."] or "Interrupt spell types are automatically added to this bar.")
+				or safeFormat("%s\n\n|cffffd200%s",
+				L["Move your group's Raid Cooldowns to the Raid Bar."] or "Move your group's Raid Cooldowns to the Raid Bar.",
+				L["Select the spells you want to move from the \'Raid CD\' tab. The spell must be enabled from the \'Spells\' tab first."] or "Select the spells you want to move from the 'Raid CD' tab. The spell must be enabled from the 'Spells' tab first.")
 			end,
-			]]
 			order = 1,
 			type = "toggle",
 		},
@@ -265,8 +396,8 @@ local extraBarsInfo = {
 				},
 				anchor = {
 					name = L["Anchor Point"],
-					desc = format("%s\n\n%s", L["Set the anchor point on the spell bar"],
-						L["Having \"RIGHT\" in the anchor point, icons grow left, otherwise right"]),
+					desc = safeFormat("%s\n\n%s", L["Set the anchor point on the spell bar"] or "",
+						L["Having \"RIGHT\" in the anchor point, icons grow left, otherwise right"] or ""),
 					order = 2,
 					type = "select",
 					values = L_POINTS,
@@ -302,9 +433,9 @@ local extraBarsInfo = {
 			order = 20,
 			args = {
 				spellType = {
-					name = format("%s (%s)", L["Spell Types"], L["Multiselect"]),
-					desc = format("%s\n\n%s", L["Select the spell types you want to display on this column."],
-						L["You can mangage spell types for all bars from the Frame option"]),
+					name = safeFormat("%s (%s)", L["Spell Types"] or "Spell Types", L["Multiselect"] or "Multiselect"),
+					desc = safeFormat("%s\n\n%s", L["Select the spell types you want to display on this column."] or "",
+						L["You can mangage spell types for all bars from the Frame option"] or ""),
 					order = 1,
 					type = "multiselect",
 					dialogControl = "Dropdown-OmniCDC",
@@ -496,7 +627,7 @@ local extraBarsInfo = {
 						lb1 = { name = L["Active"], order = 1, type = "description", width = 0.5 },
 						lb2 = { name = L["Recharge"], order = 2, type = "description", width = 0.5 },
 						lb3 = { name = L["Inactive"], order = 3, type = "description", width = 0.5 },
-						lb4 = { name = format("%s (%s)", CLASS_COLORS, L["Multiselect"]), order = 4, type = "description", width = 1 },
+						lb4 = { name = safeFormat("%s (%s)", CLASS_COLORS or "Class Colors", L["Multiselect"] or "Multiselect"), order = 4, type = "description", width = 1 },
 					}
 				},
 				textColors = {
@@ -578,16 +709,16 @@ local extraBarsInfo = {
 					hidden = notInterruptBar,
 					disabled = isDisabledProgressBarOrNameBar,
 					name = L["Interrupted Spell Icon"],
-					desc = format("%s\n\n|cffff2020%s", L["Show the interrupted spell icon."],
-						L["Mouseovering the icon will show the interrupted spell information regardless of \'Show Tooltip\' option."]),
+					desc = safeFormat("%s\n\n|cffff2020%s", L["Show the interrupted spell icon."] or "Show the interrupted spell icon.",
+						L["Mouseovering the icon will show the interrupted spell information regardless of \'Show Tooltip\' option."] or "Mouseovering the icon will show the interrupted spell information regardless of 'Show Tooltip' option."),
 					order = 14,
 					type = "toggle",
 				},
 				showRaidTargetMark = {
 					hidden = notInterruptBar,
 					disabled = isDisabledProgressBarOrNameBar,
-					name = L["Interrupted Target Marker"] .. E.RAID_TARGET_MARKERS[1],
-					desc = L["Show the interrupted unit's target marker if it exists."],
+					name = (L["Interrupted Target Marker"] or "Interrupted Target Marker") .. (E.RAID_TARGET_MARKERS and E.RAID_TARGET_MARKERS[1] or ""),
+					desc = L["Show the interrupted unit's target marker if it exists."] or "Show the interrupted unit's target marker if it exists.",
 					order = 15,
 					type = "toggle",
 				},
@@ -596,7 +727,7 @@ local extraBarsInfo = {
 				},
 				statusBarWidth = {
 					name = L["Bar width"],
-					desc = format("%s\n\n%s", L["Set the status bar width. Adjust height with \'Icon Size\'."], E.STR.MAX_RANGE),
+					desc = safeFormat("%s\n\n%s", L["Set the status bar width. Adjust height with \'Icon Size\'."] or "Set the status bar width. Adjust height with 'Icon Size'.", E.STR.MAX_RANGE or ""),
 					order = 17,
 					type = "range",
 					min = 50, max = 999, softMax = 300, step = 1,
@@ -645,7 +776,7 @@ local extraBarsInfo = {
 				},
 				textScale = {
 					name = L["Name Scale"],
-					desc = format("%s\n\n%s", L["Set the Name Bar name scale"], L["The global font settings are in the General menu"]),
+					desc = safeFormat("%s\n\n%s", L["Set the Name Bar name scale"] or "Set the Name Bar name scale", L["The global font settings are in the General menu"] or "The global font settings are in the General menu"),
 					order = 21,
 					type = "range",
 					min = 0.5, max = 1.0, step = 0.01, isPercent = true,
@@ -725,7 +856,9 @@ local extraBarsInfo = {
 }
 for i = 1, 8 do
 	local bar = P.extraBarKeys[i]
-	extraBars.args[bar] = extraBarsInfo
+	if bar then  -- Add safety check
+		extraBars.args[bar] = extraBarsInfo
+	end
 end
 
 local sliderTimer = {}

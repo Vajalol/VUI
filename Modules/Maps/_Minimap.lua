@@ -1,5 +1,37 @@
+local addonName, VUI = ...
+if not VUI then return end
+
+-- Only create the module if NewModule is available
+if not VUI.NewModule then
+    -- Register a callback to try again when VUI is fully initialized
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local Module = VUI:NewModule("Maps.Minimap")
+            -- Re-run the initialization and enable functions
+            if Module then
+                if Module.OnInitialize then Module:OnInitialize() end
+                if Module.OnEnable then Module:OnEnable() end
+            end
+        end
+    end)
+    return
+end
+
 local LibDBIcon = LibStub("LibDBIcon-1.0")
 local Module = VUI:NewModule("Maps.Minimap");
+
+-- Helper function to safely access the Animations module
+local function safeAnimations()
+    if not VUI then return nil end
+    if not VUI.Animations then
+        -- If we get here, the Animations module might not be loaded yet
+        -- Let's try to require it directly
+        if type(VUI.LoadUtility) == "function" then
+            VUI:LoadUtility("Animation")
+        end
+    end
+    return VUI.Animations
+end
 
 function Module:OnInitialize()
     -- Create reference to the border glow frame
@@ -56,7 +88,10 @@ function Module:UpdateMinimapBorderGlow()
     -- If the border glow exists but should be disabled, remove it
     if not db.pulsingBorder and self.borderGlow then
         self.borderGlow:Hide()
-        VUI.Animations:StopAnimations(self.borderGlow)
+        local animations = safeAnimations()
+        if animations then
+            animations:StopAnimations(self.borderGlow)
+        end
         return
     end
     
@@ -128,7 +163,10 @@ function Module:AnimateBorderGlow()
     local duration = 2.0 / pulseSpeed -- Slower speed means longer duration
     
     -- Use the VUI animation system to create a pulsing effect
-    VUI.Animations:StopAnimations(self.borderGlow)
+    local animations = safeAnimations()
+    if not animations then return end
+    
+    animations:StopAnimations(self.borderGlow)
     
     -- Create custom pulse options
     local pulseOptions = {
@@ -138,5 +176,5 @@ function Module:AnimateBorderGlow()
     }
     
     -- Start the pulse animation
-    VUI.Animations:Pulse(self.borderGlow, duration, nil, pulseOptions)
+    animations:Pulse(self.borderGlow, duration, nil, pulseOptions)
 end

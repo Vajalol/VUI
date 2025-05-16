@@ -1,7 +1,49 @@
-local addonName, addon = ...
-local Module = VUI:NewModule("VUISkin")
-local L = LibStub("AceLocale-3.0"):GetLocale("VUISkin")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonName = ...
+local VUI = _G["VUI"]
+
+-- Create minimal fallback if VUI doesn't exist
+if not VUI then
+    VUI = {}
+    VUI.NewModule = function() return {} end
+    VUI.TryCreateModule = function() return {} end
+    _G["VUI"] = VUI
+end
+
+-- Create module with proper error handling
+local Module
+if VUI then
+    -- Check for TryCreateModule first (preferred method)
+    if VUI.TryCreateModule then
+        Module = VUI:TryCreateModule("VUISkin")
+    -- Fall back to NewModule if available
+    elseif VUI.NewModule then
+        Module = VUI:NewModule("VUISkin")
+    else
+        -- Last resort - create a basic object with minimum required functionality
+        print("VUISkin: Warning - creating fallback module object")
+        Module = {
+            NAME = "VUISkin",
+            RegisterEvent = function() end,
+            UnregisterAllEvents = function() end,
+            RegisterChatCommand = function() end,
+            Debug = function(self, ...) print("VUISkin Debug:", ...) end,
+            Print = function(self, ...) print("VUISkin:", ...) end,
+            GetOptions = function() return {} end,
+            OnInitialize = function() end,
+            OnEnable = function() end,
+            OnDisable = function() end
+        }
+        VUI["VUISkin"] = Module
+    end
+end
+
+if not Module then
+    print("VUISkin: Fatal error initializing module")
+    return
+end
+
+local L = LibStub and LibStub("AceLocale-3.0") and LibStub("AceLocale-3.0"):GetLocale("VUISkin") or {}
+local LSM = LibStub and LibStub("LibSharedMedia-3.0") or {}
 
 -- Default settings
 Module.defaults = {
@@ -25,16 +67,75 @@ Module.defaults = {
 }
 
 function Module:OnInitialize()
-    -- Create a config DB for the module
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Make sure namespaces exists to avoid nil indexing
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUISkin"] or VUI.db.namespaces["vuiskin"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUISkin"] = namespace
+            VUI.db.namespaces["vuiskin"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUISkin", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuiskin"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
+    
+    -- Register with VUI theme system if available
+    if VUI and VUI.RegisterCallback then
+        VUI:RegisterCallback("OnThemeChanged", function() 
+            self:OnThemeChanged() 
+        end)
+    end
+    
+    -- Ensure core utility methods exist with fallbacks
+    if not self.Debug then
+        self.Debug = function(self, ...) 
+            if VUI and type(VUI.Print) == "function" then
+                VUI:Print("|cff00ffffVUISkin Debug:|r", ...)
+            else
+                print("|cff00ffffVUISkin Debug:|r", ...)
+            end
+        end
+    end
     
     -- Set up config options (calls method in Config.lua)
-    self:SetupConfigOptions()
+    if self.SetupConfigOptions then
+        self:SetupConfigOptions()
+    end
     
     -- Register the module with VUI's configuration system
-    VUI.Config:RegisterModuleOptions(self.NAME, self:GetOptions(), L["Module Name"])
+    if VUI and VUI.Config and VUI.Config.RegisterModuleCategory then
+        VUI.Config:RegisterModuleCategory("VUISkin", L["VUISkin"] or "VUISkin", L["Details! Skin"] or "Details! Skin")
+    end
+    
+    -- Register any textures
+    if self.RegisterTextures then
+        self:RegisterTextures()
+    end
+    
+    -- Register slash commands
+    self:RegisterChatCommand("vuiskin", "SlashCommand")
+    
+    -- Debug output
+    self:Debug("VUISkin module initialized successfully")
 end
 
 function Module:OnEnable()
@@ -93,7 +194,16 @@ function Module:SlashCommand(input)
 end
 
 function Module:Debug(...)
-    if self.db.profile.debug then
-        VUI:Print("|cff00ffffVUISkin Debug:|r", ...)
+    -- Check if debug is enabled in profile settings
+    local debugEnabled = self.db and self.db.profile and self.db.profile.debug
+    
+    -- If debug is enabled, or if db is not available (initialization might be in progress)
+    if debugEnabled then
+        -- Safely use VUI:Print if available
+        if VUI and type(VUI.Print) == "function" then
+            VUI:Print("|cff00ffffVUISkin Debug:|r", ...)
+        else
+            print("|cff00ffffVUISkin Debug:|r", ...)
+        end
     end
 end

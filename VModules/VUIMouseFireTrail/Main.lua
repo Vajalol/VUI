@@ -2,12 +2,73 @@
 -- Creates a customizable cursor trail effect
 -- Based on EasyCursorTrails by Ridepad with enhancements for VUI theme integration
 
-local AddonName, VUI = ...
+local AddonName, _ = ...
 local MODNAME = "VUIMouseFireTrail"
-local M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0")
+
+-- Use global reference instead of local addon variable to fix load order issues
+local VUI = _G["VUI"]
+
+-- Check if VUI exists before proceeding
+if not VUI then return end
+
+-- Set up global reference early to prevent nil errors
+_G["VUIMouseFireTrail"] = _G["VUIMouseFireTrail"] or {}
+
+-- Try to create the module with error handling
+local M
+
+if VUI.NewModule then
+    M = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0")
+    -- Update the global reference with the actual module
+    _G["VUIMouseFireTrail"] = M
+else
+    -- Create minimal module object to prevent errors
+    M = {
+        NAME = MODNAME,
+        TITLE = "VUI Mouse Fire Trail",
+        DESCRIPTION = "Creates customizable effects that follow your mouse cursor",
+        VERSION = "2.0",
+        OnEnable = function() end,
+        OnDisable = function() end
+    }
+    
+    -- Register in VUI namespace
+    VUI[MODNAME] = M
+    
+    -- Update the global reference with our placeholder
+    _G["VUIMouseFireTrail"] = M
+    
+    -- Try initialization again after delay
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local RealModule = VUI:NewModule(MODNAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0")
+            
+            -- Transfer any properties from temporary module
+            for k, v in pairs(M) do
+                if k ~= "NAME" and k ~= "TITLE" and type(v) ~= "function" then
+                    RealModule[k] = v
+                end
+            end
+            
+            -- Replace with real module
+            VUI[MODNAME] = RealModule
+            
+            -- Update the global reference with the actual module
+            _G["VUIMouseFireTrail"] = RealModule
+            
+            -- Initialize the module
+            if RealModule.OnInitialize then RealModule:OnInitialize() end
+            if RealModule.OnEnable then RealModule:OnEnable() end
+        end
+    end)
+end
+
+-- Set global namespace for other files to access
+VUI.VUIMouseFireTrail = M
 
 -- Localization
-local L = LibStub("AceLocale-3.0"):GetLocale("VUI")
+-- Use global reference pattern for localization tables
+local L = VUI.L or LibStub("AceLocale-3.0"):GetLocale("VUI")
 
 -- Module Constants
 M.NAME = MODNAME
@@ -57,56 +118,135 @@ M.defaults = {
 
 -- Initialize the module
 function M:OnInitialize()
-    -- Create the database
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with consistent naming
+    if VUI and VUI.db then
+        -- Make sure namespaces exists to avoid nil indexing
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if a namespace already exists with any of the possible names
+        local namespace = VUI.db.namespaces["VUIMouseFireTrail"] or VUI.db.namespaces["vuimousefiretrail"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+            
+            -- Ensure both versions are synchronized
+            VUI.db.namespaces["VUIMouseFireTrail"] = namespace
+            VUI.db.namespaces["vuimousefiretrail"] = namespace
+        else
+            -- Create new namespace with proper case for consistency
+            self.db = VUI.db:RegisterNamespace("VUIMouseFireTrail", {
+                profile = self.defaults.profile
+            })
+            
+            -- Also create lowercase reference for compatibility
+            VUI.db.namespaces["vuimousefiretrail"] = self.db
+        end
+    else
+        -- Fallback if VUI.db isn't available
+        self.db = {profile = self.defaults.profile}
+    end
     
     -- Initialize the configuration panel
     if self.InitializeConfig then
         self:InitializeConfig()
     end
     
-    -- Register callback for theme changes
-    VUI:RegisterCallback("OnThemeChanged", function()
-        if self.UpdateTheme then
-            self:UpdateTheme()
-        end
-    end)
+    -- Register callback for theme changes with safety checks
+    if VUI and VUI.RegisterCallback and type(VUI.RegisterCallback) == "function" then
+        pcall(function()
+            VUI:RegisterCallback("OnThemeChanged", function()
+                if self and self.UpdateTheme and type(self.UpdateTheme) == "function" then
+                    pcall(function() self:UpdateTheme() end)
+                end
+            end)
+        end)
+    end
     
     -- Debug message
     VUI:Debug("VUIMouseFireTrail initialized")
+    
+    -- Fire callback to notify the config system
+    if VUI.FireCallback then
+        VUI:FireCallback("OnModuleInitialized", MODNAME)
+    end
 end
 
 -- Enable the module
 function M:OnEnable()
-    -- Initialize the trail system
-    if self.InitializeTrailSystem then
-        self:InitializeTrailSystem()
+    -- Initialize the trail system with safety check
+    if self.InitializeTrailSystem and type(self.InitializeTrailSystem) == "function" then
+        pcall(function() self:InitializeTrailSystem() end)
     end
     
-    -- Register events
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    -- Register events with safety check
+    if self.RegisterEvent and type(self.RegisterEvent) == "function" then
+        pcall(function() self:RegisterEvent("PLAYER_ENTERING_WORLD") end)
+    else
+        -- Fallback for when RegisterEvent isn't available
+        local frame = CreateFrame("Frame")
+        frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame:SetScript("OnEvent", function(_, event, ...)
+            if event == "PLAYER_ENTERING_WORLD" and self and self.PLAYER_ENTERING_WORLD and type(self.PLAYER_ENTERING_WORLD) == "function" then
+                pcall(function() self:PLAYER_ENTERING_WORLD() end)
+            end
+        end)
+        -- Store the frame for later cleanup
+        self.eventFrame = frame
+    end
     
-    -- Register slash command
-    self:RegisterChatCommand("vuitrail", "SlashCommand")
+    -- Register slash command with safety check
+    if self.RegisterChatCommand and type(self.RegisterChatCommand) == "function" then
+        pcall(function() self:RegisterChatCommand("vuitrail", "SlashCommand") end)
+    else
+        -- Fallback: Register with SlashCmdList
+        _G.SLASH_VUIMOUSEFIRETRAIL1 = "/vuitrail"
+        SlashCmdList["VUIMOUSEFIRETRAIL"] = function(input)
+            if self and self.SlashCommand and type(self.SlashCommand) == "function" then
+                pcall(function() self:SlashCommand(input) end)
+            else
+                -- Simple fallback
+                if input == "toggle" then
+                    if self and self.db and self.db.profile then
+                        self.db.profile.enabled = not self.db.profile.enabled
+                        print("|cffff9900VUIMouseFireTrail:|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+                    end
+                end
+            end
+        end
+    end
     
-    -- Debug message
-    VUI:Debug("VUIMouseFireTrail enabled")
+    -- Debug message with safety check
+    if VUI and VUI.Debug and type(VUI.Debug) == "function" then
+        pcall(function() VUI:Debug("VUIMouseFireTrail enabled") end)
+    end
 end
 
 -- Disable the module
 function M:OnDisable()
-    -- Clean up any active effects
-    if self.CleanupEffects then
-        self:CleanupEffects()
+    -- Clean up any active effects with safety check
+    if self.CleanupEffects and type(self.CleanupEffects) == "function" then
+        pcall(function() self:CleanupEffects() end)
     end
     
-    -- Unregister events
-    self:UnregisterAllEvents()
+    -- Unregister events with safety check
+    if self.UnregisterAllEvents and type(self.UnregisterAllEvents) == "function" then
+        pcall(function() self:UnregisterAllEvents() end)
+    end
     
-    -- Debug message
-    VUI:Debug("VUIMouseFireTrail disabled")
+    -- Clean up the event frame if we created one
+    if self.eventFrame then
+        self.eventFrame:SetScript("OnEvent", nil)
+        self.eventFrame:UnregisterAllEvents()
+        self.eventFrame = nil
+    end
+    
+    -- Debug message with safety check
+    if VUI and VUI.Debug and type(VUI.Debug) == "function" then
+        pcall(function() VUI:Debug("VUIMouseFireTrail disabled") end)
+    end
 end
 
 -- Handle PLAYER_ENTERING_WORLD event

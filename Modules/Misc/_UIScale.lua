@@ -1,6 +1,37 @@
+local addonName, VUI = ...
+if not VUI then return end
+
+-- Only create the module if NewModule is available
+if not VUI.NewModule then
+    -- Register a callback to try again when VUI is fully initialized
+    C_Timer.After(0.5, function()
+        if VUI and VUI.NewModule then
+            local Module = VUI:NewModule('Misc.UIScale')
+            -- Re-run the OnEnable function
+            if Module and Module.OnEnable then
+                Module:OnEnable()
+            end
+        end
+    end)
+    return
+end
+
 local Module = VUI:NewModule('Misc.UIScale')
 
 function Module:OnEnable()
+    -- Initialize default settings if they don't exist
+    if not VUI.db.profile.misc then
+        VUI.db.profile.misc = VUI.db.profile.misc or {}
+    end
+    
+    if not VUI.db.profile.misc.uiscale then
+        VUI.db.profile.misc.uiscale = {
+            enabled = false,
+            scale = 1.0,
+            helpShown = false
+        }
+    end
+
     -- Apply saved scale on login if the feature is enabled
     self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
         self:UpdateFromSettings()
@@ -34,10 +65,8 @@ end
 
 -- Update scale based on current settings
 function Module:UpdateFromSettings()
-    local settings = VUI.db.profile.misc.uiscale
-    
-    if settings and settings.enabled then
-        local savedScale = settings.scale or 1.0
+    if VUI.db.profile.misc.uiscale.enabled then
+        local savedScale = VUI.db.profile.misc.uiscale.scale or 1.0
         self:ApplyScale(savedScale)
     end
 end
@@ -48,37 +77,29 @@ function Module:ApplyScale(scaleNumber)
     if InCombatLockdown() then
         self.pendingUpdate = true
         VUI:Print("UI Scale will be updated after combat ends.")
-        return tonumber(GetCVar("uiScale"))
+        return
     end
 
-    local numberedScale = tonumber(scaleNumber)
-    if (type(numberedScale) == "number") then
-        -- Validate scale number (keep between 0.5 and 1.0 for usability)
-        if (numberedScale < 0.5) then
-            numberedScale = 0.5
-        elseif (numberedScale > 1.0) then
-            numberedScale = 1.0
-        end
-        
-        -- Round to 2 decimal places for visual clarity
-        numberedScale = math.floor(numberedScale * 100 + 0.5) / 100
-        
-        -- Apply the scale
-        SetCVar("uiScale", numberedScale)
-        UIParent:SetScale(numberedScale)
-        
-        -- Save to profile
-        VUI.db.profile.misc.uiscale.scale = numberedScale
-        
-        -- Provide feedback when scale changes from settings panel
-        if not VUI.db.profile.install then
-            VUI:Print("UI Scale set to: " .. numberedScale)
-        end
-        
-        -- Return the actual scale used (for UI updates)
-        return numberedScale
+    -- Keep scale between 0.5 and 1.0 for usability
+    if (scaleNumber < 0.5) then
+        scaleNumber = 0.5
+    elseif (scaleNumber > 1.0) then
+        scaleNumber = 1.0
     end
-    return tonumber(GetCVar("uiScale"))
+    
+    -- Apply the scale
+    SetCVar("uiScale", scaleNumber)
+    UIParent:SetScale(scaleNumber)
+    
+    -- Save to profile
+    VUI.db.profile.misc.uiscale.scale = scaleNumber
+    
+    -- Provide feedback when scale changes from settings panel
+    if not VUI.db.profile.install then
+        VUI:Print("UI Scale set to: " .. scaleNumber)
+    end
+    
+    return scaleNumber
 end
 
 -- Calculate the recommended scale based on screen resolution

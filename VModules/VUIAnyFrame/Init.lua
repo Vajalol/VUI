@@ -86,10 +86,30 @@ M.defaults = {
 
 -- Initialize the module
 function M:OnInitialize()
-    -- Create the database
-    self.db = VUI.db:RegisterNamespace(self.NAME, {
-        profile = self.defaults.profile
-    })
+    -- Create the database with proper error handling
+    if VUI and VUI.db then
+        -- Make sure namespaces exists to avoid nil indexing
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if the namespace already exists before creating a new one
+        if VUI.db.namespaces[self.NAME] then
+            self.db = VUI.db.namespaces[self.NAME]
+        else
+            -- Create new namespace
+            self.db = VUI.db:RegisterNamespace(self.NAME, {
+                profile = self.defaults.profile
+            })
+        end
+    else
+        -- Create a basic database structure if VUI.db isn't available
+        self.db = {
+            profile = self.defaults.profile,
+            RegisterCallback = function() end
+        }
+        VUI:Debug(self.NAME .. " using fallback database")
+    end
     
     -- Create a reference for compatibility
     _G.VUIAnyFrame = _G.VUIAnyFrame or {}
@@ -108,11 +128,13 @@ function M:OnInitialize()
     self:InitializeConfig()
     
     -- Register callback for theme changes
-    VUI:RegisterCallback("OnThemeChanged", function()
-        if self.UpdateTheme then
-            self:UpdateTheme()
-        end
-    end)
+    if VUI and VUI.RegisterCallback then
+        VUI:RegisterCallback("OnThemeChanged", function()
+            if self.UpdateTheme then
+                self:UpdateTheme()
+            end
+        end)
+    end
     
     -- Set up minimap button
     if self.SetupDataBroker then
@@ -124,7 +146,9 @@ function M:OnInitialize()
     self:RegisterChatCommand("va", "SlashCommand")
     
     -- Debug message
-    VUI:Debug(self.NAME .. " initialized")
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " initialized")
+    end
 end
 
 -- Enable the module
@@ -141,7 +165,9 @@ function M:OnEnable()
     end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " enabled")
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " enabled")
+    end
 end
 
 -- Disable the module
@@ -155,19 +181,25 @@ function M:OnDisable()
     end
     
     -- Debug message
-    VUI:Debug(self.NAME .. " disabled")
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " disabled")
+    end
 end
 
 -- Slash command handler
 function M:SlashCommand(input)
     if input == "toggle" then
         self.db.profile.enabled = not self.db.profile.enabled
-        VUI:Print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+        if VUI and type(VUI.Print) == "function" then
+            VUI:Print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+        else
+            print("|cffff9900" .. self.TITLE .. ":|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
+        end
     else
         -- Open configuration
         if self.ShowOptions then
             self:ShowOptions()
-        else
+        elseif VUI and VUI.Config and type(VUI.Config.OpenToCategory) == "function" then
             VUI.Config:OpenToCategory(self.TITLE)
         end
     end
@@ -176,12 +208,14 @@ end
 -- Configuration initialization
 function M:InitializeConfig()
     -- Register with VUI's configuration system
-    VUI.Config:RegisterModuleOptions(self.NAME, function()
-        -- Open the configuration panel
-        if self.ShowOptions then
-            self:ShowOptions()
-        end
-    end)
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions(self.NAME, function()
+            -- Open the configuration panel
+            if self.ShowOptions then
+                self:ShowOptions()
+            end
+        end)
+    end
 end
 
 -- Event handler for PLAYER_ENTERING_WORLD

@@ -10,11 +10,11 @@ VUICD.Party = VUICD.Party or {}
 -- Get localization through global reference or fallback
 local L = VUICD.L or {}
 
--- Get database reference
+-- Get database reference with safety check
 local db = VUICD.db or {}
-local P = VUICD.Party
-local V = {}
-P.Visibility = V
+local P = VUICD.Party or {}
+P.Visibility = P.Visibility or {}
+local V = P.Visibility
 
 -- Local variables
 local currentInstanceType = "none"
@@ -28,7 +28,14 @@ function V:Initialize()
     self.frame = CreateFrame("Frame")
     self.frame:SetScript("OnEvent", function(_, event, ...)
         if self[event] then
-            self[event](self, ...)
+            local args = {...}
+            pcall(function() 
+                if #args > 0 then
+                    self[event](self, unpack(args))
+                else
+                    self[event](self)
+                end
+            end)
         end
     end)
     
@@ -43,11 +50,49 @@ end
 
 -- Update visibility based on current conditions
 function V:Update()
-    local settings = VUICD:GetPartySettings().visibility
+    -- Safety check - ensure VUICD is properly initialized
+    if not VUICD then
+        return
+    end
+    
+    -- Safely get party settings with fallbacks
+    local settings = {}
+    if VUICD and VUICD.GetPartySettings and type(VUICD.GetPartySettings) == "function" then
+        local success, result = pcall(function() return VUICD.GetPartySettings() end)
+        if success and result and result.visibility then
+            settings = result.visibility
+        else
+            -- Fallback default settings
+            settings = {
+                arena = true,
+                raid = true,
+                party = true,
+                scenario = true,
+                none = false,
+                outside = false,
+                inTest = true
+            }
+        end
+    else
+        -- Fallback default settings if GetPartySettings doesn't exist
+        settings = {
+            arena = true,
+            raid = true,
+            party = true,
+            scenario = true,
+            none = false,
+            outside = false,
+            inTest = true
+        }
+    end
+    
     local shouldShow = false
     
+    -- Check if P exists before accessing its properties
+    local testMode = P and P.testMode
+    
     -- Check instance type
-    if P.testMode and settings.inTest then
+    if testMode and settings.inTest then
         shouldShow = true
     elseif currentInstanceType == "arena" then
         shouldShow = settings.arena
@@ -69,16 +114,39 @@ function V:Update()
     isVisible = shouldShow
     
     -- Update display
-    self:UpdateDisplay()
+    pcall(function() self:UpdateDisplay() end)
 end
 
 -- Update display based on visibility
 function V:UpdateDisplay()
-    if isVisible and VUICD:GetPartySettings().enabled then
-        P:Enable()
-    else
-        P:Disable()
+    -- Safety check - ensure P module exists before calling methods
+    if not P then
+        return
     end
+    
+    -- Check if Enable/Disable methods exist before calling them
+    local canEnable = P.Enable and type(P.Enable) == "function"
+    local canDisable = P.Disable and type(P.Disable) == "function"
+    
+    -- Get party settings safely
+    local isEnabled = false
+    if VUICD and VUICD.GetPartySettings and type(VUICD.GetPartySettings) == "function" then
+        local success, settings = pcall(function() return VUICD.GetPartySettings() end)
+        if success and settings then
+            isEnabled = settings.enabled
+        end
+    end
+    
+    -- More explicit safety check to prevent nil index errors
+    if not isVisible or not isEnabled or not canEnable then
+        if canDisable then
+            pcall(function() P:Disable() end)
+        end
+        return
+    end
+    
+    -- Safe enable with pcall
+    pcall(function() P:Enable() end)
 end
 
 -- Check if the module should be visible
