@@ -1,378 +1,239 @@
---- VUIAnyFrame: Main Module
---- Based on MoveAny by D4KiR
----@class VUIAnyFrame: AceModule
--- Use global reference instead of AceAddon-3.0 to fix load order issues
-local VUIAnyFrame = _G["VUIAnyFrame"]
-local L = VUIAnyFrame.L
+-- VUIAnyFrame: Main Module
+-- Allows repositioning of any UI element
+-- Based on MoveAny by D4KiR with VUI integration
 
--- Libraries
-local AceConfig = LibStub("AceConfig-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
-local AceDB = LibStub("AceDB-3.0")
-local LDB = LibStub("LibDataBroker-1.1", true)
-local LDBIcon = LibStub("LibDBIcon-1.0", true)
+local AddonName, VUI = ...
+local M = _G["VUIAnyFrame"]
+local L = M.L
 
--- Local storage for SetHidden state
-local sethidden = {}
-local sethiddenSetup = {}
+-- Create frame for setup callbacks
+local setupFrame = CreateFrame("Frame")
+setupFrame:RegisterEvent("PLAYER_LOGIN")
+setupFrame:RegisterEvent("ADDON_LOADED")
+setupFrame:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_LOGIN" then
+        M:ApplySettings()
+    elseif event == "ADDON_LOADED" then
+        local addonName = ...
+        if addonName == "VUI" then
+            -- Initialize after VUI is loaded
+            if M.needsInit then
+                M.needsInit = nil
+                -- Try to properly initialize now that VUI is available
+                if VUI and VUI.NewModule then
+                    local newModule = VUI:NewModule("VUIAnyFrame", "AceEvent-3.0", "AceConsole-3.0", "AceHook-3.0")
+                    -- Copy over any data that might have been set on the placeholder
+                    for k, v in pairs(M) do
+                        if k ~= "frame" then -- Don't overwrite frame reference
+                            newModule[k] = v
+                        end
+                    end
+                    -- Update global reference
+                    _G["VUIAnyFrame"] = newModule
+                    
+                    -- Call initialization
+                    if type(newModule.OnInitialize) == "function" then
+                        newModule:OnInitialize()
+                    end
+                    if type(newModule.OnEnable) == "function" then
+                        newModule:OnEnable()
+                    end
+                end
+            end
+        end
+    end
+end)
 
--- Initialize the addon
-function VUIAnyFrame:OnInitialize()
-    -- Get reference to the main VUI addon
-    local VUI = LibStub("AceAddon-3.0"):GetAddon("VUI")
+-- Function to create frames
+function M:CreateFrames()
+    -- Create options panel
+    if not M.LockFrame then
+        local lockFrame = CreateFrame("Frame", "VALockFrame", UIParent)
+        lockFrame:SetSize(300, 200)
+        lockFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+        lockFrame:SetFrameStrata("HIGH")
+        lockFrame:SetFrameLevel(100)
+        
+        -- Set backdrop
+        lockFrame:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8x8",
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            edgeSize = 1,
+            insets = {left = 1, right = 1, top = 1, bottom = 1}
+        })
+        lockFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
+        lockFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+        
+        -- Make draggable
+        lockFrame:SetMovable(true)
+        lockFrame:EnableMouse(true)
+        lockFrame:RegisterForDrag("LeftButton")
+        lockFrame:SetScript("OnDragStart", function(self) self:StartMoving() end)
+        lockFrame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+        
+        -- Add title
+        local title = lockFrame:CreateFontString(nil, "OVERLAY")
+        title:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE")
+        title:SetPoint("TOP", lockFrame, "TOP", 0, -10)
+        title:SetText("VUI AnyFrame")
+        
+        -- Add buttons
+        local buttons = {}
+        local y = -40
+        
+        -- Lock button
+        buttons.lock = M:CreateButton(lockFrame, "Lock Frames", y)
+        buttons.lock:SetScript("OnClick", function()
+            M:Lock()
+        end)
+        
+        -- Grid toggle button
+        y = y - 40
+        buttons.grid = M:CreateButton(lockFrame, "Toggle Grid", y)
+        buttons.grid:SetScript("OnClick", function()
+            if M.GridFrame and M.GridFrame:IsShown() then
+                M.GridFrame:Hide()
+            else
+                M:UpdateGrid()
+                if M.GridFrame then
+                    M.GridFrame:Show()
+                end
+            end
+        end)
+        
+        -- Reset all button
+        y = y - 40
+        buttons.resetAll = M:CreateButton(lockFrame, "Reset All Frames", y)
+        buttons.resetAll:SetScript("OnClick", function()
+            StaticPopupDialogs["VUIANYFRAME_RESET_ALL"] = {
+                text = "Are you sure you want to reset all frames to their default positions?",
+                button1 = "Yes",
+                button2 = "No",
+                OnAccept = function()
+                    M:ResetAllFrameSettings()
+                    M:Print("All frames reset to default positions")
+                end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                preferredIndex = 3
+            }
+            StaticPopup_Show("VUIANYFRAME_RESET_ALL")
+        end)
+        
+        -- Options button
+        y = y - 40
+        buttons.options = M:CreateButton(lockFrame, "Options", y)
+        buttons.options:SetScript("OnClick", function()
+            M:OpenOptions()
+        end)
+        
+        -- Store in module
+        M.LockFrame = lockFrame
+        M.LockFrame.buttons = buttons
+        
+        -- Hide by default
+        M.LockFrame:Hide()
+    end
     
-    -- Register with VUI's database namespace system
-    self.db = VUI.db:RegisterNamespace("VUIAnyFrame", self.defaults)
+    -- Create grid frame if it doesn't exist yet
+    if not M.GridFrame then
+        M:UpdateGrid()
+    end
     
-    -- Initialize settings
+    -- Create icon textures for minimap button
+    M:CreateGridTextures()
+end
+
+-- Function to initialize module
+function M:OnInitialize()
+    -- Skip if already initialized
+    if self.initialized then
+        return
+    end
+    
+    -- Create the database
     self:InitSettings()
     
-    -- Set up minimap button
-    if LDB and LDBIcon then
-        self:SetupDataBroker()
-    end
+    -- Create frames
+    self:CreateFrames()
     
     -- Register slash commands
     self:RegisterChatCommand("vuianyframe", "SlashCommand")
     self:RegisterChatCommand("va", "SlashCommand")
-    self:RegisterChatCommand("move", "SlashCommand")
     
-    -- Register callbacks for profile changes
-    self.db.RegisterCallback(self, "OnProfileChanged", "ProfileChanged")
-    self.db.RegisterCallback(self, "OnProfileCopied", "ProfileChanged")
-    self.db.RegisterCallback(self, "OnProfileReset", "ProfileChanged")
+    -- Initialize VUI integration
+    self:InitVUIIntegration()
     
-    -- Set up the options - use the standardized approach for VUI modules
-    self:SetupOptions()
+    -- Mark as initialized
+    self.initialized = true
     
-    -- Initialize VUI integration if VUI is available
-    if VUI then
-        self:InitVUIIntegration()
-    end
-    
-    -- Create our frames
-    self:CreateFrames()
-    
-    -- Register necessary events
-    self:RegisterEvents()
-end
-
--- Enable the module
-function VUIAnyFrame:OnEnable()
-    -- Register for events
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("ADDON_LOADED")
-    self:RegisterEvent("PLAYER_REGEN_DISABLED")
-    self:RegisterEvent("PLAYER_REGEN_ENABLED")
-    
-    -- Set up the frames and grid
-    self:SetupFrames()
-    self:UpdateGrid()
-    
-    -- Apply existing settings
-    self:ApplyAllFrameSettings()
-    
-    -- Set initial visibility based on lock state
-    self:UpdateFrameVisibility()
-    
-    -- Start the update cycle for scaling and dragging
-    C_Timer.After(0.1, function() self:UpdateCurrentWindow() end)
-    
-    -- Report enabled
-    self:Print(string.format("%s v%s enabled", self.TITLE or "VUI AnyFrame", self.VERSION or "1.0"))
-end
-
--- Handle events
-function VUIAnyFrame:PLAYER_ENTERING_WORLD()
-    -- Apply settings after a short delay to ensure all frames are loaded
-    C_Timer.After(1, function()
-        self:ApplyAllFrameSettings()
-        self:UpdateFrameVisibility()
-    end)
-end
-
-function VUIAnyFrame:ADDON_LOADED(event, addonName)
-    -- When any addon loads, check if we need to register frames from it
-    C_Timer.After(0.5, function()
-        self:SetupFrames()
-    end)
-end
-
-function VUIAnyFrame:PLAYER_REGEN_DISABLED()
-    -- Player entered combat
-    if self.db.profile.global.combatLock and not self.db.profile.global.lockFrames then
-        -- Save the pre-combat lock state
-        self.preCombatLock = false
-        
-        -- Lock frames during combat
-        self.db.profile.global.lockFrames = true
-        self:UpdateFrameVisibility()
-        
-        self:Print("Frames temporarily locked for combat")
+    -- Debug message
+    if VUI and VUI.Debug then
+        VUI:Debug(self.NAME .. " initialized")
     end
 end
 
-function VUIAnyFrame:PLAYER_REGEN_ENABLED()
-    -- Player left combat
-    if self.db.profile.global.combatLock and self.preCombatLock == false then
-        -- Restore pre-combat lock state
-        self.db.profile.global.lockFrames = false
-        self:UpdateFrameVisibility()
-        
-        self:Print("Combat ended - frames unlocked")
-        self.preCombatLock = nil
-    end
-end
-
--- Handle slash commands
-function VUIAnyFrame:SlashCommand(input)
-    input = input:trim():lower()
-    
-    if input == "config" or input == "options" or input == "opt" or input == "" then
-        self:OpenOptions()
-    elseif input == "reset" or input == "r" then
-        self:ResetAllFrameSettings()
-    elseif input == "lock" or input == "l" then
-        self:SetSetting("lockFrames", true)
-        self:Print("Frames locked")
-    elseif input == "unlock" or input == "u" then
-        self:SetSetting("lockFrames", false)
-        self:Print("Frames unlocked")
-    elseif input == "grid" or input == "g" then
-        self:ToggleSetting("showGrid")
-        self:Print("Grid " .. (self.db.profile.global.showGrid and "shown" or "hidden"))
-    elseif input == "snap" or input == "s" then
-        self:ToggleSetting("snapToGrid")
-        self:Print("Snap to grid " .. (self.db.profile.global.snapToGrid and "enabled" or "disabled"))
-    elseif input == "help" or input == "h" or input == "?" then
-        self:Print("VUI AnyFrame commands:")
-        self:Print(" - /va : Open config panel")
-        self:Print(" - /va reset (or r): Reset all frames")
-        self:Print(" - /va lock (or l): Lock all frames")
-        self:Print(" - /va unlock (or u): Unlock all frames")
-        self:Print(" - /va grid (or g): Toggle grid")
-        self:Print(" - /va snap (or s): Toggle snap to grid")
-        self:Print(" - /va help (or h, ?): Show this help")
-    else
-        -- Toggle lock/unlock
-        self:ToggleSetting("lockFrames")
-        self:Print("Frames " .. (self.db.profile.global.lockFrames and "locked" or "unlocked"))
-    end
-end
-
--- Create initial frames
-function VUIAnyFrame:CreateFrames()
-    -- Create the hidden container frame if it doesn't exist
-    if not self.HIDDEN_FRAME then
-        self.HIDDEN_FRAME = CreateFrame("Frame", "VUIHIDDEN")
-        self.HIDDEN_FRAME:Hide()
-        self.HIDDEN_FRAME.unit = "player"
-        self.HIDDEN_FRAME.auraRows = 0
-    end
-    
-    -- Create UI Parent if needed
-    if not self.UI_PARENT then
-        self.UI_PARENT = CreateFrame("Frame", "VUIUIP")
-        self.UI_PARENT:SetAllPoints(UIParent)
-        self.UI_PARENT.unit = "player"
-        self.UI_PARENT.auraRows = 0
-    end
-end
-
--- Open the options panel
-function VUIAnyFrame:OpenOptions()
-    -- First try to open through VUI config if available
-    if VUI and VUI.Config and VUI.Config.OpenModule then
+-- Function to open options panel
+function M:OpenOptions()
+    -- Use VUI's built-in config if available
+    if VUI and VUI.Config and type(VUI.Config.OpenModule) == "function" then
         VUI.Config:OpenModule("VUIAnyFrame")
     else
-        -- Fallback to Ace config if VUI config not available
-        AceConfigDialog:Open("VUIAnyFrame")
+        -- Fall back to AceConfigDialog if available
+        if LibStub and LibStub("AceConfigDialog-3.0", true) then
+            local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+            AceConfigDialog:Open("VUIAnyFrame")
+        else
+            -- Show our custom frame
+            if M.LockFrame then
+                M.LockFrame:Show()
+            end
+        end
     end
 end
 
--- Get options for configuration panel - standard function name used across VUI modules
-function VUIAnyFrame:GetOptions()
-    -- Basic options structure
-    local options = {
-        name = "VUI AnyFrame",
-        handler = self,
-        type = "group",
-        icon = "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm.tga",
-        args = {
-            general = {
-                order = 1,
-                type = "group",
-                name = L["General"],
-                args = {
-                    enabled = {
-                        order = 1,
-                        type = "toggle",
-                        name = L["Enable"],
-                        desc = L["Enable/disable VUI AnyFrame"],
-                        get = function() return self.db.profile.enabled end,
-                        set = function(_, value)
-                            self.db.profile.enabled = value
-                            if value then
-                                self:OnEnable()
-                            else
-                                self:OnDisable()
-                            end
-                        end,
-                        width = "full",
-                    },
-                    lockFrames = {
-                        order = 2,
-                        type = "toggle",
-                        name = L["Lock Frames"],
-                        get = function() return self.db.profile.global.lockFrames end,
-                        set = function(_, value)
-                            self:SetSetting("lockFrames", value)
-                        end,
-                        width = "full",
-                    },
-                    allowScaling = {
-                        order = 3,
-                        type = "toggle",
-                        name = L["Allow Frame Scaling"],
-                        desc = L["Enable scaling frames with right-click + drag"],
-                        get = function() return self.db.profile.global.allowScaling end,
-                        set = function(_, value)
-                            self:SetSetting("allowScaling", value)
-                        end,
-                        width = "full",
-                    },
-                    showGrid = {
-                        order = 4,
-                        type = "toggle",
-                        name = L["Show Grid"],
-                        desc = L["Show a grid when moving frames"],
-                        get = function() return self.db.profile.global.showGrid end,
-                        set = function(_, value)
-                            self:SetSetting("showGrid", value)
-                        end,
-                        width = "full",
-                    },
-                    snapToGrid = {
-                        order = 5,
-                        type = "toggle",
-                        name = L["Snap To Grid"],
-                        desc = L["Snap frames to grid when moving"],
-                        get = function() return self.db.profile.global.snapToGrid end,
-                        set = function(_, value)
-                            self:SetSetting("snapToGrid", value)
-                        end,
-                        width = "full",
-                    },
-                    gridSize = {
-                        order = 6,
-                        type = "range",
-                        name = L["Grid Size"],
-                        desc = L["Set the size of the grid"],
-                        min = 5,
-                        max = 50,
-                        step = 1,
-                        get = function() return self.db.profile.global.grid end,
-                        set = function(_, value)
-                            self:SetSetting("grid", value)
-                        end,
-                        width = "full",
-                    },
-                    combatLock = {
-                        order = 7,
-                        type = "toggle",
-                        name = L["Lock in Combat"],
-                        desc = L["Automatically lock frames when entering combat"],
-                        get = function() return self.db.profile.global.combatLock end,
-                        set = function(_, value)
-                            self:SetSetting("combatLock", value)
-                        end,
-                        width = "full",
-                    },
-                    resetAllFrames = {
-                        order = 8,
-                        type = "execute",
-                        name = L["Reset All Frames"],
-                        desc = L["Reset all frame positions and scales"],
-                        func = function() self:ResetAllFrameSettings() end,
-                        width = "full",
-                    },
-                },
-            },
-            frames = {
-                order = 2,
-                type = "group",
-                name = L["Frames"],
-                args = {
-                    -- Will be populated dynamically with registered frames
-                    intro = {
-                        order = 0,
-                        type = "description",
-                        name = L["Select frames to customize their appearance or visibility."],
-                        width = "full",
-                    },
-                    -- Blizzard frames will be added here
-                },
-            },
-            elements = {
-                order = 3,
-                type = "group", 
-                name = L["Elements"],
-                args = {
-                    -- Will be populated dynamically with UI elements
-                },
-            },
-        },
-    }
+-- Function to set up options panel
+function M:SetupOptions()
+    if not LibStub then return end
     
-    -- Add blizzard frames that can be hidden
-    for frameName, hidden in pairs(self.db.profile.global.hideBlizzardFrames) do
-        options.args.frames.args[frameName] = {
-            type = "toggle",
-            name = frameName,
-            desc = L["Toggle visibility of "] .. frameName,
-            get = function() return self:GetBlizzardFrameVisibility(frameName) end,
-            set = function(_, value)
-                self:SetBlizzardFrameVisibility(frameName, value)
-            end,
-            width = "full",
-        }
+    local AceConfigRegistry = LibStub("AceConfigRegistry-3.0", true)
+    local AceConfigDialog = LibStub("AceConfigDialog-3.0", true)
+    if not AceConfigRegistry or not AceConfigDialog then return end
+    
+    -- Register with VUI's config system
+    if VUI and VUI.Config and type(VUI.Config.RegisterModuleOptions) == "function" then
+        VUI.Config:RegisterModuleOptions("VUIAnyFrame", self:GetOptions(), "VUI AnyFrame")
     end
     
-    -- Return the generated options
-    return options
-end
-
--- Set up options
-function VUIAnyFrame:SetupOptions()
-    local options = self:GetOptions()
-    
-    -- Register with VUI Config system if available
-    if VUI and VUI.Config and VUI.Config.RegisterModuleOptions then
-        VUI.Config:RegisterModuleOptions("VUIAnyFrame", options, "VUI AnyFrame")
-    end
-    
-    -- Also register with AceConfig for backward compatibility
-    AceConfigRegistry:RegisterOptionsTable("VUIAnyFrame", options)
+    -- Register standalone options
+    AceConfigRegistry:RegisterOptionsTable("VUIAnyFrame", self:GetOptions())
     self.optionsFrame = AceConfigDialog:AddToBlizOptions("VUIAnyFrame", "VUIAnyFrame")
 end
 
 -- Register events
-function VUIAnyFrame:RegisterEvents()
+function M:RegisterEvents()
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("ADDON_LOADED")
-    self:RegisterEvent("PLAYER_REGEN_DISABLED")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
+    self:RegisterEvent("PLAYER_REGEN_DISABLED")
+    self:RegisterEvent("ADDON_LOADED")
 end
 
--- Handle profile changes
-function VUIAnyFrame:ProfileChanged()
-    self:InitSettings()
-    self:ApplyAllFrameSettings()
-    self:UpdateFrameVisibility()
+-- Profile changed callback
+function M:ProfileChanged()
+    -- Apply settings from the new profile
+    C_Timer.After(0.5, function()
+        self:ApplySettings()
+    end)
+    
+    self:Print("Profile changed, reapplying settings")
 end
 
--- Print a message
-function VUIAnyFrame:Print(...)
-    print("|cFF3FC7EBVUI AnyFrame|r:", ...);
-end
+-- Print a formatted message
+function M:Print(...)
+    if VUI and VUI.Print then
+        VUI:Print("|cff00aaff" .. self.TITLE .. ":|r ", ...)
+    else
+        print("|cff00aaff" .. self.TITLE .. ":|r ", ...)
+    end
+end 

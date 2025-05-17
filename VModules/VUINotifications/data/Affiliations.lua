@@ -5,7 +5,8 @@ VUI.Notifications = VUI.Notifications or {}
 
 -- Define affiliations for combat log filtering
 -- Module reference
-local M = VUI:GetModule("VUINotifications")
+-- Instead of trying to get the module with GetModule, we'll work directly with the namespace
+-- local M = VUI:GetModule("VUINotifications") -- This line was causing the error
 
 -- Ensure backward compatibility
 VUI.Notifications = VUI.Notifications or {}

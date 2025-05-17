@@ -1,32 +1,23 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
-    <!-- Load required libraries (if any) -->
-    <Include file="libs\D4Lib\D4Lib.xml"/>
+    <!-- Load order is important -->
     
-    <!-- Load localizations -->
-    <Include file="Locales\Locales.xml"/>
-    
-    <!-- Core files -->
+    <!-- Initialize module -->
     <Script file="Init.lua"/>
+    
+    <!-- Load media -->
     <Script file="Media.lua"/>
-    <Script file="VUIAnyFrame.lua"/>
-    <Script file="RegisterWidgets.lua"/>
-    <Script file="MoveFrames.lua"/>
+    
+    <!-- Load module components -->
     <Script file="Settings.lua"/>
+    <Script file="MoveFrames.lua"/>
+    <Script file="RegisterWidgets.lua"/>
+    <Script file="VUIAnyFrame.lua"/>
     <Script file="VUI_Integration.lua"/>
-
-    <!-- Elements -->
-    <Script file="Ele\ActionBars.lua"/>
-    <Script file="Ele\ArenaEnemyFrames.lua"/>
-    <Script file="Ele\BagBar.lua"/>
-    <Script file="Ele\BuffBar.lua"/>
-    <Script file="Ele\DebuffBar.lua"/>
-    <Script file="Ele\FPS.lua"/>
-    <Script file="Ele\MAVehicleSeatIndicator.lua"/>
-    <Script file="Ele\MicroMenu.lua"/>
-    <Script file="Ele\Minimap.lua"/>
-    <Script file="Ele\MulticastActionBar.lua"/>
-    <Script file="Ele\PartyFrame.lua"/>
-    <Script file="Ele\PetBar.lua"/>
-    <Script file="Ele\StanceBar.lua"/>
-</Ui>
+    
+    <!-- Include localization -->
+    <Include file="Locales\Load.xml"/>
+    
+    <!-- Include elements -->
+    <Include file="Ele\Load.xml" optional="true"/>
+</Ui> 

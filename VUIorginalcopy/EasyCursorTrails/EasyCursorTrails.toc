@@ -1,0 +1,9 @@
+## Interface: 110105
+## Title: Easy Cursor Trails
+## Notes: Changes the cursor to a custom texture with glow effects.
+## Author: MPLUSSTREAM
+## Version: 2.0
+## SavedVariables: EasyCursorTrailsDB
+
+EasyCursorTrails.lua
+ 

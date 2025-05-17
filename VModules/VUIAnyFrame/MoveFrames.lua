@@ -1,623 +1,759 @@
 -- VUIAnyFrame - Frame Movement Handler
--- Use global reference instead of AceAddon-3.0 to fix load order issues
-local VUIAnyFrame = _G["VUIAnyFrame"]
-local L = VUIAnyFrame.L
+local AddonName, VUI = ...
+local M = _G["VUIAnyFrame"]
+local L = M.L
 
--- List of frames that can be moved - directly from MoveAny
-local MOVABLE_FRAMES = {"ChatConfigFrame", "CurrencyTransferMenu", "HeroTalentsSelectionDialog", "CurrencyTransferLog", "DelvesCompanionConfigurationFrame", "DelvesDifficultyPickerFrame", "ItemRefTooltip", "ReforgingFrameInvisibleButton", "ReforgingFrame", "WeakAurasOptions", "ProfessionsBookFrame", "PlayerSpellsFrame", "GroupLootHistoryFrame", "ModelPreviewFrame", "ScrappingMachineFrame", "TabardFrame", "PVPFrame", "ArchaeologyFrame", "QuestLogDetailFrame", "InspectRecipeFrame", "PVPParentFrame", "SettingsPanel", "SplashFrame", "InterfaceOptionsFrame", "QuickKeybindFrame", "VideoOptionsFrame", "KeyBindingFrame", "MacroFrame", "AddonList", "ContainerFrameCombinedBags", "LFGParentFrame", "CharacterFrame", "InspectFrame", "SpellBookFrame", "PlayerTalentFrame", "ClassTalentFrame", "FriendsFrame", "HelpFrame", "TradeFrame", "TradeSkillFrame", "CraftFrame", "QuestLogFrame", "ChallengesKeystoneFrame", "CovenantMissionFrame", "OrderHallMissionFrame", "PVPMatchScoreboard", "GossipFrame", "MerchantFrame", "PetStableFrame", "QuestFrame", "ClassTrainerFrame", "AchievementFrame", "PVEFrame", "EncounterJournal", "WeeklyRewardsFrame", "BankFrame", "WardrobeFrame", "DressUpFrame", "MailFrame", "OpenMailFrame", "AuctionHouseFrame", "AuctionFrame", "ProfessionsCustomerOrdersFrame", "AnimaDiversionFrame", "CovenantSanctumFrame", "SoulbindViewer", "GarrisonLandingPage", "PlayerChoiceFrame", "GenericPlayerChoiseTobbleButton", "WorldStateScoreFrame", "ItemTextFrame", "ExpansionLandingPage", "MajorFactionRenownFrame", "GenericTraitFrame", "FlightMapFrame", "TaxiFrame", "ItemUpgradeFrame", "ProfessionsFrame", "CommunitiesFrame", "CollectionsJournal", "CovenantRenownFrame", "ChallengesKeystoneFrame", "ScriptErrorsFrame", "CalendarFrame", "TimeManagerFrame", "GuildBankFrame", "ItemSocketingFrame", "BlackMarketFrame", "QuestLogPopupDetailFrame", "ItemInteractionFrame", "GarrisonCapacitiveDisplayFrame", "ChannelFrame", "WorldMapFrame", "GameMenuFrame", "PVPReadyDialog", "ReadyCheckFrame", "RolePollPopup", "StaticPopup1", "StaticPopup2"}
-local IGNORE_CLAMP_FRAMES = {}
-
--- Local storage
-local movedFrames = {}
-local currentWindowName = nil
-local prevMouseX = nil
-local prevMouseY = nil
-local updatingFrame = false
-local frameSetPoints = {}
-local frameScales = {}
-local frameIsMoving = {}
-local enableMouseFrames = {"PlayerChoiceFrame", "GenericPlayerChoiseTobbleButton"}
-local hookedEnableMouseFrames = {}
-
--- Create the hidden panel for completely hiding frames
-VUIAnyFrame.HIDDEN_FRAME = CreateFrame("Frame", "VUIHIDDEN")
-VUIAnyFrame.HIDDEN_FRAME:Hide()
-VUIAnyFrame.HIDDEN_FRAME.unit = "player"
-VUIAnyFrame.HIDDEN_FRAME.auraRows = 0
-
--- Create a UIParent alternative for custom scaling
-VUIAnyFrame.UI_PARENT = CreateFrame("Frame", "VUIUIP")
-VUIAnyFrame.UI_PARENT:SetAllPoints(UIParent)
-VUIAnyFrame.UI_PARENT.unit = "player" 
-VUIAnyFrame.UI_PARENT.auraRows = 0
-
--- Get color (from MoveAny)
-local colors = {}
-colors["bg"] = {0.03, 0.03, 0.03}
-colors["se"] = {1.0, 1.0, 0.0}
-colors["el"] = {0.6, 0.84, 1.0}
-colors["hidden"] = {1.0, 0.0, 0.0}
-colors["clickthrough"] = {0.2, 0.2, 1.0}
-
-function VUIAnyFrame:GetColor(key)
-    return colors[key][1], colors[key][2], colors[key][3]
+-- Track drag frames
+local VADF = {}
+function M:GetDragFrames()
+    return VADF
 end
 
--- Update UI Parent alpha and scale to match UI
-function VUIAnyFrame:SetUIParentAlpha(alpha)
-    if UIParent:IsShown() then
-        self.UI_PARENT:SetAlpha(alpha)
-    else
-        self.UI_PARENT:SetAlpha(0)
-    end
-end
+--[[ HIDDEN PANEL ]]
+M.HIDDEN_FRAME = CreateFrame("Frame", "VUIHIDDEN")
+M.HIDDEN_FRAME:Hide()
+M.HIDDEN_FRAME.unit = "player"
+M.HIDDEN_FRAME.auraRows = 0
+local sethidden = {}
+local sethiddenSetup = {}
 
--- Hook UI scale changes
-local function InitUIScale()
-    local uiscalecvar = CreateFrame("Frame")
-    uiscalecvar:RegisterEvent("CVAR_UPDATE")
-    uiscalecvar:SetScript("OnEvent", function(self, event, target, value)
-        if event == "CVAR_UPDATE" and (target == "uiScale" or target == "useUiScale") then
-            if GetCVar("useUiScale") == "1" then
-                VUIAnyFrame.UI_PARENT:SetScale(GetCVar("uiScale"))
-            else
-                VUIAnyFrame.UI_PARENT:SetScale(UIParent:GetScale())
-            end
-            
-            VUIAnyFrame:UpdateGrid()
-        end
-    end)
-    
-    hooksecurefunc(UIParent, "SetScale", function(sel, scale)
-        if InCombatLockdown() and sel:IsProtected() then return false end
-        if GetCVar("useUiScale") == "0" and type(scale) == "number" then
-            VUIAnyFrame.UI_PARENT:SetScale(scale)
-        end
-    end)
-    
-    if GetCVar("useUiScale") == "1" then
-        VUIAnyFrame.UI_PARENT:SetScale(GetCVar("uiScale"))
-    else
-        C_Timer.After(0, function()
-            VUIAnyFrame.UI_PARENT:SetScale(UIParent:GetScale())
-        end)
-    end
-    
-    VUIAnyFrame:SetUIParentAlpha(UIParent:GetAlpha())
-    
-    hooksecurefunc(UIParent, "Show", function(self)
-        VUIAnyFrame:SetUIParentAlpha(1)
-    end)
-    
-    hooksecurefunc(UIParent, "Hide", function(self)
-        VUIAnyFrame:SetUIParentAlpha(0)
-    end)
-    
-    hooksecurefunc(_G, "SetUIVisibility", function(show, ...)
-        if show then
-            VUIAnyFrame:SetUIParentAlpha(1)
-        else
-            VUIAnyFrame:SetUIParentAlpha(0)
-        end
-    end)
-end
-
--- Initialize UI Scale handling
-InitUIScale()
-
--- Set frame scale
-function VUIAnyFrame:SetFrameScale(frameName, scale)
-    if not frameName or not scale then return end
-    
-    if not self.db.profile.frames[frameName] then
-        self.db.profile.frames[frameName] = {}
-    end
-    
-    self.db.profile.frames[frameName].scale = scale
-    
-    local frame = _G[frameName]
-    if frame then
-        frame:SetScale(scale)
-    end
-end
-
--- Update current window (for scaling)
-function VUIAnyFrame:UpdateCurrentWindow()
-    if currentWindowName ~= nil then
-        local currentWindow = _G[currentWindowName]
-        if currentWindow then
-            if updatingFrame then return end
-            updatingFrame = true
-            
-            if not currentWindow:IsShown() then
-                currentWindow:SetAlpha(1)
-                currentWindowName = nil
-                GameTooltip:Hide()
-            end
-            
-            if currentWindowName ~= nil and self.db.profile.global.allowScaling then
-                local curMouseX, curMouseY = GetCursorPosition()
-                if prevMouseX and prevMouseY then
-                    if curMouseY > prevMouseY then
-                        local newScale = math.min(currentWindow:GetScale() + 0.006, 2.5)
-                        if newScale > 0 then
-                            newScale = tonumber(string.format("%.3f", newScale))
-                            currentWindow:SetScale(newScale)
-                            if currentWindow.isMaximized and newScale > 1 then
-                                newScale = 1
-                            end
-                            
-                            self:SetFrameScale(currentWindowName, newScale)
-                        end
-                    elseif curMouseY < prevMouseY then
-                        local newScale = math.max(currentWindow:GetScale() - 0.006, 0.5)
-                        if newScale > 0 then
-                            newScale = tonumber(string.format("%.3f", newScale))
-                            currentWindow:SetScale(newScale)
-                            if currentWindow.isMaximized and newScale > 1 then
-                                newScale = 1
-                            end
-                            
-                            self:SetFrameScale(currentWindowName, newScale)
-                        end
-                    end
-                end
-                
-                GameTooltip:SetOwner(currentWindow)
-                GameTooltip:SetText(self:MathR(currentWindow:GetScale() * 100) .. "%")
-                prevMouseX = curMouseX
-                prevMouseY = curMouseY
-            end
-            
-            updatingFrame = false
-            C_Timer.After(0.02, function() self:UpdateCurrentWindow() end)
-        end
-    end
-end
-
--- Set frame point with proper handling
-function VUIAnyFrame:SetPoint(window, p1, p2, p3, p4, p5)
-    frameSetPoints[window] = frameSetPoints[window] or false
-    
-    if InCombatLockdown() and window:IsProtected() then return false end
-    
-    if p1 then
-        local ClearAllPoints = window.FClearAllPoints or window.ClearAllPoints
-        ClearAllPoints(window)
-        local SetPoint = window.FSetPointBase or window.FSetPoint or window.SetPointBase or window.SetPoint
-        frameSetPoints[window] = true
-        SetPoint(window, p1, p2 or "UIParent", p3, p4, p5)
-        frameSetPoints[window] = false
-    end
-    
-    return true
-end
-
--- Round math helper
-function VUIAnyFrame:MathR(v)
-    return math.floor(v + 0.5)
-end
-
--- Frame drag info tooltip
-function VUIAnyFrame:FrameDragInfo(frame, c)
-    if c > 0 then
-        if IsMouseButtonDown("RightButton") or IsMouseButtonDown("LeftButton") or IsMouseButtonDown("MiddleButton") then
-            C_Timer.After(0.01, function()
-                self:FrameDragInfo(frame, c - 1)
-            end)
-        end
-    else
-        local text = nil
-        if IsMouseButtonDown("RightButton") then
-            if self.db.profile.global.allowScaling then
-                text = "Right-click + drag up/down to scale"
-            else
-                text = "Frame scaling disabled"
-            end
-        elseif IsMouseButtonDown("LeftButton") then
-            text = "Drag to move frame"
-        elseif IsMouseButtonDown("MiddleButton") then
-            text = "Middle-click to reset position"
-        end
-        
-        if text then
-            GameTooltip:SetOwner(frame)
-            GameTooltip:SetText(text)
-        end
-    end
-end
-
--- Create a grid
-function VUIAnyFrame:UpdateGrid()
-    if not self.GridFrame then
-        self.GridFrame = CreateFrame("Frame", "VUIAnyFrameGrid", UIParent)
-        self.GridFrame:SetFrameStrata("BACKGROUND")
-        self.GridFrame:SetAllPoints(UIParent)
-        self.GridFrame:Hide()
-        
-        self.GridFrame.texture = self.GridFrame:CreateTexture(nil, "BACKGROUND")
-        self.GridFrame.texture:SetAllPoints(self.GridFrame)
-        self.GridFrame.texture:SetColorTexture(0.2, 0.2, 0.2, 0.4)
-        
-        self.GridFrame.lines = {}
-        
-        -- Create grid lines
-        local gridSize = self.db.profile.global.grid or 10
-        
-        -- Horizontal lines
-        for i = 0, math.ceil(GetScreenHeight() / gridSize) do
-            local line = self.GridFrame:CreateLine()
-            line:SetColorTexture(0.4, 0.4, 0.4, 0.8)
-            line:SetStartPoint("TOPLEFT", 0, -i * gridSize)
-            line:SetEndPoint("TOPRIGHT", 0, -i * gridSize)
-            line:SetThickness(1)
-            table.insert(self.GridFrame.lines, line)
-        end
-        
-        -- Vertical lines
-        for i = 0, math.ceil(GetScreenWidth() / gridSize) do
-            local line = self.GridFrame:CreateLine()
-            line:SetColorTexture(0.4, 0.4, 0.4, 0.8)
-            line:SetStartPoint("TOPLEFT", i * gridSize, 0)
-            line:SetEndPoint("BOTTOMLEFT", i * gridSize, 0)
-            line:SetThickness(1)
-            table.insert(self.GridFrame.lines, line)
-        end
-    end
-end
-
--- Set up all frames for moving
-function VUIAnyFrame:SetupFrames()
-    -- Hook special frames like StaticPopup for better handling
-    if StaticPopup1 then
-        hooksecurefunc(StaticPopup1, "Hide", function(sel)
-            if not InCombatLockdown() or not sel:IsProtected() then
-                sel:ClearAllPoints()
-            end
-        end)
-        StaticPopup1:ClearAllPoints()
-    end
-    
-    if StaticPopup2 then
-        hooksecurefunc(StaticPopup2, "Hide", function(sel)
-            if not InCombatLockdown() or not sel:IsProtected() then
-                sel:ClearAllPoints()
-            end
-        end)
-        StaticPopup2:ClearAllPoints()
-    end
-    
-    -- Enable mouse on special frames
-    for _, name in pairs(enableMouseFrames) do
-        local frame = _G[name]
-        if frame and not hookedEnableMouseFrames[name] then
-            hookedEnableMouseFrames[name] = true
-            hooksecurefunc(frame, "Show", function(sel)
-                sel:EnableMouse(true)
-            end)
-            frame:EnableMouse(true)
-        end
-    end
-    
-    -- Register all default frames from our list
-    for _, frameName in ipairs(MOVABLE_FRAMES) do
-        self:RegisterFrame(frameName)
-    end
-    
-    -- Apply saved settings
-    self:ApplyAllFrameSettings()
-end
-
--- Register a frame for movement
-function VUIAnyFrame:RegisterFrame(frameName)
-    local frame = _G[frameName]
-    if not frame then
-        -- Frame might not be loaded yet, we'll retry when addons load
-        return
-    end
-    
-    if movedFrames[frameName] then
-        -- Already registered
-        return
-    end
-    
-    -- Create a move border/highlight
-    local mover = CreateFrame("Frame", "VUIAnyFrameMover_" .. frameName, frame)
-    mover:SetFrameStrata("DIALOG")
-    mover:SetAllPoints(frame)
-    
-    -- Make it visible
-    mover.texture = mover:CreateTexture(nil, "OVERLAY")
-    mover.texture:SetAllPoints(mover)
-    mover.texture:SetColorTexture(self:GetColor("el"))
-    mover.texture:SetAlpha(0.3)
-    
-    -- Add frame name
-    mover.text = mover:CreateFontString(nil, "OVERLAY")
-    mover.text:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-    mover.text:SetPoint("TOP", mover, "TOP", 0, 15)
-    mover.text:SetText(frameName)
-    
-    -- Make the frame movable
-    frame:SetMovable(true)
-    frame:SetUserPlaced(true)
-    
-    -- Add move and scale handlers
-    mover:EnableMouse(true)
-    mover:RegisterForDrag("LeftButton")
-    
-    mover:SetScript("OnDragStart", function(self)
-        if not VUIAnyFrame.db.profile.global.lockFrames then
-            currentWindowName = frameName
-            frame:StartMoving()
-            frameIsMoving[frameName] = true
-            
-            if VUIAnyFrame.db.profile.global.showGrid then
-                VUIAnyFrame.GridFrame:Show()
-            end
-        end
-    end)
-    
-    mover:SetScript("OnDragStop", function(self)
-            frame:StopMovingOrSizing()
-        frameIsMoving[frameName] = false
-        currentWindowName = nil
-        GameTooltip:Hide()
-        
-        if VUIAnyFrame.GridFrame then
-            VUIAnyFrame.GridFrame:Hide()
-        end
-            
-            -- Save the position
-        if VUIAnyFrame.db.profile.frames[frameName] == nil then
-            VUIAnyFrame.db.profile.frames[frameName] = {}
-        end
-        
-        local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint(1)
-        if point then
-            -- Snap to grid if enabled
-            if VUIAnyFrame.db.profile.global.snapToGrid and xOfs and yOfs then
-                local gridSize = VUIAnyFrame.db.profile.global.grid or 10
-                xOfs = math.floor(xOfs / gridSize + 0.5) * gridSize
-                yOfs = math.floor(yOfs / gridSize + 0.5) * gridSize
-                
-                frame:ClearAllPoints()
-                frame:SetPoint(point, relativeTo, relativePoint, xOfs, yOfs)
-            end
-            
-            -- Save position
-            VUIAnyFrame.db.profile.frames[frameName].position = {
-                point = point,
-                relativeTo = relativeTo and relativeTo:GetName() or "UIParent",
-                relativePoint = relativePoint,
-                xOfs = xOfs,
-                yOfs = yOfs
-            }
-        end
-    end)
-    
-    -- Right-click to scale
-    mover:SetScript("OnMouseDown", function(self, button)
-        if button == "RightButton" and VUIAnyFrame.db.profile.global.allowScaling then
-            currentWindowName = frameName
-            prevMouseX, prevMouseY = GetCursorPosition()
-            VUIAnyFrame:UpdateCurrentWindow()
-        elseif button == "MiddleButton" then
-            -- Reset position
-            VUIAnyFrame:ResetFramePosition(frame)
-        end
-    end)
-    
-    mover:SetScript("OnMouseUp", function(self, button)
-        if button == "RightButton" then
-            currentWindowName = nil
-            GameTooltip:Hide()
-        end
-    end)
-    
-    -- Tooltip handling
-    mover:SetScript("OnEnter", function(self)
-        if not VUIAnyFrame.db.profile.global.lockFrames then
-        GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
-            GameTooltip:ClearLines()
-            GameTooltip:AddLine("VUI AnyFrame", 1, 1, 1)
-            GameTooltip:AddLine(frameName, 0.6, 0.8, 1)
-        GameTooltip:AddLine(" ")
-            GameTooltip:AddLine("Drag: Move Frame", 0.8, 0.8, 0.8)
-            
-            if VUIAnyFrame.db.profile.global.allowScaling then
-                GameTooltip:AddLine("Right-click + Drag: Scale Frame", 0.8, 0.8, 0.8)
-            end
-            
-            GameTooltip:AddLine("Middle-click: Reset Position", 0.8, 0.8, 0.8)
-        GameTooltip:Show()
-        end
-    end)
-    
-    mover:SetScript("OnLeave", function(self)
-        GameTooltip:Hide()
-    end)
-    
-    -- Apply saved settings
-    self:ApplyFrameSettings(frameName)
-    
-    -- Hide by default
-    mover:Hide()
-    
-    -- Save to our list
-    movedFrames[frameName] = mover
-end
-
--- Apply settings to a specific frame
-function VUIAnyFrame:ApplyFrameSettings(frameName)
-    local frame = _G[frameName]
-    if not frame then return end
-    
-    local settings = self.db.profile.frames[frameName]
-    if not settings then return end
-    
-    -- Apply position if saved
-    if settings.position then
-        local pos = settings.position
-        local relTo = pos.relativeTo == "UIParent" and UIParent or _G[pos.relativeTo]
-        
-        if relTo then
-            frame:ClearAllPoints()
-            frame:SetPoint(pos.point, relTo, pos.relativePoint, pos.xOfs, pos.yOfs)
-        end
-    end
-    
-    -- Apply scale if saved
-    if settings.scale then
-        frame:SetScale(settings.scale)
-    end
-    
-    -- Apply hidden state if saved
-    if settings.hidden then
-        self:HideFrame(frame, settings.softHide)
-    end
-end
-
--- Apply settings to all frames
-function VUIAnyFrame:ApplyAllFrameSettings()
-    for frameName in pairs(self.db.profile.frames) do
-        self:ApplyFrameSettings(frameName)
-    end
-end
-
--- Toggle frame lock state
-function VUIAnyFrame:ToggleFrameLock()
-    self.db.profile.global.lockFrames = not self.db.profile.global.lockFrames
-    self:UpdateFrameVisibility()
-    
-    self:Print(self.db.profile.global.lockFrames and "Frames locked" or "Frames unlocked")
-    
-    return self.db.profile.global.lockFrames
-end
-
--- Update mover frame visibility
-function VUIAnyFrame:UpdateFrameVisibility()
-    for frameName, mover in pairs(movedFrames) do
-        if self.db.profile.global.lockFrames then
-            mover:Hide()
-        else
-            mover:Show()
-        end
-    end
-    
-    -- Show/hide grid if enabled
-    if self.GridFrame then
-        if not self.db.profile.global.lockFrames and self.db.profile.global.showGrid then
-            self.GridFrame:Show()
-        else
-            self.GridFrame:Hide()
-        end
-    end
-end
-
--- Hide a frame completely
-function VUIAnyFrame:HideFrame(frame, soft)
+-- Hide a frame
+function M:HideFrame(frame, soft)
     if not soft then
         if InCombatLockdown() then
-            C_Timer.After(0.1, function() 
-                self:HideFrame(frame, soft) 
-            end)
+            C_Timer.After(
+                0.1,
+                function()
+                    M:HideFrame(frame, soft)
+                end
+            )
             return
         end
-        
+
         sethidden[frame] = true
         if sethiddenSetup[frame] == nil then
             sethiddenSetup[frame] = true
             local setparent = false
-            hooksecurefunc(frame, "SetParent", function(sel, parent)
-                if sethidden[sel] == nil then return end
-                if setparent then return end
-                setparent = true
-                sel:SetParent(self.HIDDEN_FRAME)
-                setparent = false
-            end)
+            hooksecurefunc(
+                frame,
+                "SetParent",
+                function(sel, parent)
+                    if sethidden[sel] == nil then return end
+                    if setparent then return end
+                    setparent = true
+                    sel:SetParent(M.HIDDEN_FRAME)
+                    setparent = false
+                end
+            )
         end
-        
-        frame:SetParent(self.HIDDEN_FRAME)
+
+        frame:SetParent(M.HIDDEN_FRAME)
         return
     end
-    
+
     sethidden[frame] = true
     if sethiddenSetup[frame] == nil then
         sethiddenSetup[frame] = true
         local setalpha = false
-        hooksecurefunc(frame, "SetAlpha", function(sel, alpha)
-            if sethidden[sel] == nil then return end
-            if setalpha then return end
-            setalpha = true
-            sel:SetAlpha(0)
-            if not InCombatLockdown() then
-                sel:EnableMouse(false)
-            end
-            
-            if sel.GetChildren then
-                local function HideChildren(child)
-                    child:SetAlpha(0)
-                    if not InCombatLockdown() then
-                        child:EnableMouse(false)
-                    end
+        hooksecurefunc(
+            frame,
+            "SetAlpha",
+            function(sel, alpha)
+                if sethidden[sel] == nil then return end
+                if setalpha then return end
+                setalpha = true
+                sel:SetAlpha(0)
+                if not InCombatLockdown() then
+                    sel:EnableMouse(false)
                 end
-                
-                local children = {sel:GetChildren()}
-                for _, child in ipairs(children) do
-                    HideChildren(child)
+
+                if sel.GetChildren then
+                    M:ForeachChildren(
+                        sel,
+                        function(child)
+                            child:SetAlpha(0)
+                            if not InCombatLockdown() then
+                                child:EnableMouse(false)
+                            end
+                        end, "HideFrame"
+                    )
                 end
+
+                setalpha = false
             end
-            
-            setalpha = false
-        end)
+        )
     end
-    
+
     frame:SetAlpha(0)
     frame:EnableMouse(false)
     if InCombatLockdown() then
-        C_Timer.After(0.1, function()
-            self:HideFrame(frame, soft)
-        end)
+        C_Timer.After(
+            0.1,
+            function()
+                M:HideFrame(frame, soft)
+            end
+        )
     end
 end
 
 -- Show a previously hidden frame
-function VUIAnyFrame:ShowFrame(frame)
+function M:ShowFrame(frame)
     sethidden[frame] = nil
     frame:SetAlpha(1)
     if not InCombatLockdown() then
         frame:EnableMouse(true)
     else
-        C_Timer.After(0.1, function()
-            self:ShowFrame(frame)
-        end)
+        C_Timer.After(
+            0.1,
+            function()
+                M:ShowFrame(frame)
+            end
+        )
     end
 end
 
--- Reset a frame's position
-function VUIAnyFrame:ResetFramePosition(frame)
-    if not frame or not frame:GetName() then return end
-    
-    local name = frame:GetName()
-    
-    if self.db.profile.frames[name] then
-        self.db.profile.frames[name].position = nil
+--[[ UI PARENT REPLACEMENT ]]
+M.UI_PARENT = CreateFrame("Frame", "VUIUIP")
+M.UI_PARENT:SetAllPoints(UIParent)
+M.UI_PARENT.unit = "player"
+M.UI_PARENT.auraRows = 0
+
+-- Set UI Parent Alpha
+function M:SetUIParentAlpha(alpha)
+    if UIParent:IsShown() then
+        M.UI_PARENT:SetAlpha(alpha)
+    else
+        M.UI_PARENT:SetAlpha(0)
+    end
+end
+
+-- Update UI Scale based on CVars
+local uiscalecvar = CreateFrame("Frame")
+uiscalecvar:RegisterEvent("CVAR_UPDATE")
+uiscalecvar:SetScript(
+    "OnEvent",
+    function(self, event, target, value)
+        if event == "CVAR_UPDATE" and (target == "uiScale" or target == "useUiScale") then
+            if GetCVar("useUiScale") == "1" then
+                M.UI_PARENT:SetScale(GetCVar("uiScale"))
+            else
+                M.UI_PARENT:SetScale(UIParent:GetScale())
+            end
+            
+            M:UpdateGrid()
+        end
+    end
+)
+
+-- Hook UIParent scale changes
+hooksecurefunc(
+    UIParent,
+    "SetScale",
+    function(sel, scale)
+        if InCombatLockdown() and sel:IsProtected() then return false end
+        if GetCVar("useUiScale") == "0" and type(scale) == "number" then
+            M.UI_PARENT:SetScale(scale)
+        end
+    end
+)
+
+-- Initial scale setup
+if GetCVar("useUiScale") == "1" then
+    M.UI_PARENT:SetScale(GetCVar("uiScale"))
+else
+    C_Timer.After(
+        0,
+        function()
+            M.UI_PARENT:SetScale(UIParent:GetScale())
+        end
+    )
+end
+
+-- Mirror UIParent visibility
+M:SetUIParentAlpha(UIParent:GetAlpha())
+hooksecurefunc(
+    UIParent,
+    "Show",
+    function(self)
+        M:SetUIParentAlpha(1)
+    end
+)
+
+hooksecurefunc(
+    UIParent,
+    "Hide",
+    function(self)
+        M:SetUIParentAlpha(0)
+    end
+)
+
+hooksecurefunc(
+    _G,
+    "SetUIVisibility",
+    function(show, ...)
+        if show then
+            M:SetUIParentAlpha(1)
+        else
+            M:SetUIParentAlpha(0)
+        end
+    end
+)
+
+-- Return the main panel
+function M:GetMainPanel()
+    return M.UI_PARENT
+end
+
+--[[ LOCK/UNLOCK FUNCTIONS ]]
+local isToggling = false
+
+-- Unlock frames for movement
+function M:Unlock()
+    if isToggling then
+        M:Print("[Unlock] Already toggling lock state")
+        return
     end
     
-    -- You might need custom code here to set specific frames back to their default positions
-    -- For now, we just clear points and let the game position it
+    isToggling = true
+    self.db.profile.global.lockFrames = false
+    
+    -- Show all drag frames
+    for i, df in pairs(M:GetDragFrames()) do
+        df:Show()
+        if df.opt then
+            df.opt:Show()
+        end
+    end
+    
+    -- Show options panel if exists
+    if M.LockFrame then
+        M.LockFrame:Show()
+        if M.GridFrame then
+            M.GridFrame:Show()
+        end
+    end
+    
+    -- Update grid display
+    M:UpdateGrid()
+    
+    M:Print("Frames unlocked - drag to reposition")
+    isToggling = false
+end
+
+-- Lock frames to prevent movement
+function M:Lock()
+    if isToggling then
+        M:Print("[Lock] Already toggling lock state")
+        return
+    end
+    
+    isToggling = true
+    self.db.profile.global.lockFrames = true
+    
+    -- Hide all drag frames
+    for i, df in pairs(M:GetDragFrames()) do
+        df:Hide()
+        if df.opt then
+            df.opt:Hide()
+        end
+    end
+    
+    -- Hide options panel if exists
+    if M.LockFrame then
+        M.LockFrame:Hide()
+        if M.GridFrame then
+            M.GridFrame:Hide()
+        end
+    end
+    
+    M:Print("Frames locked")
+    isToggling = false
+end
+
+-- Make a frame movable
+function M:MakeFrameMovable(frame, displayName, frameType)
+    if not frame then return end
+    if not frameType then frameType = "FRAME" end
+    
+    -- Generate a unique name for the frame if none provided
+    if not displayName then
+        displayName = frame:GetName() or "UnnamedFrame"
+    end
+    
+    -- Skip if this frame is already set up
+    for id, f in pairs(VADF) do
+        if f.mover and f.mover.frame == frame then
+            return f.mover
+        end
+    end
+    
+    -- Create mover frame
+    local moaFrameBG = CreateFrame("Frame", "VAMover_BG_" .. displayName, UIParent)
+    local moaFrame = CreateFrame("Frame", "VAMover_" .. displayName, moaFrameBG)
+    moaFrame:SetPoint("CENTER", moaFrameBG, "CENTER", 0, 0)
+    
+    -- Set up appearance
+    moaFrameBG:SetFrameStrata("HIGH")
+    moaFrameBG:SetFrameLevel(1)
+    moaFrame:SetFrameStrata("HIGH")
+    moaFrame:SetFrameLevel(2)
+    
+    -- Create a backdrop if LibStrata is available
+    if LibStub and LibStub("LibSharedMedia-3.0", true) then
+        -- Use LibSharedMedia for backdrops
+        local LSM = LibStub("LibSharedMedia-3.0")
+        
+        -- Use LibBackdrop if available
+        if LibStub("LibBackdrop-1.0", true) then
+            local LBD = LibStub("LibBackdrop-1.0")
+            LBD:PaintFrame(moaFrameBG, {
+                bgFile = "Interface\\Buttons\\WHITE8x8",
+                edgeFile = "Interface\\Buttons\\WHITE8x8",
+                edgeSize = 1,
+                insets = {left = 0, right = 0, top = 0, bottom = 0}
+            })
+            moaFrameBG:SetBackdropColor(M:GetColor("bg"))
+            moaFrameBG:SetBackdropBorderColor(M:GetColor("se"))
+        else
+            -- Fallback to basic frame styling
+            moaFrameBG:SetBackdrop({
+                bgFile = "Interface\\Buttons\\WHITE8x8",
+                edgeFile = "Interface\\Buttons\\WHITE8x8",
+                edgeSize = 1,
+                insets = {left = 0, right = 0, top = 0, bottom = 0}
+            })
+            moaFrameBG:SetBackdropColor(M:GetColor("bg"))
+            moaFrameBG:SetBackdropBorderColor(M:GetColor("se"))
+        end
+    else
+        -- Fallback to basic frame styling
+        moaFrameBG:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8x8",
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            edgeSize = 1,
+            insets = {left = 0, right = 0, top = 0, bottom = 0}
+        })
+        moaFrameBG:SetBackdropColor(M:GetColor("bg"))
+        moaFrameBG:SetBackdropBorderColor(M:GetColor("se"))
+    end
+    
+    -- Add text label
+    local text = moaFrame:CreateFontString(nil, "OVERLAY")
+    text:SetFont("Fonts\\FRIZQT__.TTF", 8, "OUTLINE")
+    text:SetPoint("CENTER", moaFrame, "CENTER", 0, 0)
+    text:SetText(displayName)
+    
+    -- Save reference to original frame
+    moaFrame.frame = frame
+    moaFrame.name = displayName
+    moaFrame.type = frameType
+    
+    -- Set size and position
+    local width, height = frame:GetSize()
+    if width < 10 then width = 10 end
+    if height < 10 then height = 10 end
+    
+    moaFrameBG:SetSize(width, height)
+    moaFrame:SetSize(width, height)
+    
+    -- Get the frame's position
+    local scale = frame:GetScale()
+    local x, y = M:GetPosition(frame)
+    
+    -- Position the mover
+    moaFrameBG:SetScale(scale)
+    moaFrameBG:ClearAllPoints()
+    moaFrameBG:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
+    
+    -- Make draggable
+    moaFrameBG:SetMovable(true)
+    moaFrameBG:EnableMouse(true)
+    moaFrameBG:RegisterForDrag("LeftButton")
+    moaFrameBG:SetScript("OnDragStart", function(self)
+        if InCombatLockdown() and frame:IsProtected() then
+            M:Print("Cannot move protected frames during combat")
+            return
+        end
+        self:StartMoving()
+    end)
+    
+    moaFrameBG:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        
+        -- Get the new position
+        local centerX, centerY = self:GetCenter()
+        local scale = self:GetScale()
+        local x = centerX * scale
+        local y = centerY * scale
+        
+        -- Snap to grid if enabled
+        if M.db.profile.global.snapToGrid then
+            local grid = M.db.profile.global.grid
+            x = math.floor(x / grid + 0.5) * grid
+            y = math.floor(y / grid + 0.5) * grid
+        end
+        
+        -- Update the position of both the mover and the target frame
+        self:ClearAllPoints()
+        self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / scale, y / scale)
+        
+        -- Set the target frame's position
+        if not InCombatLockdown() or not frame:IsProtected() then
+            M:SetPosition(frame, x, y)
+            
+            -- Save the position
+            local settings = M:GetFrameSettings(displayName) or {}
+            settings.x = x
+            settings.y = y
+            settings.scale = frame:GetScale()
+            M:SaveFrameSettings(displayName, settings)
+        else
+            M:Print("Position will be saved after combat")
+            C_Timer.After(0.5, function()
+                if not InCombatLockdown() then
+                    M:SetPosition(frame, x, y)
+                    
+                    -- Save the position
+                    local settings = M:GetFrameSettings(displayName) or {}
+                    settings.x = x
+                    settings.y = y
+                    settings.scale = frame:GetScale()
+                    M:SaveFrameSettings(displayName, settings)
+                end
+            end)
+        end
+    end)
+    
+    -- Add right-click menu for additional options
+    moaFrameBG:SetScript("OnMouseDown", function(self, button)
+        if button == "RightButton" then
+            M:CreateFrameOptions(moaFrame)
+        end
+    end)
+    
+    -- Hide when frames are locked
+    moaFrameBG:Hide()
+    
+    -- Store in drag frames table
+    table.insert(VADF, {mover = moaFrame, bg = moaFrameBG})
+    
+    return moaFrame
+end
+
+-- Get frame position
+function M:GetPosition(frame)
+    if not frame then return 0, 0 end
+    
+    local scale = frame:GetEffectiveScale()
+    local x, y = frame:GetCenter()
+    
+    if not x or not y then
+        return 0, 0
+    end
+    
+    return x * scale, y * scale
+end
+
+-- Set frame position
+function M:SetPosition(frame, x, y)
+    if not frame then return end
+    if InCombatLockdown() and frame:IsProtected() then return end
+    
+    local scale = frame:GetEffectiveScale()
     frame:ClearAllPoints()
-    -- Let the original OnShow/etc handlers reposition it
-    
-    VUIAnyFrame:Print(name .. " position has been reset")
+    frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / scale, y / scale)
 end
 
--- Open options for a specific frame
-function VUIAnyFrame:OpenFrameOptions(frame)
-    if not frame or not frame:GetName() then return end
+-- Create options menu for a frame
+function M:CreateFrameOptions(mover)
+    if InCombatLockdown() then
+        M:Print("Cannot modify frame options during combat")
+        return
+    end
     
-    -- This function would show a specialized options panel for this specific frame
-    -- For now, we'll just open the general options
-    self:OpenOptions()
+    -- Only create if we don't already have one
+    if not mover.opt then
+        local frame = mover.frame
+        local name = mover.name
+        
+        -- Create options frame
+        local opt = CreateFrame("Frame", "VAOpt_" .. name, UIParent)
+        opt:SetSize(200, 250)
+        opt:SetPoint("TOPLEFT", mover, "TOPRIGHT", 5, 0)
+        opt:SetFrameStrata("HIGH")
+        opt:SetFrameLevel(100)
+        
+        -- Backdrop
+        opt:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8x8",
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            edgeSize = 1,
+            insets = {left = 1, right = 1, top = 1, bottom = 1}
+        })
+        opt:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
+        opt:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+        
+        -- Title
+        local title = opt:CreateFontString(nil, "OVERLAY")
+        title:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
+        title:SetPoint("TOP", opt, "TOP", 0, -10)
+        title:SetText(mover.name)
+        
+        -- Create buttons
+        local buttons = {}
+        local y = -40
+        
+        -- Reset button
+        buttons.reset = M:CreateButton(opt, "Reset Position", y)
+        buttons.reset:SetScript("OnClick", function()
+            if InCombatLockdown() and frame:IsProtected() then
+                M:Print("Cannot reset protected frames during combat")
+                return
+            end
+            
+            -- Remove saved settings
+            M:ResetFrameSettings(name)
+            
+            -- Reset position and scale
+            frame:ClearAllPoints()
+            frame:SetPoint(frame.defaultPoint or "CENTER", UIParent, "CENTER", 0, 0)
+            frame:SetScale(frame.defaultScale or 1.0)
+            
+            -- Update mover position and scale
+            local x, y = M:GetPosition(frame)
+            local scale = frame:GetScale()
+            
+            mover.bg:SetScale(scale)
+            mover.bg:ClearAllPoints()
+            mover.bg:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / scale, y / scale)
+            
+            M:Print("Reset " .. name .. " to default position")
+        end)
+        
+        -- Scale controls
+        y = y - 40
+        local scaleText = opt:CreateFontString(nil, "OVERLAY")
+        scaleText:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
+        scaleText:SetPoint("TOP", opt, "TOP", 0, y)
+        scaleText:SetText("Scale: " .. string.format("%.2f", frame:GetScale()))
+        
+        y = y - 25
+        buttons.scaleDown = M:CreateButton(opt, "-", y, 40)
+        buttons.scaleDown:SetPoint("LEFT", opt, "LEFT", 20, y)
+        buttons.scaleDown:SetScript("OnClick", function()
+            if InCombatLockdown() and frame:IsProtected() then
+                M:Print("Cannot scale protected frames during combat")
+                return
+            end
+            
+            local scale = math.max(0.1, frame:GetScale() - 0.1)
+            frame:SetScale(scale)
+            scaleText:SetText("Scale: " .. string.format("%.2f", scale))
+            
+            -- Update mover scale
+            local x, y = M:GetPosition(frame)
+            mover.bg:SetScale(scale)
+            
+            -- Save settings
+            local settings = M:GetFrameSettings(name) or {}
+            settings.scale = scale
+            M:SaveFrameSettings(name, settings)
+        end)
+        
+        buttons.scaleUp = M:CreateButton(opt, "+", y, 40)
+        buttons.scaleUp:SetPoint("RIGHT", opt, "RIGHT", -20, y)
+        buttons.scaleUp:SetScript("OnClick", function()
+            if InCombatLockdown() and frame:IsProtected() then
+                M:Print("Cannot scale protected frames during combat")
+                return
+            end
+            
+            local scale = math.min(3.0, frame:GetScale() + 0.1)
+            frame:SetScale(scale)
+            scaleText:SetText("Scale: " .. string.format("%.2f", scale))
+            
+            -- Update mover scale
+            local x, y = M:GetPosition(frame)
+            mover.bg:SetScale(scale)
+            
+            -- Save settings
+            local settings = M:GetFrameSettings(name) or {}
+            settings.scale = scale
+            M:SaveFrameSettings(name, settings)
+        end)
+        
+        -- Hide button
+        y = y - 40
+        buttons.hide = M:CreateButton(opt, "Hide Frame", y)
+        buttons.hide:SetScript("OnClick", function()
+            if InCombatLockdown() and frame:IsProtected() then
+                M:Print("Cannot hide protected frames during combat")
+                return
+            end
+            
+            -- Update settings
+            local settings = M:GetFrameSettings(name) or {}
+            settings.hidden = true
+            M:SaveFrameSettings(name, settings)
+            
+            -- Hide the frame
+            M:HideFrame(frame)
+            
+            M:Print("Hid " .. name .. " (use /va reset to restore)")
+            opt:Hide()
+        end)
+        
+        -- Close button
+        y = y - 40
+        buttons.close = M:CreateButton(opt, "Close", y)
+        buttons.close:SetScript("OnClick", function()
+            opt:Hide()
+        end)
+        
+        -- Store options frame
+        mover.opt = opt
+        opt:Hide()
+    end
+    
+    -- Toggle visibility
+    if mover.opt:IsShown() then
+        mover.opt:Hide()
+    else
+        mover.opt:Show()
+    end
 end
+
+-- Create a button helper
+function M:CreateButton(parent, text, yOffset, width)
+    local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    button:SetSize(width or 160, 22)
+    button:SetPoint("TOP", parent, "TOP", 0, yOffset)
+    button:SetText(text)
+    return button
+end
+
+-- Update grid for positioning
+function M:UpdateGrid()
+    if not M.GridFrame then
+        -- Create grid frame
+        M.GridFrame = CreateFrame("Frame", "VAGrid", UIParent)
+        M.GridFrame:SetAllPoints(UIParent)
+        M.GridFrame:SetFrameStrata("BACKGROUND")
+        
+        -- Create grid texture
+        M.GridTexture = M.GridFrame:CreateTexture(nil, "BACKGROUND")
+        M.GridTexture:SetAllPoints(M.GridFrame)
+        M.GridTexture:SetColorTexture(1, 1, 1, 0.1)
+        
+        -- Hide by default
+        M.GridFrame:Hide()
+    end
+    
+    -- Update grid based on settings
+    local grid = M.db.profile.global.grid or 10
+    
+    -- Set grid texture
+    local width, height = UIParent:GetSize()
+    
+    -- Create new grid texture
+    if grid > 0 then
+        local texture = "Interface\\AddOns\\VUI\\VModules\\VUIAnyFrame\\Media\\grid_" .. grid
+        if not M.GridTexture:SetTexture(texture) then
+            -- Fall back to creating a dynamic grid
+            local gridTexture = M.GridTexture
+            
+            -- Clear texture
+            gridTexture:SetColorTexture(0, 0, 0, 0)
+            
+            -- Add grid lines
+            local size = grid
+            local lineWidth = 1
+            local r, g, b, a = 1, 1, 1, 0.1
+            
+            -- Create vertical lines
+            for i = 0, math.ceil(width / size) do
+                local line = M.GridFrame:CreateTexture(nil, "BACKGROUND")
+                line:SetColorTexture(r, g, b, a)
+                line:SetSize(lineWidth, height)
+                line:SetPoint("TOPLEFT", i * size, 0)
+            end
+            
+            -- Create horizontal lines
+            for i = 0, math.ceil(height / size) do
+                local line = M.GridFrame:CreateTexture(nil, "BACKGROUND")
+                line:SetColorTexture(r, g, b, a)
+                line:SetSize(width, lineWidth)
+                line:SetPoint("TOPLEFT", 0, -i * size)
+            end
+        end
+    end
+end
+
+-- Foreach helper function to process children
+function M:ForeachChildren(frame, func, callLevel)
+    if frame.GetChildren then
+        local children = {frame:GetChildren()}
+        for _, child in pairs(children) do
+            func(child)
+            M:ForeachChildren(child, func, callLevel)
+        end
+    end
+end
+
+-- Reset frame settings
+function M:ResetFrameSettings(frameName)
+    if frameName then
+        -- Reset specific frame
+        local settings = self.db.profile.frames[frameName]
+        if settings then
+            self.db.profile.frames[frameName] = nil
+        end
+    else
+        -- Reset all frames
+        self.db.profile.frames = {}
+    end
+end
+
+-- Check if function is hooked
+function M:IsHooked(funcName)
+    if not self.hookedFunctions then
+        self.hookedFunctions = {}
+        return false
+    end
+    
+    return self.hookedFunctions[funcName] ~= nil
+end
+
+-- Secure hook a function
+function M:SecureHook(funcName, hookFunction)
+    if not self.hookedFunctions then
+        self.hookedFunctions = {}
+    end
+    
+    if self.hookedFunctions[funcName] then
+        return false
+    end
+    
+    -- Store original function
+    local originalFunc = _G[funcName]
+    if not originalFunc then
+        return false
+    end
+    
+    -- Create the hook
+    self.hookedFunctions[funcName] = hookFunction
+    
+    -- Replace the original function with our hooked version
+    _G[funcName] = function(...)
+        -- Call original first
+        local ret = {originalFunc(...)}
+        
+        -- Then call our hook
+        hookFunction(...)
+        
+        -- Return original results
+        return unpack(ret)
+    end
+    
+    return true
+end 

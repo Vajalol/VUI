@@ -1,12 +1,13 @@
 --[[
-    VUI Interrupts and Dispels Module Configuration
-    Tracking for interrupts and dispels in group content
+    VUIIDs Module Configuration
+    Shows IDs in tooltips for spells, items, NPCs, etc.
+    Based on the original idTip addon
 ]]
 
 local Layout = VUI:NewModule('Config.Layout.VUIIDs')
 
 -- Initialize with the standard layout helper
-VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUIIDs", "VUI Interrupts & Dispels", "vmodules.vuiids")
+VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUIIDs", "VUI IDs", "vmodules.vuiids")
 
 -- Define module-specific layout construction
 function Layout:BuildModuleLayout(module, db)
@@ -14,294 +15,393 @@ function Layout:BuildModuleLayout(module, db)
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Interrupt & Dispel Tracking'
+            label = 'Tooltip ID Display'
         },
     })
     
     -- Add basic settings
     table.insert(Layout.layout.rows, {
-        enableModule = {
-            key = 'vmodules.vuiids.enableModule',
-            type = 'checkbox',
-            label = 'Enable Tracking',
-            tooltip = 'Enable interrupt and dispel tracking',
-            column = 4,
+        enabledDesc = {
+            type = 'label',
+            label = 'Show various IDs in tooltips - helps with addon development, sharing info, and identifying game objects.',
+            column = 12,
             order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.general.enableModule = self:GetValue()
-                    if module.UpdateModule then
-                        module:UpdateModule()
-                    end
-                end
-            end
         },
-        onlyInGroups = {
-            key = 'vmodules.vuiids.onlyInGroups',
+        enabled = {
+            key = 'vmodules.vuiids.enabled',
             type = 'checkbox',
-            label = 'Only in Groups',
-            tooltip = 'Only track when in a group or raid',
-            column = 4,
+            label = 'Enable Tooltip IDs',
+            tooltip = 'Show IDs in your tooltips',
+            column = 12,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.general.onlyInGroups = self:GetValue()
-                end
-            end
-        },
-        announceChat = {
-            key = 'vmodules.vuiids.announceChat',
-            type = 'checkbox',
-            label = 'Announce to Chat',
-            tooltip = 'Announce interrupts and dispels to group chat',
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.announce.chat = self:GetValue()
+                    module.db.profile.enabled = self:GetValue()
+                    if self:GetValue() then
+                        module:Enable()
+                    else
+                        module:Disable()
+                    end
                 end
             end
         },
     })
     
-    -- Display settings
+    -- General ID types section
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Display Settings'
+            label = 'General IDs'
         },
     })
     
     table.insert(Layout.layout.rows, {
-        showDisplay = {
-            key = 'vmodules.vuiids.showDisplay',
+        showSpellID = {
+            key = 'vmodules.vuiids.showSpellID',
             type = 'checkbox',
-            label = 'Show Display',
-            tooltip = 'Show interrupt and dispel display frame',
+            label = 'Spell IDs',
+            tooltip = 'Show spell IDs in tooltips',
             column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showDisplay = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.showSpellID = self:GetValue()
                 end
             end
         },
-        lockFrame = {
-            key = 'vmodules.vuiids.lockFrame',
+        showItemID = {
+            key = 'vmodules.vuiids.showItemID',
             type = 'checkbox',
-            label = 'Lock Frame',
-            tooltip = 'Lock or unlock the display frame',
+            label = 'Item IDs',
+            tooltip = 'Show item IDs in tooltips',
             column = 4,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.lockFrame = self:GetValue()
-                    if module.LockFrame then
-                        module:LockFrame(self:GetValue())
-                    end
+                    module.db.profile.showItemID = self:GetValue()
                 end
             end
         },
-        showIcons = {
-            key = 'vmodules.vuiids.showIcons',
+        showNPCID = {
+            key = 'vmodules.vuiids.showNPCID',
             type = 'checkbox',
-            label = 'Show Icons',
-            tooltip = 'Show spell icons in the display',
+            label = 'NPC IDs',
+            tooltip = 'Show NPC IDs in tooltips',
             column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showIcons = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.showNPCID = self:GetValue()
                 end
             end
         },
-    })
-    
-    -- Frame appearance
-    table.insert(Layout.layout.rows, {
-        maxEntries = {
-            key = 'vmodules.vuiids.maxEntries',
-            type = 'slider',
-            label = 'Maximum Entries',
-            tooltip = 'Maximum number of entries to show',
-            min = 3,
-            max = 15,
-            step = 1,
+        showQuestID = {
+            key = 'vmodules.vuiids.showQuestID',
+            type = 'checkbox',
+            label = 'Quest IDs',
+            tooltip = 'Show quest IDs in tooltips',
             column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.maxEntries = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-        fontScale = {
-            key = 'vmodules.vuiids.fontScale',
-            type = 'slider',
-            label = 'Font Scale',
-            tooltip = 'Scale of the text in the display',
-            min = 0.5,
-            max = 2.0,
-            step = 0.1,
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.fontScale = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-        frameAlpha = {
-            key = 'vmodules.vuiids.frameAlpha',
-            type = 'slider',
-            label = 'Frame Alpha',
-            tooltip = 'Transparency of the display frame',
-            min = 0.1,
-            max = 1.0,
-            step = 0.1,
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.frameAlpha = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-    })
-    
-    -- Tracking options
-    table.insert(Layout.layout.rows, {
-        header = {
-            type = 'header',
-            label = 'Tracking Options'
-        },
-    })
-    
-    table.insert(Layout.layout.rows, {
-        trackInterrupts = {
-            key = 'vmodules.vuiids.trackInterrupts',
-            type = 'checkbox',
-            label = 'Track Interrupts',
-            tooltip = 'Track spell interrupts',
-            column = 3,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.tracking.interrupts = self:GetValue()
-                end
-            end
-        },
-        trackDispels = {
-            key = 'vmodules.vuiids.trackDispels',
-            type = 'checkbox',
-            label = 'Track Dispels',
-            tooltip = 'Track dispels and purges',
-            column = 3,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.tracking.dispels = self:GetValue()
-                end
-            end
-        },
-        trackStuns = {
-            key = 'vmodules.vuiids.trackStuns',
-            type = 'checkbox',
-            label = 'Track Stuns',
-            tooltip = 'Track stun effects',
-            column = 3,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.tracking.stuns = self:GetValue()
-                end
-            end
-        },
-        trackSilences = {
-            key = 'vmodules.vuiids.trackSilences',
-            type = 'checkbox',
-            label = 'Track Silences',
-            tooltip = 'Track silence effects',
-            column = 3,
             order = 4,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.tracking.silences = self:GetValue()
+                    module.db.profile.showQuestID = self:GetValue()
+                end
+            end
+        },
+        showCurrencyID = {
+            key = 'vmodules.vuiids.showCurrencyID',
+            type = 'checkbox',
+            label = 'Currency IDs',
+            tooltip = 'Show currency IDs in tooltips',
+            column = 4,
+            order = 5,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showCurrencyID = self:GetValue()
+                end
+            end
+        },
+        showAchievementID = {
+            key = 'vmodules.vuiids.showAchievementID',
+            type = 'checkbox',
+            label = 'Achievement IDs',
+            tooltip = 'Show achievement IDs in tooltips',
+            column = 4,
+            order = 6,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showAchievementID = self:GetValue()
                 end
             end
         },
     })
     
-    -- Announcements
+    -- Item Related IDs
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Announcement Options'
+            label = 'Item Related IDs'
         },
     })
     
     table.insert(Layout.layout.rows, {
-        announceChannel = {
-            key = 'vmodules.vuiids.announceChannel',
-            type = 'dropdown',
-            label = 'Announce Channel',
-            tooltip = 'Channel to announce interrupts and dispels',
-            options = {
-                {value = "AUTO", text = "Auto (Group/Raid)"},
-                {value = "PARTY", text = "Party"},
-                {value = "RAID", text = "Raid"},
-                {value = "INSTANCE_CHAT", text = "Instance"},
-                {value = "SAY", text = "Say"}
-            },
+        showEnchantID = {
+            key = 'vmodules.vuiids.showEnchantID',
+            type = 'checkbox',
+            label = 'Enchant IDs',
+            tooltip = 'Show enchant IDs in tooltips',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showEnchantID = self:GetValue()
+                end
+            end
+        },
+        showBonusID = {
+            key = 'vmodules.vuiids.showBonusID',
+            type = 'checkbox',
+            label = 'Bonus IDs',
+            tooltip = 'Show item bonus IDs in tooltips',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showBonusID = self:GetValue()
+                end
+            end
+        },
+        showGemID = {
+            key = 'vmodules.vuiids.showGemID',
+            type = 'checkbox',
+            label = 'Gem IDs',
+            tooltip = 'Show gem IDs in tooltips',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showGemID = self:GetValue()
+                end
+            end
+        },
+        showSetID = {
+            key = 'vmodules.vuiids.showSetID',
+            type = 'checkbox',
+            label = 'Set IDs',
+            tooltip = 'Show equipment set IDs in tooltips',
+            column = 4,
+            order = 4,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showSetID = self:GetValue()
+                end
+            end
+        },
+        showIconID = {
+            key = 'vmodules.vuiids.showIconID',
+            type = 'checkbox',
+            label = 'Icon IDs',
+            tooltip = 'Show icon IDs in tooltips',
+            column = 4,
+            order = 5,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showIconID = self:GetValue()
+                end
+            end
+        },
+        showExpansionID = {
+            key = 'vmodules.vuiids.showExpansionID',
+            type = 'checkbox',
+            label = 'Expansion IDs',
+            tooltip = 'Show expansion IDs in tooltips',
+            column = 4,
+            order = 6,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showExpansionID = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    -- Character & World IDs
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Character & World IDs'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        showTalentID = {
+            key = 'vmodules.vuiids.showTalentID',
+            type = 'checkbox',
+            label = 'Talent IDs',
+            tooltip = 'Show talent IDs in tooltips',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showTalentID = self:GetValue()
+                end
+            end
+        },
+        showMountID = {
+            key = 'vmodules.vuiids.showMountID',
+            type = 'checkbox',
+            label = 'Mount IDs',
+            tooltip = 'Show mount IDs in tooltips',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showMountID = self:GetValue()
+                end
+            end
+        },
+        showCompanionID = {
+            key = 'vmodules.vuiids.showCompanionID',
+            type = 'checkbox',
+            label = 'Companion IDs',
+            tooltip = 'Show companion pet IDs in tooltips',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showCompanionID = self:GetValue()
+                end
+            end
+        },
+        showSpeciesID = {
+            key = 'vmodules.vuiids.showSpeciesID',
+            type = 'checkbox',
+            label = 'Species IDs',
+            tooltip = 'Show pet species IDs in tooltips',
+            column = 4,
+            order = 4,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showSpeciesID = self:GetValue()
+                end
+            end
+        },
+        showAreaPoiID = {
+            key = 'vmodules.vuiids.showAreaPoiID',
+            type = 'checkbox',
+            label = 'Area POI IDs',
+            tooltip = 'Show area point of interest IDs in tooltips',
+            column = 4,
+            order = 5,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showAreaPoiID = self:GetValue()
+                end
+            end
+        },
+        showVignetteID = {
+            key = 'vmodules.vuiids.showVignetteID',
+            type = 'checkbox',
+            label = 'Vignette IDs',
+            tooltip = 'Show vignette IDs in tooltips',
+            column = 4,
+            order = 6,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showVignetteID = self:GetValue()
+                end
+            end
+        },
+    })
+    
+    -- Transmogrification & Visual IDs
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Transmogrification & Visual IDs'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        showVisualID = {
+            key = 'vmodules.vuiids.showVisualID',
+            type = 'checkbox',
+            label = 'Visual IDs',
+            tooltip = 'Show visual IDs for transmogrified items',
             column = 6,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.announce.channel = self:GetValue()
+                    module.db.profile.showVisualID = self:GetValue()
                 end
             end
         },
-        announceSelf = {
-            key = 'vmodules.vuiids.announceSelf',
+        showSourceID = {
+            key = 'vmodules.vuiids.showSourceID',
             type = 'checkbox',
-            label = 'Announce Self',
-            tooltip = 'Include your own interrupts and dispels',
+            label = 'Source IDs',
+            tooltip = 'Show source IDs for transmogrified items',
             column = 6,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.announce.self = self:GetValue()
+                    module.db.profile.showSourceID = self:GetValue()
                 end
             end
         },
     })
     
-    -- Test button
+    -- Advanced IDs
     table.insert(Layout.layout.rows, {
-        testButton = {
-            type = 'button',
-            label = 'Test Display',
-            tooltip = 'Add a test entry to the display',
+        header = {
+            type = 'header',
+            label = 'Advanced IDs'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        advancedDesc = {
+            type = 'label',
+            label = 'These advanced IDs are disabled by default to reduce tooltip clutter',
             column = 12,
             order = 1,
-            callback = function()
-                if module and module.TestDisplay then
-                    module:TestDisplay()
+        },
+        showTraitNodeID = {
+            key = 'vmodules.vuiids.showTraitNodeID',
+            type = 'checkbox',
+            label = 'Trait Node IDs',
+            tooltip = 'Show trait node IDs in tooltips (Dragonflight talent system)',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showTraitNodeID = self:GetValue()
+                end
+            end
+        },
+        showTraitEntryID = {
+            key = 'vmodules.vuiids.showTraitEntryID',
+            type = 'checkbox',
+            label = 'Trait Entry IDs',
+            tooltip = 'Show trait entry IDs in tooltips (Dragonflight talent system)',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showTraitEntryID = self:GetValue()
+                end
+            end
+        },
+        showTraitDefID = {
+            key = 'vmodules.vuiids.showTraitDefID',
+            type = 'checkbox',
+            label = 'Trait Definition IDs',
+            tooltip = 'Show trait definition IDs in tooltips (Dragonflight talent system)',
+            column = 4,
+            order = 4,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.showTraitDefID = self:GetValue()
                 end
             end
         },

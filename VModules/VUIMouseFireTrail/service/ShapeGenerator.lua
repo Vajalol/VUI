@@ -2,10 +2,7 @@
 -- Generates various shapes for trail effects
 
 local AddonName, VUI = ...
-local M = VUI and VUI.VUIMouseFireTrail or {}
-
--- Skip if module isn't available
-if not M then return end
+local M = {}
 
 -- Local variables
 local PI = math.pi
@@ -236,9 +233,49 @@ function M:ApplyShapeToTrail(shapeType, frames, centerX, centerY, angle, width, 
     end
 end
 
--- Apply all shape functions to the main module
-for k, v in pairs(M) do
-    if type(v) == "function" then
-        VUI.VUIMouseFireTrail[k] = v
+-- Apply all shape functions to the available module reference
+-- First try the global reference
+local moduleRef = _G["VUIMouseFireTrail"]
+
+-- If that's not available, try VUI.VUIMouseFireTrail
+if not moduleRef and VUI and VUI.VUIMouseFireTrail then
+    moduleRef = VUI.VUIMouseFireTrail
+end
+
+-- If module exists, add shape functions to it
+if moduleRef then
+    for k, v in pairs(M) do
+        if type(v) == "function" then
+            moduleRef[k] = v
+        end
     end
+end
+
+-- Register a callback to attach functions once module is available
+if VUI and VUI.RegisterLoadHandler then
+    VUI:RegisterLoadHandler(function()
+        local targetModule = nil
+        
+        -- Try to get the module reference
+        if _G["VUIMouseFireTrail"] then
+            targetModule = _G["VUIMouseFireTrail"]
+        elseif VUI and VUI.VUIMouseFireTrail then
+            targetModule = VUI.VUIMouseFireTrail
+        elseif VUI and type(VUI.GetModule) == "function" then
+            -- Try to get the module via GetModule
+            local success, module = pcall(function() return VUI:GetModule("VUIMouseFireTrail") end)
+            if success and module then
+                targetModule = module
+            end
+        end
+        
+        -- If we found the module, add the shape functions
+        if targetModule then
+            for k, v in pairs(M) do
+                if type(v) == "function" then
+                    targetModule[k] = v
+                end
+            end
+        end
+    end)
 end

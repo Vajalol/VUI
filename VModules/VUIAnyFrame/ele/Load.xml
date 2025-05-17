@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <!-- UI Element Handlers -->
+    <Script file="actionbars.lua"/>
+    <Script file="arenaenemyframes.lua"/>
+    <Script file="bagbar.lua"/>
+    <Script file="buffbar.lua"/>
+    <Script file="debuffbar.lua"/>
+    <Script file="fps.lua"/>
+    <Script file="mavehicleseatindicator.lua"/>
+    <Script file="micromenu.lua"/>
+    <Script file="minimap.lua"/>
+    <Script file="multicastactionbar.lua"/>
+    <Script file="partyframe.lua"/>
+    <Script file="petbar.lua"/>
+    <Script file="stancebar.lua"/>
+</Ui> 

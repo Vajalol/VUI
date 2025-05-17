@@ -1,12 +1,12 @@
 --[[
-    VUI Target GCD Module Configuration
-    GCD tracker for target casting and abilities
+    VUI Global Cooldown Module Configuration
+    Based on TrufiGCD by stevemyz@gmail.com
 ]]
 
 local Layout = VUI:NewModule('Config.Layout.VUITGCD')
 
 -- Initialize with the standard layout helper
-VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUITGCD", "VUI Target GCD", "vmodules.vuitgcd")
+VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUITGCD", "VUI Global Cooldown", "vmodules.vuitgcd")
 
 -- Function to ensure module database is properly accessible
 local function ensureModuleDB(module, db)
@@ -16,30 +16,32 @@ local function ensureModuleDB(module, db)
     if not db.profile.vmodules then db.profile.vmodules = {} end
     if not db.profile.vmodules.vuitgcd then db.profile.vmodules.vuitgcd = {} end
     
-    -- If module has display settings, create them if not present
+    -- If module has settings, create them if not present
     if not module.db or not module.db.profile then
         module.db = module.db or {}
         module.db.profile = module.db.profile or {}
     end
     
-    if not module.db.profile.display then
-        module.db.profile.display = {}
-    end
+    -- Create necessary settings categories
+    if not module.db.profile.display then module.db.profile.display = {} end
+    if not module.db.profile.general then module.db.profile.general = {} end
+    if not module.db.profile.tracking then module.db.profile.tracking = {} end
+    if not module.db.profile.filter then module.db.profile.filter = {} end
+    if not module.db.profile.instances then module.db.profile.instances = {} end
+    if not module.db.profile.unitSettings then module.db.profile.unitSettings = {} end
     
-    if not module.db.profile.general then
-        module.db.profile.general = {}
-    end
-    
-    if not module.db.profile.tracking then
-        module.db.profile.tracking = {}
-    end
-    
-    if not module.db.profile.filter then
-        module.db.profile.filter = {}
-    end
-    
-    if not module.db.profile.instances then
-        module.db.profile.instances = {}
+    -- Ensure unit tracking settings
+    local unitTypes = {"player", "target", "focus", "party1", "party2", "party3", "party4", "arena1", "arena2", "arena3"}
+    for _, unitType in ipairs(unitTypes) do
+        if not module.db.profile.unitSettings[unitType] then
+            module.db.profile.unitSettings[unitType] = {
+                enable = (unitType == "player"), -- Only player enabled by default
+                scale = 1.0,
+                alpha = 1.0,
+                position = {"CENTER", 0, (unitType == "player") and 0 or (unitType:match("arena") and -40 * tonumber(unitType:match("%d+")) or 40 * (tonumber(unitType:match("%d+")) or 1))},
+                lockFrame = false,
+            }
+        end
     end
     
     -- Sync with vmodules path for UI
@@ -48,115 +50,203 @@ local function ensureModuleDB(module, db)
     db.profile.vmodules.vuitgcd.tracking = module.db.profile.tracking
     db.profile.vmodules.vuitgcd.filter = module.db.profile.filter
     db.profile.vmodules.vuitgcd.instances = module.db.profile.instances
+    db.profile.vmodules.vuitgcd.unitSettings = module.db.profile.unitSettings
     
     return module.db
+end
+
+-- Helper function to open the TrufiGCD settings panel
+local function openTrufiGCDSettings(module)
+    if not module then return end
+    
+    local ns = _G.VUI.TGCD
+    if ns and ns.settingsFrame and ns.settingsFrame.frame and ns.settingsFrame.frame.Show then
+        ns.settingsFrame.frame:Show()
+    end
+end
+
+-- Helper function to toggle TrufiGCD anchors
+local function toggleTrufiGCDAnchors(module)
+    if not module then return end
+    
+    local ns = _G.VUI.TGCD
+    if ns and ns.settingsFrame and ns.settingsFrame.toggleAnchors then
+        ns.settingsFrame.toggleAnchors()
+    end
+end
+
+-- Helper function to sync settings to TrufiGCD
+local function syncToTrufiGCD(module)
+    if not module or not module.db or not module.db.profile then return end
+    
+    local ns = _G.VUI.TGCD
+    if not ns or not ns.settings or not ns.settings.activeProfile then return end
+    
+    -- Sync general settings
+    if ns.settings.activeProfile.enabledIn then
+        ns.settings.activeProfile.enabledIn.enabled = module.db.profile.enabled
+        
+        -- Location settings
+        if module.db.profile.instances then
+            ns.settings.activeProfile.enabledIn.world = module.db.profile.instances.showInWorld
+            ns.settings.activeProfile.enabledIn.party = module.db.profile.instances.showInInstances
+            ns.settings.activeProfile.enabledIn.raid = module.db.profile.instances.showInRaid
+            ns.settings.activeProfile.enabledIn.arena = module.db.profile.instances.showInPVP
+            ns.settings.activeProfile.enabledIn.battleground = module.db.profile.instances.showInPVP
+            ns.settings.activeProfile.enabledIn.combatOnly = module.db.profile.instances.combatOnly
+        end
+    end
+    
+    -- Sync layout settings
+    if ns.settings.activeProfile.layoutSettings then
+        for layoutType, layoutSettings in pairs(ns.settings.activeProfile.layoutSettings) do
+            layoutSettings.iconSize = module.db.profile.iconSize or 30
+            layoutSettings.direction = module.db.profile.direction or "DOWN"
+            layoutSettings.iconsNumber = module.db.profile.maxIcons or 8
+            
+            -- Enable settings based on unit type mapping
+            if layoutType == "player" then
+                layoutSettings.enable = module.db.profile.unitSettings.player.enable
+            elseif layoutType == "target" then
+                layoutSettings.enable = module.db.profile.unitSettings.target.enable
+            elseif layoutType == "focus" then
+                layoutSettings.enable = module.db.profile.unitSettings.focus.enable
+            elseif layoutType == "party" then
+                layoutSettings.enable = (
+                    module.db.profile.unitSettings.party1.enable or
+                    module.db.profile.unitSettings.party2.enable or
+                    module.db.profile.unitSettings.party3.enable or
+                    module.db.profile.unitSettings.party4.enable
+                )
+            elseif layoutType == "arena" then
+                layoutSettings.enable = (
+                    module.db.profile.unitSettings.arena1.enable or
+                    module.db.profile.unitSettings.arena2.enable or
+                    module.db.profile.unitSettings.arena3.enable
+                )
+            end
+        end
+    end
+    
+    -- Update location check based on new settings
+    if ns.locationCheck and ns.locationCheck.settingsChanged then
+        ns.locationCheck.settingsChanged()
+    end
+    
+    -- Save settings to ensure they're persisted
+    if ns.settings.Save then
+        ns.settings:Save()
+    end
 end
 
 -- Define module-specific layout construction
 function Layout:BuildModuleLayout(module, db)
     -- Initialize module DB
-    ensureModuleDB(module, db)
+    local moduleDB = ensureModuleDB(module, db)
+    if not moduleDB then return end
     
-    -- Extend the base layout with module-specific settings
+    -- Utility function to handle setting changes
+    local function handleSettingChange(self)
+        if module and module.SyncWithVUIConfig then
+            module:SyncWithVUIConfig()
+        else
+            syncToTrufiGCD(module)
+        end
+    end
+    
+    -- Add TrufiGCD-specific controls
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'GCD Display Settings'
+            label = 'TrufiGCD Controls'
         },
     })
     
-    -- Add basic settings
     table.insert(Layout.layout.rows, {
-        showBar = {
-            key = 'vmodules.vuitgcd.showBar',
+        openSettings = {
+            type = 'button',
+            label = 'Open TrufiGCD Settings',
+            tooltip = 'Open the complete TrufiGCD settings panel',
+            column = 6,
+            order = 1,
+            callback = function()
+                openTrufiGCDSettings(module)
+            end
+        },
+        toggleAnchors = {
+            type = 'button',
+            label = 'Show Frame Anchors',
+            tooltip = 'Toggle visibility of frame anchors for repositioning',
+            column = 6,
+            order = 2,
+            callback = function()
+                toggleTrufiGCDAnchors(module)
+            end
+        },
+    })
+    
+    -- General settings section
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'General Settings'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        enableModule = {
+            key = 'vmodules.vuitgcd.enabled',
             type = 'checkbox',
-            label = 'Show GCD Bar',
-            tooltip = 'Show the GCD tracking bar',
+            label = 'Enable VUITGCD',
+            tooltip = 'Enable or disable the VUITGCD module',
             column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showBar = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.enabled = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
-        showIcon = {
-            key = 'vmodules.vuitgcd.showIcon',
+        showBorders = {
+            key = 'vmodules.vuitgcd.display.showBorders',
             type = 'checkbox',
-            label = 'Show Spell Icon',
-            tooltip = 'Show spell icon on the GCD bar',
+            label = 'Show Borders',
+            tooltip = 'Show borders around spell icons',
             column = 4,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showIcon = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.display.showBorders = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
-        lockFrames = {
-            key = 'vmodules.vuitgcd.lockFrames',
+        showSpellName = {
+            key = 'vmodules.vuitgcd.display.showSpellName',
             type = 'checkbox',
-            label = 'Lock Frames',
-            tooltip = 'Lock or unlock the GCD tracker frame',
+            label = 'Show Spell Names',
+            tooltip = 'Show spell names on icons',
             column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.general.lockFrames = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.display.showSpellName = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
     })
     
-    -- Bar configuration
+    -- Layout settings section
     table.insert(Layout.layout.rows, {
-        barWidth = {
-            key = 'vmodules.vuitgcd.barWidth',
-            type = 'slider',
-            label = 'Bar Width',
-            tooltip = 'Set the width of the GCD bar',
-            min = 50,
-            max = 300,
-            step = 1,
-            column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.barWidth = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
+        header = {
+            type = 'header',
+            label = 'Layout Settings'
         },
-        barHeight = {
-            key = 'vmodules.vuitgcd.barHeight',
-            type = 'slider',
-            label = 'Bar Height',
-            tooltip = 'Set the height of the GCD bar',
-            min = 1,
-            max = 50,
-            step = 1,
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.display.barHeight = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
+    })
+    
+    table.insert(Layout.layout.rows, {
         iconSize = {
             key = 'vmodules.vuitgcd.iconSize',
             type = 'slider',
@@ -166,380 +256,388 @@ function Layout:BuildModuleLayout(module, db)
             max = 64,
             step = 1,
             column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.iconSize = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+        iconAlpha = {
+            key = 'vmodules.vuitgcd.iconAlpha',
+            type = 'slider',
+            label = 'Icon Alpha',
+            tooltip = 'Set the transparency of icons',
+            min = 0.1,
+            max = 1.0,
+            step = 0.01,
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.iconAlpha = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+        fadeTime = {
+            key = 'vmodules.vuitgcd.fadeTime',
+            type = 'slider',
+            label = 'Fade Time',
+            tooltip = 'Set how long icons take to fade out',
+            min = 0.1,
+            max = 3.0,
+            step = 0.1,
+            column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.iconSize = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.fadeTime = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
     })
     
-    -- Tracking settings
     table.insert(Layout.layout.rows, {
-        header = {
-            type = 'header',
-            label = 'Target Tracking Settings'
-        },
-    })
-    
-    table.insert(Layout.layout.rows, {
-        trackTarget = {
-            key = 'vmodules.vuitgcd.trackTarget',
-            type = 'checkbox',
-            label = 'Track Current Target',
-            tooltip = 'Track GCD for your current target',
+        maxIcons = {
+            key = 'vmodules.vuitgcd.maxIcons',
+            type = 'slider',
+            label = 'Maximum Icons',
+            tooltip = 'Set the maximum number of icons shown',
+            min = 1,
+            max = 16,
+            step = 1,
             column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.tracking.trackTarget = self:GetValue()
+                    module.db.profile.maxIcons = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+        direction = {
+            key = 'vmodules.vuitgcd.direction',
+            type = 'dropdown',
+            label = 'Icon Direction',
+            tooltip = 'Set the direction in which icons flow',
+            options = {
+                UP = "Up",
+                RIGHT = "Right",
+                DOWN = "Down",
+                LEFT = "Left"
+            },
+            column = 8,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.direction = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+    })
+    
+    -- Unit tracking section
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Unit Tracking'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        trackPlayer = {
+            key = 'vmodules.vuitgcd.unitSettings.player.enable',
+            type = 'checkbox',
+            label = 'Track Player',
+            tooltip = 'Track spell casts for your character',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.unitSettings.player.enable = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+        trackTarget = {
+            key = 'vmodules.vuitgcd.unitSettings.target.enable',
+            type = 'checkbox',
+            label = 'Track Target',
+            tooltip = 'Track spell casts for your target',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.unitSettings.target.enable = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
         trackFocus = {
-            key = 'vmodules.vuitgcd.trackFocus',
+            key = 'vmodules.vuitgcd.unitSettings.focus.enable',
             type = 'checkbox',
-            label = 'Track Focus Target',
-            tooltip = 'Track GCD for your focus target',
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.tracking.trackFocus = self:GetValue()
-                end
-            end
-        },
-        trackAllPlayers = {
-            key = 'vmodules.vuitgcd.trackAllPlayers',
-            type = 'checkbox',
-            label = 'Track All Players',
-            tooltip = 'Track GCD for all players (can impact performance)',
+            label = 'Track Focus',
+            tooltip = 'Track spell casts for your focus target',
             column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.tracking.trackAllPlayers = self:GetValue()
+                    module.db.profile.unitSettings.focus.enable = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
     })
     
-    -- Advanced appearance settings
+    -- Party and Arena tracking
+    table.insert(Layout.layout.rows, {
+        trackParty1 = {
+            key = 'vmodules.vuitgcd.unitSettings.party1.enable',
+            type = 'checkbox',
+            label = 'Track Party 1',
+            tooltip = 'Track spell casts for party member 1',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.unitSettings.party1.enable = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+        trackParty2 = {
+            key = 'vmodules.vuitgcd.unitSettings.party2.enable',
+            type = 'checkbox',
+            label = 'Track Party 2',
+            tooltip = 'Track spell casts for party member 2',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.unitSettings.party2.enable = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+        trackParty3 = {
+            key = 'vmodules.vuitgcd.unitSettings.party3.enable',
+            type = 'checkbox',
+            label = 'Track Party 3',
+            tooltip = 'Track spell casts for party member 3',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.unitSettings.party3.enable = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        trackArena1 = {
+            key = 'vmodules.vuitgcd.unitSettings.arena1.enable',
+            type = 'checkbox',
+            label = 'Track Arena 1',
+            tooltip = 'Track spell casts for arena opponent 1',
+            column = 4,
+            order = 1,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.unitSettings.arena1.enable = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+        trackArena2 = {
+            key = 'vmodules.vuitgcd.unitSettings.arena2.enable',
+            type = 'checkbox',
+            label = 'Track Arena 2',
+            tooltip = 'Track spell casts for arena opponent 2',
+            column = 4,
+            order = 2,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.unitSettings.arena2.enable = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+        trackArena3 = {
+            key = 'vmodules.vuitgcd.unitSettings.arena3.enable',
+            type = 'checkbox',
+            label = 'Track Arena 3',
+            tooltip = 'Track spell casts for arena opponent 3',
+            column = 4,
+            order = 3,
+            callback = function(self)
+                if module and module.db then
+                    module.db.profile.unitSettings.arena3.enable = self:GetValue()
+                    handleSettingChange(self)
+                end
+            end
+        },
+    })
+    
+    -- Instance settings
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Appearance Settings'
+            label = 'Location Settings'
         },
     })
     
     table.insert(Layout.layout.rows, {
-        showSpellName = {
-            key = 'vmodules.vuitgcd.showSpellName',
+        showInWorld = {
+            key = 'vmodules.vuitgcd.instances.showInWorld',
             type = 'checkbox',
-            label = 'Show Spell Name',
-            tooltip = 'Show the name of the spell being cast',
+            label = 'Show In World',
+            tooltip = 'Show icons when in the open world',
             column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showSpellName = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.instances.showInWorld = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
-        showCasterName = {
-            key = 'vmodules.vuitgcd.showCasterName',
+        showInInstances = {
+            key = 'vmodules.vuitgcd.instances.showInInstances',
             type = 'checkbox',
-            label = 'Show Caster Name',
-            tooltip = 'Show the name of the spell caster',
+            label = 'Show In Dungeons',
+            tooltip = 'Show icons when in dungeons',
             column = 4,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showCasterName = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.instances.showInInstances = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
-        showPing = {
-            key = 'vmodules.vuitgcd.showPing',
+        showInRaid = {
+            key = 'vmodules.vuitgcd.instances.showInRaid',
             type = 'checkbox',
-            label = 'Show Ping Indicator',
-            tooltip = 'Show network latency indicator on the GCD bar',
+            label = 'Show In Raids',
+            tooltip = 'Show icons when in raids',
             column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.showPing = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.instances.showInRaid = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
     })
     
-    -- Font settings
     table.insert(Layout.layout.rows, {
-        textSize = {
-            key = 'vmodules.vuitgcd.textSize',
-            type = 'slider',
-            label = 'Text Size',
-            tooltip = 'Size of text displayed on the GCD bar',
-            min = 8,
-            max = 24,
-            step = 1,
-            column = 6,
+        showInPVP = {
+            key = 'vmodules.vuitgcd.instances.showInPVP',
+            type = 'checkbox',
+            label = 'Show In PVP',
+            tooltip = 'Show icons when in battlegrounds and arenas',
+            column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.textSize = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.instances.showInPVP = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
-        textOutline = {
-            key = 'vmodules.vuitgcd.textOutline',
-            type = 'dropdown',
-            label = 'Text Outline',
-            tooltip = 'Style of text outline to use',
-            options = {
-                {value = "NONE", text = "None"},
-                {value = "OUTLINE", text = "Outline"},
-                {value = "THICKOUTLINE", text = "Thick Outline"}
-            },
-            column = 6,
+        combatOnly = {
+            key = 'vmodules.vuitgcd.instances.combatOnly',
+            type = 'checkbox',
+            label = 'Combat Only',
+            tooltip = 'Only show icons when in combat',
+            column = 4,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.display.textOutline = self:GetValue()
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
+                    module.db.profile.instances.combatOnly = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
     })
     
-    -- Advanced options
-    table.insert(Layout.layout.rows, {
-        barColor = {
-            key = 'vmodules.vuitgcd.barColor',
-            type = 'color',
-            label = 'Bar Color',
-            tooltip = 'Set the color of the GCD bar',
-            hasAlpha = true,
-            column = 6,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    local r, g, b, a = self:GetRGBA()
-                    module.db.profile.display.barColor = {r, g, b, a}
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-        castColor = {
-            key = 'vmodules.vuitgcd.castColor',
-            type = 'color',
-            label = 'Cast Color',
-            tooltip = 'Set the color for casting spells',
-            hasAlpha = true,
-            column = 6,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    local r, g, b, a = self:GetRGBA()
-                    module.db.profile.display.castColor = {r, g, b, a}
-                    if module.UpdateDisplay then
-                        module:UpdateDisplay()
-                    end
-                end
-            end
-        },
-    })
-    
-    -- Spell filtering
+    -- Advanced settings
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Spell Filtering'
+            label = 'Advanced Settings'
         },
     })
     
     table.insert(Layout.layout.rows, {
-        enableFiltering = {
-            key = 'vmodules.vuitgcd.enableFiltering',
+        showGCDOnly = {
+            key = 'vmodules.vuitgcd.showGCDOnly',
             type = 'checkbox',
-            label = 'Enable Spell Filtering',
-            tooltip = 'Enable filtering of which spells to track',
+            label = 'Show GCD Only',
+            tooltip = 'Only track spells that trigger the global cooldown',
             column = 4,
             order = 1,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.filter.enableFiltering = self:GetValue()
+                    module.db.profile.showGCDOnly = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
-        showDamageSpells = {
-            key = 'vmodules.vuitgcd.showDamageSpells',
+        enableMasque = {
+            key = 'vmodules.vuitgcd.enableMasque',
             type = 'checkbox',
-            label = 'Show Damage Spells',
-            tooltip = 'Show damage-dealing spells in the tracker',
+            label = 'Enable Masque',
+            tooltip = 'Allow Masque addon to skin the icons',
             column = 4,
             order = 2,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.filter.showDamageSpells = self:GetValue()
+                    module.db.profile.enableMasque = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
-        showHealingSpells = {
-            key = 'vmodules.vuitgcd.showHealingSpells',
+        hideMacroText = {
+            key = 'vmodules.vuitgcd.hideMacroText',
             type = 'checkbox',
-            label = 'Show Healing Spells',
-            tooltip = 'Show healing spells in the tracker',
+            label = 'Hide Macro Text',
+            tooltip = 'Hide the macro text on icons',
             column = 4,
             order = 3,
             callback = function(self)
                 if module and module.db then
-                    module.db.profile.filter.showHealingSpells = self:GetValue()
+                    module.db.profile.hideMacroText = self:GetValue()
+                    handleSettingChange(self)
                 end
             end
         },
     })
     
-    table.insert(Layout.layout.rows, {
-        showCooldowns = {
-            key = 'vmodules.vuitgcd.showCooldowns',
-            type = 'checkbox',
-            label = 'Show Cooldowns',
-            tooltip = 'Show cooldown abilities in the tracker',
-            column = 4,
-            order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.showCooldowns = self:GetValue()
-                end
-            end
-        },
-        showInterrupts = {
-            key = 'vmodules.vuitgcd.showInterrupts',
-            type = 'checkbox',
-            label = 'Show Interrupts',
-            tooltip = 'Show interrupt abilities in the tracker',
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.showInterrupts = self:GetValue()
-                end
-            end
-        },
-        showUtility = {
-            key = 'vmodules.vuitgcd.showUtility',
-            type = 'checkbox',
-            label = 'Show Utility Spells',
-            tooltip = 'Show utility spells in the tracker',
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.filter.showUtility = self:GetValue()
-                end
-            end
-        },
-    })
-    
-    -- Instance-specific settings
+    -- Note about blocklist
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Instance Settings'
+            label = 'Spell Blocklist'
         },
     })
     
     table.insert(Layout.layout.rows, {
-        enableInWorld = {
-            key = 'vmodules.vuitgcd.enableInWorld',
-            type = 'checkbox',
-            label = 'Enable in World',
-            tooltip = 'Enable the GCD tracker in the open world',
-            column = 4,
+        blocklistInfo = {
+            type = 'label',
+            label = 'Use the TrufiGCD settings panel to manage the spell blocklist.',
+            column = 12,
             order = 1,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.instances.enableInWorld = self:GetValue()
-                end
-            end
-        },
-        enableInDungeons = {
-            key = 'vmodules.vuitgcd.enableInDungeons',
-            type = 'checkbox',
-            label = 'Enable in Dungeons',
-            tooltip = 'Enable the GCD tracker in dungeons',
-            column = 4,
-            order = 2,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.instances.enableInDungeons = self:GetValue()
-                end
-            end
-        },
-        enableInRaids = {
-            key = 'vmodules.vuitgcd.enableInRaids',
-            type = 'checkbox',
-            label = 'Enable in Raids',
-            tooltip = 'Enable the GCD tracker in raids',
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.db then
-                    module.db.profile.instances.enableInRaids = self:GetValue()
-                end
-            end
-        },
-    })
-    
-    -- Control buttons
-    table.insert(Layout.layout.rows, {
-        resetPositions = {
-            type = 'button',
-            label = 'Reset Positions',
-            tooltip = 'Reset all frame positions to default',
-            column = 6,
-            order = 1,
-            callback = function()
-                if module and module.ResetPositions then
-                    module:ResetPositions()
-                end
-            end
-        },
-        toggleAnchors = {
-            type = 'button',
-            label = 'Toggle Anchors',
-            tooltip = 'Show or hide frame anchors for moving',
-            column = 6,
-            order = 2,
-            callback = function()
-                if module and module.ToggleAnchors then
-                    module:ToggleAnchors()
-                end
-            end
         },
     })
 end
 
+-- Return the layout
 return Layout 

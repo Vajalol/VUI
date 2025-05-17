@@ -1,23 +1,36 @@
--- VUIAnyFrame - Media path handler
--- Use global reference instead of AceAddon-3.0 to fix load order issues
-local VUIAnyFrame = _G["VUIAnyFrame"]
-local L = VUIAnyFrame.L
+-- VUIAnyFrame - Media Definitions
+local AddonName, VUI = ...
+local M = _G["VUIAnyFrame"]
+local L = M.L
 
--- Media paths
-local MEDIA_PATH = "Interface\\AddOns\\VUI\\Media\\modules\\VUIAnyFrame\\"
+-- Define media paths
+M.MEDIA = {
+    ICON = "Interface\\AddOns\\VUI\\VModules\\VUIAnyFrame\\Media\\icon",
+    GRID10 = "Interface\\AddOns\\VUI\\VModules\\VUIAnyFrame\\Media\\grid_10",
+    GRID20 = "Interface\\AddOns\\VUI\\VModules\\VUIAnyFrame\\Media\\grid_20",
+    GRID40 = "Interface\\AddOns\\VUI\\VModules\\VUIAnyFrame\\Media\\grid_40",
+}
 
--- Function to get media file path
-function VUIAnyFrame:GetMediaPath(mediaType, fileName)
-    if mediaType == "Icons" or mediaType == "Icon" then
-        return "Interface\\AddOns\\VUI\\Media\\Icons\\tga\\vortex_thunderstorm.tga"
-    elseif mediaType == "Textures" or mediaType == "Texture" then
-        return MEDIA_PATH .. "textures\\" .. fileName
-    elseif mediaType == "Fonts" or mediaType == "Font" then
-        return MEDIA_PATH .. "fonts\\" .. fileName
-    elseif mediaType == "Sounds" or mediaType == "Sound" then
-        return MEDIA_PATH .. "sounds\\" .. fileName
-    else
-        -- Default case
-        return MEDIA_PATH .. mediaType .. "\\" .. (fileName or "")
+-- Function to get media path
+function M:GetMedia(key)
+    if not key or not M.MEDIA[key] then
+        return nil
     end
+    return M.MEDIA[key]
 end
+
+-- Function to create basic grid textures if they don't exist
+function M:CreateGridTextures()
+    -- Create media directory if it doesn't exist
+    local mediaDir = "Interface\\AddOns\\VUI\\VModules\\VUIAnyFrame\\Media"
+    
+    -- Use LibPixelPerfect if available
+    if LibStub and LibStub("LibPixelPerfect-1.0", true) then
+        local LPP = LibStub("LibPixelPerfect-1.0")
+        -- LPP can generate grid textures
+        return
+    end
+    
+    -- Otherwise, we'll create grid textures dynamically when needed
+    -- using the code in UpdateGrid() function
+end 

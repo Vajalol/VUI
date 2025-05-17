@@ -1,7 +1,7 @@
 local AddonName, VUI = ...
 
--- Define module reference
-local M = VUI:GetModule("VUINotifications")
+-- Ensure VUI global exists to prevent nil errors
+if not VUI then VUI = {} end
 
 -- Ensure the Notifications namespace exists
 VUI.Notifications = VUI.Notifications or {}
@@ -17,8 +17,15 @@ function VUI.Notifications.print(text, color, size)
         R, G, B = color["R"], color["G"], color["B"]
     end
 
-    -- Get the module reference
-    local module = VUI:GetModule("VUINotifications")
+    -- Get the module reference safely
+    local module = nil
+    if VUI and type(VUI.GetModule) == "function" then
+        -- Try to get the module, but handle errors gracefully
+        local success, result = pcall(function() return VUI:GetModule("VUINotifications") end)
+        if success and result then
+            module = result
+        end
+    end
     
     -- If we have access to the module's ShowNotification function, use it
     if module and module.ShowNotification then
@@ -59,7 +66,15 @@ end
 -- Play sound function that works with VUI's sound system
 function VUI.Notifications.playSound(sound)
     -- Try to use VUI's module first if available
-    local module = VUI:GetModule("VUINotifications")
+    local module = nil
+    if VUI and type(VUI.GetModule) == "function" then
+        -- Try to get the module, but handle errors gracefully
+        local success, result = pcall(function() return VUI:GetModule("VUINotifications") end)
+        if success and result then
+            module = result
+        end
+    end
+    
     if module and module.PlaySound then
         pcall(function() module:PlaySound(sound) end)
         return
@@ -78,7 +93,15 @@ end
 -- Add initialization function
 function VUI.Notifications.Initialize()
     -- Ensure the module exists
-    local module = VUI:GetModule("VUINotifications")
+    local module = nil
+    if VUI and type(VUI.GetModule) == "function" then
+        -- Try to get the module, but handle errors gracefully
+        local success, result = pcall(function() return VUI:GetModule("VUINotifications") end)
+        if success and result then
+            module = result
+        end
+    end
+    
     if not module then return end
     
     -- Link up the addon table to the module for backwards compatibility

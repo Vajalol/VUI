@@ -30,6 +30,12 @@
   <Include file='LibNPCInfo\lib.xml'/>
   <Include file='UTF8\lib.xml'/>
   
+  <!-- MoveAny Libraries -->
+  <Script file="db.lua"/>
+  <Script file="lang.lua"/>
+  <Script file="math.lua"/>
+  <Include file='D4Lib\D4Lib.xml'/>
+  
   <!-- VUI Libraries -->
   <Include file='VUIConfig\VUIConfig.xml'/>
 </Ui>

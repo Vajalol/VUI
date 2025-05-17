@@ -1,442 +1,394 @@
 -------------------------------------------------------------------------------
--- VUITGCD Module
+-- VUITGCD Module Initialization
+-- Based on TrufiGCD (stevemyz@gmail.com)
 -- Displays global cooldown icons and ability usage
--- Based on TrufiGCD with VUI integration
 -------------------------------------------------------------------------------
 
-local AddonName = ...
-local VUI = _G["VUI"]
+local AddonName, VUI = ...
 local MODNAME = "VUITGCD"
-local M
 
--- Create module with safety checks
+-- Initialize global namespaces
+if not _G.VUI then _G.VUI = {} end
+if not _G.VUI.TGCD then _G.VUI.TGCD = {} end
+if not _G.VUITGCD then _G.VUITGCD = {} end
+
+-- Backward compatibility globals
+_G.VUITGCD.settings = _G.VUITGCD.settings or {}
+_G.VUITGCD.units = _G.VUITGCD.units or {}
+_G.VUITGCD.constants = _G.VUITGCD.constants or {unitTypes = {}}
+
+-- Create local namespace reference
+local ns = _G.VUI.TGCD
+
+-- Ensure required namespaces exist
+ns.Utils = ns.Utils or {}
+ns.Settings = ns.Settings or {}
+ns.UI = ns.UI or {}
+ns.Icons = ns.Icons or {}
+ns.frameUtils = ns.frameUtils or {}
+
+-- Basic utility functions required early
+ns.Utils.size = function(tbl)
+    if type(tbl) ~= "table" then return 0 end
+    local count = 0
+    for _ in pairs(tbl) do
+        count = count + 1
+    end
+    return count
+end
+
+ns.Utils.tableContains = function(table, element)
+    if type(table) ~= "table" then return false end
+    for _, value in pairs(table) do
+        if value == element then return true end
+    end
+    return false
+end
+
+ns.Utils.tableCopy = function(original)
+    local copy = {}
+    for k, v in pairs(original) do
+        if type(v) == "table" then
+            copy[k] = ns.Utils.tableCopy(v)
+        else
+            copy[k] = v
+        end
+    end
+    return copy
+end
+
+ns.Utils.tablelength = function(T)
+    local count = 0
+    for _ in pairs(T) do count = count + 1 end
+    return count
+end
+
+ns.Utils.isEmpty = function(s)
+    return s == nil or s == ''
+end
+
+ns.Utils.isNumber = function(s)
+    return tonumber(s) ~= nil
+end
+
+ns.Utils.round = function(num, numDecimalPlaces)
+    local mult = 10^(numDecimalPlaces or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
+
+-- Constants
+ns.constants = ns.constants or {}
+ns.constants.unitTypes = ns.constants.unitTypes or {"player", "target", "focus", "party1", "party2", "party3", "party4", "arena1", "arena2", "arena3"}
+ns.constants.directions = ns.constants.directions or {"UP", "RIGHT", "DOWN", "LEFT"}
+ns.constants.TEXT_ANCHOR_POINTS = ns.constants.TEXT_ANCHOR_POINTS or {"TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT"}
+
+-- Function to synchronize settings between VUI and TrufiGCD
+local function syncSettings(module)
+    if not module or not module.db or not module.db.profile then return end
+    
+    -- Ensure TrufiGCD settings exist
+    if not ns.settings or not ns.settings.activeProfile then return end
+    
+    -- Sync general settings
+    if ns.settings.activeProfile.enabledIn then
+        ns.settings.activeProfile.enabledIn.enabled = module.db.profile.enabled
+        
+        -- Location settings
+        if module.db.profile.instances then
+            ns.settings.activeProfile.enabledIn.world = module.db.profile.instances.showInWorld
+            ns.settings.activeProfile.enabledIn.party = module.db.profile.instances.showInInstances
+            ns.settings.activeProfile.enabledIn.raid = module.db.profile.instances.showInRaid
+            ns.settings.activeProfile.enabledIn.arena = module.db.profile.instances.showInPVP
+            ns.settings.activeProfile.enabledIn.battleground = module.db.profile.instances.showInPVP
+            ns.settings.activeProfile.enabledIn.combatOnly = module.db.profile.instances.combatOnly
+        end
+    end
+    
+    -- Sync layout settings for each unit type
+    if ns.settings.activeProfile.layoutSettings then
+        for unitType, layoutSettings in pairs(ns.settings.activeProfile.layoutSettings) do
+            if unitType and layoutSettings then
+                -- Get unit settings from VUI db
+                local unitConfig = module.db.profile.unitSettings and module.db.profile.unitSettings[unitType]
+                if unitConfig then
+                    layoutSettings.enable = unitConfig.enable
+                    layoutSettings.iconSize = module.db.profile.iconSize or 30
+                    layoutSettings.direction = module.db.profile.direction or "DOWN"
+                    layoutSettings.iconsNumber = module.db.profile.maxIcons or 8
+                end
+            end
+        end
+    end
+    
+    -- Update location check based on new settings
+    if ns.locationCheck and ns.locationCheck.settingsChanged then
+        ns.locationCheck.settingsChanged()
+    end
+    
+    -- Save settings to ensure they're persisted
+    if ns.settings.Save then
+        ns.settings:Save()
+    end
+end
+
+-- Module creation with safety for early loading
+local M
 if VUI and VUI.NewModule then
     M = VUI:NewModule(MODNAME, "AceEvent-3.0")
+    
+    -- Default settings - these values match TrufiGCD defaults
+    M.defaults = {
+        profile = {
+            enabled = true,
+            
+            -- Layout defaults
+            iconSize = 30,
+            iconAlpha = 1.0,
+            fadeTime = 0.5,
+            maxIcons = 8,
+            direction = "DOWN",
+            
+            -- Visual defaults
+            showBorders = true,
+            showSpellName = false,
+            showCooldownSwipe = true,
+            colorBySpellType = true,
+            
+            -- Masque support
+            enableMasque = true,
+            
+            -- Filter settings
+            showGCDOnly = false,
+            hideMacroText = false,
+            
+            -- Location settings
+            instances = {
+                showInWorld = true,
+                showInInstances = true,
+                showInRaid = true,
+                showInPVP = true,
+                combatOnly = false,
+            },
+            
+            -- Unit tracking
+            unitSettings = {
+                player = {
+                    enable = true,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", 0, 0},
+                    lockFrame = false,
+                },
+                target = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", 40, 0},
+                    lockFrame = false,
+                },
+                focus = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", -40, 0},
+                    lockFrame = false,
+                },
+                party1 = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", 80, 0},
+                    lockFrame = false,
+                },
+                party2 = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", 120, 0},
+                    lockFrame = false,
+                },
+                party3 = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", 160, 0},
+                    lockFrame = false,
+                },
+                party4 = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", 200, 0},
+                    lockFrame = false,
+                },
+                arena1 = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", -80, 0},
+                    lockFrame = false,
+                },
+                arena2 = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", -120, 0},
+                    lockFrame = false,
+                },
+                arena3 = {
+                    enable = false,
+                    scale = 1.0,
+                    alpha = 1.0,
+                    position = {"CENTER", -160, 0},
+                    lockFrame = false,
+                }
+            },
+            
+            -- Blocklist
+            blocklist = {},
+            
+            -- Profile settings
+            profiles = {},
+            currentProfile = "Default",
+        }
+    }
+    
+    -- Register update events
+    M:RegisterEvent("PLAYER_ENTERING_WORLD", function() 
+        syncSettings(M) 
+    end)
+    
+    -- Override OnEnable to ensure settings sync
+    local originalOnEnable = M.OnEnable
+    M.OnEnable = function(self)
+        if originalOnEnable then originalOnEnable(self) end
+        syncSettings(self)
+    end
+    
+    -- Store module in global namespace for VUI integration
+    VUI.VUITGCD = M
 else
-    -- Fallback if VUI isn't available
+    -- Fallback for early loading
     M = {}
     M.NAME = MODNAME
     M.Debug = function(self, msg) print("[VUITGCD] " .. tostring(msg)) end
     M.OnInitialize = function() end
     M.OnEnable = function() end
-end
-
--- Initialize namespace
-if not _G.VUI then _G.VUI = {} end
-if not _G.VUI.TGCD then _G.VUI.TGCD = {} end
-local TGCD = _G.VUI.TGCD
-
--- Initialize other needed globals to prevent nil errors
-_G.VUITGCD = _G.VUITGCD or {}
-_G.VUITGCD.settings = _G.VUITGCD.settings or {}
-_G.VUITGCD.units = _G.VUITGCD.units or {}
-_G.VUITGCD.constants = _G.VUITGCD.constants or {unitTypes = {}}
-
--- Connect VUITGCD and VUI.TGCD namespaces
-VUI.VUITGCD = M
-
--- Ensure TGCD has the required sub-tables for basic functionality
-TGCD.Utils = TGCD.Utils or {}
-TGCD.Settings = TGCD.Settings or {}
-TGCD.UI = TGCD.UI or {}
-TGCD.Icons = TGCD.Icons or {}
-
--- Add essential utility functions if they don't exist
-if not TGCD.Utils.size then
-    TGCD.Utils.size = function(tbl)
-        if type(tbl) ~= "table" then return 0 end
-        local count = 0
-        for _ in pairs(tbl) do
-            count = count + 1
-        end
-        return count
-    end
-end
-
--- Add essential settings functions if they don't exist
-if not TGCD.Settings.Load then
-    TGCD.Settings.Load = function() 
-        -- Minimal implementation to avoid errors
-        return {
+    M.defaults = {
+        profile = {
             enabled = true,
-            iconSize = 30,
-            maxIcons = 10,
-            direction = "DOWN"
+            -- other defaults as above
         }
-    end
+    }
 end
 
--- Localization with fallback
-local L = LibStub and LibStub("AceLocale-3.0", true) and LibStub("AceLocale-3.0"):GetLocale("VUI", true) or {}
+-- Connect to global namespace for backward compatibility
+_G.VUITGCD.M = M
 
--- Module Constants
+-- Module properties
 M.NAME = MODNAME
 M.TITLE = "VUI Global Cooldowns"
 M.DESCRIPTION = "Displays ability usage with animated icons"
-M.VERSION = "1.0"
+M.VERSION = GetAddOnMetadata("VUI", "Version") or "Unknown"
 
--- Default settings
-M.defaults = {
-    profile = {
-        enabled = false,
+-- Add early load support
+local earlyLoadFrame = CreateFrame("Frame")
+earlyLoadFrame:RegisterEvent("ADDON_LOADED")
+earlyLoadFrame:SetScript("OnEvent", function(self, event, addon)
+    if addon == "VUI" then
+        self:UnregisterEvent("ADDON_LOADED")
         
-        -- Icon settings
-        iconSize = 30,
-        iconAlpha = 1.0,
-        fadeTime = 0.3,
+        -- Make the settings available to the TrufiGCD compatible namespace
+        ns.settings = ns.settings or {}
+        ns.settings.getModuleSettings = function()
+            if VUI and VUI.VUITGCD and VUI.VUITGCD.db then
+                return VUI.VUITGCD.db.profile
+            end
+            return M.defaults.profile
+        end
         
-        -- Layout settings
-        direction = "DOWN",
-        maxIcons = 10,
-        
-        -- Filter settings
-        showGCDOnly = false,
-        hideMacroText = true,
-        
-        -- Visual settings
-        showBorder = true,
-        showCooldownSwipe = true,
-        colorBySpellType = true,
-        useThemeColors = true,
-        
-        -- Position settings
-        position = {"CENTER", "CENTER", 0, 0},
+        -- Print successful load message when in verbose mode
+        if VUI and VUI.verbose then
+            print("|cff00BBBBVUI TrufiGCD:|r Module initialized")
+        end
+    end
+end)
+
+-- Add SyncWithVUIConfig function after module initialization
+function M:SyncWithVUIConfig()
+    if not self.db or not self.db.profile then return end
+    
+    -- Get reference to TrufiGCD namespace
+    local ns = _G.VUI.TGCD
+    if not ns or not ns.settings or not ns.settings.activeProfile then return end
+    
+    -- Sync general settings
+    if ns.settings.activeProfile.enabledIn then
+        ns.settings.activeProfile.enabledIn.enabled = self.db.profile.enabled
         
         -- Location settings
-        showInWorld = true,
-        showInInstances = true,
-        showInPVP = true,
-        
-        -- Unit tracking settings
-        trackPlayer = true,
-        trackTarget = false,
-        trackFocus = false,
-        trackParty = false
-    }
-}
-
--- Initialize the module
-function M:OnInitialize()
-    -- Create the database with consistent naming
-    if VUI and VUI.db then
-        -- Make sure namespaces exists to avoid nil indexing
-        if not VUI.db.namespaces then
-            VUI.db.namespaces = {}
+        if self.db.profile.instances then
+            ns.settings.activeProfile.enabledIn.world = self.db.profile.instances.showInWorld
+            ns.settings.activeProfile.enabledIn.party = self.db.profile.instances.showInInstances
+            ns.settings.activeProfile.enabledIn.raid = self.db.profile.instances.showInRaid
+            ns.settings.activeProfile.enabledIn.arena = self.db.profile.instances.showInPVP
+            ns.settings.activeProfile.enabledIn.battleground = self.db.profile.instances.showInPVP
+            ns.settings.activeProfile.enabledIn.combatOnly = self.db.profile.instances.combatOnly
         end
-        
-        -- Check if a namespace already exists with any of the possible names
-        local namespace = VUI.db.namespaces["VUITGCD"] or VUI.db.namespaces["vuitgcd"]
-        
-        if namespace then
-            -- Use existing namespace
-            self.db = namespace
+    end
+    
+    -- Sync layout settings
+    if ns.settings.activeProfile.layoutSettings then
+        for layoutType, layoutSettings in pairs(ns.settings.activeProfile.layoutSettings) do
+            layoutSettings.iconSize = self.db.profile.iconSize or 30
+            layoutSettings.direction = self.db.profile.direction or "DOWN"
+            layoutSettings.iconsNumber = self.db.profile.maxIcons or 8
             
-            -- Ensure both upper and lowercase versions are synchronized
-            VUI.db.namespaces["VUITGCD"] = namespace
-            VUI.db.namespaces["vuitgcd"] = namespace
-        else
-            -- Create new namespace with uppercase name for consistency
-            self.db = VUI.db:RegisterNamespace("VUITGCD", {
-                profile = self.defaults.profile
-            })
-            
-            -- Also create lowercase reference for compatibility
-            VUI.db.namespaces["vuitgcd"] = self.db
-        end
-        
-        -- Ensure vmodules path exists in profile for settings UI
-        if not VUI.db.profile.vmodules then
-            VUI.db.profile.vmodules = {}
-        end
-        
-        if not VUI.db.profile.vmodules.vuitgcd then
-            VUI.db.profile.vmodules.vuitgcd = {}
-        end
-        
-        -- Sync module settings between namespaces and the vmodules path
-        for key, value in pairs(self.defaults.profile) do
-            if VUI.db.profile.vmodules.vuitgcd[key] == nil then
-                VUI.db.profile.vmodules.vuitgcd[key] = value
-            end
-            
-            if self.db.profile[key] == nil then
-                self.db.profile[key] = VUI.db.profile.vmodules.vuitgcd[key]
-            end
-        end
-        
-        -- Set up metatable to sync properties
-        setmetatable(VUI.db.profile.vmodules.vuitgcd, {
-            __index = function(t, k)
-                return self.db.profile[k]
-            end,
-            __newindex = function(t, k, v)
-                self.db.profile[k] = v
-                rawset(t, k, v)
-            end
-        })
-    else
-        -- Fallback if VUI.db isn't available
-        self.db = {
-            profile = self.defaults.profile
-        }
-    end
-    
-    -- Initialize the configuration panel
-    self:InitializeConfig()
-    
-    -- Register callback for theme changes with safety checks
-    if VUI and VUI.RegisterCallback and type(VUI.RegisterCallback) == "function" then
-        pcall(function()
-            VUI:RegisterCallback("OnThemeChanged", function()
-                if self and self.UpdateTheme and type(self.UpdateTheme) == "function" then
-                    -- Use pcall with explicit self reference
-                    pcall(function()
-                        self:UpdateTheme()
-                    end)
-                end
-            end)
-        end)
-    end
-    
-    -- Register slash commands with enhanced safety checks
-    if self.RegisterChatCommand and type(self.RegisterChatCommand) == "function" then
-        -- Wrap command registration in pcall to prevent errors
-        pcall(function()
-            self:RegisterChatCommand("vuitgcd", "SlashCommand")
-        end)
-        pcall(function()
-            self:RegisterChatCommand("tgcd", "SlashCommand")
-        end)
-    else
-        -- Fallback: Register with SlashCmdList
-        _G.SLASH_VUITGCD1 = "/vuitgcd"
-        _G.SLASH_VUITGCD2 = "/tgcd"
-        SlashCmdList["VUITGCD"] = function(input)
-            -- Safety check for self reference
-            if not self then return end
-            
-            if self.SlashCommand and type(self.SlashCommand) == "function" then
-                -- Use pcall with explicit function reference to maintain self
-                pcall(function() 
-                    M:SlashCommand(input)
-                end)
-            else
-                -- Minimal fallback implementation
-                if input == "toggle" then
-                    -- Ensure db and profile exist
-                    if self.db and self.db.profile then
-                        self.db.profile.enabled = not self.db.profile.enabled
-                        print("[VUITGCD] " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
-                    else
-                        print("[VUITGCD] Error: Settings database not available")
-                    end
-                else
-                    print("[VUITGCD] Available commands: toggle")
-                end
+            -- Enable settings based on unit type mapping
+            if layoutType == "player" then
+                layoutSettings.enable = self.db.profile.unitSettings and 
+                                        self.db.profile.unitSettings.player and 
+                                        self.db.profile.unitSettings.player.enable
+            elseif layoutType == "target" then
+                layoutSettings.enable = self.db.profile.unitSettings and 
+                                        self.db.profile.unitSettings.target and 
+                                        self.db.profile.unitSettings.target.enable
+            elseif layoutType == "focus" then
+                layoutSettings.enable = self.db.profile.unitSettings and 
+                                        self.db.profile.unitSettings.focus and 
+                                        self.db.profile.unitSettings.focus.enable
+            elseif layoutType == "party" then
+                layoutSettings.enable = self.db.profile.unitSettings and (
+                    (self.db.profile.unitSettings.party1 and self.db.profile.unitSettings.party1.enable) or
+                    (self.db.profile.unitSettings.party2 and self.db.profile.unitSettings.party2.enable) or
+                    (self.db.profile.unitSettings.party3 and self.db.profile.unitSettings.party3.enable) or
+                    (self.db.profile.unitSettings.party4 and self.db.profile.unitSettings.party4.enable)
+                )
+            elseif layoutType == "arena" then
+                layoutSettings.enable = self.db.profile.unitSettings and (
+                    (self.db.profile.unitSettings.arena1 and self.db.profile.unitSettings.arena1.enable) or
+                    (self.db.profile.unitSettings.arena2 and self.db.profile.unitSettings.arena2.enable) or
+                    (self.db.profile.unitSettings.arena3 and self.db.profile.unitSettings.arena3.enable)
+                )
             end
         end
     end
     
-    -- Set up namespace sharing between VUI module and TrufiGCD code
-    _G.VUITGCD = _G.VUITGCD or {}
-    _G.VUITGCD.settings = _G.VUITGCD.settings or {}
-    _G.VUITGCD.units = _G.VUITGCD.units or {}
-    _G.VUITGCD.constants = _G.VUITGCD.constants or {unitTypes = {}}
-    
-    -- Create essential methods for the VUITGCD settings
-    _G.VUITGCD.settings.Load = _G.VUITGCD.settings.Load or function()
-        -- Use self.db.profile to get settings 
-        return {
-            enabled = self.db.profile.enabled,
-            iconSize = self.db.profile.iconSize,
-            maxIcons = self.db.profile.maxIcons,
-            direction = self.db.profile.direction,
-            useThemeColors = self.db.profile.useThemeColors
-        }
+    -- Update location check to apply changes
+    if ns.locationCheck and ns.locationCheck.settingsChanged then
+        ns.locationCheck.settingsChanged()
     end
     
-    -- Connect module settings with TrufiGCD namespace
-    _G.VUI.TGCD.Settings = _G.VUITGCD.settings
+    -- Save settings to ensure they're persisted
+    if ns.settings.Save then
+        ns.settings:Save()
+    end
     
-    -- Debug message
-    if VUI and VUI.Debug then
-        VUI:Debug(self.NAME .. " initialized")
-    else
-        print("[VUITGCD] initialized")
+    -- Print debug message if in verbose mode
+    if VUI and VUI.verbose then
+        print("|cff00BBBBVUI TrufiGCD:|r Settings synced from VUI Config")
     end
 end
 
--- Enable the module
-function M:OnEnable()
-    -- Register core events with safety check
-    if self.RegisterEvent and type(self.RegisterEvent) == "function" then
-        pcall(function()
-            -- Store reference to self for the event handler
-            local moduleSelf = self
-            self:RegisterEvent("PLAYER_ENTERING_WORLD", function(_, ...)
-                if moduleSelf and moduleSelf.UpdateVisibility then
-                    moduleSelf:UpdateVisibility(...)
-                end
-            end)
-        end)
-    else
-        -- Fallback for when RegisterEvent isn't available
-        local frame = CreateFrame("Frame")
-        frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-        -- Store reference to the module for the event handler
-        local moduleSelf = self
-        frame:SetScript("OnEvent", function(_, event, ...)
-            if event == "PLAYER_ENTERING_WORLD" and moduleSelf and moduleSelf.UpdateVisibility then
-                moduleSelf:UpdateVisibility(...)
-            end
-        end)
-        -- Store the frame for later cleanup
-        self.eventFrame = frame
-    end
-    
-    -- Update module with settings (with safety checks)
-    if self.UpdateAppearance and type(self.UpdateAppearance) == "function" then
-        pcall(function() self:UpdateAppearance() end)
-    end
-    
-    if self.UpdateUnits and type(self.UpdateUnits) == "function" then
-        pcall(function() self:UpdateUnits() end)
-    end
-    
-    -- Debug message with safety check
-    if VUI and VUI.Debug and type(VUI.Debug) == "function" then
-        pcall(function() VUI:Debug(self.NAME .. " enabled") end)
-    else
-        print("[VUITGCD] enabled")
-    end
-end
-
--- Disable the module
-function M:OnDisable()
-    -- Unregister all events with safety check
-    if self.UnregisterAllEvents and type(self.UnregisterAllEvents) == "function" then
-        pcall(function()
-            self:UnregisterAllEvents()
-        end)
-    end
-    
-    -- Clean up the event frame if we created one
-    if self.eventFrame then
-        self.eventFrame:SetScript("OnEvent", nil)
-        self.eventFrame:UnregisterAllEvents()
-        self.eventFrame = nil
-    end
-    
-    -- Debug message with safety check
-    if VUI and VUI.Debug and type(VUI.Debug) == "function" then
-        pcall(function() VUI:Debug(self.NAME .. " disabled") end)
-    else
-        print("[VUITGCD] disabled")
-    end
-end
-
--- Update appearance when settings change
-function M:UpdateAppearance()
-    if _G.VUITGCD and _G.VUITGCD.units then
-        for _, unit in pairs(_G.VUITGCD.units) do
-            if unit and unit.iconQueue and unit.iconQueue.Resize then
-                unit.iconQueue:Resize()
-            end
-        end
-    end
-end
-
--- Update unit settings when settings change
-function M:UpdateUnits()
-    if _G.VUITGCD and _G.VUITGCD.units then
-        -- Enable/disable units based on settings
-        local settings = self.db.profile
-        
-        -- Apply settings to units
-        -- Implement as needed
-    end
-end
-
--- Update visibility based on location
-function M:UpdateVisibility()
-    -- Safe access to locationCheck with proper namespace
-    local locationCheck = _G.VUITGCD and _G.VUITGCD.locationCheck
-    
-    -- Call settingsChanged if available
-    if locationCheck and type(locationCheck.settingsChanged) == "function" then
-        pcall(function()
-            locationCheck.settingsChanged()
-        end)
-    end
-    
-    -- Handle location-specific settings
-    local instanceType = select(2, IsInInstance())
-    local settings = self.db and self.db.profile or {}
-    
-    -- Safe access to visibility settings
-    local showInWorld = settings.showInWorld
-    local showInInstances = settings.showInInstances
-    local showInPVP = settings.showInPVP
-    
-    -- Default to showing if settings are nil
-    if showInWorld == nil then showInWorld = true end
-    if showInInstances == nil then showInInstances = true end
-    if showInPVP == nil then showInPVP = true end
-    
-    local shouldShow = true
-    
-    if (instanceType == "none" and not showInWorld) or
-       (instanceType == "party" and not showInInstances) or
-       (instanceType == "raid" and not showInInstances) or
-       ((instanceType == "pvp" or instanceType == "arena") and not showInPVP) then
-        shouldShow = false
-    end
-    
-    -- Implement show/hide logic (placeholder)
-    -- This should be implemented based on how the module actually shows/hides elements
-    if shouldShow then
-        -- Show icons (placeholder)
-        VUI:Debug("VUITGCD", "Showing icons in " .. (instanceType or "unknown") .. " instance")
-    else
-        -- Hide icons (placeholder)
-        VUI:Debug("VUITGCD", "Hiding icons in " .. (instanceType or "unknown") .. " instance")
-    end
-end
-
--- Configuration initialization
-function M:InitializeConfig()
-    -- Register with VUI's configuration system
-    if VUI and VUI.Config and VUI.Config.RegisterModuleOptions then
-        VUI.Config:RegisterModuleOptions(self.NAME, function()
-            -- Open the configuration panel
-            if self.OpenConfig then
-                self:OpenConfig()
-            end
-        end)
-    end
-end
-
--- Export the module to the namespace
-VUI.VUITGCD = M
-
--- Slash command handler
-function M:SlashCommand(input)
-    if input == "toggle" then
-        self.db.profile.enabled = not self.db.profile.enabled
-        if VUI and type(VUI.Print) == "function" then
-            VUI:Print("|cff33bbff[VUITGCD]|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
-        else
-            print("|cff33bbff[VUITGCD]|r " .. (self.db.profile.enabled and "Enabled" or "Disabled"))
-        end
-    elseif input == "config" or input == "options" then
-        -- Open configuration
-        if VUI and VUI.Config and type(VUI.Config.OpenToCategory) == "function" then
-            VUI.Config:OpenToCategory(self.TITLE)
-        end
-    else
-        -- Help text
-        print("|cff33bbff[VUITGCD]|r Available commands:")
-        print("  toggle - Enable or disable the addon")
-        print("  config - Open configuration panel")
-    end
-end
+-- Return the module
+return M

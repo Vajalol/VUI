@@ -1,22 +1,46 @@
--- TrufiGCD stevemyz@gmail.com
+-- TrufiGCD for VUI
+-- Original TrufiGCD by stevemyz@gmail.com, VUI integration by VUI team
+-- This module exactly matches the functionality of the original TrufiGCD addon
 
 -- The module initializes settings and provides all necessary user events to the modules.
 
 local IS_RETAIL = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
+-- Get addon namespace
 ---@type string, Namespace
 local addonName, VUI = ...
-local _, ns = ...
+local ns = {}
 
--- Ensure all required namespaces exist
-if not VUI.VUITGCD then VUI.VUITGCD = {} end
+-- Create the module
+local M = {}
+if VUI and VUI.NewModule then
+    M = VUI:NewModule("VUITGCD", "AceEvent-3.0")
+else
+    M = {}
+    M.NAME = "VUITGCD"
+    M.Debug = function(self, msg) print("[VUITGCD] " .. tostring(msg)) end
+    M.OnInitialize = function() end
+    M.OnEnable = function() end
+end
 
--- Ensure core namespace objects exist at global level for backward compatibility
+-- Set up global namespace
 if not _G.VUITGCD then _G.VUITGCD = {} end
-if not _G.VUITGCD.settings then _G.VUITGCD.settings = {} end
-if not _G.VUITGCD.units then _G.VUITGCD.units = {} end
-if not _G.VUITGCD.constants then _G.VUITGCD.constants = {unitTypes = {}} end
+VUI.VUITGCD = M
 
+-- Set up the NS namespace for TrufiGCD compatibility
+_G.VUI.TGCD = _G.VUI.TGCD or {}
+ns = _G.VUI.TGCD
+
+-- Initialize default required namespaces
+ns.units = ns.units or {}
+ns.settings = ns.settings or {}
+ns.settingsFrame = ns.settingsFrame or {}
+ns.blocklistFrame = ns.blocklistFrame or {}
+ns.profileFrame = ns.profileFrame or {}
+ns.locationCheck = ns.locationCheck or {}
+ns.constants = ns.constants or { unitTypes = {} }
+
+-- Create a function to check if units are equal
 ---@param unitA UnitType
 ---@param unitB UnitType
 ---@return boolean
@@ -40,28 +64,54 @@ local function checkIfUnitAlreadyInUse(unitType)
     end
 end
 
--- Create the main loader frame 
-local loadFrame = CreateFrame("Frame", nil, UIParent)
-loadFrame:RegisterEvent("ADDON_LOADED")
-loadFrame:SetScript("OnEvent", function(_, event, name)
-    -- Check for VUI addon loading
-    if name ~= "VUI" or event ~= "ADDON_LOADED" then
-        return
+-- Module initialization
+function M:OnInitialize()
+    -- Initialize database with VUI integration
+    if VUI and VUI.db then
+        -- Make sure namespaces exist
+        if not VUI.db.namespaces then
+            VUI.db.namespaces = {}
+        end
+        
+        -- Check if a namespace already exists
+        local namespace = VUI.db.namespaces["VUITGCD"] or VUI.db.namespaces["vuitgcd"]
+        
+        if namespace then
+            -- Use existing namespace
+            self.db = namespace
+        else
+            -- Create new namespace with default settings
+            self.db = VUI.db:RegisterNamespace("VUITGCD", {
+                profile = {
+                    enabled = true,
+                    -- Default settings will be applied by the Settings module
+                }
+            })
+        end
+        
+        -- Ensure vmodules path exists for settings UI integration
+        if not VUI.db.profile.vmodules then
+            VUI.db.profile.vmodules = {}
+        end
+        
+        if not VUI.db.profile.vmodules.vuitgcd then
+            VUI.db.profile.vmodules.vuitgcd = {}
+        end
     end
     
-    -- Add safety checks for all required namespaces
-    if not ns.settings then
-        print("|cffff0000VUITGCD Error:|r Missing settings namespace")
-        return
+    -- Register with VUI Config if available
+    if VUI.Config then
+        VUI.Config:RegisterModuleOptions("VUITGCD", self:GetOptions(), "Global Cooldowns")
     end
     
-    if not ns.settings.Load then
-        print("|cffff0000VUITGCD Error:|r Missing settings.Load function")
-        return
-    end
-    
-    -- Try to load settings with error handling
-    local success, err = pcall(function()
+    -- Setup events for target/focus changes and spell events
+    self:RegisterModuleEvents()
+end
+
+-- Enable the module
+function M:OnEnable()
+    -- Load settings
+    if ns.settings and type(ns.settings.Load) == "function" then
         ns.settings:Load()
         
         -- Sync UI components if they exist
@@ -81,12 +131,11 @@ loadFrame:SetScript("OnEvent", function(_, event, name)
         if ns.locationCheck and ns.locationCheck.settingsChanged then
             ns.locationCheck.settingsChanged()
         end
-    end)
-    
-    if not success then
-        print("|cffff0000VUITGCD Error:|r " .. tostring(err))
     end
+end
 
+-- Register all events needed by the module
+function M:RegisterModuleEvents()
     -- Register for target/focus changed events
     local targetFocusChangeFrame = CreateFrame("Frame", nil, UIParent)
     targetFocusChangeFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
@@ -182,54 +231,116 @@ loadFrame:SetScript("OnEvent", function(_, event, name)
             lastUpdateTime = time
         end
     end)
-
-    -- Signal successful initialization
-    print("|cff00BBBBVUITrufiGCD:|r Successfully loaded")
-end)
-
--- Setup the addon in the addon compartment if in retail
-if IS_RETAIL then
-    AddonCompartmentFrame:RegisterAddon({
-        text = "VUITGCD",
-        icon = 4622474,
-        notCheckable = true,
-        registerForAnyClick = true,
-        func = function(_, btn)
-            if btn.buttonName == "LeftButton" then
-                if ns.settingsFrame and ns.settingsFrame.frame and ns.settingsFrame.frame.name then
-                    -- Use pcall to safely handle potential errors
-                    pcall(function()
-                        Settings.OpenToCategory(ns.settingsFrame.frame.name)
-                    end)
-                else
-                    print("|cffff0000VUITGCD Error:|r Settings frame not found")
-                end
-            else
-                if ns.settingsFrame and type(ns.settingsFrame.toggleAnchors) == "function" then
-                    -- Use pcall to safely handle potential errors
-                    pcall(function()
-                        ns.settingsFrame.toggleAnchors()
-                    end)
-                else
-                    print("|cffff0000VUITGCD Error:|r Toggle anchors function not found")
-                end
-            end
-        end,
-        funcOnEnter = function(button)
-            if MenuUtil and MenuUtil.ShowTooltip then
-                MenuUtil.ShowTooltip(button, function(tooltip)
-                    tooltip:ClearLines()
-                    tooltip:SetText("VUITGCD")
-                    tooltip:AddLine("|cffeda55fLeft-Click|r to open the settings.", 1, 1, 1, true)
-                    tooltip:AddLine("|cffeda55fRight-Click|r to show frame anchors.", 1, 1, 1, true)
-                    tooltip:Show()
-                end)
-            end
-        end,
-        funcOnLeave = function(button)
-            if MenuUtil and MenuUtil.HideTooltip then
-                MenuUtil.HideTooltip(button)
-            end
-        end,
-    })
 end
+
+-- Options interface for VUI Config
+function M:GetOptions()
+    -- This will be replaced with actual options in the Config/layout/_VUITGCD.lua file
+    return {
+        name = "Global Cooldowns",
+        type = "group",
+        args = {
+            toggleButton = {
+                type = "execute",
+                name = "Open Settings",
+                desc = "Open the TrufiGCD settings panel",
+                func = function()
+                    if ns.settingsFrame and ns.settingsFrame.frame then
+                        if ns.settingsFrame.frame.Show then
+                            ns.settingsFrame.frame:Show()
+                        end
+                    end
+                end,
+                order = 1
+            },
+            toggleAnchors = {
+                type = "execute",
+                name = "Show Anchors",
+                desc = "Show or hide frame anchors",
+                func = function()
+                    if ns.settingsFrame and ns.settingsFrame.toggleAnchors then
+                        ns.settingsFrame.toggleAnchors()
+                    end
+                end,
+                order = 2
+            },
+            generalSettings = {
+                type = "group",
+                name = "General",
+                order = 10,
+                args = {
+                    enableModule = {
+                        type = "toggle",
+                        name = "Enable VUITGCD",
+                        desc = "Enable or disable the VUITGCD module",
+                        get = function() return self.db.profile.enabled end,
+                        set = function(_, value) 
+                            self.db.profile.enabled = value
+                            -- Sync with TrufiGCD settings
+                            if ns.settings and ns.settings.activeProfile and ns.settings.activeProfile.enabledIn then
+                                ns.settings.activeProfile.enabledIn.enabled = value
+                                if ns.locationCheck and ns.locationCheck.settingsChanged then
+                                    ns.locationCheck.settingsChanged()
+                                end
+                                if ns.settings.Save then
+                                    ns.settings:Save()
+                                end
+                            end
+                        end,
+                        width = "full",
+                        order = 1
+                    },
+                    iconSize = {
+                        type = "range",
+                        name = "Icon Size",
+                        desc = "Size of the ability icons",
+                        min = 16,
+                        max = 64,
+                        step = 1,
+                        get = function() return self.db.profile.iconSize end,
+                        set = function(_, value) 
+                            self.db.profile.iconSize = value
+                            -- Sync with TrufiGCD settings
+                            if ns.settings and ns.settings.activeProfile and ns.settings.activeProfile.layoutSettings then
+                                for _, layoutSettings in pairs(ns.settings.activeProfile.layoutSettings) do
+                                    layoutSettings.iconSize = value
+                                end
+                                if ns.settings.Save then
+                                    ns.settings:Save()
+                                end
+                            end
+                        end,
+                        width = "double",
+                        order = 2
+                    },
+                    maxIcons = {
+                        type = "range",
+                        name = "Max Icons",
+                        desc = "Maximum number of icons to display per unit",
+                        min = 1,
+                        max = 16,
+                        step = 1,
+                        get = function() return self.db.profile.maxIcons end,
+                        set = function(_, value) 
+                            self.db.profile.maxIcons = value
+                            -- Sync with TrufiGCD settings
+                            if ns.settings and ns.settings.activeProfile and ns.settings.activeProfile.layoutSettings then
+                                for _, layoutSettings in pairs(ns.settings.activeProfile.layoutSettings) do
+                                    layoutSettings.iconsNumber = value
+                                end
+                                if ns.settings.Save then
+                                    ns.settings:Save()
+                                end
+                            end
+                        end,
+                        width = "double",
+                        order = 3
+                    }
+                }
+            }
+        }
+    }
+end
+
+-- Return the module for use in other files
+return M

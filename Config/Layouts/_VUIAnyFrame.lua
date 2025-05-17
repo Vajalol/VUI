@@ -1,6 +1,6 @@
 --[[
     VUI Any Frame Module Configuration
-    Framework for moving and scaling any UI frame
+    Based on MoveAny by D4KiR with VUI integration
 ]]
 
 local Layout = VUI:NewModule('Config.Layout.VUIAnyFrame')
@@ -10,7 +10,20 @@ VUI.ConfigHelpers.CreateStandardLayout(Layout, "VUIAnyFrame", "VUI Any Frame", "
 
 -- Define module-specific layout construction
 function Layout:BuildModuleLayout(module, db)
-    -- Extend the base layout with module-specific settings
+    -- Ensure our module is loaded
+    if not module then
+        table.insert(Layout.layout.rows, {
+            errorLabel = {
+                type = 'label',
+                label = "Module not loaded. Try reloading the UI.",
+                column = 12,
+                order = 1,
+            }
+        })
+        return
+    end
+
+    -- Main Settings Section
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
@@ -43,78 +56,73 @@ function Layout:BuildModuleLayout(module, db)
             end
         },
         lockFrames = {
-            key = 'vmodules.vuianyframe.lockFrames',
+            key = 'vmodules.vuianyframe.global.lockFrames',
             type = 'checkbox',
             label = 'Lock Frames',
             tooltip = 'Lock all frames to prevent movement',
             column = 4,
             order = 2,
             callback = function(self)
-                if module and module.SetSetting then
-                    module:SetSetting("lockFrames", self:GetValue())
+                if module then
+                    module.db.profile.global.lockFrames = self:GetValue()
+                    if self:GetValue() then
+                        module:Lock()
+                    else
+                        module:Unlock()
+                    end
                 end
             end
         },
-        combatLock = {
-            key = 'vmodules.vuianyframe.combatLock',
-            type = 'checkbox',
-            label = 'Lock in Combat',
-            tooltip = 'Automatically lock frames when entering combat',
+        toggleLockState = {
+            type = 'button',
+            label = 'Toggle Lock',
+            tooltip = 'Toggle between locked and unlocked frames',
             column = 4,
             order = 3,
-            callback = function(self)
-                if module and module.SetSetting then
-                    module:SetSetting("combatLock", self:GetValue())
+            callback = function()
+                if module and module.ToggleLock then
+                    module:ToggleLock()
                 end
             end
-        },
+        }
     })
     
-    -- Add grid and scale settings
+    -- Grid Settings
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Grid & Scaling'
+            label = 'Grid Settings'
         },
     })
     
     table.insert(Layout.layout.rows, {
-        allowScaling = {
-            key = 'vmodules.vuianyframe.allowScaling',
+        snapToGrid = {
+            key = 'vmodules.vuianyframe.global.snapToGrid',
             type = 'checkbox',
-            label = 'Allow Frame Scaling',
-            tooltip = 'Enable scaling frames with right-click + drag',
-            column = 4,
+            label = 'Snap to Grid',
+            tooltip = 'Snap frames to grid when moving',
+            column = 6,
             order = 1,
             callback = function(self)
-                if module and module.SetSetting then
-                    module:SetSetting("allowScaling", self:GetValue())
+                if module then
+                    module.db.profile.global.snapToGrid = self:GetValue()
                 end
             end
         },
         showGrid = {
-            key = 'vmodules.vuianyframe.showGrid',
-            type = 'checkbox',
+            type = 'button',
             label = 'Show Grid',
-            tooltip = 'Show a grid when moving frames',
-            column = 4,
+            tooltip = 'Toggle grid visibility',
+            column = 6,
             order = 2,
-            callback = function(self)
-                if module and module.SetSetting then
-                    module:SetSetting("showGrid", self:GetValue())
-                end
-            end
-        },
-        snapToGrid = {
-            key = 'vmodules.vuianyframe.snapToGrid',
-            type = 'checkbox',
-            label = 'Snap to Grid',
-            tooltip = 'Snap frames to grid when moving',
-            column = 4,
-            order = 3,
-            callback = function(self)
-                if module and module.SetSetting then
-                    module:SetSetting("snapToGrid", self:GetValue())
+            callback = function()
+                if module and module.GridFrame then
+                    if module.GridFrame:IsShown() then
+                        module.GridFrame:Hide()
+                    else
+                        module:UpdateGrid()
+                        module.GridFrame:Show()
+                    end
                 end
             end
         },
@@ -122,22 +130,55 @@ function Layout:BuildModuleLayout(module, db)
     
     table.insert(Layout.layout.rows, {
         gridSize = {
-            key = 'vmodules.vuianyframe.gridSize',
+            key = 'vmodules.vuianyframe.global.grid',
             type = 'slider',
             label = 'Grid Size',
-            tooltip = 'Set the size of the grid',
-            min = 5,
-            max = 50,
+            tooltip = 'Size of the grid (in pixels)',
+            min = 1,
+            max = 64,
             step = 1,
             width = "full",
             column = 12,
-            order = 4,
+            order = 3,
             callback = function(self)
-                if module and module.SetSetting then
-                    module:SetSetting("grid", self:GetValue())
+                if module then
+                    module.db.profile.global.grid = self:GetValue()
+                    module:UpdateGrid()
                 end
             end
         },
+    })
+    
+    -- Minimap Button
+    table.insert(Layout.layout.rows, {
+        header = {
+            type = 'header',
+            label = 'Minimap Button'
+        },
+    })
+    
+    table.insert(Layout.layout.rows, {
+        minimapButton = {
+            key = 'vmodules.vuianyframe.minimap.hide',
+            type = 'checkbox',
+            label = 'Hide Minimap Button',
+            tooltip = 'Show or hide the minimap button',
+            column = 12,
+            order = 1,
+            callback = function(self)
+                if module then
+                    module.db.profile.minimap.hide = self:GetValue()
+                    if LibStub and LibStub("LibDBIcon-1.0", true) then
+                        local LDBIcon = LibStub("LibDBIcon-1.0")
+                        if self:GetValue() then
+                            LDBIcon:Hide("VUIAnyFrame")
+                        else
+                            LDBIcon:Show("VUIAnyFrame")
+                        end
+                    end
+                end
+            end
+        }
     })
     
     -- Actions
@@ -157,23 +198,79 @@ function Layout:BuildModuleLayout(module, db)
             order = 1,
             callback = function()
                 if module and module.ResetAllFrameSettings then
-                    module:ResetAllFrameSettings()
+                    -- Show confirmation dialog
+                    StaticPopupDialogs["VUIANYFRAME_RESET_ALL"] = {
+                        text = "Are you sure you want to reset all frames to their default positions?",
+                        button1 = "Yes",
+                        button2 = "No",
+                        OnAccept = function()
+                            module:ResetAllFrameSettings()
+                            module:Print("All frames reset to default positions")
+                        end,
+                        timeout = 0,
+                        whileDead = true,
+                        hideOnEscape = true,
+                        preferredIndex = 3
+                    }
+                    StaticPopup_Show("VUIANYFRAME_RESET_ALL")
                 end
             end
         },
-        toggleLockState = {
+        applySettings = {
             type = 'button',
-            label = 'Toggle Lock State',
-            tooltip = 'Toggle between locked and unlocked state',
+            label = 'Apply Settings',
+            tooltip = 'Apply all saved frame settings',
             column = 6,
             order = 2,
             callback = function()
-                if module and module.ToggleFrameLock then
-                    module:ToggleFrameLock()
+                if module and module.ApplySettings then
+                    module:ApplySettings()
                 end
             end
-        },
+        }
     })
+    
+    -- Frame Categories - Only if we have registered widgets
+    if module.GetRegisteredWidgets and type(module.GetRegisteredWidgets) == "function" then
+        local widgets = module:GetRegisteredWidgets()
+        
+        if widgets and next(widgets) then
+            table.insert(Layout.layout.rows, {
+                header = {
+                    type = 'header',
+                    label = 'Frame Categories'
+                },
+            })
+            
+            -- Create entries for each category
+            for category, frames in pairs(widgets) do
+                -- Skip empty categories
+                if #frames > 0 then
+                    table.insert(Layout.layout.rows, {
+                        [category .. "Label"] = {
+                            type = 'label',
+                            label = category .. " (" .. #frames .. " frames)",
+                            column = 4,
+                            order = 1,
+                        },
+                        [category .. "Button"] = {
+                            type = 'button',
+                            label = 'Configure',
+                            tooltip = 'Configure ' .. category .. ' frames',
+                            column = 8,
+                            order = 2,
+                            callback = function()
+                                -- Expand the category in the options
+                                if module.OpenOptions then
+                                    module:OpenOptions()
+                                end
+                            end
+                        }
+                    })
+                end
+            end
+        end
+    end
     
     -- Information
     table.insert(Layout.layout.rows, {
@@ -183,67 +280,56 @@ function Layout:BuildModuleLayout(module, db)
         },
     })
     
-    -- Only show this if the module is loaded
-    if module then
-        local frameCount = 0
-        if module.db and module.db.profile and module.db.profile.frames then
-            for _ in pairs(module.db.profile.frames) do
-                frameCount = frameCount + 1
-            end
+    -- Count how many frames are currently managed
+    local frameCount = 0
+    if module.db and module.db.profile and module.db.profile.frames then
+        for _ in pairs(module.db.profile.frames) do
+            frameCount = frameCount + 1
         end
-        
-        table.insert(Layout.layout.rows, {
-            frameInfo = {
-                type = 'label',
-                label = "Active moved frames: " .. frameCount,
-                column = 12,
-                order = 1,
-            }
-        })
-    else
-        table.insert(Layout.layout.rows, {
-            frameInfo = {
-                type = 'label',
-                label = "Frame information will be available when the module is loaded",
-                column = 12,
-                order = 1,
-            }
-        })
     end
     
-    -- Examples
+    table.insert(Layout.layout.rows, {
+        frameInfo = {
+            type = 'label',
+            label = "Active moved frames: " .. frameCount,
+            column = 12,
+            order = 1,
+        }
+    })
+    
+    -- Help Section
     table.insert(Layout.layout.rows, {
         header = {
             type = 'header',
-            label = 'Example Usage'
+            label = 'Help'
         },
     })
     
     table.insert(Layout.layout.rows, {
-        usageExample = {
+        help1 = {
             type = 'label',
-            label = "Use /va unlock to unlock frames for moving",
+            label = "• Use /va or /vuianyframe to toggle lock/unlock",
             column = 6,
             order = 1,
         },
-        usageExample2 = {
+        help2 = {
             type = 'label',
-            label = "Use middle-click to reset a frame to default position",
+            label = "• Right-click on a frame when unlocked for more options",
             column = 6,
             order = 2,
         }
     })
     
     table.insert(Layout.layout.rows, {
-        usageExample3 = {
+        help3 = {
             type = 'label',
-            label = "Use right-click + drag up/down to scale a frame",
+            label = "• Left-click and drag to move",
             column = 6,
             order = 3,
         },
-        usageExample4 = {
+        help4 = {
             type = 'label',
-            label = "Use /va help to see all available commands",
+            label = "• Frames auto-lock when entering combat",
             column = 6,
             order = 4,
         }

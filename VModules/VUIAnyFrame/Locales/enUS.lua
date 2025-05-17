@@ -1,59 +1,57 @@
--- Ensure localization table exists
-_G["VUIAnyFrame"] = _G["VUIAnyFrame"] or {}
-_G["VUIAnyFrame"].L = _G["VUIAnyFrame"].L or {}
+-- VUIAnyFrame - English Localization
+local AddonName, VUI = ...
+local M = _G["VUIAnyFrame"]
 
--- Reference the localization table
-local L = _G["VUIAnyFrame"].L
+-- Create locale table if it doesn't exist
+M.L = M.L or {}
+local L = M.L
 
--- Default locale (enUS)
-
--- General strings
-L["Enable"] = true
-L["Enable/disable VUI AnyFrame"] = true
-L["General"] = true
-L["Frames"] = true
-L["Elements"] = true
-L["Settings"] = true
-L["Move"] = true
-L["Scale"] = true
-L["Alpha"] = true
-L["Visibility"] = true
-L["Reset"] = true
-L["Reset All"] = true
-L["Reset Position"] = true
-L["Reset Scale"] = true
-L["Reset Alpha"] = true
-L["Lock Frames"] = true
-L["Unlock Frames"] = true
-L["Frames locked"] = true
-L["Frames unlocked"] = true
-L["Hide"] = true
-L["Show"] = true
-L["Click-through"] = true
-L["Make this frame click-through (mouse events pass through it)"] = true
-
--- UI Elements
-L["Action Bars"] = true
-L["Arena Enemy Frames"] = true
-L["Bag Bar"] = true
-L["Buff Bar"] = true
-L["Debuff Bar"] = true
-L["FPS Display"] = true
-L["Vehicle Seat Indicator"] = true
-L["Micro Menu"] = true
-L["Minimap"] = true
-L["Multicast Action Bar"] = true
-L["Party Frame"] = true
-L["Pet Bar"] = true
-L["Stance Bar"] = true
-
--- Tooltips
-L["Left-click to move"] = true
-L["Right-click for options"] = true
-L["Ctrl+click to reset position"] = true
-
--- Commands
-L["Available commands:"] = true
-L["reset - Reset all frames"] = true
-L["lock/unlock - Lock/unlock all frames"] = true
-L["config - Open configuration"] = true
+-- English (Default) Localization
+L["Frame"] = "Frame"
+L["Frames"] = "Frames"
+L["Player Frame"] = "Player Frame"
+L["Target Frame"] = "Target Frame"
+L["Focus Frame"] = "Focus Frame"
+L["Minimap"] = "Minimap"
+L["Buff Frame"] = "Buff Frame"
+L["Chat Frame"] = "Chat Frame"
+L["Action Bars"] = "Action Bars"
+L["Main Menu Bar"] = "Main Menu Bar"
+L["Bottom Left Action Bar"] = "Bottom Left Action Bar"
+L["Bottom Right Action Bar"] = "Bottom Right Action Bar"
+L["Right Action Bar"] = "Right Action Bar"
+L["Left Action Bar"] = "Left Action Bar"
+L["Objective Tracker"] = "Objective Tracker"
+L["Casting Bar"] = "Casting Bar"
+L["Micro Menu & Bags"] = "Micro Menu & Bags"
+L["Boss Frame"] = "Boss Frame"
+L["Arena Frame"] = "Arena Frame"
+L["Raid Frames"] = "Raid Frames"
+L["Party Frames"] = "Party Frames"
+L["Settings"] = "Settings"
+L["General"] = "General"
+L["Enable VUIAnyFrame"] = "Enable VUIAnyFrame"
+L["Lock Frames"] = "Lock Frames"
+L["Unlock Frames"] = "Unlock Frames"
+L["Reset All Frames"] = "Reset All Frames"
+L["Grid Settings"] = "Grid Settings"
+L["Grid Size"] = "Grid Size"
+L["Snap to Grid"] = "Snap to Grid"
+L["Minimap Button"] = "Minimap Button"
+L["Hide Minimap Button"] = "Hide Minimap Button"
+L["Scale"] = "Scale"
+L["Reset Position"] = "Reset Position"
+L["Hide Frame"] = "Hide Frame"
+L["Close"] = "Close"
+L["Enabled"] = "Enabled"
+L["Disabled"] = "Disabled"
+L["Position will be saved after combat"] = "Position will be saved after combat"
+L["Cannot move protected frames during combat"] = "Cannot move protected frames during combat"
+L["Cannot scale protected frames during combat"] = "Cannot scale protected frames during combat"
+L["Cannot hide protected frames during combat"] = "Cannot hide protected frames during combat"
+L["Cannot reset protected frames during combat"] = "Cannot reset protected frames during combat"
+L["All frames reset to default positions"] = "All frames reset to default positions"
+L["Frames unlocked - drag to reposition"] = "Frames unlocked - drag to reposition"
+L["Frames locked"] = "Frames locked"
+L["Toggle frame locking"] = "Toggle frame locking"
+L["Module is disabled. Settings not applied."] = "Module is disabled. Settings not applied." 

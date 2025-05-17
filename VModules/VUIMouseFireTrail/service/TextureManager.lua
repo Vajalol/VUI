@@ -2,10 +2,11 @@
 -- Manages texture registration and retrieval for cursor trails
 
 local AddonName, VUI = ...
-local M = VUI and VUI.VUIMouseFireTrail or {}
-if not M then return end
 
--- Local variables
+-- Create a local table to hold our texture functions
+local M = {}
+
+-- Texture collection
 M.Textures = {
     -- Basic textures
     Basic = {
@@ -90,9 +91,9 @@ function M:GetTexture(category, index)
         category = "Basic"
     end
     
-    local textureTable = M.Textures[category]
+    local textureTable = self.Textures[category]
     if not textureTable then
-        return M.DefaultTextures.Basic
+        return self.DefaultTextures.Basic
     end
     
     if not index or index < 1 or index > #textureTable then
@@ -105,12 +106,12 @@ end
 -- Get a texture by category name and texture name
 function M:GetTextureByName(category, textureName)
     if not category or not textureName then
-        return M.DefaultTextures.Basic
+        return self.DefaultTextures.Basic
     end
     
-    local textureTable = M.Textures[category]
+    local textureTable = self.Textures[category]
     if not textureTable then
-        return M.DefaultTextures.Basic
+        return self.DefaultTextures.Basic
     end
     
     for _, path in ipairs(textureTable) do
@@ -125,7 +126,7 @@ end
 -- Get all texture categories
 function M:GetCategories()
     local categories = {}
-    for category, _ in pairs(M.Textures) do
+    for category, _ in pairs(self.Textures) do
         table.insert(categories, category)
     end
     table.sort(categories)
@@ -138,9 +139,9 @@ function M:GetTexturesInCategory(category)
         category = "Basic"
     end
     
-    local textureTable = M.Textures[category]
+    local textureTable = self.Textures[category]
     if not textureTable then
-        return M.Textures.Basic
+        return self.Textures.Basic
     end
     
     return textureTable
@@ -165,17 +166,24 @@ function M:ValidateTextures()
         return width and width > 0
     end
     
+    -- Debug function that safely uses VUI if available
+    local function safeDebug(message)
+        if VUI and VUI.Debug then
+            VUI:Debug("VUIMouseFireTrail", message)
+        end
+    end
+    
     -- Check each texture in each category
-    for category, textures in pairs(M.Textures) do
-        VUI:Debug("VUIMouseFireTrail", "Validating " .. category .. " textures")
+    for category, textures in pairs(self.Textures) do
+        safeDebug("Validating " .. category .. " textures")
         
         for i, path in ipairs(textures) do
             if not validateTexture(path) then
-                VUI:Debug("VUIMouseFireTrail", "Missing texture: " .. path)
+                safeDebug("Missing texture: " .. path)
                 table.insert(missingTextures, path)
                 
                 -- Replace with fallback texture
-                M.Textures[category][i] = "Interface\\ICONS\\INV_Misc_QuestionMark"
+                self.Textures[category][i] = "Interface\\ICONS\\INV_Misc_QuestionMark"
             end
         end
     end
@@ -183,14 +191,14 @@ function M:ValidateTextures()
     -- Check if glow.tga exists, as it's used for line connections
     if not validateTexture("Interface\\AddOns\\VUI\\VModules\\VUIMouseFireTrail\\media\\textures\\glow.tga") then
         -- Create a simple fallback
-        VUI:Debug("VUIMouseFireTrail", "Missing glow texture, using fallback")
+        safeDebug("Missing glow texture, using fallback")
     end
     
     -- Report if any textures were missing
     if #missingTextures > 0 then
-        VUI:Debug("VUIMouseFireTrail", "Total missing textures: " .. #missingTextures)
+        safeDebug("Total missing textures: " .. #missingTextures)
     else
-        VUI:Debug("VUIMouseFireTrail", "All textures validated")
+        safeDebug("All textures validated")
     end
 end
 
@@ -210,9 +218,64 @@ function M:CreateColorTexture(r, g, b, a)
     end
 end
 
--- Apply all changes to the module
-for k, v in pairs(M) do
-    if type(v) == "function" then
-        VUI.VUIMouseFireTrail[k] = v
+-- Apply all texture functions to the available module reference
+-- First try the global reference
+local moduleRef = _G["VUIMouseFireTrail"]
+
+-- If that's not available, try VUI.VUIMouseFireTrail
+if not moduleRef and VUI and VUI.VUIMouseFireTrail then
+    moduleRef = VUI.VUIMouseFireTrail
+end
+
+-- If module exists, add texture functions to it
+if moduleRef then
+    -- Add the textures data
+    moduleRef.Textures = M.Textures
+    moduleRef.DefaultTextures = M.DefaultTextures
+    
+    -- Add all functions
+    for k, v in pairs(M) do
+        if type(v) == "function" then
+            moduleRef[k] = v
+        end
     end
+end
+
+-- Register a callback to attach functions once module is available
+if VUI and VUI.RegisterLoadHandler then
+    VUI:RegisterLoadHandler(function()
+        local targetModule = nil
+        
+        -- Try to get the module reference
+        if _G["VUIMouseFireTrail"] then
+            targetModule = _G["VUIMouseFireTrail"]
+        elseif VUI and VUI.VUIMouseFireTrail then
+            targetModule = VUI.VUIMouseFireTrail
+        elseif VUI and type(VUI.GetModule) == "function" then
+            -- Try to get the module via GetModule
+            local success, module = pcall(function() return VUI:GetModule("VUIMouseFireTrail") end)
+            if success and module then
+                targetModule = module
+            end
+        end
+        
+        -- If we found the module, add the texture functions
+        if targetModule then
+            -- Add the textures data
+            targetModule.Textures = M.Textures
+            targetModule.DefaultTextures = M.DefaultTextures
+            
+            -- Add all functions
+            for k, v in pairs(M) do
+                if type(v) == "function" then
+                    targetModule[k] = v
+                end
+            end
+            
+            -- Now that everything is set up, validate the textures
+            if targetModule.ValidateTextures then
+                pcall(function() targetModule:ValidateTextures() end)
+            end
+        end
+    end)
 end
